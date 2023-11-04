@@ -149,11 +149,17 @@ class RogueC
       endIf
 
       if (Program.generate_doc)
-        Program.add_include_search_path( libraries_folder )
-        Program.include( "Standard" )
-
         if (command//args.is_empty)
+          # Include all Standard Library files to generate the docs from.
+          Program.add_include_search_path( libraries_folder )
+          Program.include( "Standard" )
           Program.include( forEach in Files(libraries_folder,"**/*.rogue"), &api=api_includes )
+        else
+          # Include normal Standard Library with an omit-from-docs flag.
+          # Docs will be generated from additional .rogue files included later.
+          Program.omit_doc = true
+          Program.add_include_search_path( libraries_folder )
+          Program.include( "Standard" )
         endIf
 
       elseIf (Program.no_stdlib)
@@ -176,22 +182,37 @@ class RogueC
         endIf
       endForEach
 
-      while (Scanner.uses_autoinclude)
-        local t = Program.t
-        Scanner.uses_autoinclude = false
-        if (Scanner.uses_DateTime) Program.include( t, "DateTime" ); Scanner.uses_DateTime = false
-        if (Scanner.uses_File)     Program.include( t, "FileIO" ); Scanner.uses_File = false
-        if (Scanner.uses_Introspection) Program.include( t, "Introspection" ); Scanner.uses_Introspection = false
-        if (Scanner.uses_Process)  Program.include( t, "Core/Process" ); Scanner.uses_Process = false
-        if (Scanner.uses_Promise)  Program.include( t, "Core/Promise" ); Scanner.uses_Promise = false
-        if (Scanner.uses_Scanner)  Program.include( t, "IO/Scanner" ); Scanner.uses_Scanner = false
-        if (Scanner.uses_Set)      Program.include( t, "Collection/Set" ); Scanner.uses_Set = false
-        if (Scanner.uses_Table)    Program.include( t, "Collection/Table" ); Scanner.uses_Table = false
-        if (Scanner.uses_Value)    Program.include( t, "Core/Value" ); Scanner.uses_Value = false
-      endWhile
+      if (Program.omit_doc)
+        check_autoincludes( &mandatory )
+        # Can't allow these to be auto-included AFTER we include the doc targets or we won't be
+        # able to tell which types to generate docs from.
+
+        Program.omit_doc = false
+
+        forEach (arg in command//args)
+          local file = File( arg->String )
+          if (file.is_folder)
+            Program.add_include_search_path( file )
+            Program.include( forEach in Files(file,"**/*.rogue") )
+          else
+            Program.include( file )
+          endIf
+        endForEach
+
+      else
+        check_autoincludes
+
+      endIf
+
+      Program.organize
+
+      if (Program.generate_doc)
+        Program.instantiate_doc_method_templates
+        Program.generate_doc_json
+        return
+      endIf
 
       Program.resolve
-      if (Program.generate_doc) return
 
       Analytics.generate_c.start
       Program.generate_c
@@ -199,6 +220,23 @@ class RogueC
       Analytics.total_time.stop
 
       #if ($defined(DEBUG)) Analytics.display
+
+    method check_autoincludes( &mandatory )
+      if (mandatory) Scanner.uses_autoinclude = true
+
+      while (Scanner.uses_autoinclude)
+        local t = Program.t
+        Scanner.uses_autoinclude = false
+        if (mandatory or Scanner.uses_DateTime) Program.include( t, "DateTime" ); Scanner.uses_DateTime = false
+        if (mandatory or Scanner.uses_File)     Program.include( t, "FileIO" ); Scanner.uses_File = false
+        if (mandatory or Scanner.uses_Introspection) Program.include( t, "Introspection" ); Scanner.uses_Introspection = false
+        if (mandatory or Scanner.uses_Process)  Program.include( t, "Core/Process" ); Scanner.uses_Process = false
+        if (mandatory or Scanner.uses_Promise)  Program.include( t, "Core/Promise" ); Scanner.uses_Promise = false
+        if (mandatory or Scanner.uses_Scanner)  Program.include( t, "IO/Scanner" ); Scanner.uses_Scanner = false
+        if (mandatory or Scanner.uses_Set)      Program.include( t, "Collection/Set" ); Scanner.uses_Set = false
+        if (mandatory or Scanner.uses_Table)    Program.include( t, "Collection/Table" ); Scanner.uses_Table = false
+        if (mandatory or Scanner.uses_Value)    Program.include( t, "Core/Value" ); Scanner.uses_Value = false
+      endWhile
 
     method parse_args( args:String[] )->Value
       local command = CommandLineParser().

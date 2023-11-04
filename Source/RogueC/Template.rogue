@@ -24,6 +24,9 @@ class Template
         throw type.t.error( "Template already instantiated" )
       endIf
 
+      if (doc_generated) type.attributes.doc_generated = true
+      if (attributes.omit_doc or Program.omit_doc) type.attributes.omit_doc = true
+
       if (not type.module_context) type.module_context = module_context
       type.attributes.flags |= attributes.flags
       type.attributes.is_defined = true

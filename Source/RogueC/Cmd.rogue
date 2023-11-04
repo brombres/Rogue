@@ -3612,6 +3612,7 @@ class GlobalMethodTemplate : Cmd
     name         : String
     placeholders : Cmd
     token_list   : TokenList
+    omit_doc     : Logical
 
   METHODS
     method init( t, name, placeholders, token_list )
@@ -3640,6 +3641,7 @@ class GlobalMethodTemplate : Cmd
         local m = parser.parse( Parser.ip_global_method_template_instance )->(as GlobalMethod)
         m.module_context = type_context.module_context
         m.type_context   = type_context
+        m.attributes.omit_doc = omit_doc
         m.organize
         Transformer().visit( m )
 
@@ -3654,6 +3656,7 @@ class MethodTemplate : Cmd
     name         : String
     placeholders : Cmd
     token_list   : TokenList
+    omit_doc     : Logical
 
   METHODS
     method init( t, name, placeholders, token_list )
@@ -3685,6 +3688,7 @@ class MethodTemplate : Cmd
         local m = parser.parse( Parser.ip_method_template_instance )->(as Method)
         m.module_context = type_context.module_context
         m.type_context   = type_context
+        m.attributes.omit_doc = omit_doc
         m.method_template = this
         m.template_args = template_args
         m.generate_body

@@ -83,12 +83,12 @@ class Module
         local type_name = placeholder_t.content.replacing( "$", "_Doc_Gen_" )
         placeholder_t = placeholder_t.cloned( TokenType.IDENTIFIER, type_name )
         local type = types[ type_name ]
-        if (not type) type = Type( placeholder_t, type_name, Attribute.OBJECT|Attribute.DEFINED )
+        if (not type) type = Type( placeholder_t, Program.default_module, type_name, Attribute.OBJECT|Attribute.DEFINED )
         return (t:placeholder_t,type:type)
       else
-        # ID parameter
-        local type_name = placeholder_t.content.replacing( "$", "_Doc_Gen_" )
-        placeholder_t = placeholder_t.cloned( TokenType.IDENTIFIER, type_name )
+        # Unknown token parameter
+        local placeholder_name = placeholder_t.content.replacing( "$", "_Doc_Gen_" )
+        placeholder_t = placeholder_t.cloned( TokenType.IDENTIFIER, placeholder_name )
         return (t:placeholder_t,type:null)
       endIf
 
@@ -176,14 +176,14 @@ class Module
           local i = 0
           while (i < templates.count)
             local template = templates.at(i)
-            if (not template.attributes.is_augment)
+            if (not template.attributes.is_augment and not template.doc_generated)
               local placeholders = template.placeholders
               if (placeholders.count == 0)
                 if (not types.contains(template.name))
                   Type( template.t, this, template.name )
                   any_new = true
                 endIf
-              elseIf (not template.doc_generated)
+              elseIf (Program.generate_doc)
                 template.doc_generated = true
                 if (template.name == "Tuple")
                   noAction
@@ -202,7 +202,7 @@ class Module
                     placeholder_t = Program.default_module.create_placeholder_data_type( placeholder_t ).t
                     args.add( TokenList(template.t,[placeholder_t]) )
                   endForEach
-                  Type( t, this, template.name, args )
+                  Type( t, template, this, args )
                   any_new = true
                 endIf
               endIf

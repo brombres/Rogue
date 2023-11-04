@@ -50,6 +50,7 @@ class MethodOrganizer : Visitor, Poolable
 
     method on_visit( cmd:GlobalMethodTemplate )
       local name = "$<<$>>"(cmd.name,cmd.placeholders.count)
+      cmd.omit_doc = this_type.attributes.omit_doc
       this_type.global_method_templates.add( name, cmd )
 
     method on_visit_children( cmd:Local )
@@ -71,6 +72,7 @@ class MethodOrganizer : Visitor, Poolable
     method on_visit( cmd:MethodTemplate )
       local name = "$<<$>>"(cmd.name,cmd.placeholders.count)
       cmd.type_context = this_type
+      cmd.omit_doc = this_type.attributes.omit_doc
       this_type.method_templates.add( name, cmd )
 
     method on_visit_children( cmd:Statements )

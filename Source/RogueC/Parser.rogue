@@ -156,7 +156,9 @@ class Parser : ParserCore, Poolable
 
       local attributes = Attribute.ASPECT | Attribute.AUGMENT
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
-      mod.templates[aspect_name] = Template( augment_t, mod, aspect_name, Token[], tokens, attributes )
+      if (Program.omit_doc) attributes |= Attribute.OMIT_DOC
+      local template = Template( augment_t, mod, aspect_name, Token[], tokens, attributes )
+      mod.templates[aspect_name] = template
 
     method begin_join_ids
       id_start_stack.add( processed_tokens.count )
@@ -338,6 +340,7 @@ class Parser : ParserCore, Poolable
       tokens.add( t.cloned(TokenType.EOL,"") )
 
       local template = Template( t, mod, type_name, Token[], tokens, Attribute.COMPOUND|Attribute.NATIVE_TYPE )
+      if (Program.omit_doc) template.attributes.omit_doc = true
       mod.templates[extended_name] = template
 
     method clone
@@ -646,6 +649,7 @@ class Parser : ParserCore, Poolable
 
       local attributes = Attribute.ASPECT | Attribute.AUGMENT
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
+      if (Program.omit_doc) attributes |= Attribute.OMIT_DOC
       mod.templates[aspect_name] = Template( augment_t, mod, aspect_name, Token[], tokens, attributes )
 
     method on_uses_module
@@ -706,6 +710,7 @@ class Parser : ParserCore, Poolable
       endIf
 
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
+      if (Program.omit_doc) attributes |= Attribute.OMIT_DOC
       local result = Template( class_t, m, name, placeholders, tokens, attributes )
       m.templates[extended_name] = result
       return result
@@ -729,7 +734,7 @@ class Parser : ParserCore, Poolable
         local tokens = _tokens.from( i1+1, i2 ).to_list
         tokens.add( tokens.remove_last.cloned(TokenType.KEYWORD_END_CLASS) ) # 'endSubclass' -> 'endClass'
 
-        local attributes = 0
+        local attributes = Attribute.OMIT_DOC
         if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
         local result = Template( class_t, m, name, Token[], tokens, attributes )
         m.templates["$<<0>>"(name)] = result
@@ -831,6 +836,7 @@ class Parser : ParserCore, Poolable
 
       attributes |= Attribute.ASPECT | Attribute.AUGMENT
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
+      if (Program.omit_doc) attributes |= Attribute.OMIT_DOC
       m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, attributes )
 
     method parse_doc_comment

@@ -18,6 +18,7 @@ class Program [singleton]
     gc_threshold      = 1024*1024 : Int32
     generate_main     = false
     generate_doc      = false
+    omit_doc          = false
     no_stdlib         = false
     output_filepath   : String
     stack_trace       = false
@@ -298,12 +299,16 @@ class Program [singleton]
       unorganized_types.clear
       is_organizing = false
 
-    method resolve
+    method organize
       (forEach in modules.values).collect_used_modules
 
       # We've collected all class templates.
       Analytics.ensure_definitions.start
-      (forEach in (forEach in modules.values).types).ensure_definition
+      forEach (mod in modules.values)
+        forEach (type in mod.types)
+          type.ensure_definition
+        endForEach
+      endForEach
       Analytics.ensure_definitions.stop
 
       # Reparse the tokens for each file.
@@ -322,38 +327,6 @@ class Program [singleton]
       endForEach
       Analytics.main_parse.stop
 
-      organize_types_and_methods
-
-      if (generate_doc)
-        if (command//args.count > 0)
-          mark_existing_types_as_doc_generated  # exclude from doc
-
-          forEach (arg in command//args)
-            local file = File( arg->String )
-            if (file.is_folder)
-              add_include_search_path( file )
-              include( forEach in Files(file,"**/*.rogue") )
-            else
-              include( file )
-            endIf
-          endForEach
-
-          organize_types_and_methods
-        endIf
-
-        generate_doc_json
-        return
-      endIf
-
-      Analytics.resolve_used_elements.start
-      ResolveUsedElements().apply
-      Analytics.resolve_used_elements.stop
-
-      Analytics.finalize.start
-      Finalizer().apply
-      Analytics.finalize.stop
-
-    method organize_types_and_methods
       Analytics.instantiate_essential.start
       instantiate_essential_api_and_doc_types
       Analytics.instantiate_essential.stop
@@ -365,6 +338,22 @@ class Program [singleton]
       Analytics.tranform.start
       apply( Transformer() )
       Analytics.tranform.stop
+
+    method resolve
+      Analytics.resolve_used_elements.start
+      ResolveUsedElements().apply
+      Analytics.resolve_used_elements.stop
+
+      Analytics.finalize.start
+      Finalizer().apply
+      Analytics.finalize.stop
+
+    method instantiate_doc_method_templates
+      forEach (mod in modules)
+        forEach (type in mod.types)
+          type.instantiate_doc_method_templates
+        endForEach
+      endForEach
 
     method instantiate_essential_api_and_doc_types
       block any_changes = true
@@ -378,68 +367,102 @@ class Program [singleton]
 
     method generate_doc_json
       forEach (mod in Program.modules)
+        println "[$]"(mod)
         forEach (type in mod.types)
-          if (not type.attributes.doc_generated) # and type.name.contains("_Doc_Gen_"))
-            println type
-            if local def = type.class_def->(as Class)
-              if (def.doc)
-                println def.doc
-              endIf
-            endIf
+          if (type.documentable)
+            println "  $"(type)
+            if (type.name == "Routine") println "  $"(type.global_methods.keys)
+          endIf
 
-            if (type.categories)
-              println "CATEGORIES"
-              forEach (category in type.categories)
-                print "  " + category.name
-                if (category.doc) print "  $"(category.doc)
-                else              println
+#{
+          if (type.name == "Routine")
+            contingent
+              forEach (m in type.global_methods)
+                sufficient (not m.attributes.doc_generated)
+              endForEach
+              escapeContingent
+            satisfied
+              println "ROUTINES"
+              forEach (m in type.global_methods)
+                if (not m.attributes.doc_generated)
+                  print "  " + m.signature
+                  if (m.doc) print "  " + m.doc
+                  else       println
+                endIf
+              endForEach
+            endContingent
+
+          else
+            contingent
+              necessary (not type.attributes.doc_generated) # and type.name.contains("_Doc_Gen_"))
+            satisfied
+              println "TYPE " + type
+              if local def = type.class_def->(as Class)
+                if (def.doc)
+                  println def.doc
+                endIf
+              endIf
+
+              if (type.categories)
+                println "CATEGORIES"
+                forEach (category in type.categories)
+                  print "  " + category.name
+                  if (category.doc) print "  $"(category.doc)
+                  else              println
+                endForEach
+                println
+              endIf
+
+              println "GLOBAL PROPERTIES"
+              forEach (p in type.global_properties)
+                print "  $ : $"(p.name,p.type)
+                if (p.doc) print "  $"(p.doc)
+                else       println
               endForEach
               println
-            endIf
 
-            println "GLOBAL PROPERTIES"
-            forEach (p in type.global_properties)
-              print "  $ : $"(p.name,p.type)
-              if (p.doc) print "  $"(p.doc)
-              else       println
-            endForEach
-            println
+              println "GLOBAL METHODS"
+              forEach (m in type.global_methods)
+                print "  "
+                print m.signature
+                if (m.return_type) print "->"; print m.return_type
+                if (m.doc) print "  $"(m.doc)
+                else       println
+              endForEach
+              println
 
-            println "GLOBAL METHODS"
-            forEach (m in type.global_methods)
-              print "  "
-              print m.signature
-              if (m.return_type) print "->"; print m.return_type
-              if (m.doc) print "  $"(m.doc)
-              else       println
-            endForEach
-            println
+              println "PROPERTIES"
+              forEach (p in type.properties)
+                print "  $ : $"(p.name,p.type)
+                if (p.doc) print "  $"(p.doc)
+                else       println
+              endForEach
+              println
 
-            println "PROPERTIES"
-            forEach (p in type.properties)
-              print "  $ : $"(p.name,p.type)
-              if (p.doc) print "  $"(p.doc)
-              else       println
-            endForEach
-            println
-
-            println "METHODS"
-            forEach (m in type.methods)
-              print "  "
-              print m.signature
-              if (m.return_type) print "->"; print m.return_type
-              if (m.doc) print "  $"(m.doc)
-              else       println
-            endForEach
-            println
+              println "METHODS"
+              forEach (m in type.methods)
+                print "  "
+                print m.signature
+                if (m.return_type) print "->"; print m.return_type
+                if (m.doc) print "  $"(m.doc)
+                else       println
+              endForEach
+              println
+            endContingent
           endIf
+}#
         endForEach
       endForEach
 
     method mark_existing_types_as_doc_generated
       forEach (mod in Program.modules)
+        mod.attributes.doc_generated = true
+        (forEach in mod.templates).doc_generated = true
         forEach (type in mod.types)
           type.attributes.doc_generated = true
+          (forEach in type.global_methods).attributes.doc_generated = true
+          # New routines from non-standard-library-files may be added to Routine.global_methods
+          # so we need to flag existing global methods as doc-generated.
         endForEach
       endForEach
 
