@@ -319,6 +319,30 @@ class Type : Cmd
     method add_extended_property( p:Property )
       properties[p.name] = p
 
+    method all_template_parameters_are_dummy_values->Logical
+      if (not type_template) return false
+
+      forEach (placeholder_t at i in type_template.placeholders)
+        local placeholder_name = placeholder_t.content
+        local placeholder_type = type_args.type( i )
+        if (placeholder_type)
+          use necessary_name = StringPool
+            necessary_name.print( "_Doc_Gen_" )
+            necessary_name.print( forEach in placeholder_name from 1 )  # skip '$'
+            return placeholder_type.name == necessary_name
+          endUse
+
+        else
+          if (type_args[i].tokens.count != 1) return false
+          local t = type_args[i].tokens[0]
+          if (not t.content) return false
+          return t.content.begins_with( "_Doc_Gen_" )
+        endIf
+
+      endForEach
+
+      return true
+
     method cloned->this
       return this
 
@@ -395,6 +419,9 @@ class Type : Cmd
     method contains_reference->Logical
       return attributes.contains_reference
 
+    method description->String
+      return "$" (%name)
+
     method documentable->Logical
       if (attributes.omit_doc) return false
       if (attributes.is_augment) return false
@@ -430,38 +457,16 @@ class Type : Cmd
       if (not type_template) return true
       return all_template_parameters_are_dummy_values
 
-    method all_template_parameters_are_dummy_values->Logical
-      if (not type_template) return false
-
-      forEach (placeholder_t at i in type_template.placeholders)
-        local placeholder_name = placeholder_t.content
-        local placeholder_type = type_args.type( i )
-        if (placeholder_type)
-          use necessary_name = StringPool
-            necessary_name.print( "_Doc_Gen_" )
-            necessary_name.print( forEach in placeholder_name from 1 )  # skip '$'
-            return placeholder_type.name == necessary_name
-          endUse
-
-        else
-          if (type_args[i].tokens.count != 1) return false
-          local t = type_args[i].tokens[0]
-          if (not t.content) return false
-          return t.content.begins_with( "_Doc_Gen_" )
-        endIf
-
-      endForEach
-
-      return true
-
+    method doc_type->Type
+      if (documentable) return this
+      if (name.ends_with(']') and attributes.augmented) return this # augmented List[]
+      if (type_template and type_template.doc_type) return type_template.doc_type
+      return this
 
     method ensure_definition
       if (attributes.is_defined) return
       if (not type_template) type_template = module_context.must_find_template( t, name+"<<0>>", name )
       type_template.instantiate( this, type_args )
-
-    method description->String
-      return "$" (%name)
 
     method finalize_vtable
       if (is_vtable_finalized) return

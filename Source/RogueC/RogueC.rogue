@@ -148,6 +148,69 @@ class RogueC
         endIf
       endIf
 
+      if local doc_root = command//options//doc_root
+        Program.doc_root = File( doc_root->String ).abs
+        if (not Program.doc_root.exists)
+          throw Error( "--doc-root filepath not found: " + command//options//doc_root )
+        elseIf (not Program.doc_root.is_folder)
+          throw Error( "--doc-root must specifify a folder; this is a file: " + command//options//doc_root )
+        endIf
+      else
+        if (Program.generate_doc)
+          if (command//args.is_empty)
+            Program.doc_root = libraries_folder.abs
+          else
+            local folder = File( command//args.first->String ).abs
+            if (not folder.exists)
+              forEach (filepath in command//args from 1)
+                if (File(filepath).exists)
+                  folder = File( filepath )
+                  escapeForEach
+                endIf
+              endForEach
+            endIf
+
+            forEach (filepath in command//args from 1)
+              if (File(filepath).exists)
+                folder = folder.common_folder( File(filepath) ).abs
+              endIf
+            endForEach
+
+            if (folder.filepath == "") folder = File(".")
+            folder .= abs
+
+            if (not folder.exists)
+              local file = folder + ".rogue"
+              if (file.exists) folder = file
+            endIf
+
+            if (folder.exists)
+              if (folder.is_folder)
+                local file = folder / (folder.filename + ".rogue")
+                if (file.exists) folder = file
+              endIf
+
+              if (folder.filepath.ends_with(".rogue"))
+                local filename = folder.filename
+                local name = File(filename).split_filepath_and_extension.filepath
+                if (folder.filepath.ends_with("$/$.rogue"(name,name)))
+                  # path/.../Lib/Lib.rogue
+                  folder = folder.parent.parent
+                else
+                  # path/.../Lib.rogue
+                  folder = folder.parent
+                endIf
+              endIf
+            else
+              folder = libraries_folder
+            endIf
+
+            Program.doc_root = folder.abs
+
+          endIf
+        endIf
+      endIf
+
       if (Program.generate_doc)
         if (command//args.is_empty)
           # Include all Standard Library files to generate the docs from.
@@ -383,6 +446,8 @@ class RogueC
                |
                |  --doc
                |    RogueC generates documentation metadata instead of generating code.
+               |
+               |  --doc-root=<folder>
                |
                |  --help, -h, -?
                |    Show this help text.

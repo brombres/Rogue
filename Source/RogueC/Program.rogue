@@ -20,6 +20,7 @@ class Program [singleton]
     generate_doc      = false
     omit_doc          = false
     no_stdlib         = false
+    doc_root          : File
     output_filepath   : String
     stack_trace       = false
     real_bits         : Int32 # Set with --real=[32|64] compile option
@@ -188,6 +189,20 @@ class Program [singleton]
 
     method description->String
       return "Program"
+
+    method find_type( name:String )->Type
+      block
+        local (mod,type_name) = default_module.split_module_and_type( t, name, &suppress_error )
+        if (not type_name) return null
+        if (mod) return mod.find_type( t, type_name )
+      endBlock
+
+      forEach (mod in modules)
+        local type = mod.find_type( t, name )
+        if (type) return type
+      endForEach
+
+      return null
 
     method get_module( t:Token, name:String )->Module
       local m = modules[ name ]
@@ -366,11 +381,18 @@ class Program [singleton]
       endBlock
 
     method generate_doc_json
+      #local doc = @{ types:[] }
+
+      trace doc_root
       forEach (mod in Program.modules)
-        println "[$]"(mod)
         forEach (type in mod.types)
           if (not type.documentable) nextIteration
 
+          if (type.t.filepath=="RogueC") trace type, type.t.filepath
+
+          #trace type, type.doc_type
+
+          #{
           if (type.name == "Routine")
             contingent
               forEach (m in type.global_methods)
@@ -446,18 +468,7 @@ class Program [singleton]
             endForEach
             println
           endIf
-        endForEach
-      endForEach
-
-    method mark_existing_types_as_doc_generated
-      forEach (mod in Program.modules)
-        mod.attributes.doc_generated = true
-        (forEach in mod.templates).doc_generated = true
-        forEach (type in mod.types)
-          type.attributes.doc_generated = true
-          (forEach in type.global_methods).attributes.doc_generated = true
-          # New routines from non-standard-library-files may be added to Routine.global_methods
-          # so we need to flag existing global methods as doc-generated.
+          }#
         endForEach
       endForEach
 

@@ -176,25 +176,24 @@ class Module
           local i = 0
           while (i < templates.count)
             local template = templates.at(i)
-            if (not template.attributes.is_augment and not template.doc_generated)
+            if (not template.attributes.is_augment)
               local placeholders = template.placeholders
               if (placeholders.count == 0)
                 if (not types.contains(template.name))
                   Type( template.t, this, template.name )
                   any_new = true
                 endIf
-              elseIf (Program.generate_doc)
-                template.doc_generated = true
+              elseIf (Program.generate_doc and not template.doc_type)
                 if (template.name == "Tuple")
                   noAction
                 elseIf (template.name == "List" and placeholders.count == 1)
                   local element_type = Program.default_module.create_placeholder_data_type( placeholders.first ).type
-                  Type( template.t, element_type )
+                  template.doc_type = Type( template.t, element_type )
                   any_new = true
                 elseIf (template.name == "Table" and placeholders.count == 2)
                   local key_type = Program.default_module.create_placeholder_data_type( placeholders[0] ).type
                   local value_type = Program.default_module.create_placeholder_data_type( placeholders[1] ).type
-                  Type( template.t, key_type, value_type )
+                  template.doc_type = Type( template.t, key_type, value_type )
                   any_new = true
                 else
                   local args = TemplateArgs( template.t )
@@ -202,7 +201,7 @@ class Module
                     placeholder_t = Program.default_module.create_placeholder_data_type( placeholder_t ).t
                     args.add( TokenList(template.t,[placeholder_t]) )
                   endForEach
-                  Type( t, template, this, args )
+                  template.doc_type = Type( t, template, this, args )
                   any_new = true
                 endIf
               endIf
