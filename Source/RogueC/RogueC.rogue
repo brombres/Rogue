@@ -148,92 +148,31 @@ class RogueC
         endIf
       endIf
 
-      if local doc_root = command//options//doc_root
-        Program.doc_root = File( doc_root->String ).abs
-        if (not Program.doc_root.exists)
-          throw Error( "--doc-root filepath not found: " + command//options//doc_root )
-        elseIf (not Program.doc_root.is_folder)
-          throw Error( "--doc-root must specifify a folder; this is a file: " + command//options//doc_root )
-        endIf
-      else
-        if (Program.generate_doc)
-          if (command//args.is_empty)
-            Program.doc_root = libraries_folder.abs
-          else
-            local folder = File( command//args.first->String ).abs
-            if (not folder.exists)
-              forEach (filepath in command//args from 1)
-                if (File(filepath).exists)
-                  folder = File( filepath )
-                  escapeForEach
-                endIf
-              endForEach
-            endIf
-
-            forEach (filepath in command//args from 1)
-              if (File(filepath).exists)
-                folder = folder.common_folder( File(filepath) ).abs
-              endIf
-            endForEach
-
-            if (folder.filepath == "") folder = File(".")
-            folder .= abs
-
-            if (not folder.exists)
-              local file = folder + ".rogue"
-              if (file.exists) folder = file
-            endIf
-
-            if (folder.exists)
-              if (folder.is_folder)
-                local file = folder / (folder.filename + ".rogue")
-                if (file.exists) folder = file
-              endIf
-
-              if (folder.filepath.ends_with(".rogue"))
-                local filename = folder.filename
-                local name = File(filename).split_filepath_and_extension.filepath
-                if (folder.filepath.ends_with("$/$.rogue"(name,name)))
-                  # path/.../Lib/Lib.rogue
-                  folder = folder.parent.parent
-                else
-                  # path/.../Lib.rogue
-                  folder = folder.parent
-                endIf
-              endIf
-            else
-              folder = libraries_folder
-            endIf
-
-            Program.doc_root = folder.abs
-
-          endIf
-        endIf
-      endIf
-
-      if (Program.generate_doc)
-        if (command//args.is_empty)
-          # Include all Standard Library files to generate the docs from.
-          Program.add_include_search_path( libraries_folder )
-          Program.include( "Standard" )
-          Program.include( forEach in Files(libraries_folder,"**/*.rogue"), &api=api_includes )
-        else
-          # Include normal Standard Library with an omit-from-docs flag.
-          # Docs will be generated from additional .rogue files included later.
-          Program.omit_doc = true
-          Program.add_include_search_path( libraries_folder )
-          Program.include( "Standard" )
-        endIf
-
-      elseIf (Program.no_stdlib)
+      if (Program.no_stdlib)
         Program.include( forEach in command//args, &api=api_includes )
-
       else
         Program.add_include_search_path( libraries_folder )
         Program.include( "StandardMacros" )
         Program.include( forEach in command//args, &api=api_includes )
         Program.include( "Standard" )
+      endIf
 
+      if (Program.generate_doc)
+        if (command//options//doc == Value(true))
+          # Include all Standard Library files to generate the docs from.
+          Program.doc_root = libraries_folder.abs.filepath + '/'
+          Program.include( "Standard" )
+          Program.include( forEach in Files(libraries_folder,"**/*.rogue"), &api=api_includes )
+        else
+          local doc_path = File( command//options//doc->String )
+          Program.doc_root = doc_path.abs.filepath
+          if (doc_path.is_folder)
+            Program.doc_root += '/'
+            Program.include( forEach in Files(doc_path,"**/*.rogue"), &api=api_includes )
+          else
+            Program.include( doc_path.filepath, &api=api_includes )
+          endIf
+        endIf
       endIf
 
       forEach (option in command//options//api)
@@ -245,27 +184,7 @@ class RogueC
         endIf
       endForEach
 
-      if (Program.omit_doc)
-        check_autoincludes( &mandatory )
-        # Can't allow these to be auto-included AFTER we include the doc targets or we won't be
-        # able to tell which types to generate docs from.
-
-        Program.omit_doc = false
-
-        forEach (arg in command//args)
-          local file = File( arg->String )
-          if (file.is_folder)
-            Program.add_include_search_path( file )
-            Program.include( forEach in Files(file,"**/*.rogue") )
-          else
-            Program.include( file )
-          endIf
-        endForEach
-
-      else
-        check_autoincludes
-
-      endIf
+      check_autoincludes
 
       Program.organize
 
@@ -284,21 +203,19 @@ class RogueC
 
       #if ($defined(DEBUG)) Analytics.display
 
-    method check_autoincludes( &mandatory )
-      if (mandatory) Scanner.uses_autoinclude = true
-
+    method check_autoincludes
       while (Scanner.uses_autoinclude)
         local t = Program.t
         Scanner.uses_autoinclude = false
-        if (mandatory or Scanner.uses_DateTime) Program.include( t, "DateTime" ); Scanner.uses_DateTime = false
-        if (mandatory or Scanner.uses_File)     Program.include( t, "FileIO" ); Scanner.uses_File = false
-        if (mandatory or Scanner.uses_Introspection) Program.include( t, "Introspection" ); Scanner.uses_Introspection = false
-        if (mandatory or Scanner.uses_Process)  Program.include( t, "Core/Process" ); Scanner.uses_Process = false
-        if (mandatory or Scanner.uses_Promise)  Program.include( t, "Core/Promise" ); Scanner.uses_Promise = false
-        if (mandatory or Scanner.uses_Scanner)  Program.include( t, "IO/Scanner" ); Scanner.uses_Scanner = false
-        if (mandatory or Scanner.uses_Set)      Program.include( t, "Collection/Set" ); Scanner.uses_Set = false
-        if (mandatory or Scanner.uses_Table)    Program.include( t, "Collection/Table" ); Scanner.uses_Table = false
-        if (mandatory or Scanner.uses_Value)    Program.include( t, "Core/Value" ); Scanner.uses_Value = false
+        if (Scanner.uses_DateTime) Program.include( t, "DateTime" ); Scanner.uses_DateTime = false
+        if (Scanner.uses_File)     Program.include( t, "FileIO" ); Scanner.uses_File = false
+        if (Scanner.uses_Introspection) Program.include( t, "Introspection" ); Scanner.uses_Introspection = false
+        if (Scanner.uses_Process)  Program.include( t, "Core/Process" ); Scanner.uses_Process = false
+        if (Scanner.uses_Promise)  Program.include( t, "Core/Promise" ); Scanner.uses_Promise = false
+        if (Scanner.uses_Scanner)  Program.include( t, "IO/Scanner" ); Scanner.uses_Scanner = false
+        if (Scanner.uses_Set)      Program.include( t, "Collection/Set" ); Scanner.uses_Set = false
+        if (Scanner.uses_Table)    Program.include( t, "Collection/Table" ); Scanner.uses_Table = false
+        if (Scanner.uses_Value)    Program.include( t, "Core/Value" ); Scanner.uses_Value = false
       endWhile
 
     method parse_args( args:String[] )->Value
@@ -307,7 +224,7 @@ class RogueC
         option( "--api=", &optional, &multi )
         option( "--debug" )
         option( "--define=", &alias="-D", &multi )
-        option( "--doc" )
+        option( "--doc=", &optional )
         option( "--gc=" )
         option( "--gc-threshold=" )
         option( "--help",       &aliases=["-h","-?"] )
@@ -445,9 +362,12 @@ class RogueC
                |    Defining "name" is equivalent to:       $define name true
                |
                |  --doc
+               |  --doc=<folder-path>
                |    RogueC generates documentation metadata instead of generating code.
-               |
-               |  --doc-root=<folder>
+               |    '--doc' generates documentation for the standard library.
+               |    '--doc=<folder-path>' recursively includes and generates documentation for
+               |    all .rogue files nested in the specified folder. The generated metadata is
+               |    saved as a '.json' file.
                |
                |  --help, -h, -?
                |    Show this help text.

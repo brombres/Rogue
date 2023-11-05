@@ -426,14 +426,16 @@ class Type : Cmd
       if (attributes.omit_doc) return false
       if (attributes.is_augment) return false
       if (not class_def) return false
+
       if (name.begins_with('(')) return false  # (Function...) or (Tuple,...)
 
       if (name == "Routine")
         forEach (m in global_methods)
-          if (not m.attributes.omit_doc) return true
+          if (not m.attributes.omit_doc and m.t.filepath.begins_with(Program.doc_root)) return true
         endForEach
-        return false
       endIf
+
+      if (not t.filepath.begins_with(Program.doc_root)) return false
 
       if (name.begins_with("_Doc_Gen_"))
         if (not type_template) return false  # this was a dummy type used to generate another type template

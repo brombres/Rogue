@@ -728,10 +728,6 @@ parser
       procedure_returns_this = false
     endIf
 
-    omit_doc = false
-    call check_omit_doc
-    if (omit_doc) create AttributeOmitDoc
-
     on '['
       while (hasAnother and not nextIs(']'))
         procedure_attribute

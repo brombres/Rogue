@@ -18,9 +18,8 @@ class Program [singleton]
     gc_threshold      = 1024*1024 : Int32
     generate_main     = false
     generate_doc      = false
-    omit_doc          = false
     no_stdlib         = false
-    doc_root          : File
+    doc_root          : String
     output_filepath   : String
     stack_trace       = false
     real_bits         : Int32 # Set with --real=[32|64] compile option
@@ -264,6 +263,12 @@ class Program [singleton]
       if (api) api_filepaths.add( filepath )
 
       if (included_files.contains(filepath)) return
+
+      if (File(filepath).filename == "Standard.rogue")
+        # Program.t starts out with a placeholder filepath; update it if possible
+        this.t.filepath = filepath
+      endIf
+
       included_files[ filepath ] = IncludedFile(null,null,false) # placeholder
 
       temporarily current_module = Program.default_module
@@ -354,6 +359,10 @@ class Program [singleton]
       apply( Transformer() )
       Analytics.tranform.stop
 
+      if local type_Routine = find_type( "Rogue::Routine" )
+        type_Routine.t = this.t
+      endIf
+
     method resolve
       Analytics.resolve_used_elements.start
       ResolveUsedElements().apply
@@ -380,54 +389,62 @@ class Program [singleton]
         endWhile
       endBlock
 
-    method generate_doc_json
-      #local doc = @{ types:[] }
+    method doc_name( name:String )->String
+      name = name.replacing( "_Doc_Gen_", "$" )
+      if (name == "$DataType[]") return "List<<$DataType>>"
+      if (name == "$DataType?")  return "Optional<<$DataType>>"
+      return name
 
-      trace doc_root
+    method generate_doc_json
+      local doc = @{ types:[] }
+
       forEach (mod in Program.modules)
         forEach (type in mod.types)
           if (not type.documentable) nextIteration
 
-          if (type.t.filepath=="RogueC") trace type, type.t.filepath
+          local type_info =
+          @{
+            "name":       doc_name(type.name)
+            "module":     doc_name(type.module_context.name)
+            "attributes": []
+          }
+          if (type.is_object)        type_info//attributes.add( "class" )
+          elseIf (type.is_compound)  type_info//attributes.add( "compound" )
+          elseIf (type.is_enum)      type_info//attributes.add( "enum" )
+          elseIf (type.is_aspect)    type_info//attributes.add( "aspect" )
+          elseIf (type.is_primitive) type_info//attributes.add( "primitive" )
+          else throw Error( "Unhandled type classification:" + type )
+
+          if (type.attributes.is_singleton) type_info//attributes.add( "singleton" )
+          if (type.attributes.bitflags)     type_info//attributes.add( "bitflags" )
+
+          if local def = type.class_def->(as Class)
+            if (def.doc) type_info//description = def.doc
+          endIf
+
+          doc//types.add( type_info )
+
+          if (type.categories and not type.name.contains("_Doc_Gen"))
+            use resolver = ObjectPool<<Resolver>>
+              resolver.resolve_definitions( type )
+            endUse
+
+            local categories = @[]
+            type_info//categories = categories
+            forEach (category in type.categories)
+              local category_info =
+              @{
+                name:    category.name
+                ordinal: category.ordinal
+              }
+              if (category.doc) category_info//description = category.doc
+              categories.add( category_info )
+            endForEach
+          endIf
 
           #trace type, type.doc_type
 
           #{
-          if (type.name == "Routine")
-            contingent
-              forEach (m in type.global_methods)
-                sufficient (not m.attributes.doc_generated)
-              endForEach
-              escapeContingent
-            satisfied
-              println "ROUTINES"
-              forEach (m in type.global_methods)
-                if (not m.attributes.omit_doc)
-                  print "  " + m.signature
-                  if (m.doc) print "  " + m.doc
-                  else       println
-                endIf
-              endForEach
-            endContingent
-
-          else
-            println type
-            if local def = type.class_def->(as Class)
-              if (def.doc)
-                println def.doc
-              endIf
-            endIf
-
-            if (type.categories)
-              println "CATEGORIES"
-              forEach (category in type.categories)
-                print "  " + category.name
-                if (category.doc) print "  $"(category.doc)
-                else              println
-              endForEach
-              println
-            endIf
-
             println "GLOBAL PROPERTIES"
             forEach (p in type.global_properties)
               if (p.type_context is not type or p.attributes.omit_doc) nextIteration

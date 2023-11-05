@@ -5124,8 +5124,3 @@ class NotIsType : Cmd
 
 endClass
 
-class AttributeOmitDoc : Cmd
-  METHODS
-    method description->String
-      return "AttributeOmitDoc"
-endClass
