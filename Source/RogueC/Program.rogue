@@ -401,18 +401,21 @@ class Program [singleton]
       return doc_name( type.name )
 
     method generate_doc_json
-      local doc = @{ types:[] }
+      local doc = @{ modules:[] }
 
       forEach (mod in Program.modules)
+        local module_info = @{ name:mod.name, types:[] }
+
         forEach (type in mod.types)
           if (not type.documentable) nextIteration
 
           local type_info =
           @{
-            "name":       doc_name(type.name)
-            "module":     doc_name(type.module_context.name)
-            "attributes": []
-            "filepath":   type.t.filepath.after_any( Program.doc_root )
+            "scoped_name": doc_name(type.scoped_name)
+            "module":      doc_name(type.module_context.name)
+            "name":        doc_name(type.name)
+            "attributes":  []
+            "filepath":    type.t.filepath.after_any( Program.doc_root )
           }
           if (type.is_object)        type_info//attributes.add( "class" )
           elseIf (type.is_compound)  type_info//attributes.add( "compound" )
@@ -434,7 +437,7 @@ class Program [singleton]
             local aspects = @[]
             forEach (a in type.aspects)
               if (not a.attributes.is_augment)
-                aspects.add( doc_name(a.doc_type.name) )
+                aspects.add( doc_name(a.doc_type.scoped_name) )
               endIf
               if (aspects.count) type_info//aspects = aspects
             endForEach
@@ -443,10 +446,8 @@ class Program [singleton]
           local augmented_type : Type
           if (type.attributes.augmented and type.type_template and type.type_template.doc_type)
             augmented_type = type.type_template.doc_type
-            type_info//augmented_type = doc_name( augmented_type )
+            type_info//augmented_type = doc_name( augmented_type.scoped_name )
           endIf
-
-          doc//types.add( type_info )
 
           if (type.categories)
             use resolver = ObjectPool<<Resolver>>
@@ -474,7 +475,7 @@ class Program [singleton]
               local property =
               @{
                 name: doc_name(p.name)
-                type: doc_name(p.type.doc_type.name)
+                type: doc_name(p.type.doc_type.scoped_name)
               }
               if (p.doc) property//description = p.doc
               properties.add( property )
@@ -493,15 +494,16 @@ class Program [singleton]
                 signature: doc_name(m.signature)
                 name: doc_name(m.name)
                 parameters: []
-                return_type: doc_name(m.return_type)
+                return_type: null
               }
+              if (m.return_type) m_info//return_type = doc_name(m.return_type.scoped_name)
 
               local params = m_info//parameters
               forEach (p in m.parameters)
                 local p_info =
                 @{
-                  name: doc_name(p.name)
-                  type: doc_name(p.type)
+                  name: doc_name(p.original_name)
+                  type: doc_name(p.type.scoped_name)
                 }
                 if (p.initial_value)
                   p_info//default_value = p.initial_value->String
@@ -525,7 +527,7 @@ class Program [singleton]
               local property =
               @{
                 name: doc_name(p.name)
-                type: doc_name(p.type.doc_type.name)
+                type: doc_name(p.type.scoped_name)
               }
               if (p.doc) property//description = p.doc
               properties.add( property )
@@ -544,18 +546,20 @@ class Program [singleton]
                 signature: doc_name(m.signature)
                 name: doc_name(m.name)
                 parameters: []
-                return_type: doc_name(m.return_type)
+                return_type: null
               }
+              if (m.return_type) m_info//return_type = doc_name(m.return_type.scoped_name)
 
               local params = m_info//parameters
               forEach (p in m.parameters)
                 local p_info =
                 @{
-                  name: doc_name(p.name)
-                  type: doc_name(p.type)
+                  name: doc_name(p.original_name)
+                  type: doc_name(p.type.scoped_name)
                 }
                 if (p.initial_value)
-                  p_info//default_value = p.initial_value->String
+                  if (p.initial_value_tokens) p_info//default_value = p.initial_value_tokens->String
+                  if (p.attributes.is_default_parameter) p_info//default_parameter = true
                 endIf
                 params.add( p_info )
               endForEach
@@ -563,22 +567,32 @@ class Program [singleton]
               if (m.doc) m_info//description = m.doc
 
               methods.add( m_info )
-if m.signature == "word_wrapped(Rogue::Int32,Rogue::String,Rogue::String)"
-println m_info.to_json(&formatted)
-endIf
             endForEach
 
             if (methods.count) type_info//methods = methods
           endIf
 
-          #{
-          if (type.name == "String")
-            println type_info.to_json(&formatted)
-          endIf
-          }#
+          if (type.name != "Routine" or type_info//global_methods.count) module_info//types.add( type_info )
 
         endForEach
+
+        if (module_info//types.count) doc//modules.add( module_info )
       endForEach
+
+      output_filepath = command//options//output->String
+      if (not String.exists(output_filepath))
+        if (command//options//doc.is_logical)
+          output_filepath = "API.json"
+        else
+          output_filepath = File( command//options//doc->String ).filename
+        endIf
+      endIf
+
+      local (filepath,ext) = File(output_filepath).split_filepath_and_extension
+      if (not String.exists(ext) or ext != "json") output_filepath = filepath + ".json"
+
+      println "Writing documentation metadata to " + output_filepath
+      File( output_filepath ).save( doc.to_json(&formatted) )
 
     method set_real_bits( @real_bits )
       definitions["Real"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]

@@ -151,6 +151,7 @@ class Visitor
     method on_visit_children( cmd:Local )
       cmd.type = visit(cmd.type)->(as Type)
       cmd.initial_value = visit(cmd.initial_value)
+      cmd.initial_value_tokens = visit(cmd.initial_value_tokens)->(as TokenList)
 
     method on_visit_children( cmd:LocalDeclarations )
       cmd.declarations = visit(cmd.declarations)

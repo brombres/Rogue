@@ -298,7 +298,10 @@ class Procedure : Cmd
               if (p.attributes.is_default_parameter)
                 if (p.initial_value) p.type = p.initial_value.type
                 if (not p.type) p.type = Program.type_Logical
-                if (not p.initial_value) p.initial_value = p.type.cmd_default_value(p.t)
+                if (not p.initial_value)
+                  p.initial_value = p.type.cmd_default_value(p.t)
+                  p.initial_value_tokens = TokenList( p.initial_value.t, [p.initial_value.t] )
+                endIf
               elseIf (this.is_method)
                 local prop = type_context.properties[p.name]
                 if (prop)

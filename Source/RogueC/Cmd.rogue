@@ -194,6 +194,11 @@ class TokenList : Cmd
 
     method to->Token[]
       return tokens
+
+    method to->String
+      local result = String()
+      result.print( forEach in tokens )
+      return result
 endClass
 
 class Unary( t, operand:Cmd ) : Cmd
@@ -653,6 +658,7 @@ class Local : Cmd
   PROPERTIES
     name          : String
     original_name : String   # for auto-store parameters
+    initial_value_tokens : TokenList
     initial_value : Cmd
     type          : Type
     attributes    : Attributes
@@ -669,17 +675,23 @@ class Local : Cmd
       ensure<<attributes>>(t)
       if (attribute)
         which (attribute)
-          case "default":           attributes.is_default_parameter = true
-          case "direct-auto-store": attributes.is_direct_auto_store = true
+          case "default"
+            attributes.is_default_parameter = true
+          case "direct-auto-store"
+            attributes.is_direct_auto_store = true
         endWhich
       endIf
       attributes.is_anchored = true  # always true
+
+    method init( t:Token, name:String, initial_value:Cmd, initial_value_tokens, type:Type, attribute=null:String )
+      init( t, name, initial_value, type, attribute )
 
     method init( existing:Local )
       prior.init( existing )
       name = existing.name
       index = existing.index
       original_name = existing.original_name
+      if (existing.initial_value_tokens) initial_value_tokens = existing.initial_value_tokens.cloned
       if (existing.initial_value) initial_value = existing.initial_value.cloned
       if (existing.type) type = existing.type.cloned
       attributes = existing.attributes.cloned
@@ -4471,7 +4483,7 @@ class Assert : Cmd
     token_list : TokenList
 
   METHODS
-    method init( t, token_list, expression )
+    method init( t, expression, token_list )
 
     method init( existing:Assert )
       prior.init( existing )
@@ -4574,7 +4586,7 @@ class TracedExpression : Cmd
     token_list : TokenList
 
   METHODS
-    method init( t, token_list, expression )
+    method init( t, expression, token_list )
 
     method init( existing:TracedExpression )
       prior.init( existing )
