@@ -390,10 +390,15 @@ class Program [singleton]
       endBlock
 
     method doc_name( name:String )->String
+      name = name.replacing( "Rogue::_Doc_Gen_", "$" )
       name = name.replacing( "_Doc_Gen_", "$" )
       if (name == "$DataType[]") return "List<<$DataType>>"
       if (name == "$DataType?")  return "Optional<<$DataType>>"
       return name
+
+    method doc_name( type:Type )->String
+      if (type is null) return null
+      return doc_name( type.name )
 
     method generate_doc_json
       local doc = @{ types:[] }
@@ -407,6 +412,7 @@ class Program [singleton]
             "name":       doc_name(type.name)
             "module":     doc_name(type.module_context.name)
             "attributes": []
+            "filepath":   type.t.filepath.after_any( Program.doc_root )
           }
           if (type.is_object)        type_info//attributes.add( "class" )
           elseIf (type.is_compound)  type_info//attributes.add( "compound" )
@@ -422,9 +428,27 @@ class Program [singleton]
             if (def.doc) type_info//description = def.doc
           endIf
 
+          if (type.base_class) type_info//base_class = doc_name( type.base_class.doc_type.name )
+
+          if (type.aspects)
+            local aspects = @[]
+            forEach (a in type.aspects)
+              if (not a.attributes.is_augment)
+                aspects.add( doc_name(a.doc_type.name) )
+              endIf
+              if (aspects.count) type_info//aspects = aspects
+            endForEach
+          endIf
+
+          local augmented_type : Type
+          if (type.attributes.augmented and type.type_template and type.type_template.doc_type)
+            augmented_type = type.type_template.doc_type
+            type_info//augmented_type = doc_name( augmented_type )
+          endIf
+
           doc//types.add( type_info )
 
-          if (type.categories and not type.name.contains("_Doc_Gen"))
+          if (type.categories)
             use resolver = ObjectPool<<Resolver>>
               resolver.resolve_definitions( type )
             endUse
@@ -434,7 +458,7 @@ class Program [singleton]
             forEach (category in type.categories)
               local category_info =
               @{
-                name:    category.name
+                name:    doc_name(category.name)
                 ordinal: category.ordinal
               }
               if (category.doc) category_info//description = category.doc
@@ -442,50 +466,117 @@ class Program [singleton]
             endForEach
           endIf
 
-          #trace type, type.doc_type
-
-          #{
-            println "GLOBAL PROPERTIES"
+          if (type.global_properties.count)
+            local properties = @[]
             forEach (p in type.global_properties)
-              if (p.type_context is not type or p.attributes.omit_doc) nextIteration
-              print "  $ : $"(p.name,p.type)
-              if (p.doc) print "  $"(p.doc)
-              else       println
+              if (p.attributes.omit_doc) nextIteration
+              if (p.name.begins_with('.')) nextIteration  # native property
+              local property =
+              @{
+                name: doc_name(p.name)
+                type: doc_name(p.type.doc_type.name)
+              }
+              if (p.doc) property//description = p.doc
+              properties.add( property )
             endForEach
-            println
+            if (properties.count) type_info//global_properties = properties
+          endIf
 
-            println "GLOBAL METHODS"
+          if (type.global_methods.count)
+            local methods = @[]
             forEach (m in type.global_methods)
-              if (m.type_context is not type or m.attributes.omit_doc) nextIteration
-              print "  "
-              print m.signature
-              if (m.return_type) print "->"; print m.return_type
-              if (m.doc) print "  $"(m.doc)
-              else       println
-            endForEach
-            println
+              if (m.attributes.omit_doc) nextIteration
+              if (augmented_type and type.base_class is Program.type_Object and not m.attributes.augmented) nextIteration
 
-            println "PROPERTIES"
+              local m_info =
+              @{
+                signature: doc_name(m.signature)
+                name: doc_name(m.name)
+                parameters: []
+                return_type: doc_name(m.return_type)
+              }
+
+              local params = m_info//parameters
+              forEach (p in m.parameters)
+                local p_info =
+                @{
+                  name: doc_name(p.name)
+                  type: doc_name(p.type)
+                }
+                if (p.initial_value)
+                  p_info//default_value = p.initial_value->String
+                endIf
+                params.add( p_info )
+              endForEach
+
+              if (m.doc) m_info//description = m.doc
+
+              methods.add( m_info )
+            endForEach
+
+            if (methods.count) type_info//global_methods = methods
+          endIf
+
+          if (type.properties.count)
+            local properties = @[]
             forEach (p in type.properties)
-              if (p.type_context is not type or p.attributes.omit_doc) nextIteration
-              print "  $ : $"(p.name,p.type)
-              if (p.doc) print "  $"(p.doc)
-              else       println
+              if (p.attributes.omit_doc) nextIteration
+              if (p.name.begins_with('.')) nextIteration  # native property
+              local property =
+              @{
+                name: doc_name(p.name)
+                type: doc_name(p.type.doc_type.name)
+              }
+              if (p.doc) property//description = p.doc
+              properties.add( property )
             endForEach
-            println
+            if (properties.count) type_info//properties = properties
+          endIf
 
-            println "METHODS"
+          if (type.methods.count)
+            local methods = @[]
             forEach (m in type.methods)
               if (m.type_context is not type or m.attributes.omit_doc) nextIteration
-              print "  "
-              print m.signature
-              if (m.return_type) print "->"; print m.return_type
-              if (m.doc) print "  $"(m.doc)
-              else       println
+              if (augmented_type and type.base_class is Program.type_Object and not m.attributes.augmented) nextIteration
+
+              local m_info =
+              @{
+                signature: doc_name(m.signature)
+                name: doc_name(m.name)
+                parameters: []
+                return_type: doc_name(m.return_type)
+              }
+
+              local params = m_info//parameters
+              forEach (p in m.parameters)
+                local p_info =
+                @{
+                  name: doc_name(p.name)
+                  type: doc_name(p.type)
+                }
+                if (p.initial_value)
+                  p_info//default_value = p.initial_value->String
+                endIf
+                params.add( p_info )
+              endForEach
+
+              if (m.doc) m_info//description = m.doc
+
+              methods.add( m_info )
+if m.signature == "word_wrapped(Rogue::Int32,Rogue::String,Rogue::String)"
+println m_info.to_json(&formatted)
+endIf
             endForEach
-            println
+
+            if (methods.count) type_info//methods = methods
+          endIf
+
+          #{
+          if (type.name == "String")
+            println type_info.to_json(&formatted)
           endIf
           }#
+
         endForEach
       endForEach
 

@@ -195,6 +195,10 @@ class Module
                   local value_type = Program.default_module.create_placeholder_data_type( placeholders[1] ).type
                   template.doc_type = Type( template.t, key_type, value_type )
                   any_new = true
+                elseIf (template.name == "Optional" and placeholders.count == 1)
+                  local data_type = Program.default_module.create_placeholder_data_type( placeholders[0] ).type
+                  template.doc_type = Type( template.t, data_type, &optional )
+                  any_new = true
                 else
                   local args = TemplateArgs( template.t )
                   forEach (placeholder_t in placeholders)
