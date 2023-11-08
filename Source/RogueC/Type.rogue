@@ -460,6 +460,7 @@ class Type : Cmd
       return all_template_parameters_are_dummy_values
 
     method doc_type->Type
+      if (name.begins_with("Function_") and base_class is not Program.type_Object) return base_class
       if (documentable) return this
       if (name.ends_with(']') and attributes.augmented) return this # augmented List[]
       if (type_template and type_template.doc_type) return type_template.doc_type

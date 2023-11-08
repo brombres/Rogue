@@ -418,8 +418,8 @@ class Program [singleton]
             "filepath":    type.t.filepath.after_any( Program.doc_root )
           }
           if (type.is_object)        type_info//attributes.add( "class" )
-          elseIf (type.is_compound)  type_info//attributes.add( "compound" )
           elseIf (type.is_enum)      type_info//attributes.add( "enum" )
+          elseIf (type.is_compound)  type_info//attributes.add( "compound" )
           elseIf (type.is_aspect)    type_info//attributes.add( "aspect" )
           elseIf (type.is_primitive) type_info//attributes.add( "primitive" )
           else throw Error( "Unhandled type classification:" + type )
@@ -459,8 +459,8 @@ class Program [singleton]
             forEach (category in type.categories)
               local category_info =
               @{
-                name:    doc_name(category.name)
-                ordinal: category.ordinal
+                name:  doc_name(category.name)
+                value: category.ordinal
               }
               if (category.doc) category_info//description = category.doc
               categories.add( category_info )
@@ -475,7 +475,8 @@ class Program [singleton]
               local property =
               @{
                 name: doc_name(p.name)
-                type: doc_name(p.type.doc_type.scoped_name)
+                type: doc_name(p.type.scoped_name)
+                doc_type: doc_name(p.type.doc_type.scoped_name)
               }
               if (p.doc) property//description = p.doc
               properties.add( property )
@@ -484,6 +485,7 @@ class Program [singleton]
           endIf
 
           if (type.global_methods.count)
+            local is_routine = (type.name == "Routine")
             local methods = @[]
             forEach (m in type.global_methods)
               if (m.attributes.omit_doc) nextIteration
@@ -495,8 +497,14 @@ class Program [singleton]
                 name: doc_name(m.name)
                 parameters: []
                 return_type: null
+                doc_return_type: null
               }
-              if (m.return_type) m_info//return_type = doc_name(m.return_type.scoped_name)
+              if (m.return_type)
+                m_info//return_type = doc_name(m.return_type.scoped_name)
+                m_info//doc_return_type = doc_name(m.return_type.doc_type.scoped_name)
+              endIf
+
+              if (is_routine) m_info//filepath = m.t.filepath.after_any( Program.doc_root )
 
               local params = m_info//parameters
               forEach (p in m.parameters)
@@ -504,6 +512,7 @@ class Program [singleton]
                 @{
                   name: doc_name(p.original_name)
                   type: doc_name(p.type.scoped_name)
+                  doc_type: doc_name(p.type.doc_type.scoped_name)
                 }
                 if (p.initial_value)
                   p_info//default_value = p.initial_value->String
@@ -528,6 +537,7 @@ class Program [singleton]
               @{
                 name: doc_name(p.name)
                 type: doc_name(p.type.scoped_name)
+                doc_type: doc_name(p.type.doc_type.scoped_name)
               }
               if (p.doc) property//description = p.doc
               properties.add( property )
@@ -547,8 +557,12 @@ class Program [singleton]
                 name: doc_name(m.name)
                 parameters: []
                 return_type: null
+                doc_return_type: null
               }
-              if (m.return_type) m_info//return_type = doc_name(m.return_type.scoped_name)
+              if (m.return_type)
+                m_info//return_type = doc_name(m.return_type.scoped_name)
+                m_info//doc_return_type = doc_name(m.return_type.doc_type.scoped_name)
+              endIf
 
               local params = m_info//parameters
               forEach (p in m.parameters)
@@ -556,6 +570,7 @@ class Program [singleton]
                 @{
                   name: doc_name(p.original_name)
                   type: doc_name(p.type.scoped_name)
+                  doc_type: doc_name(p.type.doc_type.scoped_name)
                 }
                 if (p.initial_value)
                   if (p.initial_value_tokens) p_info//default_value = p.initial_value_tokens->String

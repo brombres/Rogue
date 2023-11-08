@@ -23,6 +23,10 @@ Installing Morlock will also install Rogue and [Rogo](https://github.com/brombre
 1. Clone this repository locally.
 2. Run `make`.
 
+## Documentation
+
+[API documentation](wiki/API), a [syntax guide](wiki/Syntax), and the source for various Rogue-based [utilities](wiki/Written-in-Rogue) can be found on the [wiki](wiki).
+
 # Syntax Highlighting
 
 ## Visual Studio Code
