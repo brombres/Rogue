@@ -438,8 +438,11 @@ class Value [compound]
       if (type == TYPE_NULL or type == TYPE_UNDEFINED) return false
       return this->Logical
 
+    method operator==( other:Value )->Int32
+      return (this <> other) == 0
+
     method operator<>( other:Value )->Int32
-      if (type == TYPE_UNDEFINED) return (other.type == TYPE_UNDEFINED)
+      if (type == TYPE_UNDEFINED) return (other.type != TYPE_UNDEFINED)
 
       if (type <= TYPE_REAL64 and other.type <= TYPE_REAL64)
         # Both are primitives
@@ -714,6 +717,18 @@ class Value [compound]
     method set( key:Value, value:Value )
       if (key.is_number) set( key->Int32, value )
       else               set( key->String, value )
+
+    method sort( compare_fn:(Function(Value,Value)->Logical) )
+      # 'compare_fn' should return true if the first parameter should be positioned before the second parameter.
+      # The values passed will be keys for a Value Table or elements for a Value List.
+      which (type)
+        case TYPE_LIST
+          local list = object->(as Value[])
+          list.sort( compare_fn )
+        case TYPE_TABLE
+          local table = object->(as [String:Value])
+          table.sort( (a,b) => compare_fn(a.key,b.key) )
+      endWhich
 
     method to->Box
       which (type)
