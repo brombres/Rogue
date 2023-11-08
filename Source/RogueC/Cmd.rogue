@@ -197,7 +197,7 @@ class TokenList : Cmd
 
     method to->String
       local result = String()
-      result.print( forEach in tokens )
+      result.print( (forEach in tokens).to_source_string )
       return result
 endClass
 
