@@ -329,14 +329,14 @@ class Type : Cmd
           use necessary_name = StringPool
             necessary_name.print( "_Doc_Gen_" )
             necessary_name.print( forEach in placeholder_name from 1 )  # skip '$'
-            return placeholder_type.name == necessary_name
+            if (placeholder_type.name != necessary_name) return false
           endUse
 
         else
           if (type_args[i].tokens.count != 1) return false
           local t = type_args[i].tokens[0]
           if (not t.content) return false
-          return t.content.begins_with( "_Doc_Gen_" )
+          if (not t.content.begins_with("_Doc_Gen_")) return false
         endIf
 
       endForEach
@@ -446,7 +446,10 @@ class Type : Cmd
         return true
       endIf
 
-      if (name.ends_with(']')) return attributes.augmented   # List[]
+      if (name.ends_with(']'))
+        if (name == "[Rogue::_Doc_Gen_KeyType:Rogue::_Doc_Gen_ValueType]") return true
+        return attributes.augmented   # List[]
+      endIf
       if (name.ends_with('?')) return false                  # Optional?
 
       if (name.begins_with("Function_"))

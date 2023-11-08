@@ -392,8 +392,11 @@ class Program [singleton]
     method doc_name( name:String )->String
       name = name.replacing( "Rogue::_Doc_Gen_", "$" )
       name = name.replacing( "_Doc_Gen_", "$" )
-      if (name == "$DataType[]") return "List<<$DataType>>"
-      if (name == "$DataType?")  return "Optional<<$DataType>>"
+      which (name)
+        case "$DataType[]": return "List<<$DataType>>"
+        case "$DataType?":  return "Optional<<$DataType>>"
+        case "[$KeyType:$ValueType]": return "Table<<$KeyType,$ValueType>>"
+      endWhich
       return name
 
     method doc_name( type:Type )->String
@@ -431,7 +434,10 @@ class Program [singleton]
             if (def.doc) type_info//description = def.doc
           endIf
 
-          if (type.base_class) type_info//base_class = doc_name( type.base_class.doc_type.name )
+          if (type.base_class)
+            type_info//base_class = doc_name( type.base_class.scoped_name )
+            type_info//doc_base_class = doc_name( type.base_class.doc_type.scoped_name )
+          endIf
 
           if (type.aspects)
             local aspects = @[]
@@ -514,8 +520,9 @@ class Program [singleton]
                   type: doc_name(p.type.scoped_name)
                   doc_type: doc_name(p.type.doc_type.scoped_name)
                 }
+if (p.name=="spacer") trace p.initial_value_tokens.count
                 if (p.initial_value)
-                  p_info//default_value = p.initial_value->String
+                  p_info//default_value = p.initial_value_tokens->String
                 endIf
                 params.add( p_info )
               endForEach
