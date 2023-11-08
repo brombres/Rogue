@@ -129,7 +129,9 @@ augment
         if (this_type is Program.@type_Value)
           if (target_type is Program.@type_Value) return cmd
           if (target_type.attributes.is_optional)
-            return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to_optional",target_type.core_type,null) )
+            if (target_type.core_type is not Program.@type_Value)
+              return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to_optional",target_type.core_type,null) )
+            endIf
           else
             return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to",target_type,null) )
           endIf
