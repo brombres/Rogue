@@ -404,6 +404,18 @@ class Program [singleton]
       return doc_name( type.name )
 
     method generate_doc_json
+      output_filepath = command//options//output->String
+      if (not String.exists(output_filepath))
+        if (command//options//doc.is_logical)
+          output_filepath = "API.json"
+        else
+          output_filepath = File( command//options//doc->String ).filename
+        endIf
+      endIf
+
+      local (filepath,ext) = File(output_filepath).split_filepath_and_extension
+      if (not String.exists(ext) or ext != "json") output_filepath = filepath + ".json"
+
       local doc = @{ modules:[] }
 
       forEach (mod in Program.modules)
@@ -418,8 +430,14 @@ class Program [singleton]
             "module":      doc_name(type.module_context.name)
             "name":        doc_name(type.name)
             "attributes":  []
-            "filepath":    type.t.filepath.after_any( Program.doc_root )
           }
+
+          if (type.t.filepath.begins_with(Program.doc_root))
+            type_info//filepath = type.t.filepath.after_first( Program.doc_root )
+          else
+            type_info//filepath = File(filepath).filename
+          endIf
+
           if (type.is_object)        type_info//attributes.add( "class" )
           elseIf (type.is_enum)      type_info//attributes.add( "enum" )
           elseIf (type.is_compound)  type_info//attributes.add( "compound" )
@@ -453,6 +471,7 @@ class Program [singleton]
           if (type.attributes.augmented and type.type_template and type.type_template.doc_type)
             augmented_type = type.type_template.doc_type
             type_info//augmented_type = doc_name( augmented_type.scoped_name )
+            type_info//doc_augmented_type = doc_name( augmented_type.doc_type.scoped_name )
           endIf
 
           if (type.categories)
@@ -496,6 +515,7 @@ class Program [singleton]
             forEach (m in type.global_methods)
               if (m.attributes.omit_doc) nextIteration
               if (augmented_type and type.base_class is Program.type_Object and not m.attributes.augmented) nextIteration
+              if (is_routine and not m.t.filepath.begins_with(Program.doc_root)) nextIteration
 
               local m_info =
               @{
@@ -510,7 +530,7 @@ class Program [singleton]
                 m_info//doc_return_type = doc_name(m.return_type.doc_type.scoped_name)
               endIf
 
-              if (is_routine) m_info//filepath = m.t.filepath.after_any( Program.doc_root )
+              if (is_routine) m_info//filepath = m.t.filepath.after_first( Program.doc_root )
 
               local params = m_info//parameters
               forEach (p in m.parameters)
@@ -520,7 +540,6 @@ class Program [singleton]
                   type: doc_name(p.type.scoped_name)
                   doc_type: doc_name(p.type.doc_type.scoped_name)
                 }
-if (p.name=="spacer") trace p.initial_value_tokens.count
                 if (p.initial_value)
                   p_info//default_value = p.initial_value_tokens->String
                 endIf
@@ -600,18 +619,6 @@ if (p.name=="spacer") trace p.initial_value_tokens.count
 
         if (module_info//types.count) doc//modules.add( module_info )
       endForEach
-
-      output_filepath = command//options//output->String
-      if (not String.exists(output_filepath))
-        if (command//options//doc.is_logical)
-          output_filepath = "API.json"
-        else
-          output_filepath = File( command//options//doc->String ).filename
-        endIf
-      endIf
-
-      local (filepath,ext) = File(output_filepath).split_filepath_and_extension
-      if (not String.exists(ext) or ext != "json") output_filepath = filepath + ".json"
 
       println "Writing documentation metadata to " + output_filepath
       File( output_filepath ).save( doc.to_json(&formatted) )
