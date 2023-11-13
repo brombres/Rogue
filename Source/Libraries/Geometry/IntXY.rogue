@@ -189,6 +189,9 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method sign->IntXY
       return IntXY( x.sign, y.sign )
 
+    method sum->Int32
+      return x + y
+
     method to->String
       return "($,$)"(x,y)
 

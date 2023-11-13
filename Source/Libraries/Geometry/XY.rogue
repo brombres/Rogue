@@ -178,6 +178,9 @@ class XY( x:Real, y:Real ) [compound]
     method sign->XY
       return XY( x.sign, y.sign )
 
+    method sum->Real
+      return x + y
+
     method to->String
       return "($,$)"(x,y)
 
