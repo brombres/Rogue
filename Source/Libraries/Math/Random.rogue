@@ -10,27 +10,54 @@ class Random [singleton]
   # numbers. If a seed is not specified then the current System.time_ms
   # is used.
   #
-  # Underneath, the Random operates on a 48-bit integer using the linear
-  # congruence formula with the "drand48" parameters:
-  #
-  #   next = (a * prev + c) mod (2^48)
-  #
-  # Where a=0x5DEECE66D, c=11, and bits 31:0 of
-  # 'next' are retrieved with each read call.
-
+  # Under the hood Random uses the PCG32 algorithm adapted from:
+  # https://github.com/imneme/pcg-c-basic
   PROPERTIES
-    state : Int64
+    seed   : Int64  # The original state value.
+    state  : Int64  # The current state used to produce the next psuedo-random number.
+    stream : Int64  # A PCG32-specific modifier that essentially acts as an additional seed.
 
   METHODS
     method init
       reset( Rogue::System.time_ms )
 
-    method init( seed:Int64 )
-      reset( seed )
+    method init( seed:Int64, stream=0x14057b7e_f767814f:Int64 )
+      # Constructs a Random generator with the specified seed and optional stream parameter.
+      # 'stream' defaults to 0x14057b7e_f767814f. If you pass an explicit value, note that
+      # the canonical PCG algorithm performs 'stream = (stream :<<: 1) | 1' but this
+      # implementation only performs 'stream | 1'. This ensures that 'stream' isn't modified
+      # each time it is passed from one Random generator to another.
+      reset( seed, stream )
 
-    method reset( _state:Int64 )
-      state = _state
-      _advance_state
+    method init( existing:Random )
+      # Constructs this Random generator to be a duplicate of an existing Random generator.
+      # They will produce identical results given identical calls.
+      seed = existing.seed
+      state = existing.state
+      stream = existing.stream
+
+    method cloned->Random
+      # Returns a duplicate Random generator. Given identical calls, it will produce
+      # identical results to this Random generator.
+      return Random( this )
+
+    method reset( seed, stream=0x14057b7e_f767814f:Int64 )
+      # Resets the Random generator ot use the specified seed and optional stream parameter.
+      # 'stream' defaults to 0x14057b7e_f767814f. If you pass an explicit value, note that
+      # the canonical PCG algorithm performs 'stream = (stream :<<: 1) | 1' but this
+      # implementation only performs 'stream | 1'. This ensures that 'stream' isn't modified
+      # each time it is passed from one Random generator to another.
+      this.stream = stream | 1
+
+      # Prime the generator
+      this.state = 0
+      next32
+      this.state += seed
+      next32
+
+    method byte->Byte
+      # Returns a random byte between 0 and 255.
+      return next32->Byte
 
     method chance( p:Real )->Logical
       # Has a proportional chance 'p' to return true (0 < p < 1.0).
@@ -49,6 +76,61 @@ class Random [singleton]
       local u1 = 1.0 - real
       local u2 = 1.0 - real
       return (-2.0 * u1.log).sqrt * (pi * 2 * u2).sin
+
+    method int64->Int64
+      # Returns a normalized, evenly distributed random integer in
+      # the range [0,2^63-1] inclusive.
+      local n = (next32->Int64 :<<: 16) & 0x7FFF_FFFF_0000_0000
+      return (n | (next32->Int64 & 0x0FFFF_FFFF))
+
+    method int32->Int32
+      # Returns a normalized, evenly distributed random integer in
+      # the range [0,2^31-1] inclusive.
+      return next32 & 0x7FFF_FFFF
+
+    method int32( limit:Int32 )->Int32
+      # Returns an evenly distributed random integer in
+      # the range [0,limit) - includes 0 but does not include limit.
+      #
+      # int32(limit) is preferred over int32 % limit because it avoids
+      # the low number bias of a simple mod.
+      #
+      # Example:
+      #   println( Random.int32(100) )  # Prints a number 0..99
+      if (limit <= 0) return 0
+
+      # Avoid the low-number bias of simply performing 'next32 % limit'.
+      if ((limit & (limit-1)) == 0)
+        # limit is a power of 2
+        return next32 & (limit-1)
+      endIf
+
+      local threshold = native("(-(uint32_t)$limit) % (uint32_t)$limit")->Int32
+      loop
+        local num = next32
+        if (native("(uint32_t)$num >= (uint32_t)$threshold")->Logical)
+          return native("(uint32_t)$num % (uint32_t)$limit")->Int32
+        endIf
+      endLoop
+
+    method int32( low:Int32, high:Int32 )->Int32
+      # Returns a random integer between low and high, inclusive.
+      return int32( (high-low)+1 ) + low
+
+    method logical->Logical
+      # Returns either "true" or "false" with equal likelihood.
+      return (int32 & 1)
+
+    method next32->Int32
+      # Returns an pseudo-random Int32 in the full range of possible values [-80000000,7FFFffff].
+      local result : Int32
+      native
+      @|uint64_t old_state = (uint64_t)$state;
+       |$state = (RogueInt64)(old_state * 6364136223846793005ULL) + $stream;
+       |uint32_t xorshifted = ((old_state >> 18u) ^ old_state) >> 27u;
+       |uint32_t rot = old_state >> 59u;
+       |$result = (RogueInt32)((xorshifted >> rot) | (xorshifted << ((-rot) & 31)));
+      return result
 
     method real->Real
       # Returns a random number 0 < n < 1.0
@@ -85,42 +167,5 @@ class Random [singleton]
     method real64( low:Real64, high:Real64 )->Real64
       # Returns a random number low < n < high
       return (real64 * (high-low)) + low
-
-    method int64->Int64
-      # Returns a normalized, evenly distributed random integer in
-      # the range [0,2^63-1] inclusive.
-      local result = (_advance_state :<<: 16) & 0x7FFFffff00000000
-      return (result | ((_advance_state:>>>:16) & 0x0FFFFffff))
-
-    method int32->Int32
-      # Returns a normalized, evenly distributed random integer in
-      # the range [0,2^31-1] inclusive.
-      return ((_advance_state:>>:16) & 0x7fff_ffff)
-
-    method int32( limit:Int32 )->Int32
-      # Returns an evenly distributed random integer in
-      # the range [0,limit) - includes 0 but does not include limit.
-      #
-      # Example:
-      #   println( random_Int32(100) )  #prints a number 0..99
-      if (limit == 0) return 0
-      return int32 % limit
-
-    method int32( low:Int32, high:Int32 )->Int32
-      # Returns a random integer between low and high, inclusive.
-      return int32( (high-low)+1 ) + low
-
-    method byte->Byte
-      # Returns a random byte between 0 and 255.
-      return int32->Byte
-
-    method logical->Logical
-      # Returns either "true" or "false" with equal likelihood.
-      return (int32 & 1)
-
-    method _advance_state->Int64
-      # Calculates the next raw random integer.
-      state = ((state * 0x5DEECe66d + 11) & 0xFFFFffffFFFF)
-      return state
 
 endClass
