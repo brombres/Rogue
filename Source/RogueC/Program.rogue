@@ -2,8 +2,10 @@ module RogueC
 
 class Program [singleton]
   PROPERTIES
-    t                     = Token( TokenType.EOI, "RogueC" )
-    include_search_paths = String[]
+    t                    = Token( TokenType.EOI, "RogueC" )
+
+    include_search_paths = [String:Logical]  # maps to true for library path, false for user path
+
     included_files       = [String:IncludedFile]
     definitions          = [String:Token[]]
     macros               = [String:Macro[]]
@@ -132,10 +134,10 @@ class Program [singleton]
       type_Real.attributes.is_essential      = true
       type_String.attributes.is_essential    = true
 
-    method add_include_search_path( path:String )
+    method add_include_search_path( path:String, &library )
       path = File( path ).abs
       if (not include_search_paths.contains(path) and File(path).exists)
-        include_search_paths.add( path )
+        include_search_paths[path] = library
       endIf
 
     method apply( visitor:InspectionVisitor )
@@ -239,20 +241,32 @@ class Program [singleton]
     method include( filepath:String, &api )
       include( t, filepath, &=api )
 
-    method include( t:Token, filepath:String, &api, &is_optional, &include_folder )
+    method include( t:Token, filepath:String, &api, &is_optional, &include_folder, &library )
       local found = find_include( t, filepath, &=api, &=include_folder )
       if (not found)
-        forEach (path in include_search_paths)
-          found = find_include( t, path/filepath, &=include_folder )
-          if (found) escapeForEach
-        endForEach
+        block
+          forEach (is_library at path in include_search_paths)
+            if (not is_library)
+              found = find_include( t, path/filepath, &=include_folder )
+              if (found) escapeBlock
+            endIf
+          endForEach
+          forEach (is_library at path in include_search_paths)
+            if (is_library)
+              found = find_include( t, path/filepath, &=include_folder )
+              if (found) escapeBlock
+            endIf
+          endForEach
+        endBlock
       endIf
 
       if (found and found == "") return  # recursive folder include already performed
 
       if (found)
         local folder = File( found ).folder
-        if (String.exists(folder)) add_include_search_path( folder )
+        if (String.exists(folder))
+          add_include_search_path( folder, &=library )
+        endIf
         filepath = found
       elseIf (is_optional)
         return

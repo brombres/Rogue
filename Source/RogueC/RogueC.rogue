@@ -109,7 +109,7 @@ class RogueC
           paths.add( forEach in path->String.split(',') )
         endForEach
         command//options//libraries = paths
-        Program.add_include_search_path( forEach in paths )
+        Program.add_include_search_path( forEach in paths, &library )
       endIf
 
       if (command//options//real)
@@ -151,7 +151,7 @@ class RogueC
       if (Program.no_stdlib)
         Program.include( forEach in command//args, &api=api_includes )
       else
-        Program.add_include_search_path( libraries_folder )
+        Program.add_include_search_path( libraries_folder, &library )
         Program.include( "StandardMacros" )
         Program.include( forEach in command//args, &api=api_includes )
         Program.include( "Standard" )

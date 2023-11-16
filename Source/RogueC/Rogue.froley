@@ -3599,13 +3599,12 @@ parser
     return
 
   elseOn "uses"
-    # Call: $include XYZ
     call rewrite_cur_token
     collect_meta_filepath
     savePosition
     uses_attributes
     restorePosition
-    call uses_filepath
+    call uses_filepath # uses XYZ -> $include XYZ/XYZ.rogue
     return
 
   elseOn IDENTIFIER

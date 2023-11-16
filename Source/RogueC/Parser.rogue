@@ -559,9 +559,18 @@ class Parser : ParserCore, Poolable
       # The first pass $include's the given file
       local filepath = buffer.cloned
       if (filepath == "") throw marked_token.error( "Module path expected." )
+
       processed_tokens.add( marked_token.cloned(TokenType.STRING,filepath) )
+
       if (not _attribute_no_include)
-        Program.include( marked_token, filepath, &is_optional )
+        if (not filepath.contains('/'))
+          # XYZ -> XYZ/XYZ.rogue
+          local qualified_filepath = filepath / filepath
+          if (not qualified_filepath.ends_with(".rogue")) qualified_filepath += ".rogue"
+          filepath = qualified_filepath
+        endIf
+
+        Program.include( marked_token, filepath, &is_optional, &library )
       endIf
 
     method evaluate_meta_expression
