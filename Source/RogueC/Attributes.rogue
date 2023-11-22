@@ -48,6 +48,7 @@ class Attribute
     DOC_GENERATED      = (Int64(1):<<:43)
     OMIT_DOC           = (Int64(1):<<:44)
     AUGMENTED          = (Int64(1):<<:45)
+    REPLACE            = (Int64(1):<<:46)
 endClass
 
 class Attributes : CmdList
@@ -97,6 +98,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE<< doc_generated,        Attribute.DOC_GENERATED >>
   ROGUE_ATTRIBUTE<< omit_doc,             Attribute.OMIT_DOC >>
   ROGUE_ATTRIBUTE<< augmented,            Attribute.AUGMENTED >>
+  ROGUE_ATTRIBUTE<< is_replace,           Attribute.REPLACE >>
 
   PROPERTIES
     flags : Int64
@@ -182,6 +184,9 @@ augment
 
     method AttributePropagated.attribute_flags->Int64
       return Attribute.PROPAGATED
+
+    method AttributeReplace.attribute_flags->Int64
+      return Attribute.REPLACE
 
     method AttributeReturnsThis.attribute_flags->Int64
       return Attribute.RETURNS_THIS

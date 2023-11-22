@@ -5136,3 +5136,9 @@ class NotIsType : Cmd
 
 endClass
 
+
+class AttributeReplace : Cmd
+  METHODS
+    method description->String
+      return "AttributeReplace"
+endClass

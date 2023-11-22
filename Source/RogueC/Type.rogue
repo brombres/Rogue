@@ -582,9 +582,11 @@ class Type : Cmd
           existing_m.statements = aspect_m.statements
         elseIf (aspect_m.attributes.is_append)
           existing_m.statements.add( forEach in aspect_m.statements )
-        elseIf (existing_m.type_context is not this or is_augment)
+        elseIf (existing_m.type_context is not this or (is_augment and this.name!="Routine") or aspect_m.attributes.is_replace)
           global_methods[ aspect_m.signature ] = aspect_m
           aspect_m.attributes.is_global = true
+        else
+          throw aspect_m.t.error( "Routine $ is already defined. Add attribute [append], [insert], or [replace] to have this definition merge with or replace the previous definition."(aspect_m.signature) )
         endIf
 
       else
@@ -1654,11 +1656,11 @@ class Type : Cmd
           endForEach
         endIf
 
-        # Incorporate non-insert, non-append methods first
+        # Incorporate non-insert, non-append, non-replace methods first
         forEach (incorporated_aspect in aspects)
           if (incorporated_aspect.attributes.is_augment)
             forEach (aspect_m in incorporated_aspect.global_methods.values)
-              if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append))
+              if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace))
                 if (not missing_only or not global_methods.contains(aspect_m.signature))
                   if (this_is_abstract or not aspect_m.attributes.is_abstract)
                     incorporate_global( aspect_m, &is_augment )
@@ -1669,11 +1671,11 @@ class Type : Cmd
           endIf
         endForEach
 
-        # Incorporate [insert] and [append] methods
+        # Incorporate [insert], [append], and [replace] methods
         forEach (incorporated_aspect in aspects)
           if (incorporated_aspect.attributes.is_augment)
             forEach (aspect_m in incorporated_aspect.global_methods.values)
-              if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
+              if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace)
                 if (not missing_only or not global_methods.contains(aspect_m.signature))
                   if (this_is_abstract or not aspect_m.attributes.is_abstract)
                     incorporate_global( aspect_m )
@@ -1699,10 +1701,10 @@ class Type : Cmd
 
       # Incorporate aspect/augment object methods
       if (aspects)
-        # Incorporate non-insert, non-append methods first
+        # Incorporate non-insert, non-append, non-replace methods first
         forEach (incorporated_aspect in aspects)
           forEach (aspect_m in incorporated_aspect.methods.values)
-            if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append))
+            if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace))
               if (not missing_only or not methods.contains(aspect_m.signature))
                 if (this_is_abstract or not aspect_m.attributes.is_abstract)
                   incorporate( aspect_m, &is_augment=incorporated_aspect.attributes.is_augment )
@@ -1712,10 +1714,10 @@ class Type : Cmd
           endForEach
         endForEach
 
-        # Incorporate [insert] and [append] methods
+        # Incorporate [insert], [append], and [replace] methods
         forEach (incorporated_aspect in aspects)
           forEach (aspect_m in incorporated_aspect.methods.values)
-            if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
+            if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace)
               if (not missing_only or not methods.contains(aspect_m.signature))
                 if (this_is_abstract or not aspect_m.attributes.is_abstract)
                   incorporate( aspect_m )

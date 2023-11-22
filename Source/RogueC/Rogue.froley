@@ -748,7 +748,8 @@ parser
   on @"override"   -> AttributeOverride
   on @"preferred"  -> AttributePreferred
   on @"propagated" -> AttributePropagated
-  syntaxError "Illegal procedure attribute. Expected one or more of [abstract api append essential fallback insert mutating override preferred propagated]."
+  on @"replace"    -> AttributeReplace
+  syntaxError "Illegal procedure attribute. Expected one or more of [abstract api append essential fallback insert mutating override preferred propagated replace]."
 
 - procedure_body
   multi_line_statements
