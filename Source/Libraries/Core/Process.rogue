@@ -178,7 +178,7 @@ class PosixProcess : Process
       local n = args.count
       native @|char*  args_buffer[17];
               |char** args = (char**)args_buffer;
-              |if ($n > 16) args = %NS%ROGUE_MALLOC( sizeof(char*) * ($n+1) );
+              |if ($n > 16) args = (char**) %NS%ROGUE_MALLOC( sizeof(char*) * ($n+1) );
               |args[ $n ] = 0;
       forEach (arg at index in args)
         native @|args[ $index ] = (char*) $arg->data->as_utf8;
