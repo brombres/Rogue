@@ -65,6 +65,12 @@ class GitRepo( url:String, folder:File ) [compound]
 
       return set.to_list
 
+    method clone( branch=null:String, &verbose )->Logical
+      local cmd = "git clone"
+      if (String.exists(branch)) cmd .= appending( "-b " + branch )
+      cmd .= appending( "$ $"(url,folder.esc) )
+      _execute( cmd, &=verbose )
+
     method checkout( branch:String, &create_branch, &verbose )->Logical
       local cmd = "cd $ && git checkout"(folder.esc)
       if (create_branch) cmd .= appending( "-b" )
@@ -74,12 +80,6 @@ class GitRepo( url:String, folder:File ) [compound]
     method create_branch( branch:String, &verbose )->Logical
       local cmd = "cd $ && git branch $"(folder.esc,branch)
       return _execute( cmd, &=verbose )
-
-    method clone( branch=null:String, &verbose )->Logical
-      local cmd = "git clone"
-      if (String.exists(branch)) cmd .= appending( "-b " + branch )
-      cmd .= appending( "$ $"(url,folder.esc) )
-      _execute( cmd, &=verbose )
 
     method commit( message:String, &all, &allow_empty, &verbose )->Logical
       local cmd = "cd $ && git commit"(folder.esc)
@@ -146,6 +146,9 @@ class GitRepo( url:String, folder:File ) [compound]
 
     method set_origin( url:String, &verbose )->Logical
       return _execute( "cd $ && git remote set-url origin $"(url), &=verbose )
+
+    method to->String
+      return folder.filename
 
     method _execute( cmd:String, &verbose )->Logical
       if (verbose)
