@@ -2598,13 +2598,16 @@ class Resolver : Poolable, Visitor
       if (arg_count)
         forEach (m in Candidates)
           if (has_named_arg) m.arrange_args( args, this )
-          forEach (arg at i in args)
-            local arg_type = arg.type
-            local param_type = m.parameters[i].type
-            if (arg_type.is_reference and param_type.is_reference)
-              if (arg_type.instance_of(param_type)) Candidates.keep m
-            endIf
-          endForEach
+          contingent
+            forEach (arg at i in args)
+              local arg_type = arg.type
+              local param_type = m.parameters[i].type
+              if (arg_type.is_reference and param_type.is_reference)
+                necessary (arg_type.instance_of(param_type))
+              endIf
+            endForEach
+            Candidates.keep m
+          endContingent
         endForEach
         if (Candidates.found_match) return Candidates.match
         Candidates.refine
@@ -2618,6 +2621,23 @@ class Resolver : Poolable, Visitor
       endForEach
       if (Candidates.found_match) return Candidates.match
       Candidates.refine
+
+      # Prefer methods with Character->Character parameters over Character->String parameters
+      if (arg_count)
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args, this )
+          contingent
+            forEach (arg at i in args)
+              local arg_type = arg.type
+              local param_type = m.parameters[i].type
+              necessary (arg_type is Program.type_Character and param_type is Program.type_Character)
+            endForEach
+            Candidates.keep m
+          endContingent
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
 
       # Prefer global methods and object methods over routines
       if (Candidates.list.contains( $.attributes.is_global and $.type_context.name == "Routine" ))
