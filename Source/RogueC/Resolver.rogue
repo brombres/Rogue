@@ -2630,7 +2630,9 @@ class Resolver : Poolable, Visitor
             forEach (arg at i in args)
               local arg_type = arg.type
               local param_type = m.parameters[i].type
-              necessary (arg_type is Program.type_Character and param_type is Program.type_Character)
+              if (arg_type is Program.type_Character)
+                necessary (param_type is Program.type_Character)
+              endIf
             endForEach
             Candidates.keep m
           endContingent
