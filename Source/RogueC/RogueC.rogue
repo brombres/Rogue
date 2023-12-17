@@ -102,7 +102,7 @@ class RogueC
       endIf
 
       if (command//options//libraries)
-        local paths = String[]
+        local paths = @[]
         forEach (lib in command//options//libraries)
           local path = lib->String.replacing(';',',')
           if (not System.is_windows) path .= replacing(':',',')
