@@ -1829,7 +1829,7 @@ class Resolver : Poolable, Visitor
       pop_scope
 
       contingent
-        necessary (cmd.condition.type is Program.type_Int32)
+        necessary (cmd.condition.type is Program.type_Int32 or cmd.condition.type is Program.type_Int64)
 
         forEach (cmd_case in cmd.cases)
           necessary ((forEach in cmd_case.args).is_literal_primitive)
@@ -3818,7 +3818,7 @@ augment
         endIf
 
         local v_index_name = which{ cmd_control.optional_at:cmd_control.optional_at.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
         if (cmd_collection.starting_index)
           resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
         else
@@ -3847,7 +3847,7 @@ augment
         if (down_to)
           cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt(t,0) )
         else
-          local v_count = resolver.add_local( t, "count", Program.type_Int32 )
+          local v_count = resolver.add_local( t, "count", Program.type_Int )
           resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection.cloned,"count"),&initial_assignment) )
           cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
         endIf
@@ -3882,7 +3882,7 @@ augment
 
         if (cmd_control.optional_at)
           local v_index_name = cmd_control.optional_at.name
-          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
           resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
@@ -3930,7 +3930,7 @@ augment
 
         if (cmd_control.optional_at)
           local v_index_name = cmd_control.optional_at.name
-          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
           resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
@@ -4036,7 +4036,7 @@ augment
         endIf
 
         local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
         if (cmd_collection.starting_index)
           resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
         else
@@ -4061,7 +4061,7 @@ augment
         if (down_to)
           cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt(t,0) )
         else
-          local v_count = resolver.add_local( t, "count", Program.type_Int32 )
+          local v_count = resolver.add_local( t, "count", Program.type_Int )
           resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection,"count"),&initial_assignment) )
           cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
         endIf
@@ -4085,7 +4085,7 @@ augment
         endIf
 
         local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
         resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
 
@@ -4122,7 +4122,7 @@ augment
         endIf
 
         local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
         resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
 
