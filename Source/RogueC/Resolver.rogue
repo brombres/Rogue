@@ -1,4 +1,5 @@
 module RogueC
+uses Utility/Best
 uses Utility/WorkList
 
 $localMacro FOLD_CONSTANTS<<$m,$Type,$op>>
@@ -2622,7 +2623,8 @@ class Resolver : Poolable, Visitor
       if (Candidates.found_match) return Candidates.match
       Candidates.refine
 
-      # Prefer methods with Character->Character parameters over Character->String parameters
+      # Prefer methods with:
+      #   Character->Character parameters over Character->String parameters
       if (arg_count)
         forEach (m in Candidates)
           if (has_named_arg) m.arrange_args( args, this )
@@ -2676,6 +2678,23 @@ class Resolver : Poolable, Visitor
             Candidates.keep m
           endContingent
         endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      # Prefer methods with the most same-precision primitive parameters
+      if (arg_count)
+        local best<<Int32>>( (a,b) => a > b )
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args, this )
+          best.consider( same_precision_primitive_count(args, m) )
+        endForEach
+
+        local best_count = best.value
+        forEach (m in Candidates)
+          if (m.parameters.count == best_count) Candidates.keep m
+        endForEach
+
         if (Candidates.found_match) return Candidates.match
         Candidates.refine
       endIf
@@ -2735,6 +2754,19 @@ class Resolver : Poolable, Visitor
       Candidates.refine
 
       return null
+
+    method same_precision_primitive_count( args:Cmd, m:Procedure )->Int32
+      local result = 0
+      forEach (arg at i in args)
+        local arg_type = arg.type
+        local param_type = m.parameters[i].type
+        local arg_is_primitive = (arg_type.is_primitive or (arg_type.is_optional and arg_type.core_type.is_primitive))
+        local param_is_primitive = (param_type.is_primitive or (param_type.is_optional and param_type.core_type.is_primitive))
+        if (arg_is_primitive and param_is_primitive)
+          if (param_type.precision_index == arg_type.precision_index) ++result
+        endIf
+      endForEach
+      return result
 
     method exact_type_match( arg:Cmd, param_type:Type )->Logical
       # Exact in principle but in practice it's a little fuzzy
