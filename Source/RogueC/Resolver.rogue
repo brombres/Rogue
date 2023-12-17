@@ -2684,7 +2684,7 @@ class Resolver : Poolable, Visitor
 
       # Prefer methods with the most same-precision primitive parameters
       if (arg_count)
-        local best<<Int32>>( (a,b) => a > b )
+        local best = Best<<Int32>>( (a,b) => a > b )
         forEach (m in Candidates)
           if (has_named_arg) m.arrange_args( args, this )
           best.consider( same_precision_primitive_count(args, m) )
