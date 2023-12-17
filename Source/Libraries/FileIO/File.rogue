@@ -36,7 +36,7 @@ class File( filepath:String ) [compound]
                  use filepath_utf16=ObjectPool<<UTF16String>>, abs_filepath_utf16=ObjectPool<<UTF16String>>
                    filepath_utf16.init( filepath )
 
-                   local utf16_count = native( "GetFullPathNameW($filepath_utf16->data->as_wchars, 0, 0, 0)" )->Int32
+                   local utf16_count = native( "GetFullPathNameW($filepath_utf16->data->as_wchars, 0, 0, 0)" )->Int
                    abs_filepath_utf16.data.expand_to_count( utf16_count*2 )
 
       native @|    if (GetFullPathNameW($filepath_utf16->data->as_wchars, $utf16_count, $abs_filepath_utf16->data->as_wchars, 0) != 0)
@@ -143,7 +143,7 @@ class File( filepath:String ) [compound]
       local filepath = resolved.filepath
       return filepath.contains('*') or filepath.contains('?')
 
-    method copy_to( destination:File, &if_different, &if_newer, &dry_run, &verbose, &ignore_hidden )->Int32?
+    method copy_to( destination:File, &if_different, &if_newer, &dry_run, &verbose, &ignore_hidden )->Int?
       # Copies a file or the contents of a folder to a specified file or folder.
       # Returns the count of files copied or null on an error.
       if (this.is_folder)
@@ -202,7 +202,7 @@ class File( filepath:String ) [compound]
       if (System.is_windows) return filepath.replacing( '/', '\\' )
       else                   return filepath
 
-    method crc32->Int32
+    method crc32->Int
       nativeHeader @|extern const %Ns%RogueUInt32 %Ns%Rogue_crc32_table[256];
 
       nativeCode...
@@ -268,7 +268,7 @@ class File( filepath:String ) [compound]
                 |}
       endWhile
 
-      return native( "(%Ns%RogueInt32)~result" )->Int32
+      return native( "(%Ns%RogueInt)~result" )->Int
 
     method create_folder->Logical
       # Creates the specified folder along with intermediate folders
@@ -297,9 +297,9 @@ class File( filepath:String ) [compound]
       local file = resolved
       if (file.is_folder)
         File(forEach in file.listing(FilePattern("*"))).delete  # Recursively delete nested content
-        return (0 == native( "rmdir( (const char*) $file.filepath->data->as_utf8 )")->Int32)
+        return (0 == native( "rmdir( (const char*) $file.filepath->data->as_utf8 )")->Int)
       endIf
-      return (0 == native( "unlink( (const char*) $file.filepath->data->as_utf8 )")->Int32)
+      return (0 == native( "unlink( (const char*) $file.filepath->data->as_utf8 )")->Int)
 
     method esc->String
       local acceptable : String
@@ -543,7 +543,7 @@ class File( filepath:String ) [compound]
     method operator/( other_filepath:String )->File
       return File( resolved.filepath / File(other_filepath).resolved.filepath )
 
-    method parent( level=1:Int32 )->File
+    method parent( level=1:Int )->File
       if (level <= 0) return filepath
       if (level == 1) return File(folder)
       return File(folder).parent( level-1 )

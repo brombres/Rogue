@@ -1124,6 +1124,10 @@ class CGenerator : Visitor
       writer.print cmd.value
       writer.print "LL"
 
+    method on_visit( cmd:LiteralInt )
+      writer.print cmd.value
+      if (Program.int_bits == 64) writer.print "LL"
+
     method on_visit( cmd:LiteralLogical )
       writer.print which{ cmd.value:1 || 0 }
 

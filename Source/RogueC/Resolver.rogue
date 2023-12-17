@@ -203,6 +203,9 @@ class Resolver : Poolable, Visitor
         block left=cmd.left->(as LiteralInt64), right=cmd.right->(as LiteralInt64)
           if (left and right) return LiteralInt64( cmd.t, left.value $op right.value )
         endBlock
+        block left=cmd.left->(as LiteralInt), right=cmd.right->(as LiteralInt)
+          if (left and right) return LiteralInt( cmd.t, left.value $op right.value )
+        endBlock
         block left=cmd.left->(as LiteralCharacter), right=cmd.right->(as LiteralCharacter)
           if (left and right) return LiteralCharacter( cmd.t, left.value $op right.value )
         endBlock
@@ -230,6 +233,9 @@ class Resolver : Poolable, Visitor
         endBlock
         block left=cmd.left->(as LiteralInt64), right=cmd.right->(as LiteralInt64)
           if (left and right) return LiteralInt64( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralInt), right=cmd.right->(as LiteralInt)
+          if (left and right) return LiteralInt( cmd.t, left.value $op right.value )
         endBlock
       endIf
       return cmd
@@ -1336,6 +1342,7 @@ class Resolver : Poolable, Visitor
         if (operand instanceOf LiteralReal32) return LiteralReal32( cmd.t,   -operand->(as LiteralReal32).value )
         if (operand instanceOf LiteralInt64) return LiteralInt64( cmd.t,     -operand->(as LiteralInt64).value )
         if (operand instanceOf LiteralInt32) return LiteralInt32( cmd.t,     -operand->(as LiteralInt32).value )
+        if (operand instanceOf LiteralInt) return LiteralInt( cmd.t,         -operand->(as LiteralInt).value )
         if (operand instanceOf LiteralCharacter) return LiteralInt32( cmd.t, -(operand->(as LiteralCharacter).value->Int32) )
         if (operand instanceOf LiteralLogical) return LiteralLogical( cmd.t, not operand->(as LiteralLogical).value )
       endIf
@@ -3791,14 +3798,18 @@ augment
 
       if (has_count and m_get)
         local down_to = false
-        local cmd_step : LiteralInt64
+        local cmd_step : LiteralInt
         if (cmd_collection.step_size)
           cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
-          cmd_step = cmd_collection.step_size->(as LiteralInt64)
-          if (not cmd_step)
-            local int32 = cmd_collection.step_size->(as LiteralInt32)
-            if (int32) cmd_step = LiteralInt64( int32.t, int32.value )
+
+          if local int64 = cmd_collection.step_size->(as LiteralInt64)
+            cmd_step = LiteralInt( int64.t, int64.value )
+          else
+            if local int32 = cmd_collection.step_size->(as LiteralInt32)
+              cmd_step = LiteralInt( int32.t, int32.value )
+            endIf
           endIf
+
           if (cmd_step)
             if (cmd_step.value < 0) down_to = true
           else
@@ -3812,10 +3823,10 @@ augment
           resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
         else
           if (down_to)
-            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt64(t,1) )
+            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt(t,1) )
             resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
           else
-            resolver.insert( SetLocal(v_index,LiteralInt64(t,0),&initial_assignment) )
+            resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
           endIf
         endIf
 
@@ -3834,7 +3845,7 @@ augment
         PREPARE_COLLECTION<<cmd_get_collection>>
 
         if (down_to)
-          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt64(t,0) )
+          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt(t,0) )
         else
           local v_count = resolver.add_local( t, "count", Program.type_Int32 )
           resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection.cloned,"count"),&initial_assignment) )
@@ -3872,7 +3883,7 @@ augment
         if (cmd_control.optional_at)
           local v_index_name = cmd_control.optional_at.name
           local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
-          resolver.insert( SetLocal(v_index,LiteralInt64(t,0),&initial_assignment) )
+          resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
 
@@ -3920,7 +3931,7 @@ augment
         if (cmd_control.optional_at)
           local v_index_name = cmd_control.optional_at.name
           local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
-          resolver.insert( SetLocal(v_index,LiteralInt64(t,0),&initial_assignment) )
+          resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
 
@@ -4006,14 +4017,17 @@ augment
       if (has_count and m_get)
         # Standard/Collection implements count/at or count/get protocol
         local down_to = false
-        local cmd_step : LiteralInt64
+        local cmd_step : LiteralInt
         if (cmd_collection.step_size)
           cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
-          cmd_step = cmd_collection.step_size->(as LiteralInt64)
-          if (not cmd_step)
-            local int32 = cmd_collection.step_size->(as LiteralInt32)
-            if (int32) cmd_step = LiteralInt64( int32.t, int32.value )
+          if local int64 = cmd_collection.step_size->(as LiteralInt64)
+            cmd_step = LiteralInt( int64.t, int64.value )
+          else
+            if local int32 = cmd_collection.step_size->(as LiteralInt32)
+              cmd_step = LiteralInt( int32.t, int32.value )
+            endIf
           endIf
+
           if (cmd_step)
             if (cmd_step.value < 0) down_to = true
           else
@@ -4027,10 +4041,10 @@ augment
           resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
         else
           if (down_to)
-            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt64(t,1) )
+            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt(t,1) )
             resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
           else
-            resolver.insert( SetLocal(v_index,LiteralInt64(t,0),&initial_assignment) )
+            resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
           endIf
         endIf
 
@@ -4045,7 +4059,7 @@ augment
         PREPARE_COLLECTION<<cmd_get_collection>>
 
         if (down_to)
-          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt64(t,0) )
+          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt(t,0) )
         else
           local v_count = resolver.add_local( t, "count", Program.type_Int32 )
           resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection,"count"),&initial_assignment) )
@@ -4072,7 +4086,7 @@ augment
 
         local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
         local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
-        resolver.insert( SetLocal(v_index,LiteralInt64(t,0),&initial_assignment) )
+        resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
 
         PREPARE_COLLECTION<<cmd_get_collection>>
@@ -4109,7 +4123,7 @@ augment
 
         local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
         local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
-        resolver.insert( SetLocal(v_index,LiteralInt64(t,0),&initial_assignment) )
+        resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
 
         PREPARE_COLLECTION<<cmd_get_collection>>

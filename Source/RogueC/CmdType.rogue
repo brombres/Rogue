@@ -413,6 +413,9 @@ augment
     method LiteralInt64.is_truthy->Logical
       return value?
 
+    method LiteralInt.is_truthy->Logical
+      return value?
+
     method LiteralLogical.is_truthy->Logical
       return value
 
@@ -692,6 +695,10 @@ augment
 
     method LiteralInt64.type->Type
       return Program.type_Int64
+
+    method LiteralInt.type->Type
+      if (Program.int_bits == 64) return Program.type_Int64
+      else                        return Program.type_Int32
 
     method LiteralList.type->Type
       contingent

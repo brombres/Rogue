@@ -5142,3 +5142,23 @@ class AttributeReplace : Cmd
     method description->String
       return "AttributeReplace"
 endClass
+
+class LiteralInt : LiteralInteger
+  PROPERTIES
+    value : Int
+
+  METHODS
+    method init( t, value )
+
+    method init( existing:LiteralInt )
+      prior.init( existing )
+      value = existing.value
+
+    method description->String
+      return "LiteralInt($)" (%value)
+
+    method to->Int32:     return value->Int32
+
+    method to->String:    return value
+
+endClass
