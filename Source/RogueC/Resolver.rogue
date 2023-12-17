@@ -1,5 +1,5 @@
 module RogueC
-uses Utility/Best
+uses Math/Best
 uses Utility/WorkList
 
 $localMacro FOLD_CONSTANTS<<$m,$Type,$op>>
