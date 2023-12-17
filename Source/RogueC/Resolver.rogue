@@ -2692,7 +2692,7 @@ class Resolver : Poolable, Visitor
 
         local best_count = best.value
         forEach (m in Candidates)
-          if (m.parameters.count == best_count) Candidates.keep m
+          if (same_precision_primitive_count(args,m) == best_count ) Candidates.keep m
         endForEach
 
         if (Candidates.found_match) return Candidates.match
