@@ -70,7 +70,7 @@ class File( filepath:String ) [compound]
               |  {
               |    // fchdir only works with a path, not a path+filename (c_filepath).
               |    // Copy out the filename and null terminate the filepath to be just a path.
-              |    int i = (int) strlen( c_filepath ) - 1;
+              |    %Ns%RogueInt i = (%Ns%RogueInt) strlen( c_filepath ) - 1;
               |    while (i >= 0 && c_filepath[i] != '/') --i;
               |    strcpy( filename, c_filepath+i+1 );
               |    if (i == -1) strcpy( c_filepath, "." );

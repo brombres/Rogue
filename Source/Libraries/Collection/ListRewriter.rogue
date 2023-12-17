@@ -1,4 +1,4 @@
-class ListRewriter<<$DataType>>( list:$DataType[], read_index=0:Int32, write_index=0:Int32 ) [compound]
+class ListRewriter<<$DataType>>( list:$DataType[], read_index=0:Int, write_index=0:Int ) [compound]
   METHODS
     method finish [mutating]
       list.discard_from( write_index )
@@ -12,7 +12,7 @@ class ListRewriter<<$DataType>>( list:$DataType[], read_index=0:Int32, write_ind
         return false
       endIf
 
-    method peek( lookahead=0:Int32 )->$DataType
+    method peek( lookahead=0:Int )->$DataType
       return list[ read_index + lookahead ]
 
     method read->$DataType [mutating]
@@ -53,7 +53,7 @@ class ListRewriter<<$DataType>>( list:$DataType[], read_index=0:Int32, write_ind
 
 endClass
 
-class ListRewriterObject<<$DataType>>( list:$DataType[], read_index=0:Int32, write_index=0:Int32 )
+class ListRewriterObject<<$DataType>>( list:$DataType[], read_index=0:Int, write_index=0:Int )
   METHODS
     method finish
       list.discard_from( write_index )
@@ -67,7 +67,7 @@ class ListRewriterObject<<$DataType>>( list:$DataType[], read_index=0:Int32, wri
         return false
       endIf
 
-    method peek( lookahead=0:Int32 )->$DataType
+    method peek( lookahead=0:Int )->$DataType
       return list[ read_index + lookahead ]
 
     method read->$DataType

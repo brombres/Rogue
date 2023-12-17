@@ -274,7 +274,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
        |  #if !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
        |  while (byte_count)
        |  {
-       |    int n = (int) write( out, utf8, byte_count );
+       |    %Ns%RogueInt n = (%Ns%RogueInt) write( out, utf8, byte_count );
        |    if (n > 0)
        |    {
        |      utf8 += n;

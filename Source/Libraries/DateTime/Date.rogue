@@ -249,7 +249,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
         return Date.ymd( y, m, d )
       endIf
 
-    method hash_code->Int32
+    method hash_code->Int
       return (year * 10000 + month*100 + day)
 
     method incremented->Date

@@ -10,7 +10,7 @@ class Object
     method description->String
       return this->String
 
-    method hash_code->Int32
+    method hash_code->Int
       return object_id->Int32
 
     method object_id->Int64

@@ -101,7 +101,7 @@ endClass
 #
 # class Field
 #   PROPERTIES
-#     value : Int32
+#     value : Int
 #
 #   METHODS
 #     method init
@@ -125,7 +125,7 @@ endClass
 #     setting = 0
 #
 #   METHODS
-#     method set_setting( value:Int32 )
+#     method set_setting( value:Int )
 #       if (value != @setting)
 #         @setting = value.clamped( 0, 10 )
 #         wiring.field.value = setting
@@ -157,7 +157,7 @@ endClass
 #         case "d": --field.value
 #         case "i": ++field.value
 #         case "q": return false
-#         others:   field.value = input->Int32
+#         others:   field.value = input->Int
 #       endWhich
 #       return true
 # endClass
