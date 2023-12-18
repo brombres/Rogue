@@ -65,7 +65,7 @@ class Resolver : Poolable, Visitor
               local enum_value_def = entry.value->(as EnumValueDef)
               if (enum_value_def)  # versus a regular definition that is not an enum category
                 local value = visit( enum_value_def.value )
-                if (value not instanceOf LiteralInt32)
+                if (value not instanceOf LiteralInteger)
                   throw value.t.error( "Category value must resolve to a literal integer." )
                 endIf
                 entry.value = value
@@ -73,7 +73,7 @@ class Resolver : Poolable, Visitor
 
                 forEach (category in type.categories)
                   if (category.name == entry.key)
-                    category.ordinal = value->(as LiteralInt32).value
+                    category.ordinal = value->(as LiteralInteger)->Int
                     escapeForEach
                   endIf
                 endForEach
@@ -459,22 +459,22 @@ class Resolver : Poolable, Visitor
 
     method on_validate( cmd:CompareLT )->Cmd
       local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
-      if (result) return CompareLT( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      if (result) return CompareLT( cmd.t, result, LiteralInt( cmd.t, 0 ) )
       return cmd  # resolved primitive comparison
 
     method on_validate( cmd:CompareLE )->Cmd
       local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
-      if (result) return CompareLE( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      if (result) return CompareLE( cmd.t, result, LiteralInt( cmd.t, 0 ) )
       return cmd  # resolved primitive comparison
 
     method on_validate( cmd:CompareGT )->Cmd
       local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
-      if (result) return CompareGT( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      if (result) return CompareGT( cmd.t, result, LiteralInt( cmd.t, 0 ) )
       return cmd  # resolved primitive comparison
 
     method on_validate( cmd:CompareGE )->Cmd
       local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
-      if (result) return CompareGE( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      if (result) return CompareGE( cmd.t, result, LiteralInt( cmd.t, 0 ) )
       return cmd  # resolved primitive comparison
 
     method on_validate( cmd:CompareOp )->Cmd
@@ -570,7 +570,7 @@ class Resolver : Poolable, Visitor
       local common_type = Cmd.common_type( t, cmd.start.require_type, cmd.limit.require_type )
       if (common_type)
         if (cmd.step_size) common_type = Cmd.common_type( t, common_type, cmd.step_size.require_type )
-        else               cmd.step_size = LiteralInt32( t, cmd.default_step_size )
+        else               cmd.step_size = LiteralInt( t, cmd.default_step_size )
       endIf
       if (not common_type)
         throw t.error( "Incompatible types used in range." )
@@ -1057,7 +1057,7 @@ class Resolver : Poolable, Visitor
         build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(arg.t,arg) ) )
       endForEach
 
-      return visit( ContextBlock(t, TypeAccess(t,list_type,Args(t,LiteralInt32(t,cmd.count))), build_list) )
+      return visit( ContextBlock(t, TypeAccess(t,list_type,Args(t,LiteralInt(t,cmd.count))), build_list) )
 
     method on( cmd:KeyValuePairList )->Cmd
       if (cmd.count == 0)
@@ -1197,13 +1197,13 @@ class Resolver : Poolable, Visitor
         local v = add_local( cmd.loop_count.t, "i", Program.type_Int32, DummyInitialValue )
         insert(
           SetLocal( v.t, v,
-          Add( v.t, visit(cmd.loop_count).resolve_conversion_to(Program.type_Int32, this), LiteralInt32(v.t,1) )
+          Add( v.t, visit(cmd.loop_count).resolve_conversion_to(Program.type_Int32, this), LiteralInt(v.t,1) )
           )
         )
         iterator.condition = PreDecrementLocal( v.t, v )
 
         local t = cmd.t
-        return visit( If(t, CompareGT(t,GetLocal(v),LiteralInt32(t,0)), Statements(t,iterator), null) )
+        return visit( If(t, CompareGT(t,GetLocal(v),LiteralInt(t,0)), Statements(t,iterator), null) )
 
       else
         iterator.condition = LiteralLogical(cmd.t,true)
@@ -1692,7 +1692,7 @@ class Resolver : Poolable, Visitor
         build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(arg.t,arg) ) )
       endForEach
 
-      return visit( ContextBlock(t, TypeAccess(t,cmd.of_type,Args(t,LiteralInt32(t,cmd.list.count))), build_list) )
+      return visit( ContextBlock(t, TypeAccess(t,cmd.of_type,Args(t,LiteralInt(t,cmd.list.count))), build_list) )
 
     method on( cmd:TypedLiteralTable )->Cmd
       local t = cmd.table.t
@@ -1840,13 +1840,13 @@ class Resolver : Poolable, Visitor
           local used_cases = Logical[]
           forEach (cmd_case in cmd.cases)
             forEach (arg in cmd_case.args)
-              local n = arg->(as LiteralInt32)
+              local n = arg->(as LiteralInteger)
               if (n)
-                used_cases.expand_to_include( n.value )
-                if (used_cases[n.value])
+                used_cases.expand_to_include( n->Int )
+                if (used_cases[n->Int])
                   throw arg.t.error( "Illegal duplicate category value - each enum category must have a unique value. Use DEFINITIONS to support alternate names, e.g. 'CATEGORIES / WHITE, GRAY', 'DEFINITIONS / GREY=GRAY'." )
                 else
-                  used_cases[n.value] = true
+                  used_cases[n->Int] = true
                 endIf
               endIf
             endForEach
@@ -3723,9 +3723,12 @@ augment
       if (collection.starting_index)
         if (collection.step_size)
           collection.step_size = resolver.visit( collection.step_size )
-          local cmd_step = collection.step_size->(as LiteralInt32)
-          if (cmd_step.value < 0)
-            throw t.error( "Redundant pairing of forEach-of with a starting index and a negative step size. Use 'forEach (i in starting_index downTo 0)' instead." )
+          if local cmd_step = collection.step_size->(as LiteralInteger)
+            if (cmd_step->Int64 < 0)
+              throw t.error( "Redundant pairing of forEach-of with a starting index and a negative step size. Use 'forEach (i in starting_index downTo 0)' instead." )
+            endIf
+          else
+            throw t.error( "Illegal step size - integer expected." )
           endIf
         endIf
       endIf
@@ -4320,9 +4323,9 @@ augment
         endLoop
 
         if (cmd.symbol == "++")
-          return resolver.visit( AddAndAssign(t, cmd.operand, LiteralInt32(t,1)) )
+          return resolver.visit( AddAndAssign(t, cmd.operand, LiteralInt(t,1)) )
         elseIf (cmd.symbol == "--")
-          return resolver.visit( SubtractAndAssign(t, cmd.operand, LiteralInt32(t,1)) )
+          return resolver.visit( SubtractAndAssign(t, cmd.operand, LiteralInt(t,1)) )
         endIf
 
         if (suppress_error) return null
@@ -4420,9 +4423,9 @@ augment
         escapeContingent
       satisfied
         if ($Step == 1)
-          return resolver.visit( AddAndAssign(t, this, LiteralInt32(t,1)) )
+          return resolver.visit( AddAndAssign(t, this, LiteralInt(t,1)) )
         else
-          return resolver.visit( SubtractAndAssign(t, this, LiteralInt32(t,1)) )
+          return resolver.visit( SubtractAndAssign(t, this, LiteralInt(t,1)) )
         endIf
       endContingent
 
@@ -4471,9 +4474,9 @@ augment
         escapeContingent
       satisfied
         if ($Step == 1)
-          return resolver.visit( AddAndAssign(t, this, LiteralInt32(t,1)) )
+          return resolver.visit( AddAndAssign(t, this, LiteralInt(t,1)) )
         else
-          return resolver.visit( SubtractAndAssign(t, this, LiteralInt32(t,1)) )
+          return resolver.visit( SubtractAndAssign(t, this, LiteralInt(t,1)) )
         endIf
       endContingent
 
@@ -4545,7 +4548,7 @@ augment
       local index = resolver.visit( index ).require_value
 
       if (context.is_simple and index.is_simple)
-        return resolver.visit( Assign(t, this, Add(t,this.cloned,LiteralInt32(t,$Step))) )
+        return resolver.visit( Assign(t, this, Add(t,this.cloned,LiteralInt(t,$Step))) )
       else
         local v_context = resolver.add_local( t, "context", context.require_type )
         resolver.insert( SetLocal(v_context, context, &initial_assignment) )
@@ -4553,7 +4556,7 @@ augment
         resolver.insert( SetLocal(v_index, index, &initial_assignment) )
 
         local indexed_access = IndexedAccess( t, GetLocal(v_context), GetLocal(v_index) )
-        return resolver.visit( Assign(t, indexed_access, Add(t,indexed_access.cloned,LiteralInt32(t,$Step))) )
+        return resolver.visit( Assign(t, indexed_access, Add(t,indexed_access.cloned,LiteralInt(t,$Step))) )
       endIf
 
 endAugment
