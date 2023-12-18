@@ -455,6 +455,8 @@ class LiteralInteger : LiteralPrimitive
   GLOBAL METHODS
     method create( t:Token, content:String, base:Int32 )->LiteralInteger
       contingent
+        sufficient (Program.int_bits == 64)
+
         if (base == 10)
           sufficient (content.count > 10)
           local n64 = content->Int64(&=base)
@@ -482,6 +484,9 @@ class LiteralInteger : LiteralPrimitive
     method description->String
       return "LiteralInteger()"
 
+    method to->Int64
+      throw UnsupportedOperationError()
+
 endClass
 
 class LiteralInt32 : LiteralInteger
@@ -500,6 +505,7 @@ class LiteralInt32 : LiteralInteger
 
     method to->Character: return value
     method to->Int32:     return value
+    method to->Int64:     return value
     method to->String:    return value
 
 endClass
@@ -520,6 +526,7 @@ class LiteralInt64 : LiteralInteger
 
     method to->Character: return value
     method to->Int32:     return value
+    method to->Int64:     return value
     method to->String:    return value
 endClass
 
@@ -5158,7 +5165,7 @@ class LiteralInt : LiteralInteger
       return "LiteralInt($)" (%value)
 
     method to->Int32:     return value->Int32
-
+    method to->Int64:     return value
     method to->String:    return value
 
 endClass
