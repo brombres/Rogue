@@ -2288,9 +2288,9 @@ augment
          |  // Move all objects still requiring cleanup to the regular object list.
          |  // We cannot call on_cleanup() on them because e.g. lists could clean up
          |  // before objects that rely on those lists clean up.
-         |  int n = %Ns%RogueMM_objects_requiring_cleanup.count;
+         |  %Ns%%RogueInt% n = %Ns%RogueMM_objects_requiring_cleanup.count;
          |  %Ns%RogueObject** refptr = %Ns%RogueMM_objects_requiring_cleanup.data + n;
-         |  int i;
+         |  %Ns%%RogueInt% i;
          |  for (i=n; --i>=0; )
          |  {
          |    %Ns%RogueObjectList_add( &%Ns%RogueMM_objects, (%Ns%RogueObject*) *(--refptr) );
@@ -2319,7 +2319,7 @@ augment
       # Reset each RogueRuntimeType
       c_writer.println ...
       @|  {
-       |    int i;
+       |    %Ns%%RogueInt% i;
        |    for (i=%Ns%Rogue_type_count; --i>=0; )
        |    {
        |      %Ns%RogueRuntimeType* type = %Ns%Rogue_types[i];
@@ -2356,8 +2356,8 @@ augment
                           |
                           |%Ns%RogueObject*  ref;
                           |%Ns%RogueObject** refptr;
-                          |int i;
-                          |int write_i;
+                          |%Ns%%RogueInt% i;
+                          |%Ns%%RogueInt% write_i;
                           |
                           |// Trace all retained objects (positive refcount)
                           |for (i=%Ns%RogueMM_objects.count, refptr=%Ns%RogueMM_objects.data-1; --i>=0; )
@@ -2431,8 +2431,8 @@ augment
                         |// We can't delete them yet because they could add themselves back to the object
                         |// graph during cleanup. They'll be deleted from the regular list the next time
                         |// they're unreferenced with no chance to clean up again.
-                        |int cleanup_count = 0;
-                        |int end_i = %Ns%RogueMM_objects_requiring_cleanup.count;
+                        |%Ns%%RogueInt% cleanup_count = 0;
+                        |%Ns%%RogueInt% end_i = %Ns%RogueMM_objects_requiring_cleanup.count;
                         |refptr = %Ns%RogueMM_objects_requiring_cleanup.data + end_i;
                         |for (i=end_i; --i>=0; )
                         |{
@@ -2500,7 +2500,7 @@ augment
       (forEach in modules).generate_c_class_initialization( c_writer )
       c_writer.println
 
-      c_writer.println @|int i;
+      c_writer.println @|%Ns%%RogueInt% i;
                         |for (i=1; i<%Ns%Rogue_argc; ++i)
                         |{
                         |  %Ns%RogueSystem___add_command_line_argument__%Ns%RogueString(
@@ -2668,7 +2668,7 @@ augment
             writer.print   "%Ns%RogueObject** cursor = ((%Ns%RogueObject**)(("
             writer.print   c_name
             writer.println "*)THISOBJ)->data) - 1;"
-            writer.print   "int n = ((int)(("
+            writer.print   "%Ns%%RogueInt% n = ((%Ns%%RogueInt%)(("
             writer.print   c_name
             writer.println "*)THISOBJ)->capacity);"
             writer.println @|while (--n >=0)
@@ -2685,7 +2685,7 @@ augment
             writer.print   "*)((("
             writer.print   c_name
             writer.println "*)THISOBJ)->data);"
-            writer.print   "int n = ((int)(("
+            writer.print   "%Ns%%RogueInt% n = ((%Ns%%RogueInt%)(("
             writer.print   c_name
             writer.println "*)THISOBJ)->capacity);"
 
