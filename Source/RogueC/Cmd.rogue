@@ -455,8 +455,6 @@ class LiteralInteger : LiteralPrimitive
   GLOBAL METHODS
     method create( t:Token, content:String, base:Int32 )->LiteralInteger
       contingent
-        sufficient (Program.int_bits == 64)
-
         if (base == 10)
           sufficient (content.count > 10)
           local n64 = content->Int64(&=base)

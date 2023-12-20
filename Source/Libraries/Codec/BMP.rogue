@@ -77,8 +77,8 @@ class BMPBitField( bitmask:Int32, left_shift_for_argb:Int32 ) [compound]
       return n
 
     method bit_shift->Int32
-      if (bitmask == 0)                  return 0
-      if (bitmask == 0x8000_0000->Int32) return 31
+      if (bitmask == 0)           return 0
+      if (bitmask == 0x8000_0000) return 31
 
       local mask = bitmask & 0x7FFF_FFFF
       local n = 0
