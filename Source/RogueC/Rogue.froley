@@ -359,20 +359,30 @@ scanner
     case "0b"
       base = 2
       scan_binary_integer
+      scan('L')
+      scan('L')
       produce BINARY_INTEGER
     case "0c"
       base = 8
       scan_octal_integer
+      scan('L')
+      scan('L')
       produce OCTAL_INTEGER
     case "0x"
       base = 16
       scan_hex_integer
+      scan('L')
+      scan('L')
       produce HEX_INTEGER
     others
       scan_integer
       if (nextIs('.'))
         ch = peek(1)
         if (ch >= 'a' and ch <= 'z' or ch >= 'A' and ch <= 'Z' or ch == '_' or ch == '.') produce INTEGER
+      endIf
+      if (scan('L'))
+        scan('L')
+        produce INTEGER
       endIf
       if (not scan('.')) produce INTEGER
       scan_integer
@@ -3765,6 +3775,7 @@ parser
   create Literal
   create LiteralNullOptional(optional_type:Type):Literal
   create LiteralPrimitive:Literal
+  create LiteralInt(value:Integer):LiteralInteger
   create LiteralInt32(value:Integer):LiteralInteger
   create LiteralInt64(value:Integer):LiteralInteger
   create LiteralReal32(value:Real):LiteralPrimitive

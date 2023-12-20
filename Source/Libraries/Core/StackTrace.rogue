@@ -38,13 +38,13 @@ class StackTrace
     method to->String
       if (not frames) return "(Call history unavailable - compile with '--debug')"
 
-      local left_w = 0
-      local right_w = 0
+      local left_w = 0L
+      local right_w = 0L
       forEach (frame in frames)
         left_w .= or_larger( frame.procedure.count )
         right_w .= or_larger( frame.filename.count + frame.line.digit_count )
       endForEach
-      local max_w = Console.width.or_larger(40)
+      local max_w = Console.width.or_larger(80)
       if (left_w + right_w + 5 > max_w)
         left_w = (max_w - (right_w + 5)).clamped_low(20)
         right_w = (max_w - (left_w + 5))

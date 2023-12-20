@@ -102,7 +102,7 @@ class RogueC
       endIf
 
       if (command//options//libraries)
-        local paths = String[]
+        local paths = @[]
         forEach (lib in command//options//libraries)
           local path = lib->String.replacing(';',',')
           if (not System.is_windows) path .= replacing(':',',')
@@ -110,6 +110,14 @@ class RogueC
         endForEach
         command//options//libraries = paths
         Program.add_include_search_path( forEach in paths, &library )
+      endIf
+
+      if (command//options//int)
+        local int_bits = command//options//int->Int32
+        if (int_bits != 32 and int_bits != 64)
+          throw Error( "--int can only be set to 32 or 64." )
+        endIf
+        Program.int_bits = int_bits
       endIf
 
       if (command//options//real)
@@ -228,6 +236,7 @@ class RogueC
         option( "--gc=" )
         option( "--gc-threshold=" )
         option( "--help",       &aliases=["-h","-?"] )
+        option( "--int=", &alias="-i" )
         option( "--libraries=", &alias="-L", &multi )
         option( "--main" )
         option( "--no-stdlib" )
@@ -388,6 +397,10 @@ class RogueC
                |  --gc-threshold={number}[MB|K]
                |    Sets the GC threshold in bytes (default), megabytes, or kilobytes.
                |    '1048576', '1024K', and '1MB' are all equivalent. The default is 1MB.
+               |
+               |  --int=32, -i 32
+               |    Specifies that the 'Int' datatype should be Int32 instead of Int64.
+               |    This affects the type of integer literals (0, 1, 0xff, ...) as well.
                |
                |  --libraries="path1;path2", -L path1:path2
                |    Specify paths RogueC should look through for '$include' and 'uses'

@@ -86,8 +86,8 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     method has_another_event->Logical
       return mode.has_another_event
 
-    method height->Int32
-      local result : Int32
+    method height->Int
+      local result : Int
       native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  CONSOLE_SCREEN_BUFFER_INFO info;
@@ -113,7 +113,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       native @|}
               |
               |// discard \n
-              |int len = strlen( st );
+              |%Ns%%RogueInt% len = strlen( st );
               |if (len) st[--len] = 0;
               |else st[0] = 0;
 
@@ -172,8 +172,8 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
         @mode._on_enter
       endIf
 
-    method width->Int32
-      local result : Int32
+    method width->Int
+      local result : Int
       native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  CONSOLE_SCREEN_BUFFER_INFO info;
@@ -194,7 +194,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |  %Ns%Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDOUT_FILENO );
               |#endif
 
-    method _fill_input_buffer( minimum=1:Int32 )->Logical
+    method _fill_input_buffer( minimum=1:Int )->Logical
       if (_input_bytes.count >= minimum) return true
 
       local needs_unblock : Logical
@@ -266,15 +266,15 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       |  #define STDERR_FILENO 2
       |#endif
       |
-      |void %Ns%Rogue_fwrite( const char* utf8, int byte_count, int out );
+      |void %Ns%Rogue_fwrite( const char* utf8, %Ns%%RogueInt% byte_count, %Ns%%RogueInt% out );
 
     nativeCode
-      @|void %Ns%Rogue_fwrite( const char* utf8, int byte_count, int out )
+      @|void %Ns%Rogue_fwrite( const char* utf8, %Ns%%RogueInt% byte_count, %Ns%%RogueInt% out )
        |{
        |  #if !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
        |  while (byte_count)
        |  {
-       |    int n = (int) write( out, utf8, byte_count );
+       |    %Ns%RogueInt n = (%Ns%RogueInt) write( out, utf8, byte_count );
        |    if (n > 0)
        |    {
        |      utf8 += n;

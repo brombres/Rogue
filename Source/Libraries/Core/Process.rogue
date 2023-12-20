@@ -308,8 +308,8 @@ class PosixProcess : Process
 
       # Get the FDs to poll.  We do this because they might have
       # changed (specifically, might have gone to -1).
-      local fd0 = -1 : Int32
-      local fd1 = -1 : Int32
+      local fd0 = -1L
+      local fd1 = -1L
       if (output_reader) fd0 = output_reader->(as PosixProcessReader).fd_reader.fd
       if (error_reader)  fd1 = error_reader->(as PosixProcessReader).fd_reader.fd
 
@@ -663,7 +663,7 @@ class WindowsProcessWriter : Writer<<Byte>>
     method flush
       if (not buffer.count) return
 
-      local write_count = 0
+      local write_count = 0L
       native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |if ($this->input_writer)
               |{

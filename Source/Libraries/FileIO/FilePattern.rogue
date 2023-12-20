@@ -14,7 +14,7 @@ class FilePattern( pattern:String ) [compound]
       # Note: A filepath with a ./ prefix is checked with and without the prefix.
 
       # Check non-wildcard characters at the end of pattern first as an easy out
-      local last_wildcard = -1
+      local last_wildcard = -1L
       forEach (ch at i in pattern step -1)
         if (ch == '*')
           last_wildcard = i
@@ -51,7 +51,7 @@ class FilePattern( pattern:String ) [compound]
       # Try ignoring the ./ prefix on the filepath
       return (_matches(filepath,2,filepath.count-2,pattern,0,pattern.count,&=ignore_case))
 
-    method _matches( filepath:String, f0:Int32, fcount:Int32, pattern:String, p0:Int32, pcount:Int32,
+    method _matches( filepath:String, f0:Int, fcount:Int, pattern:String, p0:Int, pcount:Int,
        &ignore_case )->Logical
       # f0     - starting index in filepath
       # fcount - remaining filepath count

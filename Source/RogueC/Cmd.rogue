@@ -77,6 +77,9 @@ class Cmd( t:Token )
     method to->Int32
       return 0
 
+    method to->Int64
+      return 0
+
     method to->Logical
       return (this->Int32)?
 
@@ -454,6 +457,9 @@ endClass
 class LiteralInteger : LiteralPrimitive
   GLOBAL METHODS
     method create( t:Token, content:String, base:Int32 )->LiteralInteger
+      if (content.ends_with('LL')) return LiteralInt64( t, content.unright(2)->Int64(&=base) )
+      if (content.ends_with('L'))  return LiteralInt( t, content.unright(1)->Int64(&=base) )
+
       contingent
         if (base == 10)
           sufficient (content.count > 10)
@@ -482,6 +488,9 @@ class LiteralInteger : LiteralPrimitive
     method description->String
       return "LiteralInteger()"
 
+    method to->Int64
+      throw UnsupportedOperationError()
+
 endClass
 
 class LiteralInt32 : LiteralInteger
@@ -500,6 +509,7 @@ class LiteralInt32 : LiteralInteger
 
     method to->Character: return value
     method to->Int32:     return value
+    method to->Int64:     return value
     method to->String:    return value
 
 endClass
@@ -520,6 +530,7 @@ class LiteralInt64 : LiteralInteger
 
     method to->Character: return value
     method to->Int32:     return value
+    method to->Int64:     return value
     method to->String:    return value
 endClass
 
@@ -662,7 +673,7 @@ class Local : Cmd
     initial_value : Cmd
     type          : Type
     attributes    : Attributes
-    index         : Int32
+    index         : Int
 
   METHODS
     method init( t, name, type )
@@ -880,7 +891,7 @@ class Property : Cmd
     type              : Type
     attributes        : Attributes
     native_expression : String
-    id = -1           : Int32
+    id = -1           : Int
     doc               : String
 
   METHODS
@@ -939,7 +950,7 @@ endClass
 
 class NativeCode : Cmd
   PROPERTIES
-    ordinal : Int32
+    ordinal : Int
     content : String
 
   METHODS
@@ -966,7 +977,7 @@ endClass
 
 class NativeHeader : Cmd
   PROPERTIES
-    ordinal : Int32
+    ordinal : Int
     content : String
 
   METHODS
@@ -3986,7 +3997,7 @@ class Category : Cmd
     name    : String
     args    : Cmd
     value   : Cmd
-    ordinal : Int32  # final resolved 'value'
+    ordinal : Int    # final resolved 'value'
     doc     : String
 
   METHODS
@@ -5141,4 +5152,24 @@ class AttributeReplace : Cmd
   METHODS
     method description->String
       return "AttributeReplace"
+endClass
+
+class LiteralInt : LiteralInteger
+  PROPERTIES
+    value : Int
+
+  METHODS
+    method init( t, value )
+
+    method init( existing:LiteralInt )
+      prior.init( existing )
+      value = existing.value
+
+    method description->String
+      return "LiteralInt($)" (%value)
+
+    method to->Int32:     return value->Int32
+    method to->Int64:     return value
+    method to->String:    return value
+
 endClass

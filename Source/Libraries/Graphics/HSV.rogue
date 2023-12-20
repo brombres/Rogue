@@ -28,7 +28,7 @@ class HSV( hue:Real, saturation:Real, value:Real ) [compound]
       return HSV( hue, saturation, value )
 
   METHODS
-    method hash_code->Int32
+    method hash_code->Int
       return hue.hash_code ~ saturation.hash_code ~ value.hash_code
 
     method to->Color

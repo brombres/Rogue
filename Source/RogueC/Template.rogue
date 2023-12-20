@@ -127,7 +127,7 @@ class Template
                   local n = content.count
                   use new_content = StringPool
                     new_content.reserve( n*1.1 )
-                    local i = 0
+                    local i = 0L
                     while (i < n)
                       block
                         local ch = content[i]

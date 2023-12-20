@@ -2,9 +2,9 @@ class TableType [aspect];
 
 class Table<<$KeyType,$ValueType>> : TableType
   PROPERTIES
-    count           : Int32
-    bin_mask        : Int32
-    cur_entry_index : Int32
+    count           : Int
+    bin_mask        : Int
+    cur_entry_index : Int
     bins            : TableEntry<<$KeyType,$ValueType>>[]
     first_entry     : TableEntry<<$KeyType,$ValueType>>
     last_entry      : TableEntry<<$KeyType,$ValueType>>
@@ -18,7 +18,7 @@ class Table<<$KeyType,$ValueType>> : TableType
     method init
       init( 16 )
 
-    method init( bin_count:Int32 )
+    method init( bin_count:Int )
       local bins_power_of_2 = 1
       while (bins_power_of_2 < bin_count) bins_power_of_2 = bins_power_of_2 :<<: 1
       bin_count = bins_power_of_2
@@ -38,7 +38,7 @@ class Table<<$KeyType,$ValueType>> : TableType
         cur = cur.next_entry
       endWhile
 
-    method at( index:Int32 )->$ValueType
+    method at( index:Int )->$ValueType
       local entry = entry_at( index )
       if (entry) return entry.value
 
@@ -74,7 +74,7 @@ class Table<<$KeyType,$ValueType>> : TableType
       # Returns an iterator compound.
       return TableEntriesIterator<<$KeyType,$ValueType>>( first_entry )
 
-    method entry_at( index:Int32 )->TableEntry<<$KeyType,$ValueType>>
+    method entry_at( index:Int )->TableEntry<<$KeyType,$ValueType>>
       contingent
         necessary (count)
 
@@ -254,7 +254,7 @@ class Table<<$KeyType,$ValueType>> : TableType
 
       return entry
 
-    method remove_at( index:Int32 )->$ValueType
+    method remove_at( index:Int )->$ValueType
       if (index < 0 or index >= count)
         local zero_result : $ValueType
         return zero_result
@@ -419,10 +419,10 @@ class TableEntry<<$KeyType,$ValueType>>
     adjacent_entry    : TableEntry<<$KeyType,$ValueType>>  # next entry in bin - same hash code after masking
     next_entry        : TableEntry<<$KeyType,$ValueType>>  # next entry in order - could be totally different hash
     previous_entry    : TableEntry<<$KeyType,$ValueType>>  # previous entry in order
-    hash              : Int32
+    hash              : Int
 
   METHODS
-    method init( _key:$KeyType, _value:$ValueType, _hash:Int32 )
+    method init( _key:$KeyType, _value:$ValueType, _hash:Int )
       key = _key
       value = _value
       hash = _hash
@@ -446,7 +446,7 @@ class TableEntriesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Val
     method peek->TableEntry<<$KeyType,$ValueType>>
       return cur
 
-    method peek( lookahead:Int32 )->TableEntry<<$KeyType,$ValueType>>
+    method peek( lookahead:Int )->TableEntry<<$KeyType,$ValueType>>
       block cur
         loop (lookahead)
           if (not cur) return null
@@ -486,7 +486,7 @@ class TableKeysIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$ValueT
     method peek->$KeyType
       return cur.key
 
-    method peek( lookahead:Int32 )->$KeyType
+    method peek( lookahead:Int )->$KeyType
       block cur
         loop (lookahead)
           if (not cur) escapeBlock
@@ -528,7 +528,7 @@ class TableValuesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Valu
     method peek->$ValueType
       return cur.value
 
-    method peek( lookahead:Int32 )->$ValueType
+    method peek( lookahead:Int )->$ValueType
       block cur
         loop (lookahead)
           if (not cur) escapeBlock

@@ -16,7 +16,7 @@ class Node<<$ExtendedNodeType>>
     first_child : $ExtendedNodeType
     last_child  : $ExtendedNodeType
     next        : $ExtendedNodeType
-    count       : Int32
+    count       : Int
     structure_modified : Logical
 
   METHODS
@@ -126,7 +126,7 @@ class Node<<$ExtendedNodeType>>
         visitor.visit_children( this )
       endIf
 
-    method get( index:Int32 )->$ExtendedNodeType
+    method get( index:Int )->$ExtendedNodeType
       if (index < 0 or index >= count) return null
       if (index == 0)       return first_child
       if (index == count-1) return last_child
@@ -134,7 +134,7 @@ class Node<<$ExtendedNodeType>>
       loop (index) cur = cur.next
       return cur
 
-    method insert( new_child:$ExtendedNodeType, before_index=0:Int32 )
+    method insert( new_child:$ExtendedNodeType, before_index=0:Int )
       if (new_child is null) return
       if (new_child.parent is this) return
       new_child.detach( &preserve_next )
@@ -211,7 +211,7 @@ class Node<<$ExtendedNodeType>>
       while (cur.next) cur = cur.next
       return cur
 
-    method locate( child:$ExtendedNodeType )->Int32?
+    method locate( child:$ExtendedNodeType )->Int?
       # Returns 0-based index of child in this node's children or else null.
       local i = 0
       local cur = first_child
@@ -226,7 +226,7 @@ class Node<<$ExtendedNodeType>>
       child.detach
       return child
 
-    method remove_at( index:Int32 )->$ExtendedNodeType
+    method remove_at( index:Int )->$ExtendedNodeType
       local result = this[ index ]
       remove( result )
       return result
@@ -280,7 +280,7 @@ class Node<<$ExtendedNodeType>>
         new_parent.add( this->(as $ExtendedNodeType) )
       endIf
 
-    method set( index:Int32, node:$ExtendedNodeType )
+    method set( index:Int, node:$ExtendedNodeType )
       if (index < 0)
         insert( node )
       elseIf (index == 0)

@@ -59,7 +59,7 @@ endAugment
 # resolve_conversion_to
 augment
   METHODS
-    method Cmd.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions )->Cmd
+    method Cmd.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions, &coerce )->Cmd
       local this_type = require_type
       this_type.organize
       target_type.organize
@@ -69,7 +69,12 @@ augment
       if (this_type.is_primitive and target_type.is_primitive)
         if (target_type is Program.type_Byte)      return resolver.validate( ConvertToByte( t, this ) )
         if (target_type is Program.type_Character) return resolver.validate( ConvertToCharacter( t, this ) )
-        if (target_type is Program.type_Int32)     return resolver.validate( ConvertToInt32( t, this ) )
+        if (target_type is Program.type_Int32)
+          if (not coerce and this_type is Program.type_Int64)
+            Program.print_warning( t, "Assigning an Int64 to an Int32 variable should use an explicit conversion." )
+          endIf
+          return resolver.validate( ConvertToInt32( t, this ) )
+        endIf
         if (target_type is Program.type_Int64)     return resolver.validate( ConvertToInt64( t, this ) )
         if (target_type is Program.type_Logical)   return resolver.validate( ConvertToLogical( t, this ) )
         if (target_type is Program.type_Real32)    return resolver.validate( ConvertToReal32( t, this ) )
@@ -78,6 +83,15 @@ augment
       endIf
 
       if (this_type.instance_of(target_type)) return WideningCast( t, this, target_type )
+
+      if (this_type.is_primitive and target_type.is_optional)
+        if (target_type.core_type.is_primitive and target_type.core_type is not this_type)
+          local converted_primitive = resolve_conversion_to( target_type.core_type, resolver, &=suppress_error, &=limit_conversions, &=coerce )
+          if (converted_primitive)
+            return converted_primitive.resolve_conversion_to( target_type, resolver, &=suppress_error, &=limit_conversions, &=coerce )
+          endIf
+        endIf
+      endIf
 
       if (this_type.attributes.is_tuple and target_type.attributes.is_tuple)
         if (this_type.is_compatible_tuple(target_type))
@@ -163,7 +177,7 @@ augment
 
       throw t.error( "No $.to->$ conversion or $($) constructor exists."(this_type,target_type,target_type,this_type) )
 
-    method GenericFunctionDefinition.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions )->Cmd [override]
+    method GenericFunctionDefinition.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions, &coerce )->Cmd [override]
       local fn_type = target_type->(as FunctionType)
 
       if (not fn_type)
@@ -194,9 +208,9 @@ augment
       endIf
 
       local fn_def = resolver.visit( FunctionDefinition(t,params,fn_type.return_type,with_values,statements) )
-      return fn_def.resolve_conversion_to( target_type, resolver, &=suppress_error )
+      return fn_def.resolve_conversion_to( target_type, resolver, &=suppress_error, &=coerce )
 
-    method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions )->Cmd [override]
+    method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions, &coerce )->Cmd [override]
       target_type.organize
       if (target_type.attributes.is_optional)
         return resolver.validate( LiteralNullOptional(t,target_type) )
@@ -248,14 +262,23 @@ augment
       if (is_compound) return EmptyCompound( cmd_t, this )
       return LiteralNull( cmd_t.cloned(TokenType.KEYWORD_NULL,null), this )
 
+    method TypeByte.cmd_default_value( cmd_t:Token )->Cmd
+      return ConvertToByte( cmd_t, LiteralInt32(cmd_t.cloned(TokenType.INTEGER,"0"), 0) )
+
     method TypeCharacter.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralCharacter( cmd_t.cloned(TokenType.CHARACTER,"0"), 0 )
 
     method TypeInt32.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralInt32( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
 
+    method TypeInt64.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralInt64( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
+
     method TypeLogical.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralLogical( cmd_t.cloned(TokenType.KEYWORD_FALSE,null), false )
+
+    method TypeReal32.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralReal( cmd_t.cloned(TokenType.REAL_NUMBER,"0.0"), 0 )
 
     method TypeReal64.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralReal( cmd_t.cloned(TokenType.REAL_NUMBER,"0.0"), 0 )
@@ -402,6 +425,9 @@ augment
       return value?
 
     method LiteralInt64.is_truthy->Logical
+      return value?
+
+    method LiteralInt.is_truthy->Logical
       return value?
 
     method LiteralLogical.is_truthy->Logical
@@ -683,6 +709,10 @@ augment
 
     method LiteralInt64.type->Type
       return Program.type_Int64
+
+    method LiteralInt.type->Type
+      if (Program.int_bits == 64) return Program.type_Int64
+      else                        return Program.type_Int32
 
     method LiteralList.type->Type
       contingent

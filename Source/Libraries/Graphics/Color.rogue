@@ -59,7 +59,7 @@ class Color( argb:Int32 ) [compound]
     method green_byte->Int32
       return (argb :>>: 8) & 255
 
-    method hash_code->Int32
+    method hash_code->Int
       return argb
 
     method is_opaque->Logical
