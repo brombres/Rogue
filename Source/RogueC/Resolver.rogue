@@ -340,7 +340,7 @@ class Resolver : Poolable, Visitor
       forEach (arg at i in cmd.args)
         local param_type = cmd.param_types[i]
         if (param_type.is_reference) param_type = Program.type_Object
-        cmd.args[i] = arg.resolve_conversion_to( param_type, this )
+        cmd.args[i] = arg.resolve_conversion_to( param_type, this, &coerce )
       endForEach
 
     method on( cmd:CallPriorMethod )->Cmd
@@ -551,7 +551,7 @@ class Resolver : Poolable, Visitor
 
     method on( cmd:ConvertToType )->Cmd
       cmd.operand = visit( cmd.operand )
-      return cmd.operand.resolve_conversion_to( cmd.to_type, this )
+      return cmd.operand.resolve_conversion_to( cmd.to_type, this, &coerce )
 
     method on( cmd:ConvertToTypeWithArgs )->Cmd
       local type_arg = TemplateArgs( cmd.t, cmd.to_type )
@@ -575,10 +575,11 @@ class Resolver : Poolable, Visitor
       if (not common_type)
         throw t.error( "Incompatible types used in range." )
       endIf
+      if (common_type is Program.type_Int32) common_type = Program.type_Int
 
-      local start = cmd.start.resolve_conversion_to( common_type, this )
-      local limit = cmd.limit.resolve_conversion_to( common_type, this )
-      local step_size = cmd.step_size.resolve_conversion_to( common_type, this )
+      local start = cmd.start.resolve_conversion_to( common_type, this, &coerce )
+      local limit = cmd.limit.resolve_conversion_to( common_type, this, &coerce )
+      local step_size = cmd.step_size.resolve_conversion_to( common_type, this, &coerce )
 
       local range_type = Type( t, cmd.name, common_type )
       return validate( CreateCompound(t, range_type, Args(cmd.t,start,limit,step_size)) )
@@ -889,7 +890,7 @@ class Resolver : Poolable, Visitor
         endIf
 
         if (wcase.value)
-          wcase.value .= resolve_conversion_to( result_type, this )
+          wcase.value .= resolve_conversion_to( result_type, this, &coerce )
         endIf
       endForEach
 
@@ -1194,10 +1195,10 @@ class Resolver : Poolable, Visitor
     method on( cmd:Loop )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.LOOP )
       if (cmd.loop_count)
-        local v = add_local( cmd.loop_count.t, "i", Program.type_Int32, DummyInitialValue )
+        local v = add_local( cmd.loop_count.t, "i", Program.type_Int, DummyInitialValue )
         insert(
           SetLocal( v.t, v,
-          Add( v.t, visit(cmd.loop_count).resolve_conversion_to(Program.type_Int32, this), LiteralInt(v.t,1) )
+          Add( v.t, visit(cmd.loop_count).resolve_conversion_to(Program.type_Int, this, &coerce), LiteralInt(v.t,1) )
           )
         )
         iterator.condition = PreDecrementLocal( v.t, v )
@@ -1432,7 +1433,7 @@ class Resolver : Poolable, Visitor
         if (not this_procedure.return_type)
           throw cmd.t.error( "Unexpected return value - $ does not declare a return type."(this_procedure) )
         endIf
-        cmd.result = cmd.result.require_value.resolve_conversion_to( this_procedure.return_type, this )
+        cmd.result = cmd.result.require_value.resolve_conversion_to( this_procedure.return_type, this, &coerce )
       else
         if (this_procedure.return_type)
           throw cmd.t.error( "$ return value expected."(this_procedure.return_type) )
@@ -2155,7 +2156,7 @@ class Resolver : Poolable, Visitor
     method cmd_create_object( t:Token, type_context:Type, args:Cmd, &suppress_error, &exact_arg_types, &limit_conversions )->Cmd
       assert args
       if (type_context.is_primitive and args.count == 1 and args.first.require_type.is_primitive)
-        return args.first.resolve_conversion_to( type_context, this )
+        return args.first.resolve_conversion_to( type_context, this, &coerce )
       endIf
 
       local m_constructor = find_procedure( t, type_context, null, "constructor", args,
@@ -2234,7 +2235,7 @@ class Resolver : Poolable, Visitor
         elseIf (arg instanceOf DefaultArg)
           arg = visit( arg->(as DefaultArg).operand.cloned )
         endIf
-        args[i] = arg.resolve_conversion_to(proc.parameters[i].type, this)
+        args[i] = arg.resolve_conversion_to(proc.parameters[i].type, this, &coerce)
       endForEach
 
     method find_method( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
@@ -2860,7 +2861,7 @@ class Resolver : Poolable, Visitor
       endIf
 
       if (allow_conversions)
-        local resolved_arg = arg.resolve_conversion_to( param_type, this, &suppress_error, &=limit_conversions )
+        local resolved_arg = arg.resolve_conversion_to( param_type, this, &suppress_error, &=limit_conversions, &coerce )
         if (resolved_arg) return true
       endIf
 
@@ -3515,7 +3516,7 @@ augment
 
         local type = resolver.this_module.find_type( t, name, &extended_search )
         if (type and type.attributes.is_singleton)
-          return SetSingleton( t, type, new_value.resolve_conversion_to(type,resolver) )
+          return SetSingleton( t, type, new_value.resolve_conversion_to(type,resolver,&coerce) )
         endIf
 
         if (resolver.this_type)
@@ -3647,7 +3648,7 @@ augment
     method TypeAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       if (not args)
         if (type.attributes.is_singleton)
-          return SetSingleton( t, type, new_value.resolve_conversion_to(type,resolver) )
+          return SetSingleton( t, type, new_value.resolve_conversion_to(type,resolver,&coerce) )
         endIf
       endIf
 
@@ -3980,8 +3981,8 @@ augment
       local builder = String()
       builder.println @|Standard/Collection does not implement any of the collection protocols:
                        |
-                       |  count()->Int32/count:Int32 + at(index:Int32)->ElementType
-                       |  count()->Int32/count:Int32 + get(index:Int32)->ElementType
+                       |  count()->Int/count:Int + at(index:Int)->ElementType
+                       |  count()->Int/count:Int + get(index:Int)->ElementType
                        |  read_another()->ElementType?
                        |  iterator()->Standard/Collection (result must implement one of the above protocols)
                        |  reader()->Standard/Collection (result must implement one of the above protocols)
@@ -4164,8 +4165,8 @@ augment
       local builder = String()
       builder.println @|Standard/Collection does not implement any of the collection protocols:
                        |
-                       |  count()->Int32/count:Int32 + at(index:Int32)->ElementType
-                       |  count()->Int32/count:Int32 + get(index:Int32)->ElementType
+                       |  count()->Int/count:Int + at(index:Int)->ElementType
+                       |  count()->Int/count:Int + get(index:Int)->ElementType
                        |  read_another()->ElementType?
                        |  iterator()->Standard/Collection (result must implement one of the above protocols)
                        |  reader()->Standard/Collection (result must implement one of the above protocols)
@@ -4183,8 +4184,8 @@ augment
       if (not cmd.requires_operator_method)
         if (left_type.is_primitive and right_type.is_primitive)
           local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
-          if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, resolver )
-          if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, resolver )
+          if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, resolver, &coerce )
+          if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, resolver, &coerce )
           return cmd
         endIf
       endIf
@@ -4245,8 +4246,8 @@ augment
 
       if (left_type.is_primitive and right_type.is_primitive)
         local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
-        if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, resolver )
-        if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, resolver )
+        if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, resolver, &coerce )
+        if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, resolver, &coerce )
         return null
 
       else
@@ -4348,7 +4349,7 @@ augment
 
       if (type.is_primitive)
         local op_type = Cmd.common_op_type( cmd.t, type, Program.type_Int32 )
-        if (type is not op_type) cmd.operand = cmd.operand.resolve_conversion_to(op_type, resolver)
+        if (type is not op_type) cmd.operand = cmd.operand.resolve_conversion_to(op_type, resolver, &coerce)
         return cmd
 
       elseIf (cmd.symbol is null)
@@ -4583,7 +4584,7 @@ augment
             necessary (return_type)
             necessary (return_type.attributes.is_tuple)
             necessary (return_type.properties.count > i)
-            element = element.resolve_conversion_to( return_type.properties.at(i).type, resolver )
+            element = element.resolve_conversion_to( return_type.properties.at(i).type, resolver, &coerce )
             element_type = element.require_type
             this[i] = element
           unsatisfied
@@ -4610,7 +4611,7 @@ augment
             necessary (return_type)
             necessary (return_type.attributes.is_tuple)
             necessary (return_type.properties.count > i)
-            element.value = element.value.resolve_conversion_to( return_type.properties.at(i).type, resolver )
+            element.value = element.value.resolve_conversion_to( return_type.properties.at(i).type, resolver, &coerce )
             element_type = element.value.require_type
           unsatisfied
             throw element.t.error( "'null' is type-ambiguous. Cast it as a specific type, e.g. 'null->(as String)'." )

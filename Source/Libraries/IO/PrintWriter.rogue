@@ -31,7 +31,7 @@ class PrintWriter [abstract aspect]
     method println( value:Real32 )                       [abstract]
     method println( value:Object )                       [abstract]
     method println( value:String )                       [abstract]
-    method set_indent( new_indent:Int32 )                [abstract]
+    method set_indent( new_indent:Int )                  [abstract]
 
 endClass
 

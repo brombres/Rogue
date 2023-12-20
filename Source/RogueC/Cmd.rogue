@@ -454,6 +454,9 @@ endClass
 class LiteralInteger : LiteralPrimitive
   GLOBAL METHODS
     method create( t:Token, content:String, base:Int32 )->LiteralInteger
+      if (content.ends_with('LL')) return LiteralInt64( t, content.unright(2)->Int64(&=base) )
+      if (content.ends_with('L'))  return LiteralInt( t, content.unright(1)->Int64(&=base) )
+
       contingent
         if (base == 10)
           sufficient (content.count > 10)
