@@ -31,6 +31,9 @@ class Color( argb:Int32 ) [compound]
     method create( r:Real64, g:Real64, b:Real64, a=1.0:Real64 )->Color
       return Color( (r*255)->Int32, (g*255)->Int32, (b*255)->Int32, (a*255)->Int32 )
 
+    method create( argb:Int64 )->Color
+      return Color( argb->Int32 )
+
   METHODS
     method alpha->Real64
       return ((argb :>>: 24) & 255) / 255.0

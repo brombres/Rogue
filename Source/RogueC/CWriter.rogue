@@ -566,6 +566,8 @@ class CWriter : BufferedPrintWriter
       text .= replacing( "%ns%", Program.namespace_lc )
       text .= replacing( "%Ns%", Program.namespace_capitalized )
       text .= replacing( "%NS%", Program.namespace_uc )
+      if (Program.int_bits == 64) text .= replacing( "%RogueInt%", "RogueInt64" )
+      else                        text .= replacing( "%RogueInt%", "RogueInt32" )
       prior.print( text )
 
     method println( text:String ) [override]
