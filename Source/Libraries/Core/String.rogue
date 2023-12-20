@@ -412,7 +412,7 @@ class String : Poolable PrintWriter
       return @count
 
     method count( look_for:Character )->Int
-      local result = 0
+      local result = 0L
       if (look_for < 128)
         native @|RogueInt n = $this->data->count;
                 |char* src = $this->data->as_utf8 + n;
@@ -432,7 +432,7 @@ class String : Poolable PrintWriter
       return result
 
     method count( look_for:String )->Int
-      local result = 0
+      local result = 0L
       local n = look_for.count
       local pos = locate( look_for )
       while (pos.exists)
@@ -471,7 +471,7 @@ class String : Poolable PrintWriter
 
     method extract_indentation->String
       # Returns a string consisting of this string's leading spaces and tabs.
-      local n = 0
+      local n = 0L
       forEach (ch in this)
         if (ch == ' ' or ch == '\t') ++n
         else                         escapeForEach
@@ -677,7 +677,7 @@ class String : Poolable PrintWriter
     method is_real->Logical
       if (count == 0) return false
 
-      local period_count = 0
+      local period_count = 0L
       forEach (ch at index in this)
         if (ch == '-')
           if (index > 0) return false
@@ -723,7 +723,7 @@ class String : Poolable PrintWriter
       return max
 
     method locate( ch:Character, optional_i1=null:Int?, &ignore_case )->Int?
-      local i = 0
+      local i = 0L
       local limit = count
       if (optional_i1.exists) i = optional_i1.value
 
@@ -918,7 +918,7 @@ class String : Poolable PrintWriter
           if (quantity == 1) return st
 
           # plural
-          local index = 0
+          local index = 0L
           local i = st.count
           while (i > 0)
             --i
@@ -1364,7 +1364,7 @@ class String : Poolable PrintWriter
       local i1 = this.locate(look_for,&=ignore_case)
       if (not i1.exists) return this
 
-      local i0 = 0
+      local i0 = 0L
 
       local result = String( Int(count*1.1) )
       while (i1.exists)
@@ -1438,7 +1438,7 @@ class String : Poolable PrintWriter
 
         local result = String( count )
         local scanner = Scanner( replacement_pattern )
-        local i = 0
+        local i = 0L
         while (scanner.has_another)
           if (scanner.consume('\\'))
             if (scanner.has_another) result.print( scanner.read )
@@ -1552,7 +1552,7 @@ class String : Poolable PrintWriter
     method split( separator:Character, &ignore_case )->String[]
       local result = String[]
 
-      local i1 = 0
+      local i1 = 0L
       local i2 = locate( separator, i1, &=ignore_case )
       while (i2.exists)
         result.add( from(i1,i2.value-1) )
@@ -1568,7 +1568,7 @@ class String : Poolable PrintWriter
       local result = String[]
       local separator_count = separator.count
 
-      local i1 = 0
+      local i1 = 0L
       local i2 = locate( separator, i1, &=ignore_case )
       while (i2.exists)
         result.add( from(i1,i2.value-1) )
@@ -1591,7 +1591,7 @@ class String : Poolable PrintWriter
       #     # 0000 0000 0000 0000 0000 0111 1101 0000
       if (group_size == 0) return [this]
 
-      local n = 0
+      local n = 0L
       if (group_size < 0)
         group_size .= abs
       else
@@ -1619,7 +1619,7 @@ class String : Poolable PrintWriter
       # Splits the string on whitespace
       local result = String[]
       local start = -1
-      local current = 0
+      local current = 0L
       forEach (ch in this)
         which (ch)
           case ' ', '\t', '\n':
@@ -1824,7 +1824,7 @@ class String : Poolable PrintWriter
 
     method trimmed->String
       # Trim white spaces on both ends
-      local i1 = 0
+      local i1 = 0L
       local i2 = count - 1
 
       while (i1 <= i2)
@@ -2141,7 +2141,7 @@ class String : Poolable PrintWriter
 
           case ' ':
             # Match 1 or more spaces or tabs
-            local n = 0
+            local n = 0L
             while (n < remaining_count)
               local ch = this[i0+n]
               if (ch != ' ' and ch != '\t') escapeWhile
@@ -2327,7 +2327,7 @@ class String : Poolable PrintWriter
 
           case ' ':
             # Match 1 or more spaces or tabs
-            local n = 0
+            local n = 0L
             while (n < remaining_count)
               local ch = this[i0+n]
               if (ch != ' ' and ch != '\t') escapeWhile

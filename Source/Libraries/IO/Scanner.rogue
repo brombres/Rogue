@@ -12,7 +12,7 @@ class Scanner : Reader<<Character>>
 
   METHODS
     method init( source, spaces_per_tab=0, &preserve_crlf )
-      local tab_count = 0
+      local tab_count = 0L
 
       if (spaces_per_tab)
         tab_count = source.count('\t')
