@@ -1121,8 +1121,24 @@ class CGenerator : Visitor
       writer.print( cmd.value )
 
     method on_visit( cmd:LiteralInt64 )
-      writer.print cmd.value
-      writer.print "LL"
+      if (cmd.value == native("LLONG_MIN")->Int64)
+        writer.print( "LLONG_MIN" )
+      else
+        writer.print cmd.value
+        writer.print "LL"
+      endIf
+
+    method on_visit( cmd:LiteralInt )
+      if (Program.int_bits == 64)
+        if (cmd.value == native("LLONG_MIN")->Int64)
+          writer.print( "LLONG_MIN" )
+        else
+          writer.print cmd.value
+          writer.print "LL"
+        endIf
+      else
+        writer.print cmd.value
+      endIf
 
     method on_visit( cmd:LiteralLogical )
       writer.print which{ cmd.value:1 || 0 }

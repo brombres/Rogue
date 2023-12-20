@@ -9,7 +9,7 @@ class PrintWriter [abstract aspect]
 
     method flush                                         [abstract]
 
-    method indent->Int32                                 [abstract]
+    method indent->Int                                   [abstract]
     method print( value:Byte )                           [abstract]
     method print( value:Character )                      [abstract]
     method print( value:Int32 )                          [abstract]
@@ -48,7 +48,7 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [abstract aspect]
 
     method flush( buffer:String ) [abstract]
 
-    method indent->Int32
+    method indent->Int
       return $buffer.indent
 
     method print( value:Byte )
@@ -127,7 +127,7 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [abstract aspect]
       print( value )
       println
 
-    method set_indent( new_indent:Int32 )
+    method set_indent( new_indent:Int )
       $buffer.indent = new_indent
 endClass
 

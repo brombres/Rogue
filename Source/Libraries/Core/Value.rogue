@@ -708,7 +708,7 @@ class Value [compound]
           list[index] = value
       endWhich
 
-    method set( key:String, value:Value )
+    method set( key:String, value:Value ) [preferred]
       which (type)
         case TYPE_TABLE
           object->(as [String:Value])[ key ] = value

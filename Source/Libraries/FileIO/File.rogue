@@ -36,7 +36,7 @@ class File( filepath:String ) [compound]
                  use filepath_utf16=ObjectPool<<UTF16String>>, abs_filepath_utf16=ObjectPool<<UTF16String>>
                    filepath_utf16.init( filepath )
 
-                   local utf16_count = native( "GetFullPathNameW($filepath_utf16->data->as_wchars, 0, 0, 0)" )->Int32
+                   local utf16_count = native( "GetFullPathNameW($filepath_utf16->data->as_wchars, 0, 0, 0)" )->Int
                    abs_filepath_utf16.data.expand_to_count( utf16_count*2 )
 
       native @|    if (GetFullPathNameW($filepath_utf16->data->as_wchars, $utf16_count, $abs_filepath_utf16->data->as_wchars, 0) != 0)
@@ -70,7 +70,7 @@ class File( filepath:String ) [compound]
               |  {
               |    // fchdir only works with a path, not a path+filename (c_filepath).
               |    // Copy out the filename and null terminate the filepath to be just a path.
-              |    int i = (int) strlen( c_filepath ) - 1;
+              |    %Ns%RogueInt i = (%Ns%RogueInt) strlen( c_filepath ) - 1;
               |    while (i >= 0 && c_filepath[i] != '/') --i;
               |    strcpy( filename, c_filepath+i+1 );
               |    if (i == -1) strcpy( c_filepath, "." );
@@ -143,7 +143,7 @@ class File( filepath:String ) [compound]
       local filepath = resolved.filepath
       return filepath.contains('*') or filepath.contains('?')
 
-    method copy_to( destination:File, &if_different, &if_newer, &dry_run, &verbose, &ignore_hidden )->Int32?
+    method copy_to( destination:File, &if_different, &if_newer, &dry_run, &verbose, &ignore_hidden )->Int?
       # Copies a file or the contents of a folder to a specified file or folder.
       # Returns the count of files copied or null on an error.
       if (this.is_folder)

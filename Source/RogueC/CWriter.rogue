@@ -142,6 +142,10 @@ class CWriter : BufferedPrintWriter
          |  typedef uint64_t         %Ns%RogueUInt64;
          |  typedef uint32_t         %Ns%RogueUInt32;
          |#endif
+
+       if (Program.int_bits == 32)  println "typedef %Ns%RogueInt32 %Ns%RogueInt;"
+       else                         println "typedef %Ns%RogueInt64 %Ns%RogueInt;"
+
         if (Program.real_bits == 32) println "typedef %Ns%RogueReal32 %Ns%RogueReal;"
         else                         println "typedef %Ns%RogueReal64 %Ns%RogueReal;"
 
@@ -562,6 +566,8 @@ class CWriter : BufferedPrintWriter
       text .= replacing( "%ns%", Program.namespace_lc )
       text .= replacing( "%Ns%", Program.namespace_capitalized )
       text .= replacing( "%NS%", Program.namespace_uc )
+      if (Program.int_bits == 64) text .= replacing( "%RogueInt%", "RogueInt64" )
+      else                        text .= replacing( "%RogueInt%", "RogueInt32" )
       prior.print( text )
 
     method println( text:String ) [override]

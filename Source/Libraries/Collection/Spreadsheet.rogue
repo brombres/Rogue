@@ -101,7 +101,7 @@ class Spreadsheet
       endForEach
       return rows[j]
 
-    method delete_column( index:Int32 )
+    method delete_column( index:Int )
       if (index < 0 or index >= columns.count) return
       columns.remove_at( index )
       forEach (row in rows)
@@ -109,7 +109,7 @@ class Spreadsheet
       endForEach
       _reindex
 
-    method delete_row( index:Int32 )
+    method delete_row( index:Int )
       if (index < 0 or index >= rows.count) return
       rows.remove_at( index )
       forEach (column in columns)
@@ -117,7 +117,7 @@ class Spreadsheet
       endForEach
       _reindex
 
-    method get( column:Int32, row:Int32 )->Value
+    method get( column:Int, row:Int )->Value
       if (column < 0 or column >= columns.count) return undefined
       if (row < 0    or row    >= rows.count)    return undefined
       return columns[ column ][ row ].value
@@ -125,7 +125,7 @@ class Spreadsheet
     method save( file:File )
       file.save( to_csv )
 
-    method set( column:Int32, row:Int32, value:Value )
+    method set( column:Int, row:Int, value:Value )
       while (column >= columns.count) add_column
       while (row    >= rows.count)    add_row
 
@@ -162,7 +162,7 @@ endClass
 class Header
   PROPERTIES
     table : Spreadsheet
-    index : Int32
+    index : Int
     cells = Cell[]
 
   METHODS
@@ -171,13 +171,13 @@ class Header
     method add( cell:Cell )
       cells.add( cell )
 
-    method count->Int32
+    method count->Int
       return cells.count
 
     method find( query:(Function(Cell)->Logical) )->Cell?
       return cells.find( query )
 
-    method get( index:Int32 )->Cell
+    method get( index:Int )->Cell
       if (index < 0 or index >= cells.count) return null
       return cells[ index ]
 
@@ -191,7 +191,7 @@ class Row : Header
     method delete
       table.delete_row( index )
 
-    method set( column_index:Int32, value:Value )
+    method set( column_index:Int, value:Value )
       table.set( column_index, index, value )
 
     method to->String
@@ -208,7 +208,7 @@ class Column : Header
     method delete
       table.delete_column( index )
 
-    method set( row_index:Int32, value:Value )
+    method set( row_index:Int, value:Value )
       table.set( index, row_index, value )
 
     method to->String
@@ -234,7 +234,7 @@ class Format
     method parse( value:Value )->Value
       return value
 
-    method print( value:Value, builder:String, width:Int32 )
+    method print( value:Value, builder:String, width:Int )
       loop (width.or_larger(1)) builder.print( '?' )
 endClass
 
@@ -242,7 +242,7 @@ class GeneralFormat : Format
   METHODS
     method init
 
-    method print( value:Value, builder:String, width:Int32 )
+    method print( value:Value, builder:String, width:Int )
       if (width)
         builder.print( value->String.justified(-width).leftmost(width) )
       else
@@ -257,7 +257,7 @@ class MoneyFormat : Format
     method parse( value:Value )->Value
       return Value( value->String.after_any('$').replacing(",","")->Real )
 
-    method print( value:Value, builder:String, width:Int32 )
+    method print( value:Value, builder:String, width:Int )
       local st = "$" + value->Real.format(",.2")
       if (width)
         if (st.count > width)
@@ -291,7 +291,7 @@ class Cell
     method is_empty->Logical
       return value.is_empty
 
-    method print( builder:String, width=0:Int32, &csv )
+    method print( builder:String, width=0:Int, &csv )
       if (csv)
         use temp = StringPool
           format.print( value, temp, width )
@@ -312,8 +312,8 @@ class Cell
     method to->Logical
       return value->Logical
 
-    method to->Int32
-      return value->Int32
+    method to->Int
+      return value->Int
 
     method to->Int64
       return value->Int64
@@ -330,8 +330,8 @@ class CSVScanner
   PROPERTIES
     scanner : Scanner
     builder = String()
-    row     : Int32
-    column  : Int32
+    row     : Int
+    column  : Int
 
   METHODS
     method init( file:File )

@@ -482,6 +482,9 @@ class LiteralInteger : LiteralPrimitive
     method description->String
       return "LiteralInteger()"
 
+    method to->Int64
+      throw UnsupportedOperationError()
+
 endClass
 
 class LiteralInt32 : LiteralInteger
@@ -500,6 +503,7 @@ class LiteralInt32 : LiteralInteger
 
     method to->Character: return value
     method to->Int32:     return value
+    method to->Int64:     return value
     method to->String:    return value
 
 endClass
@@ -520,6 +524,7 @@ class LiteralInt64 : LiteralInteger
 
     method to->Character: return value
     method to->Int32:     return value
+    method to->Int64:     return value
     method to->String:    return value
 endClass
 
@@ -5141,4 +5146,24 @@ class AttributeReplace : Cmd
   METHODS
     method description->String
       return "AttributeReplace"
+endClass
+
+class LiteralInt : LiteralInteger
+  PROPERTIES
+    value : Int
+
+  METHODS
+    method init( t, value )
+
+    method init( existing:LiteralInt )
+      prior.init( existing )
+      value = existing.value
+
+    method description->String
+      return "LiteralInt($)" (%value)
+
+    method to->Int32:     return value->Int32
+    method to->Int64:     return value
+    method to->String:    return value
+
 endClass

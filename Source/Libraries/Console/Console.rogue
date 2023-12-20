@@ -194,7 +194,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |  %Ns%Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDOUT_FILENO );
               |#endif
 
-    method _fill_input_buffer( minimum=1:Int32 )->Logical
+    method _fill_input_buffer( minimum=1:Int )->Logical
       if (_input_bytes.count >= minimum) return true
 
       local needs_unblock : Logical
@@ -274,7 +274,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
        |  #if !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
        |  while (byte_count)
        |  {
-       |    int n = (int) write( out, utf8, byte_count );
+       |    %Ns%RogueInt n = (%Ns%RogueInt) write( out, utf8, byte_count );
        |    if (n > 0)
        |    {
        |      utf8 += n;

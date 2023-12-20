@@ -1,4 +1,5 @@
 module RogueC
+uses Math/Best
 uses Utility/WorkList
 
 $localMacro FOLD_CONSTANTS<<$m,$Type,$op>>
@@ -64,7 +65,7 @@ class Resolver : Poolable, Visitor
               local enum_value_def = entry.value->(as EnumValueDef)
               if (enum_value_def)  # versus a regular definition that is not an enum category
                 local value = visit( enum_value_def.value )
-                if (value not instanceOf LiteralInt32)
+                if (value not instanceOf LiteralInteger)
                   throw value.t.error( "Category value must resolve to a literal integer." )
                 endIf
                 entry.value = value
@@ -72,7 +73,7 @@ class Resolver : Poolable, Visitor
 
                 forEach (category in type.categories)
                   if (category.name == entry.key)
-                    category.ordinal = value->(as LiteralInt32).value
+                    category.ordinal = value->(as LiteralInteger)->Int
                     escapeForEach
                   endIf
                 endForEach
@@ -202,6 +203,9 @@ class Resolver : Poolable, Visitor
         block left=cmd.left->(as LiteralInt64), right=cmd.right->(as LiteralInt64)
           if (left and right) return LiteralInt64( cmd.t, left.value $op right.value )
         endBlock
+        block left=cmd.left->(as LiteralInt), right=cmd.right->(as LiteralInt)
+          if (left and right) return LiteralInt( cmd.t, left.value $op right.value )
+        endBlock
         block left=cmd.left->(as LiteralCharacter), right=cmd.right->(as LiteralCharacter)
           if (left and right) return LiteralCharacter( cmd.t, left.value $op right.value )
         endBlock
@@ -229,6 +233,9 @@ class Resolver : Poolable, Visitor
         endBlock
         block left=cmd.left->(as LiteralInt64), right=cmd.right->(as LiteralInt64)
           if (left and right) return LiteralInt64( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralInt), right=cmd.right->(as LiteralInt)
+          if (left and right) return LiteralInt( cmd.t, left.value $op right.value )
         endBlock
       endIf
       return cmd
@@ -563,7 +570,7 @@ class Resolver : Poolable, Visitor
       local common_type = Cmd.common_type( t, cmd.start.require_type, cmd.limit.require_type )
       if (common_type)
         if (cmd.step_size) common_type = Cmd.common_type( t, common_type, cmd.step_size.require_type )
-        else               cmd.step_size = LiteralInt32( t, cmd.default_step_size )
+        else               cmd.step_size = LiteralInt( t, cmd.default_step_size )
       endIf
       if (not common_type)
         throw t.error( "Incompatible types used in range." )
@@ -1050,7 +1057,7 @@ class Resolver : Poolable, Visitor
         build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(arg.t,arg) ) )
       endForEach
 
-      return visit( ContextBlock(t, TypeAccess(t,list_type,Args(t,LiteralInt32(t,cmd.count))), build_list) )
+      return visit( ContextBlock(t, TypeAccess(t,list_type,Args(t,LiteralInt(t,cmd.count))), build_list) )
 
     method on( cmd:KeyValuePairList )->Cmd
       if (cmd.count == 0)
@@ -1190,13 +1197,13 @@ class Resolver : Poolable, Visitor
         local v = add_local( cmd.loop_count.t, "i", Program.type_Int32, DummyInitialValue )
         insert(
           SetLocal( v.t, v,
-          Add( v.t, visit(cmd.loop_count).resolve_conversion_to(Program.type_Int32, this), LiteralInt32(v.t,1) )
+          Add( v.t, visit(cmd.loop_count).resolve_conversion_to(Program.type_Int32, this), LiteralInt(v.t,1) )
           )
         )
         iterator.condition = PreDecrementLocal( v.t, v )
 
         local t = cmd.t
-        return visit( If(t, CompareGT(t,GetLocal(v),LiteralInt32(t,0)), Statements(t,iterator), null) )
+        return visit( If(t, CompareGT(t,GetLocal(v),LiteralInt(t,0)), Statements(t,iterator), null) )
 
       else
         iterator.condition = LiteralLogical(cmd.t,true)
@@ -1335,6 +1342,7 @@ class Resolver : Poolable, Visitor
         if (operand instanceOf LiteralReal32) return LiteralReal32( cmd.t,   -operand->(as LiteralReal32).value )
         if (operand instanceOf LiteralInt64) return LiteralInt64( cmd.t,     -operand->(as LiteralInt64).value )
         if (operand instanceOf LiteralInt32) return LiteralInt32( cmd.t,     -operand->(as LiteralInt32).value )
+        if (operand instanceOf LiteralInt) return LiteralInt( cmd.t,         -operand->(as LiteralInt).value )
         if (operand instanceOf LiteralCharacter) return LiteralInt32( cmd.t, -(operand->(as LiteralCharacter).value->Int32) )
         if (operand instanceOf LiteralLogical) return LiteralLogical( cmd.t, not operand->(as LiteralLogical).value )
       endIf
@@ -1684,7 +1692,7 @@ class Resolver : Poolable, Visitor
         build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(arg.t,arg) ) )
       endForEach
 
-      return visit( ContextBlock(t, TypeAccess(t,cmd.of_type,Args(t,LiteralInt32(t,cmd.list.count))), build_list) )
+      return visit( ContextBlock(t, TypeAccess(t,cmd.of_type,Args(t,LiteralInt(t,cmd.list.count))), build_list) )
 
     method on( cmd:TypedLiteralTable )->Cmd
       local t = cmd.table.t
@@ -1821,7 +1829,7 @@ class Resolver : Poolable, Visitor
       pop_scope
 
       contingent
-        necessary (cmd.condition.type is Program.type_Int32)
+        necessary (cmd.condition.type is Program.type_Int32 or cmd.condition.type is Program.type_Int64)
 
         forEach (cmd_case in cmd.cases)
           necessary ((forEach in cmd_case.args).is_literal_primitive)
@@ -1832,13 +1840,13 @@ class Resolver : Poolable, Visitor
           local used_cases = Logical[]
           forEach (cmd_case in cmd.cases)
             forEach (arg in cmd_case.args)
-              local n = arg->(as LiteralInt32)
+              local n = arg->(as LiteralInteger)
               if (n)
-                used_cases.expand_to_include( n.value )
-                if (used_cases[n.value])
+                used_cases.expand_to_include( n->Int )
+                if (used_cases[n->Int])
                   throw arg.t.error( "Illegal duplicate category value - each enum category must have a unique value. Use DEFINITIONS to support alternate names, e.g. 'CATEGORIES / WHITE, GRAY', 'DEFINITIONS / GREY=GRAY'." )
                 else
-                  used_cases[n.value] = true
+                  used_cases[n->Int] = true
                 endIf
               endIf
             endForEach
@@ -2511,6 +2519,7 @@ class Resolver : Poolable, Visitor
       # If any methods are left after any iteration then the remaining iterations are skipped.
       local allow_conversions = false
       local exact_logical = true
+
       loop 3
         if (arg_count)
           forEach (m in Candidates)
@@ -2526,14 +2535,16 @@ class Resolver : Poolable, Visitor
               Candidates.keep m
             endContingent
           endForEach
+
           if (Candidates.found_match) return Candidates.match
 
           if (Candidates.refine) escapeLoop
 
-          if (allow_conversions and not exact_logical) return null
+          if (not exact_logical) return null  # tried all levels of strictness
         else
           if (Candidates.found_match) return Candidates.match
         endIf
+
         if (allow_conversions)
           exact_logical = false
         else
@@ -2598,13 +2609,16 @@ class Resolver : Poolable, Visitor
       if (arg_count)
         forEach (m in Candidates)
           if (has_named_arg) m.arrange_args( args, this )
-          forEach (arg at i in args)
-            local arg_type = arg.type
-            local param_type = m.parameters[i].type
-            if (arg_type.is_reference and param_type.is_reference)
-              if (arg_type.instance_of(param_type)) Candidates.keep m
-            endIf
-          endForEach
+          contingent
+            forEach (arg at i in args)
+              local arg_type = arg.type
+              local param_type = m.parameters[i].type
+              if (arg_type.is_reference and param_type.is_reference)
+                necessary (arg_type.instance_of(param_type))
+              endIf
+            endForEach
+            Candidates.keep m
+          endContingent
         endForEach
         if (Candidates.found_match) return Candidates.match
         Candidates.refine
@@ -2618,6 +2632,26 @@ class Resolver : Poolable, Visitor
       endForEach
       if (Candidates.found_match) return Candidates.match
       Candidates.refine
+
+      # Prefer methods with:
+      #   Character->Character parameters over Character->String parameters
+      if (arg_count)
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args, this )
+          contingent
+            forEach (arg at i in args)
+              local arg_type = arg.type
+              local param_type = m.parameters[i].type
+              if (arg_type is Program.type_Character)
+                necessary (param_type is Program.type_Character)
+              endIf
+            endForEach
+            Candidates.keep m
+          endContingent
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
 
       # Prefer global methods and object methods over routines
       if (Candidates.list.contains( $.attributes.is_global and $.type_context.name == "Routine" ))
@@ -2654,6 +2688,23 @@ class Resolver : Poolable, Visitor
             Candidates.keep m
           endContingent
         endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      # Prefer methods with the most same-precision primitive parameters
+      if (arg_count)
+        local best = Best<<Int32>>( (a,b) => a > b )
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args, this )
+          best.consider( same_precision_primitive_count(args, m) )
+        endForEach
+
+        local best_count = best.value
+        forEach (m in Candidates)
+          if (same_precision_primitive_count(args,m) == best_count ) Candidates.keep m
+        endForEach
+
         if (Candidates.found_match) return Candidates.match
         Candidates.refine
       endIf
@@ -2714,6 +2765,19 @@ class Resolver : Poolable, Visitor
 
       return null
 
+    method same_precision_primitive_count( args:Cmd, m:Procedure )->Int32
+      local result = 0
+      forEach (arg at i in args)
+        local arg_type = arg.type
+        local param_type = m.parameters[i].type
+        local arg_is_primitive = (arg_type.is_primitive or (arg_type.is_optional and arg_type.core_type.is_primitive))
+        local param_is_primitive = (param_type.is_primitive or (param_type.is_optional and param_type.core_type.is_primitive))
+        if (arg_is_primitive and param_is_primitive)
+          if (param_type.precision_index == arg_type.precision_index) ++result
+        endIf
+      endForEach
+      return result
+
     method exact_type_match( arg:Cmd, param_type:Type )->Logical
       # Exact in principle but in practice it's a little fuzzy
       if (arg.type is param_type) return true
@@ -2770,18 +2834,29 @@ class Resolver : Poolable, Visitor
       endIf
 
       if (arg_type is Program.type_null and (param_type.is_reference or param_type.attributes.is_optional)) return true
-      if (arg_type is Program.@type_Value) return true
+
       if (arg_type.instance_of(param_type)) return true
+
       if (arg_type.is_primitive and param_type.is_primitive)
         if (exact_logical and (arg_type is Program.type_Logical xor param_type is Program.type_Logical)) return false
         return true
       endIf
-      if (param_type is Program.type_String or param_type is Program.type_Object or param_type is Program.@type_Value) return true
+
       if (param_type.attributes.is_optional and not arg_type.attributes.is_optional)
-        if (arg_type is Program.type_null)
+        if (arg_type is Program.type_null) return true
+        if (arg_type.is_primitive and param_type.core_type.is_primitive)
+          if (exact_logical)
+            local is_logical_arg = arg_type is Program.type_Logical
+            local is_logical_param = param_type.core_type is Program.type_Logical
+            return is_logical_arg == is_logical_param
+          endIf
           return true
         endIf
-        return arg_type_is_compatible( arg, param_type.properties//value.type, &=allow_conversions, &=exact_logical, &=limit_conversions )
+        return arg_type_is_compatible( arg, param_type.core_type, &=allow_conversions, &=exact_logical, &=limit_conversions )
+      endIf
+
+      if (param_type is Program.type_Object or param_type is Program.@type_Value or param_type is Program.type_String)
+        return true
       endIf
 
       if (allow_conversions)
@@ -3651,9 +3726,12 @@ augment
       if (collection.starting_index)
         if (collection.step_size)
           collection.step_size = resolver.visit( collection.step_size )
-          local cmd_step = collection.step_size->(as LiteralInt32)
-          if (cmd_step.value < 0)
-            throw t.error( "Redundant pairing of forEach-of with a starting index and a negative step size. Use 'forEach (i in starting_index downTo 0)' instead." )
+          if local cmd_step = collection.step_size->(as LiteralInteger)
+            if (cmd_step->Int64 < 0)
+              throw t.error( "Redundant pairing of forEach-of with a starting index and a negative step size. Use 'forEach (i in starting_index downTo 0)' instead." )
+            endIf
+          else
+            throw t.error( "Illegal step size - integer expected." )
           endIf
         endIf
       endIf
@@ -3715,15 +3793,29 @@ augment
       local has_count = collection_type.methods.contains("count()")
       if (not has_count) has_count = collection_type.properties.contains("count")
 
-      local m_get          = collection_type.methods[ "at(Rogue::Int32)" ]
-      if (not m_get) m_get = collection_type.methods[ "get(Rogue::Int32)" ]
+      local m_get = collection_type.methods[ "at(Rogue::Int64)" ]
+      if (not m_get)
+        m_get = collection_type.methods[ "at(Rogue::Int32)" ]
+        if (not m_get)
+          m_get = collection_type.methods[ "get(Rogue::Int64)" ]
+          if (not m_get) m_get = collection_type.methods[ "get(Rogue::Int32)" ]
+        endIf
+      endIf
 
       if (has_count and m_get)
         local down_to = false
-        local cmd_step : LiteralInt32
+        local cmd_step : LiteralInt
         if (cmd_collection.step_size)
           cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
-          cmd_step = cmd_collection.step_size->(as LiteralInt32)
+
+          if local int64 = cmd_collection.step_size->(as LiteralInt64)
+            cmd_step = LiteralInt( int64.t, int64.value )
+          else
+            if local int32 = cmd_collection.step_size->(as LiteralInt32)
+              cmd_step = LiteralInt( int32.t, int32.value )
+            endIf
+          endIf
+
           if (cmd_step)
             if (cmd_step.value < 0) down_to = true
           else
@@ -3732,15 +3824,15 @@ augment
         endIf
 
         local v_index_name = which{ cmd_control.optional_at:cmd_control.optional_at.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
         if (cmd_collection.starting_index)
           resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
         else
           if (down_to)
-            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt32(t,1) )
+            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt(t,1) )
             resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
           else
-            resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+            resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
           endIf
         endIf
 
@@ -3759,9 +3851,9 @@ augment
         PREPARE_COLLECTION<<cmd_get_collection>>
 
         if (down_to)
-          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt32(t,0) )
+          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt(t,0) )
         else
-          local v_count = resolver.add_local( t, "count", Program.type_Int32 )
+          local v_count = resolver.add_local( t, "count", Program.type_Int )
           resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection.cloned,"count"),&initial_assignment) )
           cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
         endIf
@@ -3796,8 +3888,8 @@ augment
 
         if (cmd_control.optional_at)
           local v_index_name = cmd_control.optional_at.name
-          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
-          resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
+          resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
 
@@ -3844,8 +3936,8 @@ augment
 
         if (cmd_control.optional_at)
           local v_index_name = cmd_control.optional_at.name
-          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
-          resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
+          resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
 
@@ -3919,16 +4011,29 @@ augment
       if (not has_count) has_count = collection_type.properties.contains("count")
 
       # forEach-of doesn't use get/at but if it's not there we need to use a different protocol.
-      local m_get          = collection_type.methods[ "at(Rogue::Int32)" ]
-      if (not m_get) m_get = collection_type.methods[ "get(Rogue::Int32)" ]
+      local m_get = collection_type.methods[ "at(Rogue::Int64)" ]
+      if (not m_get)
+        m_get = collection_type.methods[ "at(Rogue::Int32)" ]
+        if (not m_get)
+          m_get = collection_type.methods[ "get(Rogue::Int64)" ]
+          if (not m_get) m_get = collection_type.methods[ "get(Rogue::Int32)" ]
+        endIf
+      endIf
 
       if (has_count and m_get)
         # Standard/Collection implements count/at or count/get protocol
         local down_to = false
-        local cmd_step : LiteralInt32
+        local cmd_step : LiteralInt
         if (cmd_collection.step_size)
           cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
-          cmd_step = cmd_collection.step_size->(as LiteralInt32)
+          if local int64 = cmd_collection.step_size->(as LiteralInt64)
+            cmd_step = LiteralInt( int64.t, int64.value )
+          else
+            if local int32 = cmd_collection.step_size->(as LiteralInt32)
+              cmd_step = LiteralInt( int32.t, int32.value )
+            endIf
+          endIf
+
           if (cmd_step)
             if (cmd_step.value < 0) down_to = true
           else
@@ -3937,15 +4042,15 @@ augment
         endIf
 
         local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
         if (cmd_collection.starting_index)
           resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
         else
           if (down_to)
-            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt32(t,1) )
+            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt(t,1) )
             resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
           else
-            resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+            resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
           endIf
         endIf
 
@@ -3960,9 +4065,9 @@ augment
         PREPARE_COLLECTION<<cmd_get_collection>>
 
         if (down_to)
-          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt32(t,0) )
+          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt(t,0) )
         else
-          local v_count = resolver.add_local( t, "count", Program.type_Int32 )
+          local v_count = resolver.add_local( t, "count", Program.type_Int )
           resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection,"count"),&initial_assignment) )
           cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
         endIf
@@ -3986,8 +4091,8 @@ augment
         endIf
 
         local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
-        resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
+        resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
 
         PREPARE_COLLECTION<<cmd_get_collection>>
@@ -4023,8 +4128,8 @@ augment
         endIf
 
         local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
-        resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
+        resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
 
         PREPARE_COLLECTION<<cmd_get_collection>>

@@ -79,6 +79,15 @@ augment
 
       if (this_type.instance_of(target_type)) return WideningCast( t, this, target_type )
 
+      if (this_type.is_primitive and target_type.is_optional)
+        if (target_type.core_type.is_primitive and target_type.core_type is not this_type)
+          local converted_primitive = resolve_conversion_to( target_type.core_type, resolver, &=suppress_error, &=limit_conversions )
+          if (converted_primitive)
+            return converted_primitive.resolve_conversion_to( target_type, resolver, &=suppress_error, &=limit_conversions )
+          endIf
+        endIf
+      endIf
+
       if (this_type.attributes.is_tuple and target_type.attributes.is_tuple)
         if (this_type.is_compatible_tuple(target_type))
           local template_args = TemplateArgs( t )
@@ -404,6 +413,9 @@ augment
     method LiteralInt64.is_truthy->Logical
       return value?
 
+    method LiteralInt.is_truthy->Logical
+      return value?
+
     method LiteralLogical.is_truthy->Logical
       return value
 
@@ -683,6 +695,10 @@ augment
 
     method LiteralInt64.type->Type
       return Program.type_Int64
+
+    method LiteralInt.type->Type
+      if (Program.int_bits == 64) return Program.type_Int64
+      else                        return Program.type_Int32
 
     method LiteralList.type->Type
       contingent

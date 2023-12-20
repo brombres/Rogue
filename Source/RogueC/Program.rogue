@@ -24,6 +24,7 @@ class Program [singleton]
     doc_root          : String
     output_filepath   : String
     stack_trace       = false
+    int_bits          : Int32 # Set with --int=[32|64] compile option
     real_bits         : Int32 # Set with --real=[32|64] compile option
     api_patterns      = String[]
     api_filepaths     = Set<<String>>()
@@ -42,6 +43,7 @@ class Program [singleton]
     type_Character    : Type
     type_Int32        : Type
     type_Int64        : Type
+    type_Int          : Type
     type_Real32       : Type
     type_Real64       : Type
     type_Real         : Type
@@ -107,6 +109,7 @@ class Program [singleton]
       type_Int64     = TypeInt64( t )
       type_Real32    = TypeReal32( t )
       type_Real64    = TypeReal64( t )
+      int_bits       = 64  # default; calls set_int_bits
       real_bits      = 64  # default; calls set_real_bits
 
       type_null      = Type( t, "null", Attribute.OBJECT, &unlisted )
@@ -636,6 +639,11 @@ class Program [singleton]
 
       println "Writing documentation metadata to " + output_filepath
       File( output_filepath ).save( doc.to_json(&formatted) )
+
+    method set_int_bits( @int_bits )
+      definitions["Int"] = [t.cloned( TokenType.IDENTIFIER, "Int"+int_bits )]
+      if (int_bits == 64) type_Int = type_Int64
+      else                type_Int = type_Int32
 
     method set_real_bits( @real_bits )
       definitions["Real"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
