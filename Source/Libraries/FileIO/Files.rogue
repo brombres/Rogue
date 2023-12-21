@@ -205,7 +205,7 @@ class Files
         return 0
       endIf
 
-      local width = 0
+      local width = 0L
       width = width.or_larger( (forEach in filepath_set.values).count )
       width -= base_folder.count
 

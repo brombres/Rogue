@@ -59,7 +59,7 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
 
       return st
 
-    method hash_code->Int32
+    method hash_code->Int
       return integer_bits.hash_code
 
     method integer_bits->Int64
@@ -186,7 +186,7 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
 
       return st
 
-    method hash_code->Int32
+    method hash_code->Int
       return integer_bits.hash_code
 
     method integer_bits->Int32
@@ -343,8 +343,9 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
 
       return result
 
-    method hash_code->Int32
-      return Int32(this :>>: 32) ~ Int32(this)
+    method hash_code->Int
+      if (Int isType Int32) return Int32(this :>>: 32) ~ Int32(this)
+      else                  return this
 
     method minimum_bits->Int32
       if (this < 0)
@@ -482,7 +483,7 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
     method format( fmt:String )->String
       return Int64( this ).format( fmt, 32 )
 
-    method hash_code->Int32
+    method hash_code->Int
       return this
 
     method minimum_bits->Int32
@@ -644,8 +645,8 @@ class Character [primitive]
       if (ignore_case) return this.to_lowercase == other.to_lowercase
       return this == other
 
-    method hash_code->Int32
-      return this->Int32
+    method hash_code->Int
+      return this->Int
 
     method is_alphanumeric->Logical
       return (this >= '0' and this <= '9') or
@@ -860,8 +861,8 @@ class Byte : CommonPrimitiveMethods<<Byte>> [primitive]
     method format( fmt:String )->String
       return Int64( this ).format( fmt, 8 )
 
-    method hash_code->Int32
-      return this->Int32
+    method hash_code->Int
+      return this->Int
 
     method minimum_bits->Int32
       if (this & 0x80) return 8
@@ -894,7 +895,7 @@ class Logical [primitive]
     method description->String
       return this->String
 
-    method hash_code->Int32
+    method hash_code->Int
       if (this) return 1
       else      return 0
 

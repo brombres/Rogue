@@ -3,7 +3,7 @@ class String : Poolable PrintWriter
     count           : Int  # in whole characters
     cursor_offset   : Int  # in bytes
     cursor_index    : Int  # in characters
-    hash_code       = -1
+    hash_code       = -1L
     indent          : Int
     at_newline      = true
     is_immutable    : Logical
@@ -627,7 +627,7 @@ class String : Poolable PrintWriter
          |}
       return result
 
-    method hash_code->Int32
+    method hash_code->Int
       if (@hash_code == -1)
         native @|$hash_code = %Ns%RogueString_compute_hash_code( $this, 0 );
       endIf
@@ -2309,7 +2309,7 @@ class String : Poolable PrintWriter
           case '*':
             if (fcount == 1)
               # Last pattern symbol - greedily match any number of characters
-              local result = -1
+              local result = -1L
               forEach (n in 0..remaining_count)
                 local count = _pattern_match_count( i0+n, remaining_count-n, format, f0+1, fcount-1, &=ignore_case )
                 if (count == -1) return result
@@ -2393,7 +2393,7 @@ class String : Poolable PrintWriter
 
             if (fcount == 1)
               # Last pattern symbol - greedy match
-              local result = -1
+              local result = -1L
               forEach (len in 0..remaining_count)
                 local n = _pattern_match_count( i0+len, remaining_count-len, format, f0+1, fcount-1, &=ignore_case )
                 if (n == -1) return result

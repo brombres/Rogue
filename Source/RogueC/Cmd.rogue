@@ -77,6 +77,9 @@ class Cmd( t:Token )
     method to->Int32
       return 0
 
+    method to->Int64
+      return 0
+
     method to->Logical
       return (this->Int32)?
 
@@ -888,7 +891,7 @@ class Property : Cmd
     type              : Type
     attributes        : Attributes
     native_expression : String
-    id = -1           : Int32
+    id = -1           : Int
     doc               : String
 
   METHODS

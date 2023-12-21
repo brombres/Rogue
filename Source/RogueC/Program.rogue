@@ -96,6 +96,8 @@ class Program [singleton]
 
     native_property_count : Int32
 
+    prior_warning : String
+
   METHODS
     method init
       Program = this  # update singleton reference
@@ -380,11 +382,24 @@ class Program [singleton]
         type_Routine.t = this.t
       endIf
 
-    method print_warning( message:String )
-      message = "[WARNING] " + message
-      local w = Console.width.or_smaller( 80 )
-      if (w == 0) w = 80
-      error.println message.word_wrapped( w )
+    method print_warning( t:Token, message:String )
+      local w = Console.width
+      if (w == 0) w = 90
+      else        w .= clamped(40,90)
+      w -= "[WARNING] ".count
+
+      if (message is not prior_warning)
+        local lines = message.word_wrapped( w )
+        forEach (line at i in LineReader(lines))
+          if (i == 0) error.print   "[WARNING] "
+          else        error.print   "          "
+          error.println line
+        endForEach
+
+        prior_warning = message
+      endIf
+
+      error.println   ''          at "$" line $''(t.filepath,t.line)
 
     method resolve
       Analytics.resolve_used_elements.start

@@ -224,18 +224,18 @@ class CWriter : BufferedPrintWriter
            |{
            |  const char*        name;
            |  %Ns%RogueString*   name_object;
-           |  %Ns%RogueInt32     index;
-           |  %Ns%RogueInt32     id;
-           |  %Ns%RogueInt32     module_name_index;
-           |  %Ns%RogueInt32     class_data_index;
+           |  %Ns%%RogueInt%     index;
+           |  %Ns%%RogueInt%     id;
+           |  %Ns%%RogueInt%     module_name_index;
+           |  %Ns%%RogueInt%     class_data_index;
            |  %Ns%RogueInt64     attributes;
            |  void**             vtable;
            |  void**             local_pointer_stack; // Objects + compounds with embedded refs
-           |  %Ns%RogueInt32     local_pointer_capacity;
-           |  %Ns%RogueInt32     local_pointer_count;
-           |  %Ns%RogueInt32     size;
-           |  %Ns%RogueInt32*    base_type_ids;
-           |  %Ns%RogueInt32     base_type_count;
+           |  %Ns%%RogueInt%     local_pointer_capacity;
+           |  %Ns%%RogueInt%     local_pointer_count;
+           |  %Ns%%RogueInt%     size;
+           |  %Ns%%RogueInt%*    base_type_ids;
+           |  %Ns%%RogueInt%     base_type_count;
            |  %Ns%RogueObject*   type_info;
            |  %Ns%RogueFn_Object fn_init_object;
            |  %Ns%RogueFn_Object fn_init;
@@ -248,14 +248,14 @@ class CWriter : BufferedPrintWriter
            |{
            |  const char* procedure;
            |  const char* filename;
-           |  %Ns%RogueInt32 line;
+           |  %Ns%%RogueInt% line;
            |} %Ns%RogueCallFrame;
            |
            |typedef struct %Ns%RogueObjectList
            |{
            |  %Ns%RogueObject** data;
-           |  %Ns%RogueInt32    count;
-           |  %Ns%RogueInt32    capacity;
+           |  %Ns%%RogueInt%    count;
+           |  %Ns%%RogueInt%    capacity;
            |} %Ns%RogueObjectList;
            |
            |//------------------------------------------------------------------------------
@@ -299,8 +299,8 @@ class CWriter : BufferedPrintWriter
            |extern %Ns%RogueObjectList %Ns%RogueMM_objects;
            |extern %Ns%RogueObjectList %Ns%RogueMM_objects_requiring_cleanup;
            |
-           |void*        %Ns%Rogue_as( void* obj, %Ns%RogueInt32 recast_type_id );
-           |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%RogueInt32 ancestor_id );
+           |void*        %Ns%Rogue_as( void* obj, %Ns%%RogueInt% recast_type_id );
+           |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%%RogueInt% ancestor_id );
         println
 
       else
@@ -516,14 +516,14 @@ class CWriter : BufferedPrintWriter
            |%Ns%RogueObjectList  %Ns%RogueMM_objects                   = {0};
            |%Ns%RogueObjectList  %Ns%RogueMM_objects_requiring_cleanup = {0};
            |
-           |void* %Ns%Rogue_as( void* obj, %Ns%RogueInt32 recast_type_id )
+           |void* %Ns%Rogue_as( void* obj, %Ns%%RogueInt% recast_type_id )
            |{
            |  if ( !obj ) return 0;
            |  %Ns%RogueRuntimeType* type = ((%Ns%RogueObject*)obj)->__type;
            |  if (type->id == recast_type_id) return obj;
            |
-           |  %Ns%RogueInt32* base_ids = type->base_type_ids - 1;
-           |  %Ns%RogueInt32  count = type->base_type_count;
+           |  %Ns%%RogueInt%* base_ids = type->base_type_ids - 1;
+           |  %Ns%%RogueInt%  count = type->base_type_count;
            |  while (--count >= 0)
            |  {
            |    if (*(++base_ids) == recast_type_id) return obj;
@@ -531,14 +531,14 @@ class CWriter : BufferedPrintWriter
            |  return 0;
            |}
            |
-           |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%RogueInt32 ancestor_id )
+           |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%%RogueInt% ancestor_id )
            |{
            |  if ( !obj ) return 0;
            |  %Ns%RogueRuntimeType* type = ((%Ns%RogueObject*)obj)->__type;
            |  if (type->id == ancestor_id) return 1;
            |
-           |  %Ns%RogueInt32* base_ids = type->base_type_ids - 1;
-           |  %Ns%RogueInt32  count = type->base_type_count;
+           |  %Ns%%RogueInt%* base_ids = type->base_type_ids - 1;
+           |  %Ns%%RogueInt%  count = type->base_type_count;
            |  while (--count >= 0)
            |  {
            |    if (*(++base_ids) == ancestor_id) return 1;

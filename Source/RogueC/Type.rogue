@@ -34,16 +34,16 @@ class Type : Cmd
     name_tokens           : Token[]
 
     id    : Int32     # used for dynamic dispatch tables; introspection data may not exist for all type ids
-    index = -1        # index of type in lookup table; used for introspection
-    class_data_index : Int32
+    index = -1L       # index of type in lookup table; used for introspection
+    class_data_index : Int
 
     m_init_class          : GlobalMethod
     m_on_singleton_change : GlobalMethod
     m_on_cleanup          : Method
     m_primary_constructor : GlobalMethod   # for compounds; indicates what types are for destructuring assignments
 
-    base_type_lookup_index  : Int32
-    base_type_ids           = Int32[]
+    base_type_lookup_index  : Int
+    base_type_ids           = Int[]
 
     method_vtable           = [String:Method]
 
@@ -1363,6 +1363,18 @@ class Type : Cmd
           if (not m or m.type_context is not this)
             m = Method( t, this, "to<<Rogue::Int32>>" )
             m.return_type = Program.type_Int32
+            m.statements.add( Return(t,Access(t,"value")) )
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
+
+        # to->Int64
+        block
+          local m = methods[ "to<<Rogue::Int64>>()" ]
+          if (not m or m.type_context is not this)
+            m = Method( t, this, "to<<Rogue::Int64>>" )
+            m.return_type = Program.type_Int64
             m.statements.add( Return(t,Access(t,"value")) )
             m.organize
             methods[ m.signature ] = m

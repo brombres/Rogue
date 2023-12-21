@@ -71,9 +71,7 @@ augment
         if (target_type is Program.type_Character) return resolver.validate( ConvertToCharacter( t, this ) )
         if (target_type is Program.type_Int32)
           if (not coerce and this_type is Program.type_Int64)
-            Program.print_warning( t.source_position +
-              ": Assigning an Int64 to an Int32 variable should use an explicit conversion. Add '->Int32' to the end of the assigned value."
-            )
+            Program.print_warning( t, "Assigning an Int64 to an Int32 variable should use an explicit conversion." )
           endIf
           return resolver.validate( ConvertToInt32( t, this ) )
         endIf
@@ -264,14 +262,23 @@ augment
       if (is_compound) return EmptyCompound( cmd_t, this )
       return LiteralNull( cmd_t.cloned(TokenType.KEYWORD_NULL,null), this )
 
+    method TypeByte.cmd_default_value( cmd_t:Token )->Cmd
+      return ConvertToByte( cmd_t, LiteralInt32(cmd_t.cloned(TokenType.INTEGER,"0"), 0) )
+
     method TypeCharacter.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralCharacter( cmd_t.cloned(TokenType.CHARACTER,"0"), 0 )
 
     method TypeInt32.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralInt32( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
 
+    method TypeInt64.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralInt64( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
+
     method TypeLogical.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralLogical( cmd_t.cloned(TokenType.KEYWORD_FALSE,null), false )
+
+    method TypeReal32.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralReal( cmd_t.cloned(TokenType.REAL_NUMBER,"0.0"), 0 )
 
     method TypeReal64.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralReal( cmd_t.cloned(TokenType.REAL_NUMBER,"0.0"), 0 )

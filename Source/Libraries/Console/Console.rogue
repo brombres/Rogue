@@ -86,8 +86,8 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     method has_another_event->Logical
       return mode.has_another_event
 
-    method height->Int32
-      local result : Int32
+    method height->Int
+      local result : Int
       native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  CONSOLE_SCREEN_BUFFER_INFO info;
@@ -172,8 +172,8 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
         @mode._on_enter
       endIf
 
-    method width->Int32
-      local result : Int32
+    method width->Int
+      local result : Int
       native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  CONSOLE_SCREEN_BUFFER_INFO info;
