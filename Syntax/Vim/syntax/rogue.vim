@@ -73,10 +73,11 @@ syn match   rogueDirective    "\$sourceLine\>"
 syn match   rogueDirective    "\$thisModule\>"
 syn keyword rogueDirective    module
 syn keyword rogueDirective    uses
-syn match   rogueNumber       "\<\(\d\|_\)\+\(\.\(\d\|_\)\+\)\=\>"
-syn match   rogueNumber       "\<0b[01_]\+\>"
-syn match   rogueNumber       "\<0x\(\x\|_\)\+\>"
-syn match   rogueNumber       "\<0c[01234567_]\+\(\.[01234567_]\+\)\=\>"
+syn match   rogueNumber       "\<\(\d\|_\)\+L\?L\?\>"
+syn match   rogueNumber       "\<\(\d\|_\)\+\.\(\d\|_\)\+f\?F\?\>"
+syn match   rogueNumber       "\<0b[01_]\+L\?L\?\>"
+syn match   rogueNumber       "\<0x\(\x\|_\)\+L\?L\?\>"
+syn match   rogueNumber       "\<0c[01234567_]\+\(\.[01234567_]\+\)\=L\?L\?\>"
 
 "syn match   rogueIdentifier  "\h\w*"
 "syn match   rogueUserLabelRef  ".\k\+"
