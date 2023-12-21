@@ -71,8 +71,9 @@ augment
         if (target_type is Program.type_Character) return resolver.validate( ConvertToCharacter( t, this ) )
         if (target_type is Program.type_Int32)
           if (not coerce and this_type is Program.type_Int64)
-            #throw t.error( "Assigning an Int64 to an Int32 requires an explicit conversion. Add '->Int32' to the end of the assigned value." )
-            println "[WARNING] $: Assigning an Int64 to an Int32 requires an explicit conversion. Add '->Int32' to the end of the assigned value."(t.source_position)
+            Program.print_warning( t.source_position +
+              ": Assigning an Int64 to an Int32 variable should use an explicit conversion. Add '->Int32' to the end of the assigned value."
+            )
           endIf
           return resolver.validate( ConvertToInt32( t, this ) )
         endIf

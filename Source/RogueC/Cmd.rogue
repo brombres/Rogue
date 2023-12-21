@@ -670,7 +670,7 @@ class Local : Cmd
     initial_value : Cmd
     type          : Type
     attributes    : Attributes
-    index         : Int32
+    index         : Int
 
   METHODS
     method init( t, name, type )
@@ -947,7 +947,7 @@ endClass
 
 class NativeCode : Cmd
   PROPERTIES
-    ordinal : Int32
+    ordinal : Int
     content : String
 
   METHODS
@@ -974,7 +974,7 @@ endClass
 
 class NativeHeader : Cmd
   PROPERTIES
-    ordinal : Int32
+    ordinal : Int
     content : String
 
   METHODS
@@ -3994,7 +3994,7 @@ class Category : Cmd
     name    : String
     args    : Cmd
     value   : Cmd
-    ordinal : Int32  # final resolved 'value'
+    ordinal : Int    # final resolved 'value'
     doc     : String
 
   METHODS

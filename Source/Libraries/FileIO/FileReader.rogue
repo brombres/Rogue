@@ -88,7 +88,7 @@ class FileReader : Reader<<Byte>>
       result.reserve( limit )
 
       # Read up to the end of our internal buffer
-      local total_read = 0
+      local total_read = 0L
       local n = (buffer.count - buffer_position).or_smaller( limit )
       if (n > 0)
         native @|memcpy( $result->as_bytes + $result->count, $buffer->as_bytes+$buffer_position, $n );

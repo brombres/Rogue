@@ -309,7 +309,7 @@ class Program [singleton]
       if (is_organizing) return
       is_organizing = true
 
-      local i1 = 0
+      local i1 = 0L
       while (i1 < unorganized_types.count)
         local i = i1
         while (i < unorganized_types.count)
@@ -379,6 +379,12 @@ class Program [singleton]
       if local type_Routine = find_type( "Rogue::Routine" )
         type_Routine.t = this.t
       endIf
+
+    method print_warning( message:String )
+      message = "[WARNING] " + message
+      local w = Console.width.or_smaller( 80 )
+      if (w == 0) w = 80
+      error.println message.word_wrapped( w )
 
     method resolve
       Analytics.resolve_used_elements.start

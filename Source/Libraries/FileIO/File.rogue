@@ -157,7 +157,7 @@ class File( filepath:String ) [compound]
           destination.create_folder
         endIf
 
-        local result = 0
+        local result = 0L
         forEach (filepath in listing(&=ignore_hidden))
           local file = File( filepath )
           local dest = destination

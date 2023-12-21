@@ -26,7 +26,7 @@ class Timsort<<$DataType>>
       runs.clear
       gallop_threshold = INITIAL_GALLOP_THRESHOLD
 
-      local low = 0
+      local low = 0L
       local min_run_length = _min_run_length( remaining_count )
       while (remaining_count)
         local run_length = _count_and_order_run( list, low, limit, compare_fn )
@@ -117,8 +117,8 @@ class Timsort<<$DataType>>
         compare_fn:(Function($DataType,$DataType)->Logical) )->Int
       assert len > 0 and hint >= 0 and hint < len
 
-      local last_ofs = 0
-      local ofs = 1
+      local last_ofs = 0L
+      local ofs = 1L
       if (not compare_fn(key,list[base+hint]))
         local max_ofs = len - hint
         while (ofs < max_ofs and not compare_fn(key,list[base + hint + ofs]))
@@ -163,8 +163,8 @@ class Timsort<<$DataType>>
         compare_fn:(Function($DataType,$DataType)->Logical) )->Int
       assert len > 0 and hint >= 0 and hint < len
 
-      local ofs = 1
-      local last_ofs = 0
+      local ofs = 1L
+      local last_ofs = 0L
       if (not compare_fn(list[base + hint],key))
         local max_ofs = hint + 1
         while (ofs < max_ofs and not compare_fn(list[base+hint-ofs],key))
@@ -286,8 +286,8 @@ class Timsort<<$DataType>>
         endIf
 
         loop
-          local count1 = 0
-          local count2 = 0
+          local count1 = 0L
+          local count2 = 0L
 
           local first = true
           while (first or (count1 | count2) < gallop_threshold)
@@ -383,7 +383,7 @@ class Timsort<<$DataType>>
 
         list.copy( base1, len1, tmp, 0 )
 
-        local cursor1 = 0
+        local cursor1 = 0L
         local cursor2 = base2
         local dest = base1
 
@@ -404,8 +404,8 @@ class Timsort<<$DataType>>
         endIf
 
         loop
-          local count1 = 0
-          local count2 = 0
+          local count1 = 0L
+          local count2 = 0L
 
           local first = true
           while (first or (count1|count2) < gallop_threshold)
@@ -495,7 +495,7 @@ class Timsort<<$DataType>>
     method _min_run_length( n:Int )->Int
       assert n >= 0
 
-      local r = 0
+      local r = 0L
       while (n >= MERGE_THRESHOLD)
         r |= (n & 1)
         n :>>>:= 1

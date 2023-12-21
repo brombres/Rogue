@@ -1,6 +1,6 @@
 class Object
   GLOBAL METHODS
-    method __type_name( type_index:Int32 )->String [essential]
+    method __type_name( type_index:Int )->String [essential]
       if (native("!%Ns%Rogue_types[$type_index]->name_object")->Logical)
         native @|%Ns%Rogue_types[$type_index]->name_object = %Ns%RogueString_create_permanent( %Ns%Rogue_types[$type_index]->name );
       endIf
