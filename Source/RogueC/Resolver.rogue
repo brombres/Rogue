@@ -2667,9 +2667,9 @@ class Resolver : Poolable, Visitor
           contingent
             forEach (arg at i in args)
               local arg_precision = arg.type.precision_index
-              if (arg_precision >= 1 and arg_precision <= 4)  # Byte, Character, Int32, Int64
+              if (arg_precision >= Type.PRECISION_BYTE and arg_precision <= Type.PRECISION_INT64)  # Byte, Character, Int32, Int, Int64
                 local param_precision = m.parameters[i].type.precision_index
-                necessary (param_precision >= 3 and param_precision <= 4)  # Int32, Int64
+                necessary (param_precision >= Type.PRECISION_INT32 and param_precision <= Type.PRECISION_INT64)  # Int32, Int, Int64
               endIf
             endForEach
             Candidates.keep m

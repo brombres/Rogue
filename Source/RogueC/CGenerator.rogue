@@ -1157,6 +1157,13 @@ class CGenerator : Visitor
       writer.print cmd.value
       if (Program.real_bits == 32) writer.print 'f'
 
+    method on_visit( cmd:LiteralReal32 )
+      writer.print cmd.value
+      writer.print 'f'
+
+    method on_visit( cmd:LiteralReal64 )
+      writer.print cmd.value
+
     method on_visit( cmd:LiteralString )
       local c_id = Program.unique_strings[cmd.value]
       if (not c_id) trace cmd.value

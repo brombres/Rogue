@@ -3,6 +3,18 @@ module RogueC
 uses Collection/ListLookupTable
 
 class Type : Cmd
+  DEFINITIONS
+    PRECISION_LOGICAL   = 0
+    PRECISION_BYTE      = 1
+    PRECISION_CHARACTER = 2
+    PRECISION_INT32     = 3
+    PRECISION_INT       = 4
+    PRECISION_INT64     = 5
+    PRECISION_REAL32    = 6
+    PRECISION_REAL      = 7
+    PRECISION_REAL64    = 8
+    PRECISION_OBJECT    = 10
+
   PROPERTIES
     module_context    : Module
     name              : String
@@ -1879,7 +1891,7 @@ class Type : Cmd
       return true
 
     method precision_index->Int32
-      return 10 # Objects etc.
+      return PRECISION_OBJECT
 
     method resolve
       if (is_resolved) return
@@ -1933,7 +1945,7 @@ class TypeLogical : BuiltInType
       prior.init( t, "Logical", Attribute.PRIMITIVE )
 
     method precision_index->Int32
-      return 0
+      return PRECISION_LOGICAL
 endClass
 
 class TypeByte : BuiltInType
@@ -1942,7 +1954,7 @@ class TypeByte : BuiltInType
       prior.init( t, "Byte", Attribute.PRIMITIVE )
 
     method precision_index->Int32
-      return 1
+      return PRECISION_BYTE
 endClass
 
 class TypeCharacter : BuiltInType
@@ -1951,7 +1963,7 @@ class TypeCharacter : BuiltInType
       prior.init( t, "Character", Attribute.PRIMITIVE )
 
     method precision_index->Int32
-      return 2
+      return PRECISION_CHARACTER
 endClass
 
 class TypeInt32 : BuiltInType
@@ -1960,7 +1972,16 @@ class TypeInt32 : BuiltInType
       prior.init( t, "Int32", Attribute.PRIMITIVE )
 
     method precision_index->Int32
-      return 3
+      return PRECISION_INT32
+endClass
+
+class TypeInt : BuiltInType
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Int", Attribute.PRIMITIVE )
+
+    method precision_index->Int32
+      return PRECISION_INT
 endClass
 
 class TypeInt64 : BuiltInType
@@ -1969,7 +1990,7 @@ class TypeInt64 : BuiltInType
       prior.init( t, "Int64", Attribute.PRIMITIVE )
 
     method precision_index->Int32
-      return 4
+      return PRECISION_INT64
 endClass
 
 class TypeReal32 : BuiltInType
@@ -1978,7 +1999,16 @@ class TypeReal32 : BuiltInType
       prior.init( t, "Real32", Attribute.PRIMITIVE )
 
     method precision_index->Int32
-      return 5
+      return PRECISION_REAL32
+endClass
+
+class TypeReal : BuiltInType
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Real", Attribute.PRIMITIVE )
+
+    method precision_index->Int32
+      return PRECISION_REAL
 endClass
 
 class TypeReal64 : BuiltInType
@@ -1987,7 +2017,7 @@ class TypeReal64 : BuiltInType
       prior.init( t, "Real64", Attribute.PRIMITIVE )
 
     method precision_index->Int32
-      return 6
+      return PRECISION_REAL64
 endClass
 
 class TypeString : BuiltInType
