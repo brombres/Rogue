@@ -4,7 +4,7 @@ class StackTrace
 
   METHODS
     method init
-      local n = native("%Ns%Rogue_call_stack_count")->Int32
+      local n = native("%Ns%Rogue_call_stack_count")->Int
       if (n)
         # Stow the current line number
         native @|%Ns%Rogue_call_stack[%Ns%Rogue_call_stack_count-1].line = %Ns%Rogue_call_stack_line;
@@ -24,14 +24,14 @@ class StackTrace
     method display
       println this->String
 
-    method filename( index:Int32 )->String
+    method filename( index:Int )->String
       if (native("!%Ns%Rogue_call_stack[$index].filename")->Logical) return "INTERNAL"
       return native("%Ns%RogueString_create( %Ns%Rogue_call_stack[$index].filename )")->String
 
-    method line( index:Int32 )->Int32
-      return native("%Ns%Rogue_call_stack[$index].line")->Int32
+    method line( index:Int )->Int
+      return native("%Ns%Rogue_call_stack[$index].line")->Int
 
-    method procedure( index:Int32 )->String
+    method procedure( index:Int )->String
       if (native("!%Ns%Rogue_call_stack[$index].procedure")->Logical) return "Unknown Procedure"
       return native("%Ns%RogueString_create( %Ns%Rogue_call_stack[$index].procedure )")->String
 
@@ -57,12 +57,12 @@ class StackTrace
       return result
 endClass
 
-class StackTraceFrame( procedure:String, filename:String, line:Int32 ) [compound]
+class StackTraceFrame( procedure:String, filename:String, line:Int ) [compound]
   METHODS
     method to->String
       return "[$  $:$]" (procedure, filename, line )
 
-    method to->String( left_w:Int32, right_w:Int32 )
+    method to->String( left_w:Int, right_w:Int )
       local builder = String()
       builder.print '['
       if (procedure.count > left_w) builder.print( procedure.leftmost(left_w-3) + "..." )

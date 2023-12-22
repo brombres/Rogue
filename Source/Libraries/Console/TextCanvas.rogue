@@ -6,8 +6,8 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
   PROPERTIES
     buffer       : StyledCharacter[]
     displayed    = StyledCharacter[]
-    width        : Int32
-    height       : Int32
+    width        : Int
+    height       : Int
 
     cursor       : IntXY
     autoscroll   : Logical
@@ -19,17 +19,20 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
   METHODS
     method init( width, height, fill=' ':Character )
+Epilog.println( "CanvasData() 1 $x$"(width,height) )
       init( width, height, StyledCharacter(fill,style.current) )
 
     method init( width, height, fill:StyledCharacter )
+Epilog.println( "CanvasData() 2 $x$"(width,height) )
       buffer = StyledCharacter[]( width * height )
       loop (width*height) buffer.add( fill )
       invalidate
 
     method init( width, height, content:String )
+Epilog.println( "CanvasData() 3" )
       init( width, height, ' ' )
       if (content.contains('\n'))
-        local y = 0
+        local y = 0L
         forEach (line in LineReader(content))
           forEach (ch at x in line)
             set( x, y, ch )
@@ -42,14 +45,17 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       endIf
 
     method init( width, height, buffer )
+Epilog.println( "CanvasData() 4" )
       invalidate
 
-    method init( content:String, width:Int32 )
+    method init( content:String, width:Int )
+      Epilog.println( "CanvasData() 5 [$]x$"(content,width) )
       init( width, content.count/width )
       draw( content, width )
 
     method init( lines:String[] )
-      local max_w = 0
+Epilog.println( "CanvasData() 6" )
+      local max_w = 0L
       max_w .= or_larger( (forEach in lines).count )
       lines = lines.map<<String>>( (line) with (max_w) => line.justified(-max_w) )
       init( lines.join(""), max_w )
@@ -64,10 +70,10 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method clear( fill=' ':Character )
       clear( StyledCharacter(fill,style.current) )
 
-    method crop( n:Int32 )
+    method crop( n:Int )
       crop( n, n, n, n )
 
-    method crop( left:Int32, top:Int32, right:Int32, bottom:Int32 )
+    method crop( left:Int, top:Int, right:Int, bottom:Int )
       expand( -left, -top, -right, -bottom )
 
     method display( output=Global:PrintWriter )
@@ -77,7 +83,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       ConsoleStyle.reset( output )
 
       local cur_style = CharacterStyle.NONE
-      local index = 0
+      local index = 0L
       loop height
         loop width
           local ch = buffer[ index ]
@@ -94,13 +100,13 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
       ConsoleStyle.reset( output )
 
-    method display( x:Int32, y:Int32 )
+    method display( x:Int, y:Int )
       # (0,0) is the top-left corner of the console
       flush
       ConsoleStyle.reset
 
       local cur_style = CharacterStyle.NONE
-      local line_start = 0
+      local line_start = 0L
       forEach (j in 0..<height)
         local is_drawing = false
         forEach (i in 0..<width)
@@ -126,9 +132,9 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method display( xy:IntXY )
       display( xy.x, xy.y )
 
-    method draw( src:TextCanvas, x:Int32, y:Int32 )
-      local i1 = 0
-      local j1 = 0
+    method draw( src:TextCanvas, x:Int, y:Int )
+      local i1 = 0L
+      local j1 = 0L
       local i2 = src.width-1
       local j2 = src.height-1
       local x2 = x + i2
@@ -180,10 +186,10 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method draw( bounds:IntBox, ch:StyledCharacter )
       local w = bounds.width
       local h = bounds.height
-      local x1 = bounds.x    : Int32
-      local y1 = bounds.y    : Int32
-      local x2 = bounds.x2-1 : Int32
-      local y2 = bounds.y2-1 : Int32
+      local x1 = bounds.x    : Int
+      local y1 = bounds.y    : Int
+      local x2 = bounds.x2-1 : Int
+      local y2 = bounds.y2-1 : Int
       fill( IntBox(x1,y1,w,1), ch )
       fill( IntBox(x1,y2,w,1), ch )
       fill( IntBox(x1,y1+1,1,h-2), ch )
@@ -201,10 +207,10 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       #   GHHHHI
       local w = bounds.width
       local h = bounds.height
-      local x1 = bounds.x    : Int32
-      local y1 = bounds.y    : Int32
-      local x2 = bounds.x2-1 : Int32
-      local y2 = bounds.y2-1 : Int32
+      local x1 = bounds.x    : Int
+      local y1 = bounds.y    : Int
+      local x2 = bounds.x2-1 : Int
+      local y2 = bounds.y2-1 : Int
       fill( IntBox(x1+1,y1,w-2,1), pattern[1%pattern.count] )
       fill( IntBox(x1+1,y2,w-2,1), pattern[7%pattern.count] )
       fill( IntBox(x1,y1+1,1,h-2), pattern[3%pattern.count] )
@@ -214,9 +220,9 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       set( x1, y2, pattern[6%pattern.count] )
       set( x2, y2, pattern[8%pattern.count] )
 
-    method draw( text_image:String, width:Int32, position=IntXY.zero:IntXY )
+    method draw( text_image:String, width:Int, position=IntXY.zero:IntXY )
       local height = text_image.count / width
-      local src = 0
+      local src = 0L
       forEach (j in 0..<height)
         forEach (i in 0..<width)
           set( position+IntXY(i,j), text_image[src] )
@@ -227,10 +233,10 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method draw( pattern:String )
       draw( IntBox(width,height), pattern )
 
-    method expand( n:Int32 )
+    method expand( n:Int )
       expand( n, n, n, n )
 
-    method expand( left:Int32, top:Int32, right:Int32, bottom:Int32 )
+    method expand( left:Int, top:Int, right:Int, bottom:Int )
       if (left == 0 and top == 0 and right == 0 and bottom == 0) return
       local dest = TextCanvas( width+left+right, height+top+bottom )
       dest.draw( this, left, top )
@@ -344,7 +350,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       endForEach
       buffer.clear
 
-    method get( i:Int32, j:Int32 )->StyledCharacter
+    method get( i:Int, j:Int )->StyledCharacter
       if (i < 0 or j < 0 or i >= width or j >= height) return StyledCharacter(0)
       return buffer[ j*width + i ]
 
@@ -409,9 +415,9 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       local ch11 = StyledCharacter( '\[2588]', style )
 
       local result = TextCanvas( w, h/2 )
-      local dj = 0
+      local dj = 0L
       forEach (j in 0..<h step 2)
-        local di = 0
+        local di = 0L
         forEach (i in 0..<w)
           if (get(i,j).value == ' ')
             if (get(i,j+1).value == ' ') result.set( di, dj, ch00 )
@@ -431,7 +437,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method resize( new_size:IntXY )
       resize( new_size.x, new_size.y )
 
-    method resize( new_width:Int32, new_height:Int32 )
+    method resize( new_width:Int, new_height:Int )
       if (width == new_width and height == new_height) return
       expand( 0, 0, new_width-width, new_height-height )
 
@@ -459,14 +465,14 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
       return result
 
-    method set( i:Int32, j:Int32, ch:Character )
+    method set( i:Int, j:Int, ch:Character )
       local clip = which{ this.clip || IntBox(0,0,width,height) }
       if (i < clip.x or j < clip.y or i >= clip.x2 or j >= clip.y2)
         return
       endIf
       buffer[ j*width + i ] = StyledCharacter(ch,style.current)
 
-    method set( i:Int32, j:Int32, ch:StyledCharacter )
+    method set( i:Int, j:Int, ch:StyledCharacter )
       local clip = which{ this.clip || IntBox(0,0,width,height) }
       if (i < clip.x or j < clip.y or i >= clip.x2 or j >= clip.y2) return
       buffer[ j*width + i ] = ch
@@ -485,7 +491,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       flush
       @cursor = new_pos
 
-    method shift( dx:Int32, dy:Int32, fill_ch=' ':Character )
+    method shift( dx:Int, dy:Int, fill_ch=' ':Character )
       if (dx and dy)
         shift( dx, 0, fill_ch )
         shift( 0, dy, fill_ch )
@@ -558,7 +564,7 @@ class CurrentCharacterStyle
     method bg( color:Color )
       current = current.bg( color )
 
-    method bg( color:Int32 )
+    method bg( color:Int )
       current = current.bg( color )
 
     method bold
@@ -603,7 +609,7 @@ class CurrentCharacterStyle
     method fg( color:Color )
       current = current.fg( color )
 
-    method fg( color:Int32 )
+    method fg( color:Int )
       current = current.fg( color )
 
     method fg_default
@@ -710,7 +716,7 @@ class CurrentCharacterStyle
 
 endClass
 
-class CharacterStyle( flags:Int32, fg=Color(0):Color, bg=Color(0):Color ) [compound]
+class CharacterStyle( flags:Int, fg=Color(0):Color, bg=Color(0):Color ) [compound]
   GLOBAL PROPERTIES
     is_truecolor_supported = ((System.is_windows and Windows.is_windows_10_or_greater) or
                                System.env//COLORTERM == "truecolor") : Logical
@@ -718,62 +724,62 @@ class CharacterStyle( flags:Int32, fg=Color(0):Color, bg=Color(0):Color ) [compo
   DEFINITIONS
     NONE                 = CharacterStyle(0)
 
-    FG_MASK              = 0b000000000_111111111_0000000
-    BG_MASK              = 0b111111111_000000000_0000000
-    FG_SHIFT             = 7
-    BG_SHIFT             = 16
+    FG_MASK              = 0b000000000_111111111_0000000L
+    BG_MASK              = 0b111111111_000000000_0000000L
+    FG_SHIFT             = 7L
+    BG_SHIFT             = 16L
 
-    BOLD                 = (1 :<<: 0)
-    DIM                  = (1 :<<: 1)
-    UNDERLINE            = (1 :<<: 2)
-    BLINK                = (1 :<<: 3)
-    INVERSE              = (1 :<<: 4)
-    HIDDEN               = (1 :<<: 5)
-    TRUECOLOR            = (1 :<<: 6)
+    BOLD                 = (1L :<<: 0)
+    DIM                  = (1L :<<: 1)
+    UNDERLINE            = (1L :<<: 2)
+    BLINK                = (1L :<<: 3)
+    INVERSE              = (1L :<<: 4)
+    HIDDEN               = (1L :<<: 5)
+    TRUECOLOR            = (1L :<<: 6)
 
-    FG_DEFAULT           = (0  :<<: 7)
-    FG_BLACK             = (1  :<<: 7)
-    FG_RED               = (2  :<<: 7)
-    FG_GREEN             = (3  :<<: 7)
-    FG_YELLOW            = (4  :<<: 7)
-    FG_BLUE              = (5  :<<: 7)
-    FG_MAGENTA           = (6  :<<: 7)
-    FG_CYAN              = (7  :<<: 7)
-    FG_LIGHT_GRAY        = (8  :<<: 7)
-    FG_DARK_GRAY         = (9  :<<: 7)
-    FG_LIGHT_RED         = (10 :<<: 7)
-    FG_LIGHT_GREEN       = (11 :<<: 7)
-    FG_LIGHT_YELLOW      = (12 :<<: 7)
-    FG_LIGHT_BLUE        = (13 :<<: 7)
-    FG_LIGHT_MAGENTA     = (14 :<<: 7)
-    FG_LIGHT_CYAN        = (15 :<<: 7)
-    FG_WHITE             = (16 :<<: 7)
-    FG_EXTENDED          = (17 :<<: 7)
+    FG_DEFAULT           = (0L  :<<: 7)
+    FG_BLACK             = (1L  :<<: 7)
+    FG_RED               = (2L  :<<: 7)
+    FG_GREEN             = (3L  :<<: 7)
+    FG_YELLOW            = (4L  :<<: 7)
+    FG_BLUE              = (5L  :<<: 7)
+    FG_MAGENTA           = (6L  :<<: 7)
+    FG_CYAN              = (7L  :<<: 7)
+    FG_LIGHT_GRAY        = (8L  :<<: 7)
+    FG_DARK_GRAY         = (9L  :<<: 7)
+    FG_LIGHT_RED         = (10L :<<: 7)
+    FG_LIGHT_GREEN       = (11L :<<: 7)
+    FG_LIGHT_YELLOW      = (12L :<<: 7)
+    FG_LIGHT_BLUE        = (13L :<<: 7)
+    FG_LIGHT_MAGENTA     = (14L :<<: 7)
+    FG_LIGHT_CYAN        = (15L :<<: 7)
+    FG_WHITE             = (16L :<<: 7)
+    FG_EXTENDED          = (17L :<<: 7)
     # (17..256) :<<: 6 - extended 256 fg colors
 
-    BG_DEFAULT           = (0  :<<: 16)
-    BG_BLACK             = (1  :<<: 16)
-    BG_RED               = (2  :<<: 16)
-    BG_GREEN             = (3  :<<: 16)
-    BG_YELLOW            = (4  :<<: 16)
-    BG_BLUE              = (5  :<<: 16)
-    BG_MAGENTA           = (6  :<<: 16)
-    BG_CYAN              = (7  :<<: 16)
-    BG_LIGHT_GRAY        = (8  :<<: 16)
-    BG_DARK_GRAY         = (9  :<<: 16)
-    BG_LIGHT_RED         = (10 :<<: 16)
-    BG_LIGHT_GREEN       = (11 :<<: 16)
-    BG_LIGHT_YELLOW      = (12 :<<: 16)
-    BG_LIGHT_BLUE        = (13 :<<: 16)
-    BG_LIGHT_MAGENTA     = (14 :<<: 16)
-    BG_LIGHT_CYAN        = (15 :<<: 16)
-    BG_WHITE             = (16 :<<: 16)
-    BG_EXTENDED          = (17 :<<: 16)
+    BG_DEFAULT           = (0L  :<<: 16)
+    BG_BLACK             = (1L  :<<: 16)
+    BG_RED               = (2L  :<<: 16)
+    BG_GREEN             = (3L  :<<: 16)
+    BG_YELLOW            = (4L  :<<: 16)
+    BG_BLUE              = (5L  :<<: 16)
+    BG_MAGENTA           = (6L  :<<: 16)
+    BG_CYAN              = (7L  :<<: 16)
+    BG_LIGHT_GRAY        = (8L  :<<: 16)
+    BG_DARK_GRAY         = (9L  :<<: 16)
+    BG_LIGHT_RED         = (10L :<<: 16)
+    BG_LIGHT_GREEN       = (11L :<<: 16)
+    BG_LIGHT_YELLOW      = (12L :<<: 16)
+    BG_LIGHT_BLUE        = (13L :<<: 16)
+    BG_LIGHT_MAGENTA     = (14L :<<: 16)
+    BG_LIGHT_CYAN        = (15L :<<: 16)
+    BG_WHITE             = (16L :<<: 16)
+    BG_EXTENDED          = (17L :<<: 16)
     # (17..256) :<<: 6 - extended 256 bg colors
 
   GLOBAL PROPERTIES
     fg_colors =
-    [
+    Int[][
       ConsoleStyle.FG_DEFAULT,
       ConsoleStyle.FG_BLACK,
       ConsoleStyle.FG_RED,
@@ -791,10 +797,10 @@ class CharacterStyle( flags:Int32, fg=Color(0):Color, bg=Color(0):Color ) [compo
       ConsoleStyle.FG_LIGHT_MAGENTA,
       ConsoleStyle.FG_LIGHT_CYAN,
       ConsoleStyle.FG_WHITE
-    ] : Int32[]
+    ]
 
     bg_colors =
-    [
+    Int[][
       ConsoleStyle.BG_DEFAULT,
       ConsoleStyle.BG_BLACK,
       ConsoleStyle.BG_RED,
@@ -812,7 +818,7 @@ class CharacterStyle( flags:Int32, fg=Color(0):Color, bg=Color(0):Color ) [compo
       ConsoleStyle.BG_LIGHT_MAGENTA,
       ConsoleStyle.BG_LIGHT_CYAN,
       ConsoleStyle.BG_WHITE
-    ] : Int32[]
+    ]
 
   METHODS
     method apply( new_style:CharacterStyle, output=Global:PrintWriter )->CharacterStyle
@@ -891,7 +897,7 @@ class CharacterStyle( flags:Int32, fg=Color(0):Color, bg=Color(0):Color ) [compo
     method bg( bg:Color )->CharacterStyle
       return CharacterStyle( flags|TRUECOLOR, fg, bg )
 
-    method bg( color:Int32 )->CharacterStyle
+    method bg( color:Int )->CharacterStyle
       return CharacterStyle( (flags & !BG_MASK) | color, fg, bg )
 
     method colors( fg:Color, bg:Color )->CharacterStyle
@@ -900,13 +906,13 @@ class CharacterStyle( flags:Int32, fg=Color(0):Color, bg=Color(0):Color ) [compo
     method fg( fg:Color )->CharacterStyle
       return CharacterStyle( flags|TRUECOLOR, fg, bg )
 
-    method fg( color:Int32 )->CharacterStyle
+    method fg( color:Int )->CharacterStyle
       return CharacterStyle( (flags & !FG_MASK) | color, fg, bg )
 
-    method operator+( flag:Int32 )->CharacterStyle
+    method operator+( flag:Int )->CharacterStyle
       return CharacterStyle( flags | flag, fg, bg )
 
-    method operator-( flag:Int32 )->CharacterStyle
+    method operator-( flag:Int )->CharacterStyle
       return CharacterStyle( flags & !flag, fg, bg )
 
     method operator==( other:CharacterStyle )->Logical
@@ -918,7 +924,7 @@ endClass
 
 augment Graphics::Bitmap
   METHODS
-    method to->TextCanvas( &dither, bg8=CharacterStyle.BG_BLACK:Int32, bg24=Color.BLACK:Color )
+    method to->TextCanvas( &dither, bg8=CharacterStyle.BG_BLACK:Int, bg24=Color.BLACK:Color )
       contingent
         sufficient (System.is_windows)
         necessary  (System.env//COLORTERM == "truecolor")
@@ -934,8 +940,8 @@ augment Graphics::Bitmap
       local evens = Bitmap.transparent_checkerboard_evens
       local odds = Bitmap.transparent_checkerboard_odds
 
-      local src_index = 0
-      local dest_index = 0
+      local src_index = 0L
+      local dest_index = 0L
 
       if (height & 1)
         # First line contains default BG color on the top and the first row of color data on the bottom.

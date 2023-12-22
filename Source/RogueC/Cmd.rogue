@@ -536,7 +536,7 @@ endClass
 
 class LiteralReal : LiteralPrimitive
   PROPERTIES
-    value : Real64
+    value : Real
 
   METHODS
     method init( t, value )
@@ -5153,6 +5153,7 @@ class AttributeReplace : Cmd
     method description->String
       return "AttributeReplace"
 endClass
+
 
 class LiteralInt : LiteralInteger
   PROPERTIES

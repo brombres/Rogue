@@ -3,7 +3,7 @@ module UI
 class UITableLayout : UILayout
   PROPERTIES
     is_adding  : Logical
-    next_empty : Int32
+    next_empty : Int
     columns    = UITableColumnInfo[]
     rows       = UITableRowInfo[]
     cell_span  = IntXY[]
@@ -17,7 +17,7 @@ class UITableLayout : UILayout
       prior.init( size )
       resize( 1, 1 )
 
-    method init( column_count:Int32, row_count:Int32 )
+    method init( column_count:Int, row_count:Int )
       prior.init
       resize( column_count, row_count )
 
@@ -68,7 +68,7 @@ class UITableLayout : UILayout
     method add_row
       resize( columns.count, rows.count+1 )
 
-    method column( i:Int32 )->UITableColumnInfo
+    method column( i:Int )->UITableColumnInfo
       assert (i >= 0 and i < columns.count)
       return columns[i]
 
@@ -85,18 +85,18 @@ class UITableLayout : UILayout
         endForEach
       endUse
 
-    method get( i:Int32, j:Int32 )->UIComponent
+    method get( i:Int, j:Int )->UIComponent
       local index = index_of( i, j )
       if (not index) return null
       return get( index.value )
 
-    method index_of( i:Int32, j:Int32 )->Int32?
+    method index_of( i:Int, j:Int )->Int?
       if (i < 0 or i >= columns.count) return null
       if (j < 0 or j >= rows.count)    return null
       return j*columns.count + i
 
-    method measure_content_height( subcomponents:UIComponent[] )->Int32?
-      local total_h = 0
+    method measure_content_height( subcomponents:UIComponent[] )->Int?
+      local total_h = 0L
       forEach (j of rows)
         local h = _row_height( subcomponents, j )
         if (not h) return null
@@ -104,8 +104,8 @@ class UITableLayout : UILayout
       endForEach
       return total_h
 
-    method measure_content_width( subcomponents:UIComponent[] )->Int32?
-      local total_w = 0
+    method measure_content_width( subcomponents:UIComponent[] )->Int?
+      local total_w = 0L
       forEach (i of columns)
         local w = _column_width( subcomponents, i )
         if (not w) return null
@@ -113,28 +113,28 @@ class UITableLayout : UILayout
       endForEach
       return total_w
 
-    method measure_height( container_height:Int32? )->Int32?
+    method measure_height( container_height:Int? )->Int?
       if (is_fixed_height) return size.y
 
       if (not ((forEach in rows).fixed_height))
         return prior.measure_height( container_height )
       endIf
-      local h = 0
+      local h = 0L
       h += (forEach in rows).fixed_height.value
       return h
 
-    method measure_width( container_width:Int32? )->Int32?
+    method measure_width( container_width:Int? )->Int?
       if (is_fixed_width) return size.x
 
       if (not ((forEach in columns).fixed_width))
         return prior.measure_width( container_width )
       endIf
 
-      local w = 0
+      local w = 0L
       w += (forEach in columns).fixed_width.value
       return w
 
-    method resize( new_columns:Int32, new_rows:Int32 )
+    method resize( new_columns:Int, new_rows:Int )
       next_empty = -1
       if (count)
         # Remove cells or add empty cells to maintain structure
@@ -179,11 +179,11 @@ class UITableLayout : UILayout
 
       _advance_next_empty
 
-    method row( j:Int32 )->UITableRowInfo
+    method row( j:Int )->UITableRowInfo
       assert (j > 0 and j < rows.count)
       return rows[j]
 
-    method set( i:Int32, j:Int32, component:UIComponent )
+    method set( i:Int, j:Int, component:UIComponent )
       if (component is null) component = UITableEmptyCell()
       if (i >= columns.count or j >= rows.count)
         resize( columns.count.or_larger(i+1), rows.count.or_larger(j+1) )
@@ -195,7 +195,7 @@ class UITableLayout : UILayout
       endTemporarily
       if (index == next_empty) _advance_next_empty
 
-    method set( i:Int32, j:Int32, component:UIComponent, span:IntXY )
+    method set( i:Int, j:Int, component:UIComponent, span:IntXY )
       if (span == IntXY(1,1))
         set( i, j, component )
         return
@@ -205,7 +205,7 @@ class UITableLayout : UILayout
         set_span( i, j, span )
       endIf
 
-    method set_span( i:Int32, j:Int32, new_span:IntXY )
+    method set_span( i:Int, j:Int, new_span:IntXY )
       local index = index_of(i,j)
       assert index.exists
       local old_span = cell_span[index.value]
@@ -219,17 +219,17 @@ class UITableLayout : UILayout
       cell_span[index.value] = IntXY(w,h)
       _advance_next_empty
 
-    method span( i:Int32, j:Int32 )->IntXY
+    method span( i:Int, j:Int )->IntXY
       local index = index_of(i,j)
       assert index
       return cell_span[index.value]
 
-    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int32 )
-      local total_h = 0
-      local undefined_count = 0
+    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int )
+      local total_h = 0L
+      local undefined_count = 0L
       local undefined_weight = 0.0
 
-      use row_heights = WorkList<<Int32?>>
+      use row_heights = WorkList<<Int?>>
         forEach (j of rows)
           local h = _row_height( subcomponents, j )
           if (h)
@@ -251,7 +251,7 @@ class UITableLayout : UILayout
             if (undefined_count == 1)
               h = remaining_h
             else
-              h = (excess_h * (rows[j].weight / undefined_weight)).floor->Int32
+              h = (excess_h * (rows[j].weight / undefined_weight)).floor->Int
               remaining_h -= h.value
             endIf
             --undefined_count
@@ -275,12 +275,12 @@ class UITableLayout : UILayout
         endForEach
       endUse
 
-    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int32 )
-      local total_w = 0
-      local undefined_count = 0
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int )
+      local total_w = 0L
+      local undefined_count = 0L
       local undefined_weight = 0.0
 
-      use column_widths = WorkList<<Int32?>>
+      use column_widths = WorkList<<Int?>>
         forEach (i of columns)
           local w = _column_width( subcomponents, i )
           if (w)
@@ -302,7 +302,7 @@ class UITableLayout : UILayout
             if (undefined_count == 1)
               w = remaining_w
             else
-              w = (excess_w * (columns[i].weight / undefined_weight)).floor->Int32
+              w = (excess_w * (columns[i].weight / undefined_weight)).floor->Int
               remaining_w -= w.value
             endIf
             --undefined_count
@@ -352,7 +352,7 @@ class UITableLayout : UILayout
       endForEach
       next_empty = -1
 
-    method _column_width( subcomponents:UIComponent[], i:Int32 )->Int32?
+    method _column_width( subcomponents:UIComponent[], i:Int )->Int?
       local max_w = columns[i].fixed_width
       if (max_w) return max_w
 
@@ -371,7 +371,7 @@ class UITableLayout : UILayout
 
       return max_w
 
-    method _row_height( subcomponents:UIComponent[], j:Int32 )->Int32?
+    method _row_height( subcomponents:UIComponent[], j:Int )->Int?
       local max_h = rows[j].fixed_height
       if (max_h) return max_h
 
@@ -390,7 +390,7 @@ class UITableLayout : UILayout
 
       return max_h
 
-    method _set_span_shadow( x:Int32, y:Int32, w:Int32, h:Int32, value:Int32 )
+    method _set_span_shadow( x:Int, y:Int, w:Int, h:Int, value:Int )
       local cols = columns.count
       local new_span = IntXY(value,value)
       forEach (j in y..<y+h)
@@ -399,17 +399,17 @@ class UITableLayout : UILayout
         endForEach
       endForEach
 
-    method _spanned_height( i:Int32, j:Int32 )->Int32
+    method _spanned_height( i:Int, j:Int )->Int
       local spanned_rows = cell_span[ j*columns.count+i ].y
-      local result = 0
+      local result = 0L
       forEach (y in 0..<spanned_rows)
         result += rows[j+y].height
       endForEach
       return result
 
-    method _spanned_width( i:Int32, j:Int32 )->Int32
+    method _spanned_width( i:Int, j:Int )->Int
       local spanned_columns = cell_span[ j*columns.count+i ].x
-      local result = 0
+      local result = 0L
       forEach (x in 0..<spanned_columns)
         result += columns[i+x].width
       endForEach
@@ -420,15 +420,15 @@ class UITableEmptyCell : UIComponent;
 
 class UITableColumnInfo
   PROPERTIES
-    fixed_width : Int32?
-    width       : Int32   # computed
+    fixed_width : Int?
+    width       : Int   # computed
     weight      = 1.0
 endClass
 
 class UITableRowInfo
   PROPERTIES
-    fixed_height : Int32?
-    height       : Int32
+    fixed_height : Int?
+    height       : Int
     weight       = 1.0
 endClass
 

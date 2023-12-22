@@ -70,14 +70,16 @@ augment
         if (target_type is Program.type_Byte)      return resolver.validate( ConvertToByte( t, this ) )
         if (target_type is Program.type_Character) return resolver.validate( ConvertToCharacter( t, this ) )
         if (target_type is Program.type_Int32)
-          if (not coerce and this_type is Program.type_Int64)
-            Program.print_warning( t, "Assigning an Int64 to an Int32 variable should use an explicit conversion." )
+          if (not coerce and (this_type is Program.type_Int or this_type is Program.type_Int64))
+            Program.print_warning( t, "Assigning an Int or Int64 to an Int32 variable should use an explicit conversion." )
           endIf
           return resolver.validate( ConvertToInt32( t, this ) )
         endIf
+        if (target_type is Program.type_Int)       return resolver.validate( ConvertToInt( t, this ) )
         if (target_type is Program.type_Int64)     return resolver.validate( ConvertToInt64( t, this ) )
         if (target_type is Program.type_Logical)   return resolver.validate( ConvertToLogical( t, this ) )
         if (target_type is Program.type_Real32)    return resolver.validate( ConvertToReal32( t, this ) )
+        if (target_type is Program.type_Real)      return resolver.validate( ConvertToReal( t, this ) )
         if (target_type is Program.type_Real64)    return resolver.validate( ConvertToReal64( t, this ) )
         throw t.error( "[INTERNAL] Unhandled primitive conversion." )
       endIf
@@ -271,6 +273,9 @@ augment
     method TypeInt32.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralInt32( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
 
+    method TypeInt.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralInt( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
+
     method TypeInt64.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralInt64( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
 
@@ -278,10 +283,13 @@ augment
       return LiteralLogical( cmd_t.cloned(TokenType.KEYWORD_FALSE,null), false )
 
     method TypeReal32.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralReal32( cmd_t.cloned(TokenType.REAL_NUMBER,"0.0"), 0 )
+
+    method TypeReal.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralReal( cmd_t.cloned(TokenType.REAL_NUMBER,"0.0"), 0 )
 
     method TypeReal64.cmd_default_value( cmd_t:Token )->Cmd
-      return LiteralReal( cmd_t.cloned(TokenType.REAL_NUMBER,"0.0"), 0 )
+      return LiteralReal64( cmd_t.cloned(TokenType.REAL_NUMBER,"0.0"), 0 )
 
 endAugment
 
@@ -595,6 +603,9 @@ augment
     method ConvertToInt32.type->Type
       return Program.type_Int32
 
+    method ConvertToInt.type->Type
+      return Program.type_Int
+
     method ConvertToInt64.type->Type
       return Program.type_Int64
 
@@ -603,6 +614,9 @@ augment
 
     method ConvertToReal32.type->Type
       return Program.type_Real32
+
+    method ConvertToReal.type->Type
+      return Program.type_Real
 
     method ConvertToReal64.type->Type
       return Program.type_Real64

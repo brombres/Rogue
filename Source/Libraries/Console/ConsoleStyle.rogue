@@ -65,7 +65,7 @@ class ConsoleStyle [singleton]
     #   method colors( fg:Color, bg:Color, output=Global:PrintWriter )
     #   method fg_color( fg:Color, output=Global:PrintWriter )
 
-    method bg_color( index:Int32, output=Global:PrintWriter )
+    method bg_color( index:Int, output=Global:PrintWriter )
       # 256 color mode; index is 0..255
       output.flush
       output.print( "\e[48;5;" )
@@ -73,7 +73,7 @@ class ConsoleStyle [singleton]
       output.print( "m" )
       output.flush
 
-    method fg_color( index:Int32, output=Global:PrintWriter )
+    method fg_color( index:Int, output=Global:PrintWriter )
       # 256 color mode; index is 0..255
       output.flush
       output.print( "\e[38;5;" )
@@ -84,7 +84,7 @@ class ConsoleStyle [singleton]
     method reset( output=Global:PrintWriter )
       set( RESET, output )
 
-    method set( code:Int32, output=Global:PrintWriter )
+    method set( code:Int, output=Global:PrintWriter )
       output.flush
       output.print( "\e[" )
       output.print( code )
@@ -97,7 +97,7 @@ class ConsoleStyle [singleton]
     method flush
       Global.flush
 
-    method string( code:Int32 )->String
+    method string( code:Int )->String
       # Returns the full escape sequence activating the given code.
       # Example: println ConsoleStyle.string(ConsoleStyle.BG_BLUE)
       return "\e[$m" (code)
