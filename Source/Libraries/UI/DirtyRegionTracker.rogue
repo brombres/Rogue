@@ -11,7 +11,7 @@ class DirtyRegionTracker : Poolable
     method clear
       noAction
 
-    method count->Int32
+    method count->Int
       return 0
 
     method on_end_use( list:IntBox[] )
@@ -43,7 +43,7 @@ class SimpleDirtyRegionTracker : DirtyRegionTracker
     method clear
       dirty_bounds = null
 
-    method count->Int32
+    method count->Int
       return which { dirty_bounds.exists:1 || 0 }
 
     method on_use->IntBox[]

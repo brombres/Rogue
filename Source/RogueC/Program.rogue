@@ -389,6 +389,8 @@ class Program [singleton]
       w -= "[WARNING] ".count
 
       if (message is not prior_warning)
+        ConsoleStyle.set( ConsoleStyle.FG_LIGHT_YELLOW )
+
         local lines = message.word_wrapped( w )
         forEach (line at i in LineReader(lines))
           if (i == 0) error.print   "[WARNING] "
@@ -396,10 +398,12 @@ class Program [singleton]
           error.println line
         endForEach
 
+        ConsoleStyle.set( ConsoleStyle.FG_DEFAULT )
+
         prior_warning = message
       endIf
 
-      error.println   ''          at "$" line $''(t.filepath,t.line)
+      error.println   ''          "$" line $''(t.filepath,t.line)
 
     method resolve
       Analytics.resolve_used_elements.start

@@ -5,8 +5,8 @@ class ConsoleUIFont : UIFont [singleton]
     is_bold      : Logical
     is_inverse   : Logical
     is_underline : Logical
-    color        : Int32?
-    bg_color     : Int32?
+    color        : Int?
+    bg_color     : Int?
 
   METHODS
     method init
@@ -35,7 +35,7 @@ class ConsoleUIFont : UIFont [singleton]
       if (is_inverse)   ConsoleUICanvas.style.inverse_off
       if (is_underline) ConsoleUICanvas.style.underline_off
 
-    method height->Int32
+    method height->Int
       return 1
 
     method measure( ch:Character )->XY

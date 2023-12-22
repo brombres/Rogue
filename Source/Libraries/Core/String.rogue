@@ -531,7 +531,7 @@ class String : Poolable PrintWriter
 
       # Extracted strings were added to 'results' in reverse order. Reverse the order of
       # all strings added after the original contents.
-      local i2 = results.count - 1
+      local i2 = results.count - 1L
       while (i1 < i2)
         results.swap( i1, i2 )
         ++i1
@@ -1017,7 +1017,7 @@ class String : Poolable PrintWriter
 
       # Display power of 10 exponent for numbers >= 1e16 or <= 1e-4
       if (value >= 1000000000000000.0)
-        local pow10 = 0
+        local pow10 = 0L
         while (value >= 10.0)
           value /= 10.0
           ++pow10
@@ -1028,7 +1028,7 @@ class String : Poolable PrintWriter
       endIf
 
       if (value < 0.00001)
-        local pow10 = 0
+        local pow10 = 0L
         while (value < 0.1)
           value *= 10.0
           --pow10
@@ -1067,7 +1067,7 @@ class String : Poolable PrintWriter
 
       # Display power of 10 exponent for numbers >= 1e16 or <= 1e-4
       if (value >= 1000000000000000.0)
-        local pow10 = 0
+        local pow10 = 0L
         while (value >= 10.0)
           value /= 10.0
           ++pow10
@@ -1078,7 +1078,7 @@ class String : Poolable PrintWriter
       endIf
 
       if (value < 0.00001)
-        local pow10 = 0
+        local pow10 = 0L
         while (value < 0.1)
           value *= 10.0
           --pow10
@@ -1447,7 +1447,7 @@ class String : Poolable PrintWriter
               if (scanner.consume(close_paren))
                 result.print( parts[i] ); i = (i + 1) % parts.count
               else
-                local n = 0
+                local n = 0L
                 while (scanner.has_another and not scanner.consume(close_paren))
                   n = n * 10 + scanner.read.to_number
                 endWhile
@@ -1618,7 +1618,7 @@ class String : Poolable PrintWriter
     method split->String[]
       # Splits the string on whitespace
       local result = String[]
-      local start = -1
+      local start = -1L
       local current = 0L
       forEach (ch in this)
         which (ch)
@@ -1825,7 +1825,7 @@ class String : Poolable PrintWriter
     method trimmed->String
       # Trim white spaces on both ends
       local i1 = 0L
-      local i2 = count - 1
+      local i2 = count - 1L
 
       while (i1 <= i2)
         if     (this[i1] <= ' ') ++i1
@@ -1879,7 +1879,7 @@ class String : Poolable PrintWriter
               case '0': ch = '\0'
 
               case 'x'
-                local value = 0
+                local value = 0L
                 loop 2
                   if local hex_ch = iterator.read_another
                     if (hex_ch.is_number(16)) value = (value * 16) + hex_ch.to_number(16)
@@ -1888,7 +1888,7 @@ class String : Poolable PrintWriter
                 ch = Character( value )
 
               case 'u'
-                local value = 0
+                local value = 0L
                 loop 4
                   if local hex_ch = iterator.read_another
                     if (hex_ch.is_number(16)) value = (value * 16) + hex_ch.to_number(16)
@@ -1897,7 +1897,7 @@ class String : Poolable PrintWriter
                 ch = Character( value )
 
               case '['
-                local value = 0
+                local value = 0L
                 block
                   loop 8
                     if local hex_ch = iterator.read_another
@@ -2027,7 +2027,7 @@ class String : Poolable PrintWriter
       endIf
 
       local w = width
-      local initial_indent = 0
+      local initial_indent = 0L
       forEach (ch in this)
         if (ch != ' ') escapeForEach
         ++initial_indent
@@ -2257,7 +2257,7 @@ class String : Poolable PrintWriter
           # Extra spaces and tabs okay as long as they're not between alphanumeric values or at the beginning
           # Count how many spaces and tabs in a row
           if (f0 > 0)
-            local n = 1
+            local n = 1L
             while (n < remaining_count)
               ch = this[i0+n]
               if (ch != ' ' and ch != '\t') escapeWhile
@@ -2441,7 +2441,7 @@ class String : Poolable PrintWriter
           # Extra spaces and tabs okay as long as they're not between alphanumeric values or at the beginning
           # Count how many spaces and tabs in a row
           if (f0 > 0)
-            local n = 1
+            local n = 1L
             while (n < remaining_count)
               ch = this[i0+n]
               if (ch != ' ' and ch != '\t') escapeWhile

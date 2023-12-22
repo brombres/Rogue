@@ -72,7 +72,7 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
     method is_NaN->Logical
       return (this != this)
 
-    method is_string_accurate_at( decimal_places:Int32, buffer=null:String )->Logical
+    method is_string_accurate_at( decimal_places:Int, buffer=null:String )->Logical
       if (buffer)
         buffer.clear
         buffer.print( this, decimal_places )
@@ -85,7 +85,7 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
       endIf
       return true # never reached
 
-    method lerp( a:Int32, b:Int32 )->Int32
+    method lerp( a:Int, b:Int )->Int
       # Assumes this Real64 is a progress value in the 0.0 to 1.0 range.
       # Returns the position from 'a' to 'b' based on this progress.
       return a + (b-a) * this
@@ -120,7 +120,7 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
     method to->String
       return String().[ print(this) ]
 
-    method to->String( decimal_places:Int32 )
+    method to->String( decimal_places:Int )
       return String().[ print(this,decimal_places) ]
 
 endClass
@@ -199,7 +199,7 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
     method is_NaN->Logical
       return (this != this)
 
-    method is_string_accurate_at( decimal_places:Int32, buffer=null:String )->Logical
+    method is_string_accurate_at( decimal_places:Int, buffer=null:String )->Logical
       if (buffer)
         buffer.clear
         buffer.print( this, decimal_places )
@@ -212,7 +212,7 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
       endIf
       return true # never reached
 
-    method lerp( a:Int32, b:Int32 )->Int32
+    method lerp( a:Int, b:Int )->Int
       # Assumes this Real32 is a progress value in the 0.0 to 1.0 range.
       # Returns the position from 'a' to 'b' based on this progress.
       return a + (b-a) * this
@@ -247,7 +247,7 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
     method to->String
       return String().[ print(this) ]
 
-    method to->String( decimal_places:Int32 )
+    method to->String( decimal_places:Int )
       return String().[ print(this,decimal_places) ]
 endClass
 
@@ -257,7 +257,7 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
     MINIMUM = 0x8000_0000_0000_0000
 
   METHODS
-    method format( fmt:String, bits=64:Int32 )->String
+    method format( fmt:String, bits=64:Int )->String
       # fmt
       #   C-esque "[attributes][N]" - attributes must come before optional "N"
       #   but can otherwise be in any order.
@@ -347,7 +347,7 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
       if (Int isType Int32) return Int32(this :>>: 32) ~ Int32(this)
       else                  return this
 
-    method minimum_bits->Int32
+    method minimum_bits->Int
       if (this < 0)
         if (this < 0xC000_0000_0000_0000) return 64
         local bits = 1 : Int64
@@ -383,14 +383,14 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
       if (bits) return ((this :>>>: 1) & 0x7fffFFFFffffFFFF) :>>>: bits
       else      return (this :>>>: 1) & 0x7fffFFFFffffFFFF
 
-    method print_power_of_2( base:Int32, digits:Int32, buffer:PrintWriter )->PrintWriter
+    method print_power_of_2( base:Int, digits:Int, buffer:PrintWriter )->PrintWriter
       local bits = 0
       local temp = base
       while (temp > 1) ++bits; temp = temp:>>>:1
 
       local remaining = this :>>: bits
       if (digits > 1 or remaining) remaining.print_power_of_2( base, digits-1, buffer )
-      buffer.print( (this & (base-1))->Int32.to_digit )
+      buffer.print( (this & (base-1))->Int.to_digit )
       return buffer
 
     method progress( a:Int64, b:Int64 )->Real
@@ -408,12 +408,12 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
     method real_bits->Real64
       return native("*((%Ns%RogueReal64*)&$this)")->Real64
 
-    method rol( nbits:Int32 )->Int64
+    method rol( nbits:Int )->Int64
       if (nbits <= 0) return this
       nbits &= 63
       return (this :<<: nbits) | (this :>>: (64-nbits))
 
-    method ror( nbits:Int32 )->Int64
+    method ror( nbits:Int )->Int64
       if (nbits <= 0) return this
       nbits &= 63
       return (this :>>: nbits) | (this :<<: (64-nbits))
@@ -449,10 +449,10 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
       return result
 
     method to->String
-      if (this >= -1 and this <= 9) return this->Int32->String
+      if (this >= -1 and this <= 9) return this->Int->String
       return String().[ print(this) ]
 
-    method to->String( digits=0:Int32, &binary, &hex, &octal )
+    method to->String( digits=0:Int, &binary, &hex, &octal )
       if (binary) return print_power_of_2(  2, which{digits||64}, String() )->(as String)
       if (hex)    return print_power_of_2( 16, which{digits||16}, String() )->(as String)
       if (octal)  return print_power_of_2(  8, which{digits||22}, String() )->(as String)
@@ -486,7 +486,7 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
     method hash_code->Int
       return this
 
-    method minimum_bits->Int32
+    method minimum_bits->Int
       if (this < 0)
         if (this < 0xC000_0000) return 32
         local bits = 1
@@ -522,7 +522,7 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
       if (bits) return ((this :>>>: 1) & 0x7fffFFFF) :>>>: bits
       else      return (this :>>>: 1) & 0x7fffFFFF
 
-    method print_power_of_2( base:Int32, digits:Int32, buffer:PrintWriter )->PrintWriter
+    method print_power_of_2( base:Int, digits:Int, buffer:PrintWriter )->PrintWriter
       local bits = 0
       local temp = base
       while (temp > 1) ++bits; temp = temp:>>>:1
@@ -532,7 +532,7 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
       buffer.print( (this & (base-1)).to_digit )
       return buffer
 
-    method progress( a:Int32, b:Int32 )->Real
+    method progress( a:Int, b:Int )->Real
       # Returns the progress of this number along the interval from a to b.
       # Examples:
       #   2.progress(1,5) -> 0.25
@@ -603,7 +603,7 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
         others:  return String().[ print(this) ]
       endWhich
 
-    method to->String( digits=0:Int32, &binary, &hex, &octal )
+    method to->String( digits=0:Int, &binary, &hex, &octal )
       if (binary) return print_power_of_2(  2, which{digits||32}, String() )->(as String)
       if (hex)    return print_power_of_2( 16, which{digits|| 8}, String() )->(as String)
       if (octal)  return print_power_of_2(  8, which{digits||11}, String() )->(as String)
@@ -674,13 +674,13 @@ class Character [primitive]
     method is_lowercase->Logical
       return (this >= 'a' and this <= 'z')
 
-    method is_number( base=10:Int32 )->Logical
+    method is_number( base=10:Int )->Logical
       return to_number(base) >= 0
 
     method is_uppercase->Logical
       return (this >= 'A' and this <= 'Z')
 
-    method minimum_bits->Int32
+    method minimum_bits->Int
       return this->Int32.minimum_bits
 
     method operator%( other:Character )->Int32
@@ -824,7 +824,7 @@ class Character [primitive]
           return String().[ print(this) ]
       endWhich
 
-    method to->String( digits=0:Int32, &binary, &hex, &octal )
+    method to->String( digits=0:Int, &binary, &hex, &octal )
       return this->Int32->String( &=digits, &=binary, &=hex, &=octal )
 
     method to_escaped_ascii( additional_characters_to_escape="":String )->String
@@ -836,7 +836,7 @@ class Character [primitive]
       if (not is_uppercase) return this
       return Character( this + ('a'-'A') )
 
-    method to_number( base=10:Int32 )->Int32
+    method to_number( base=10:Int )->Int32
       local value : Int32
       if (this >= '0' and this <= '9')     value = this - '0'
       elseIf (this >= 'A' and this <= 'Z') value = 10 + (this - 'A')
@@ -864,7 +864,7 @@ class Byte : CommonPrimitiveMethods<<Byte>> [primitive]
     method hash_code->Int
       return this->Int
 
-    method minimum_bits->Int32
+    method minimum_bits->Int
       if (this & 0x80) return 8
       local bits = 1
       while ((1:<<:bits) <= this) ++bits
@@ -876,14 +876,14 @@ class Byte : CommonPrimitiveMethods<<Byte>> [primitive]
     method operator:>>:( bits:Int32 )->Byte
       return (this->Int32 :>>: bits)->Byte
 
-    method signed->Int32
+    method signed->Int
       if (this <= 127) return this
       return (this - 256)
 
     method to->String
       return this->Int32->String
 
-    method to->String( digits=0:Int32, &binary, &hex, &octal )
+    method to->String( digits=0:Int, &binary, &hex, &octal )
       if (binary) return this->Int32.print_power_of_2(  2, which{digits||8}, String() )->(as String)
       if (hex)    return this->Int32.print_power_of_2( 16, which{digits||2}, String() )->(as String)
       if (octal)  return this->Int32.print_power_of_2(  8, which{digits||3}, String() )->(as String)
@@ -928,7 +928,7 @@ class CommonPrimitiveMethods<<$DataType>> [aspect]
     method description->String
       return this->String
 
-    method digit_count->Int32
+    method digit_count->Int
       use builder = StringPool
         builder.print( this )
         return builder.count
@@ -947,7 +947,7 @@ class CommonPrimitiveMethods<<$DataType>> [aspect]
       return Boxed<<$DataType>>(this)
 endClass
 
-class PrimitiveFormat( n:Int32, d:Int32, sign:Logical, spaces:Logical, zeros:Logical, commas:Logical,
+class PrimitiveFormat( n:Int, d:Int, sign:Logical, spaces:Logical, zeros:Logical, commas:Logical,
     binary:Logical, hex:Logical ) [compound]
   GLOBAL METHODS
     method create( fmt:String )->PrimitiveFormat
@@ -967,9 +967,9 @@ class PrimitiveFormat( n:Int32, d:Int32, sign:Logical, spaces:Logical, zeros:Log
       endWhile
 
       local n_d = String(chars)
-      result.n = n_d.before_first('.')->Int32
+      result.n = n_d.before_first('.')->Int
       if (n_d.contains('.') and not n_d.ends_with('.'))
-        result.d = n_d.after_first('.')->Int32
+        result.d = n_d.after_first('.')->Int
       endIf
 
       return result
