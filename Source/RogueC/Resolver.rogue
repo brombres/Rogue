@@ -2438,9 +2438,6 @@ class Resolver : Poolable, Visitor
     method refine_candidates( type_context:Type, args:Cmd, &exact_arg_types, &limit_conversions )->Procedure
       local arg_count = which{ args:args.count || 0 }
 
-      #local debug = type_context and type_context.name=="StateCall<<Rogue::ScreenState>>" and Candidates.count==3 and Candidates.list.contains($.name=="create")
-      #if (debug) trace Candidates
-
       local has_named_arg = false
       if (args)
         # Remove any DefaultArgs and check for named args with duplicate names.
@@ -2570,17 +2567,6 @@ class Resolver : Poolable, Visitor
         Candidates.refine
       endIf
 
-      # Filter by fewest parameters (omitting calls with excess default args)
-      if (arg_count)
-        local min_params = Candidates[0].parameters.count
-        min_params .= or_smaller( (forEach in Candidates from 1).parameters.count ).clamped_low( arg_count )
-        forEach (m in Candidates)
-          if (m.parameters.count == min_params) Candidates.keep m
-        endForEach
-        if (Candidates.found_match) return Candidates.match
-        Candidates.refine
-      endIf
-
       # Filter by arg categories (reference/primitive/exact compound)
       if (arg_count)
         forEach (m in Candidates)
@@ -2674,6 +2660,25 @@ class Resolver : Poolable, Visitor
         Candidates.refine
       endIf
 
+      # Prefer methods with integer args and non-real parameters
+      if (arg_count)
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args, this )
+          contingent
+            forEach (arg at i in args)
+              local arg_precision = arg.type.precision_index
+              if (arg_precision >= 1 and arg_precision <= 4)  # Byte, Character, Int32, Int64
+                local param_precision = m.parameters[i].type.precision_index
+                necessary (param_precision >= 3 and param_precision <= 4)  # Int32, Int64
+              endIf
+            endForEach
+            Candidates.keep m
+          endContingent
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
       # Prefer methods with primitive parameters that are higher precision than the args
       if (arg_count)
         forEach (m in Candidates)
@@ -2681,9 +2686,11 @@ class Resolver : Poolable, Visitor
           contingent
             forEach (arg at i in args)
               local arg_type = arg.type
-              local param_type = m.parameters[i].type
-              if (arg_type.is_primitive and param_type.is_primitive)
-                necessary (param_type.precision_index >= arg_type.precision_index)
+              if (arg_type.is_primitive)
+                local param_type = m.parameters[i].type
+                if (param_type.is_primitive)
+                  necessary (param_type.precision_index >= arg_type.precision_index)
+                endIf
               endIf
             endForEach
             Candidates.keep m
