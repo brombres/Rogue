@@ -80,6 +80,74 @@ class XY( x:Real, y:Real ) [compound]
     method ceiling->XY
       return XY( x.ceiling, y.ceiling )
 
+    method clamped( box:Box )->XY
+      # Adjusts this point to be within the boundaries of the given box.
+      local vx = x
+      local vy = y
+      local x1 = box.x1
+      local y1 = box.y1
+      local x2 = box.x2
+      local y2 = box.y2
+
+      if (vx < x1)     vx = x1
+      elseIf (vx > x2) vx = x2
+
+      if (vy < y1)     vy = y1
+      elseIf (vy > y2) vy = y2
+
+      return XY(vx,vy)
+
+    method clamped( line:Line )->XY
+      # Returns the point along the given line segment that is closest
+      # to this point.
+      #
+      # Notes:
+      #
+      # Points along the line are defined by:
+      #
+      #   Line(t) = line.a + t * (line.b - line.a)
+      #
+      # where t is 0 to 1.  We can define t as:
+      #
+      #   A = v - line.a
+      #   B = line.b - line.a
+      #   t = dot(A,B) / dot(B,B)
+      #
+      # as this is the projection of A along and proportional to B.
+      local P1 = line.a
+      local P2 = line.b
+      local A = this - P1
+      local B = P2 - P1
+      local t_numer = A.dot(B)
+      if (t_numer < 0) return P1
+      local t_denom = B.dot(B)
+      if (t_numer > t_denom) return P2
+      return P1 + (t_numer / t_denom) * B
+
+    method clamped( ray:Ray )->XY
+      # Returns the point along the given ray that is closest
+      # to this point.
+      #
+      # Notes:
+      #
+      # Points along the ray are defined by:
+      #
+      #   Ray(t) = ray.position + t * ray.direction
+      #
+      # where t is 0 or higher.  We can define t as:
+      #
+      #   A = pt - line.position
+      #   B = line.direction
+      #   t = dot(A,B) / dot(B,B)
+      #
+      # as this is the projection of A along and proportional to B.
+      local A = this - ray.position
+      local B = ray.direction
+      local t_numer = A.dot(B)
+      if (t_numer < 0) return ray.position
+      local t_denom = B.dot(B)
+      return ray.position + (t_numer / t_denom) * B
+
     method clamped( low:XY, high:XY )->XY
       return this.clamped_low(low).clamped_high(high)
 
@@ -95,7 +163,7 @@ class XY( x:Real, y:Real ) [compound]
     method degrees->Degrees
       return Radians( y.atan2(x) )->Degrees
 
-    method distance_to( other:XY )->Int32
+    method distance_to( other:XY )->Int
       return (other - this).magnitude
 
     method dot( other:IntXY )->Real
@@ -110,7 +178,7 @@ class XY( x:Real, y:Real ) [compound]
     method magnitude->Real
       return (x*x + y*y).sqrt
 
-    method magnitude2->Real
+    method magnitude_squared->Real
       return x*x + y*y
 
     method max->Real
@@ -151,7 +219,7 @@ class XY( x:Real, y:Real ) [compound]
     method operator-()->XY
       return XY( -x, -y )
 
-    method operator<>( other:XY )->Int32
+    method operator<>( other:XY )->Int
       if (x == other.x) return y <> other.y
       else              return x <> other.x
 
@@ -169,11 +237,19 @@ class XY( x:Real, y:Real ) [compound]
     method radians->Radians
       return Radians( y.atan2(x) )
 
+    method reflected( surface_normal:XY )->XY
+      return this - 2 * (this.dot(surface_normal) * surface_normal)
+
     method rotated( angle:Degrees )->XY
       return XY( this.magnitude, radians + angle->Radians )
 
     method rotated( angle:Radians )->XY
       return XY( magnitude, radians + angle )
+
+    method side( line:Line )->Int32
+      # Returns 0 if on the line, 1 if on the same side as line.normal points out of,
+      # and -1 if on the opposite side
+      return line.direction.cross( this - line.a ).sign
 
     method sign->XY
       return XY( x.sign, y.sign )

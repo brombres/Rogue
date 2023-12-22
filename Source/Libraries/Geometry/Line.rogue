@@ -2,7 +2,7 @@ module Geometry
 
 class Line( a:XY, b:XY ) [compound]
   GLOBAL METHODS
-    method create( ax:Int32, ay:Int32, bx:Int32, by:Int32 )->Line
+    method create( ax:Int, ay:Int, bx:Int, by:Int )->Line
       return Line( XY(ax,ay), XY(bx,by) )
 
   METHODS
@@ -12,7 +12,6 @@ class Line( a:XY, b:XY ) [compound]
     method direction->XY
       return (b - a)
 
-      #{
     method intersection( circle:Circle )->Line?
       # https://math.stackexchange.com/questions/311921/get-location-of-vector-circle-intersection
       if (circle.contains(a))
@@ -41,9 +40,7 @@ class Line( a:XY, b:XY ) [compound]
           return Line( a + t1 * direction, a + t2 * direction )
         endIf
       endIf
-      }#
 
-      #{
     method intersection( other:Line, &clamp=true )->XY?
       # Returns the point of intersection between this line and another line.
       local P1 = this.a
@@ -62,28 +59,20 @@ class Line( a:XY, b:XY ) [compound]
         if (t0 < 0.0 or t0 > 1.0 or t1 < 0.0 or t1 > 1.0) return null
       endIf
       return P1 + t0 * A
-      }#
 
-      #{
     method intersects( box:Box )->Logical
       return Quad(box).intersects( this )
-      }#
 
-      #{
     method intersects( circle:Circle )->Logical
       local closest_pt = circle.position.clamped( this )
-      return ((circle.position - closest_pt).magnitude2 <= circle.radius^2)
+      return ((circle.position - closest_pt).magnitude_squared <= circle.radius^2)
 
     method intersects( quad:Quad )->Logical
       return quad.intersects( this )
-      }#
 
-      #{
     method intersects( other:Line )->Logical
       return (this & other).exists
-      }#
 
-      #{
     method intersects( triangle:Triangle )->Logical
       if (this.intersects(Line(triangle.a,triangle.b))) return true
       if (this.intersects(Line(triangle.b,triangle.c))) return true
@@ -92,7 +81,6 @@ class Line( a:XY, b:XY ) [compound]
       # This line could be entirely contained within the triangle - see
       # if the triangle contains either end point
       return triangle.contains( a )
-      }#
 
     method normal->XY
       local v = (b - a)
@@ -120,13 +108,10 @@ class Line( a:XY, b:XY ) [compound]
     method operator/( scale:XY )->Line
       return Line( a/scale, b/scale )
 
-      #{
     method operator&( other:Line )->XY?
       return intersection( other )
-      }#
 
-      #{
-    method rotated( angle:Degrees )->Line [macro]
+    method rotated( angle:Degrees )->Line
       return this.rotated( angle->Radians )
 
     method rotated( angle:Radians )->Line
@@ -134,7 +119,6 @@ class Line( a:XY, b:XY ) [compound]
 
     method to->Ray
       return Ray( a, (b-a).normalized )
-      }#
 
     method to->String
       return "[$->$]"(a,b)

@@ -1,6 +1,6 @@
 module Geometry
 
-class IntXY( x:Int32, y:Int32 ) [essential compound]
+class IntXY( x:Int, y:Int ) [essential compound]
   DEFINITIONS
     zero = IntXY(0,0)
 
@@ -12,13 +12,13 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
       local radians = angle->Radians
       return IntXY( r*angle.cos.floor, r*angle.sin.floor )
 
-    method create( n:Int32 )->IntXY
+    method create( n:Int )->IntXY
       return IntXY(n,n)
 
     method create( real_xy:XY )->IntXY
       return IntXY( real_xy.x.floor, real_xy.y.floor )
 
-    method operator*( a:Int32, b:IntXY )->IntXY
+    method operator*( a:Int, b:IntXY )->IntXY
       return IntXY( a*b.x, a*b.y )
 
     method operator*( a:XY, b:IntXY )->XY
@@ -27,7 +27,7 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method operator*( a:IntXY, b:IntXY )->IntXY
       return IntXY( a.x*b.x, a.y*b.y )
 
-    method operator*( a:IntXY, b:Int32 )->IntXY
+    method operator*( a:IntXY, b:Int )->IntXY
       return IntXY( a.x*b, a.y*b )
 
     method operator*( a:IntXY, b:Real )->XY
@@ -36,13 +36,13 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method operator*( a:IntXY, b:XY )->XY
       return XY( a.x*b.x, a.y*b.y )
 
-    method operator/( a:Int32, b:IntXY )->IntXY
+    method operator/( a:Int, b:IntXY )->IntXY
       return IntXY( a/b.x, a/b.y )
 
     method operator/( a:XY, b:IntXY )->XY
       return XY( a.x/b.x, a.x/b.y )
 
-    method operator%( a:Int32, b:IntXY )->IntXY
+    method operator%( a:Int, b:IntXY )->IntXY
       return IntXY( a%b.x, a%b.y )
 
     method operator%( a:XY, b:IntXY )->XY
@@ -63,7 +63,7 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method operator/( a:IntXY, b:IntXY )->IntXY
       return IntXY( which{b.x:a.x/b.x || 0}, which{b.y:a.y/b.y || 0} )
 
-    method operator/( a:IntXY, b:Int32 )->IntXY
+    method operator/( a:IntXY, b:Int )->IntXY
       if (b == 0) return IntXY.zero
       return IntXY( a.x/b, a.y/b )
 
@@ -76,7 +76,7 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method operator%( a:IntXY, b:IntXY )->IntXY
       return IntXY( a.x%b.x, a.y%b.y )
 
-    method operator%( a:IntXY, b:Int32 )->IntXY
+    method operator%( a:IntXY, b:Int )->IntXY
       if (b == 0) return a
       return IntXY( a.x%b, a.y%b )
 
@@ -86,7 +86,7 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method operator^( a:IntXY, b:IntXY )->IntXY
       return IntXY( a.x^b.x, a.y^b.y )
 
-    method operator^( a:IntXY, b:Int32 )->IntXY
+    method operator^( a:IntXY, b:Int )->IntXY
       return IntXY( a.x^b, a.y^b )
 
 
@@ -103,31 +103,31 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method clamped_low( limit:IntXY )->IntXY
       return IntXY( this.x.clamped_low(limit.x), this.y.clamped_low(limit.y) )
 
-    method cross( other:IntXY )->Int32
+    method cross( other:IntXY )->Int
       return x * other.y - y * other.x
 
     method degrees->Degrees
       return Radians( y->Real.atan2(x) )->Degrees
 
-    method distance_to( other:IntXY )->Int32
+    method distance_to( other:IntXY )->Int
       return (other - this).magnitude
 
-    method dot( other:IntXY )->Int32
+    method dot( other:IntXY )->Int
       return x * other.x + y * other.y
 
     method is_zero->Logical
       return x == 0 and y == 0
 
-    method magnitude->Int32
+    method magnitude->Int
       return (x*x + y*y).sqrt
 
-    method magnitude2->Int32
+    method magnitude_squared->Int
       return x*x + y*y
 
-    method max->Int32
+    method max->Int
       return which{ x>=y:x || y }
 
-    method min->Int32
+    method min->Int
       return which{ x<=y:x || y }
 
     method max( other:IntXY )->IntXY
@@ -159,7 +159,7 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method operator==( other:IntXY )->Logical
       return x == other.x and y == other.y
 
-    method operator<>( other:IntXY )->Int32
+    method operator<>( other:IntXY )->Int
       if (x == other.x) return y <> other.y
       else              return x <> other.x
 
@@ -174,7 +174,7 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
       # Returns the smaller X and the smaller Y between this value and the other value.
       return IntXY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
 
-    method product->Int32
+    method product->Int
       return x * y
 
     method radians->Radians
@@ -189,7 +189,7 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method sign->IntXY
       return IntXY( x.sign, y.sign )
 
-    method sum->Int32
+    method sum->Int
       return x + y
 
     method to->String
@@ -210,7 +210,7 @@ endClass
 
 augment Rogue::Random
   METHODS
-    method int_xy( limit:Int32 )->Geometry::IntXY
+    method int_xy( limit:Int )->Geometry::IntXY
       return Geometry::IntXY( int32(limit), int32(limit) )
 
     method int_xy( limit:Geometry::IntXY )->Geometry::IntXY
