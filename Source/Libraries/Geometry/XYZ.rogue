@@ -43,7 +43,7 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
     method operator==( other:XYZ )->Logical
       return (x == other.x) and (y == other.y) and (z == other.z)
 
-    method operator<>( other:XYZ )->Int32
+    method operator<>( other:XYZ )->Int
       if (x == other.x)
         if (y == other.y) return z <> other.z
         else              return y <> other.y

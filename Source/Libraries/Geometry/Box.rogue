@@ -145,7 +145,6 @@ class Box( position:XY, size:XY ) [essential compound]
     method intersects( other:Box )->Logical
       return (this & other).exists
 
-      #{
     method intersects( circle:Circle )->Logical
       return this->Quad.intersects( circle )
 
@@ -157,7 +156,6 @@ class Box( position:XY, size:XY ) [essential compound]
 
     method intersects( triangle:Triangle )->Logical
       return this->Quad.intersects( triangle )
-      }#
 
     method left->Real
       return this.position.x

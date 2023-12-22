@@ -1,25 +1,23 @@
 module Geometry
 
-class Circle( position:IntXY, radius:Int32 ) [compound]
+class Circle( position:XY, radius:Int ) [compound]
   METHODS
-    #{
-    method at( angle:Radians )->IntXY
+    method at( angle:Radians )->XY
       # Returns the point along the edge of the circle at the given angle.
       #
       # Example:
       #   one_oclock = circle.at( 2*Radians(pi/12) )
-      return position + IntXY( radius, angle )
+      return position + XY( radius, angle )
 
-    method at( angle:Degrees )->IntXY
+    method at( angle:Degrees )->XY
       # Returns the point along the edge of the circle at the given angle.
       #
       # Example:
       #   one_oclock = circle.at( Degrees(360.0/12.0) )
-      return position + IntXY( radius, angle )
-      }#
+      return position + XY( radius, angle )
 
-    method contains( point:IntXY )->Logical
-      return (point - position).magnitude2 <= radius*radius
+    method contains( point:XY )->Logical
+      return (point - position).magnitude_squared <= radius*radius
 
       #{
     method intersects( box:Box )->Logical
@@ -27,10 +25,9 @@ class Circle( position:IntXY, radius:Int32 ) [compound]
       }#
 
     method intersects( other:Circle )->Logical
-      local delta = (position - other.position).magnitude2
+      local delta = (position - other.position).magnitude_squared
       return (delta <= (radius + other.radius) ^ 2)
 
-      #{
     method intersects( quad:Quad )->Logical
       return quad.intersects( this )
 
@@ -39,12 +36,11 @@ class Circle( position:IntXY, radius:Int32 ) [compound]
 
     method intersects( triangle:Triangle )->Logical
       return triangle.intersects( this )
-      }#
 
-    method operator+( delta:IntXY )->Circle
+    method operator+( delta:XY )->Circle
       return Circle( position+delta, radius )
 
-    method operator-( delta:IntXY )->Circle
+    method operator-( delta:XY )->Circle
       return Circle( position-delta, radius )
 
     method operator*( scale:Real )->Circle

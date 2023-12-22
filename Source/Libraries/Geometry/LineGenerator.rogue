@@ -1,9 +1,9 @@
 module Geometry
 
 class LineGenerator(
-    x1:Int32, x2:Int32, x:Int32, step_x:Int32, x_error:Int32,
-    y1:Int32, y2:Int32, y:Int32, step_y:Int32, y_error:Int32,
-    error:Int32, is_horizontal:Logical, has_another:Logical
+    x1:Int, x2:Int, x:Int, step_x:Int, x_error:Int,
+    y1:Int, y2:Int, y:Int, step_y:Int, y_error:Int,
+    error:Int, is_horizontal:Logical, has_another:Logical
   ) [compound]
 
   GLOBAL METHODS
@@ -50,7 +50,7 @@ class LineGenerator(
       advance
       while (start_y == y) advance
 
-    method height->Int32
+    method height->Int
       return y_error + 1
 
     method is_finished->Logical
@@ -62,7 +62,7 @@ class LineGenerator(
       else             advance
       return result
 
-    method steps_remaining->Int32
+    method steps_remaining->Int
       if (is_horizontal)
         if (not step_x) return 0
         return (x2 - x) / step_x
@@ -74,7 +74,7 @@ class LineGenerator(
     method to->IntXY
       return IntXY( x, y )
 
-    method width->Int32
+    method width->Int
       return x_error + 1
 
 endClass
