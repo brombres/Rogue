@@ -2876,7 +2876,7 @@ parser
   on HEX_INTEGER    -> LiteralInteger(content=content:String,base="16":Integer):LiteralPrimitive
   on BINARY_INTEGER -> LiteralInteger(content=content:String,base="2":Integer):LiteralPrimitive
   on OCTAL_INTEGER  -> LiteralInteger(content=content:String,base="8":Integer):LiteralPrimitive
-  on REAL_NUMBER    -> LiteralReal(value=content:Real):LiteralPrimitive
+  on REAL_NUMBER    -> LiteralRealNumber(value=content:String):LiteralPrimitive
   on CHARACTER      -> LiteralCharacter(value=content:Character):LiteralPrimitive
   on '@'
     pathed_name
@@ -3776,6 +3776,7 @@ parser
   create LiteralInt(value:Integer):LiteralInteger
   create LiteralInt32(value:Integer):LiteralInteger
   create LiteralInt64(value:Integer):LiteralInteger
+  create LiteralReal(value:Real):LiteralPrimitive
   create LiteralReal32(value:Real):LiteralPrimitive
   create LiteralReal64(value:Real):LiteralPrimitive
   create LocalDeclaration(info:Local)

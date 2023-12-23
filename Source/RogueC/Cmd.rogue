@@ -83,6 +83,9 @@ class Cmd( t:Token )
     method to->Logical
       return (this->Int32)?
 
+    method to->Real
+      return this->Int32
+
     method to->Real64
       return this->Int32
 
@@ -457,8 +460,6 @@ endClass
 class LiteralInteger : LiteralPrimitive
   GLOBAL METHODS
     method create( t:Token, content:String, base:Int32 )->LiteralInteger
-      #if (content.ends_with('L')) return LiteralInt64( t, content.unright(1)->Int64(&=base) )
-
       if ("lLI".contains(content[content.count-1]))
         return LiteralInt64( t, content.unright(1)->Int64(&=base) )
       elseIf (content.ends_with('i'))
@@ -541,7 +542,7 @@ class LiteralInt64 : LiteralInteger
     method to->String:    return value
 endClass
 
-class LiteralReal : LiteralPrimitive
+class LiteralReal : LiteralRealNumber
   PROPERTIES
     value : NewReal
 
@@ -3317,9 +3318,9 @@ class PreDecrementLocal : Cmd
 
 endClass
 
-class LiteralReal32 : Literal
+class LiteralReal32 : LiteralRealNumber
   PROPERTIES
-    value : Real64
+    value : Real32
 
   METHODS
     method init( t, value )
@@ -3337,7 +3338,7 @@ class LiteralReal32 : Literal
 
 endClass
 
-class LiteralReal64 : Literal
+class LiteralReal64 : LiteralRealNumber
   PROPERTIES
     value : Real64
 
@@ -5193,5 +5194,22 @@ class ConvertToReal : Convert
   METHODS
     method description->String
       return "ConvertToReal($)" (%operand)
+
+endClass
+
+class LiteralRealNumber : LiteralPrimitive
+  GLOBAL METHODS
+    method create( t:Token, content:String )->LiteralRealNumber
+      if ("rfF".contains(content[content.count-1]))
+        return LiteralReal32( t, content.unright(1)->Real32 )
+      elseIf (content.ends_with('R'))
+        return LiteralReal64( t, content.unright(1)->Real64 )
+      else
+        return LiteralReal( t, content->Real64 )
+      endIf
+
+  METHODS
+    method description->String
+      return "LiteralRealNumber"
 
 endClass

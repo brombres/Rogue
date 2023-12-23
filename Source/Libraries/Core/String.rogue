@@ -995,56 +995,6 @@ class String : Poolable PrintWriter
 
       print( value->String )
 
-    method print( value:Real32 )
-      if (is_immutable) return
-
-      if (value == 0)
-        print( "0.0" )
-        return
-      elseIf (value.is_infinite)
-        if (value < 0) print( "-infinity" )
-        else           print( "infinity" )
-        return
-      elseIf (value.is_NaN)
-        print( "NaN" )
-        return
-      endIf
-
-      if (value < 0)
-        print( '-' )
-        value = -value
-      endIf
-
-      # Display power of 10 exponent for numbers >= 1e16 or <= 1e-4
-      if (value >= 1000000000000000.0)
-        local pow10 = 0L
-        while (value >= 10.0)
-          value /= 10.0
-          ++pow10
-        endWhile
-
-        this.[ print(value), print('e'), print(pow10->NewInt) ]
-        return
-      endIf
-
-      if (value < 0.00001)
-        local pow10 = 0L
-        while (value < 0.1)
-          value *= 10.0
-          --pow10
-        endWhile
-
-        this.[ print(value), print('e'), print(pow10->NewInt) ]
-      endIf
-
-      use builder = StringPool
-        forEach (n in 1..4)
-          if (value.is_string_accurate_at(n,builder)) escapeForEach
-        endForEach
-
-        print builder
-      endUse
-
     method print( value:Real64 )
       if (is_immutable) return
 
@@ -1093,49 +1043,6 @@ class String : Poolable PrintWriter
         endForEach
 
         print builder
-      endUse
-
-    method print( value:Real32, decimal_places:Int32 )
-      if (is_immutable) return
-
-      if (value.is_infinite)
-        if (value < 0) print( "-infinity" )
-        else           print( "infinity" )
-        return
-      elseIf (value.is_NaN)
-        print( "NaN" )
-        return
-      endIf
-
-      use builder = StringPool
-        local is_negative = (value < 0)
-        if (is_negative) value = -value
-
-        local whole = value.floor
-        value -= whole
-        while (whole >= 10)
-          builder.print( ('0' + ((whole%10)->NewInt))->Character )
-          whole /= 10
-        endWhile
-        builder.print( ('0' + ((whole%10)->NewInt))->Character )
-
-        if (is_negative) builder.print( '-' )
-        builder.reverse
-
-        if (decimal_places != 0)
-          builder.print( '.' )
-          loop (decimal_places)
-            value *= 10
-            local digit = value.floor->NewInt
-            value -= digit
-            builder.print( ('0' + digit)->Character )
-          endLoop
-        endIf
-        if (value >= 0.5)
-          builder.print( '5' )
-          builder._round_off
-        endIf
-        print( builder )
       endUse
 
     method print( value:Real64, decimal_places:Int32 )
@@ -1273,10 +1180,6 @@ class String : Poolable PrintWriter
 
     method println( value:Real64, decimal_places:Int32 )
       print( value, decimal_places )
-      print '\n'
-
-    method println( value:Real32 )
-      print value
       print '\n'
 
     method println( value:Object )
@@ -1720,6 +1623,9 @@ class String : Poolable PrintWriter
         endUse
       endIf
       return native( "strtof( (char*)$this->data->as_utf8, 0 )" )->Real64
+
+    method to->Real
+      return this->Real64->Real
 
     method to->Real64
       if (count == 0) return 0
