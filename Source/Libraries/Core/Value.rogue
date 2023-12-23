@@ -12,39 +12,43 @@ class Value [compound]
     TYPE_BYTE      =  1
     TYPE_CHARACTER =  2
     TYPE_INT32     =  3
-    TYPE_INT64     =  4
-    TYPE_REAL32    =  5
-    TYPE_REAL64    =  6
-    TYPE_LOGICAL   =  7
-    TYPE_NULL      =  8
-    TYPE_INTXY     =  9
-    TYPE_XY        = 10
-    TYPE_XYZ       = 11
-    TYPE_BOX       = 12
-    TYPE_OBJECT    = 13
-    TYPE_STRING    = 14
-    TYPE_LIST      = 15
-    TYPE_TABLE     = 16
+    TYPE_INT       =  4
+    TYPE_INT64     =  5
+    TYPE_REAL32    =  6
+    TYPE_REAL      =  7
+    TYPE_REAL64    =  8
+    TYPE_LOGICAL   =  9
+    TYPE_NULL      = 10
+    TYPE_INTXY     = 11
+    TYPE_XY        = 12
+    TYPE_XYZ       = 13
+    TYPE_BOX       = 14
+    TYPE_OBJECT    = 15
+    TYPE_STRING    = 16
+    TYPE_LIST      = 17
+    TYPE_TABLE     = 18
 
   NATIVE
     nativeHeader
-      @|#define %NS%ROGUE_VALUE_TYPE_UNDEFINED 0
-       |#define %NS%ROGUE_VALUE_TYPE_BYTE      1
-       |#define %NS%ROGUE_VALUE_TYPE_CHARACTER 2
-       |#define %NS%ROGUE_VALUE_TYPE_INT32     3
-       |#define %NS%ROGUE_VALUE_TYPE_INT64     4
-       |#define %NS%ROGUE_VALUE_TYPE_REAL32    5
-       |#define %NS%ROGUE_VALUE_TYPE_REAL64    6
-       |#define %NS%ROGUE_VALUE_TYPE_LOGICAL   7
-       |#define %NS%ROGUE_VALUE_TYPE_NULL      8
-       |#define %NS%ROGUE_VALUE_TYPE_INTXY     9
-       |#define %NS%ROGUE_VALUE_TYPE_XY        10
-       |#define %NS%ROGUE_VALUE_TYPE_XYZ       11
-       |#define %NS%ROGUE_VALUE_TYPE_BOX       12
-       |#define %NS%ROGUE_VALUE_TYPE_OBJECT    13
-       |#define %NS%ROGUE_VALUE_TYPE_STRING    14
-       |#define %NS%ROGUE_VALUE_TYPE_LIST      15
-       |#define %NS%ROGUE_VALUE_TYPE_TABLE     16
+      @|#define %NS%ROGUE_VALUE_TYPE_UNDEFINED  0
+       |#define %NS%ROGUE_VALUE_TYPE_BYTE       1
+       |#define %NS%ROGUE_VALUE_TYPE_CHARACTER  2
+       |#define %NS%ROGUE_VALUE_TYPE_INT32      3
+       |#define %NS%ROGUE_VALUE_TYPE_INT        4
+       |#define %NS%ROGUE_VALUE_TYPE_INT64      5
+       |#define %NS%ROGUE_VALUE_TYPE_REAL32     6
+       |#define %NS%ROGUE_VALUE_TYPE_REAL       7
+       |#define %NS%ROGUE_VALUE_TYPE_REAL64     8
+       |#define %NS%ROGUE_VALUE_TYPE_LOGICAL    9
+       |#define %NS%ROGUE_VALUE_TYPE_NULL      10
+       |#define %NS%ROGUE_VALUE_TYPE_INTXY     11
+       |#define %NS%ROGUE_VALUE_TYPE_XY        12
+       |#define %NS%ROGUE_VALUE_TYPE_XYZ       13
+       |#define %NS%ROGUE_VALUE_TYPE_BOX       14
+       |#define %NS%ROGUE_VALUE_TYPE_OBJECT    15
+       |#define %NS%ROGUE_VALUE_TYPE_STRING    16
+       |#define %NS%ROGUE_VALUE_TYPE_LIST      17
+       |#define %NS%ROGUE_VALUE_TYPE_TABLE     18
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -56,10 +60,11 @@ class Value [compound]
     byte      : Byte      [faux]
     character : Character [faux]
     int32     : Int32     [faux]
+    integer   : Int       [faux]
     int64     : Int64     [faux]
     logical   : Logical   [faux]
-    real      : Real      [faux]
     real32    : Real32    [faux]
+    real      : Real      [faux]
     real64    : Real32    [faux]
     intxy     : IntXY        [faux]
     xy        : XY    [faux]
@@ -71,10 +76,11 @@ class Value [compound]
             |  %Ns%RogueByte      byte;
             |  %Ns%RogueCharacter character;
             |  %Ns%RogueInt32     int32;
+            |  %Ns%RogueInt       integer;
             |  %Ns%RogueInt64     int64;
             |  %Ns%RogueLogical   logical;
-            |  %Ns%RogueReal      real;
             |  %Ns%RogueReal32    real32;
+            |  %Ns%RogueReal      real;
             |  %Ns%RogueReal64    real64;
             |  %Ns%GeometryIntXY  intxy;
             |  %Ns%GeometryXY     xy;
@@ -97,11 +103,17 @@ class Value [compound]
     method create( value:Int32 )->Value
       return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_INT32, 0, {.int32=$value} }" )->Value
 
+    method create( value:Int )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_INT, 0, {.integer=$value} }" )->Value
+
     method create( value:Int64 )->Value
       return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_INT64, 0, {.int64=$value} }" )->Value
 
     method create( value:Real32 )->Value
       return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_REAL32, 0, {.real32=$value} }" )->Value
+
+    method create( value:Real )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_REAL, 0, {.real=$value} }" )->Value
 
     method create( value:Real64 )->Value
       return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_REAL64, 0, {.real64=$value} }" )->Value
@@ -206,7 +218,7 @@ class Value [compound]
           return false
       endWhich
 
-    method count->Int32
+    method count->Int
       which (type)
         case TYPE_STRING
           return object->(as String).count
@@ -271,7 +283,7 @@ class Value [compound]
       endForEach
       return undefined
 
-    method get( index:Int32 )->Value
+    method get( index:Int )->Value
       which (type)
         case TYPE_LIST
           local list = object->(as Value[])
@@ -301,7 +313,7 @@ class Value [compound]
           return undefined
       endWhich
 
-    method insert( value:Value, before_index=0:Int32 )
+    method insert( value:Value, before_index=0:Int )
       which (type)
         case TYPE_LIST
           object->(as Value[]).insert( value, before_index )
@@ -333,6 +345,9 @@ class Value [compound]
     method is_int32->Logical
       return (type == TYPE_INT32)
 
+    method is_int->Logical
+      return (type == TYPE_INT)
+
     method is_int64->Logical
       return (type == TYPE_INT64)
 
@@ -356,6 +371,9 @@ class Value [compound]
 
     method is_real32->Logical
       return (type == TYPE_REAL32)
+
+    method is_real->Logical
+      return (type == TYPE_REAL)
 
     method is_real64->Logical
       return (type == TYPE_REAL64)
@@ -486,8 +504,10 @@ class Value [compound]
       which (type)
         case TYPE_BYTE:      return Value( -byte )
         case TYPE_INT32:     return Value( -int32 )
+        case TYPE_INT:       return Value( -integer )
         case TYPE_INT64:     return Value( -int64 )
         case TYPE_REAL32:    return Value( -real32 )
+        case TYPE_REAL:      return Value( -real )
         case TYPE_REAL64:    return Value( -real64 )
         case TYPE_LOGICAL:   return Value( -logical )
         case TYPE_INTXY:     return Value( -intxy )
@@ -499,8 +519,11 @@ class Value [compound]
 
     method operator!()->Value
       if (this.is_number)
-        if (type == TYPE_INT64) return Value( !(this->Int64) )
-        else                    return Value( !(this->Int32) )
+        which (type)
+          case TYPE_INT32: return Value( !int32 )
+          case TYPE_INT64: return Value( !int64 )
+          others:          return Value( !(this->Int) )
+        endWhich
       else
         return undefined
       endIf
@@ -511,8 +534,10 @@ class Value [compound]
         case TYPE_BYTE:      return Value( a.byte      + b.byte )
         case TYPE_CHARACTER: return Value( a.character + b.character )
         case TYPE_INT32:     return Value( a.int32     + b.int32 )
+        case TYPE_INT:       return Value( a.integer   + b.integer )
         case TYPE_INT64:     return Value( a.int64     + b.int64 )
         case TYPE_REAL32:    return Value( a.real32    + b.real32 )
+        case TYPE_REAL:      return Value( a.real      + b.real )
         case TYPE_REAL64:    return Value( a.real64    + b.real64 )
         case TYPE_LOGICAL:   return Value( a.logical or b.logical )
         case TYPE_INTXY:     return Value( a.intxy     + b.intxy )
@@ -529,8 +554,10 @@ class Value [compound]
         case TYPE_BYTE:      return Value( a.byte      - b.byte )
         case TYPE_CHARACTER: return Value( a.character - b.character )
         case TYPE_INT32:     return Value( a.int32     - b.int32 )
+        case TYPE_INT:       return Value( a.integer   - b.integer )
         case TYPE_INT64:     return Value( a.int64     - b.int64 )
         case TYPE_REAL32:    return Value( a.real32    - b.real32 )
+        case TYPE_REAL:      return Value( a.real      - b.real )
         case TYPE_REAL64:    return Value( a.real64    - b.real64 )
         case TYPE_INTXY:     return Value( a.intxy     - b.intxy )
         case TYPE_XY:        return Value( a.xy        - b.xy )
@@ -548,8 +575,10 @@ class Value [compound]
         case TYPE_BYTE:      return Value( a.byte      * b.byte )
         case TYPE_CHARACTER: return Value( a.character * b.character )
         case TYPE_INT32:     return Value( a.int32     * b.int32 )
+        case TYPE_INT:       return Value( a.integer   * b.integer )
         case TYPE_INT64:     return Value( a.int64     * b.int64 )
         case TYPE_REAL32:    return Value( a.real32    * b.real32 )
+        case TYPE_REAL:      return Value( a.real      * b.real )
         case TYPE_REAL64:    return Value( a.real64    * b.real64 )
         case TYPE_LOGICAL:   return Value( a.logical and b.logical )
         case TYPE_INTXY:     return Value( a.intxy     * b.intxy )
@@ -567,8 +596,10 @@ class Value [compound]
         case TYPE_BYTE:      return Value( a.byte      / b.byte )
         case TYPE_CHARACTER: return Value( a.character / b.character )
         case TYPE_INT32:     return Value( a.int32     / b.int32 )
+        case TYPE_INT:       return Value( a.integer   / b.integer )
         case TYPE_INT64:     return Value( a.int64     / b.int64 )
         case TYPE_REAL32:    return Value( a.real32    / b.real32 )
+        case TYPE_REAL:      return Value( a.real      / b.real )
         case TYPE_REAL64:    return Value( a.real64    / b.real64 )
         case TYPE_INTXY:     return Value( a.intxy     / b.intxy )
         case TYPE_XY:        return Value( a.xy        / b.xy )
@@ -583,8 +614,10 @@ class Value [compound]
         case TYPE_BYTE:      return Value( a.byte      % b.byte )
         case TYPE_CHARACTER: return Value( a.character % b.character )
         case TYPE_INT32:     return Value( a.int32     % b.int32 )
+        case TYPE_INT:       return Value( a.integer   % b.integer )
         case TYPE_INT64:     return Value( a.int64     % b.int64 )
         case TYPE_REAL32:    return Value( a.real32    % b.real32 )
+        case TYPE_REAL:      return Value( a.real      % b.real )
         case TYPE_REAL64:    return Value( a.real64    % b.real64 )
         case TYPE_INTXY:     return Value( a.intxy     % b.intxy )
         case TYPE_XY:        return Value( a.xy        % b.xy )
@@ -599,8 +632,10 @@ class Value [compound]
         case TYPE_BYTE:      return Value( a.byte      ^ b.byte )
         case TYPE_CHARACTER: return Value( a.character ^ b.character )
         case TYPE_INT32:     return Value( a.int32     ^ b.int32 )
+        case TYPE_INT:       return Value( a.integer   ^ b.integer )
         case TYPE_INT64:     return Value( a.int64     ^ b.int64 )
         case TYPE_REAL32:    return Value( a.real32    ^ b.real32 )
+        case TYPE_REAL:      return Value( a.real      ^ b.real )
         case TYPE_REAL64:    return Value( a.real64    ^ b.real64 )
         case TYPE_INTXY:     return Value( a.intxy     ^ b.intxy )
         case TYPE_XY:        return Value( a.xy        ^ b.xy )
@@ -612,6 +647,7 @@ class Value [compound]
     method operator&( other:Value )->Value
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 & other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   & other->Int )
         else                                                return Value( this->Int32 & other->Int32 )
       else
         return undefined
@@ -620,6 +656,7 @@ class Value [compound]
     method operator|( other:Value )->Value
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 | other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   | other->Int )
         else                                                return Value( this->Int32 | other->Int32 )
       else
         return undefined
@@ -628,6 +665,7 @@ class Value [compound]
     method operator~( other:Value )->Value
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 ~ other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   ~ other->Int )
         else                                                return Value( this->Int32 ~ other->Int32 )
       else
         return undefined
@@ -636,6 +674,7 @@ class Value [compound]
     method operator:<<:( other:Value )->Value
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 :<<: other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   :<<: other->Int )
         else                                                return Value( this->Int32 :<<: other->Int32 )
       else
         return undefined
@@ -644,6 +683,7 @@ class Value [compound]
     method operator:>>:( other:Value )->Value
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 :>>: other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   :>>: other->Int )
         else                                                return Value( this->Int32 :>>: other->Int32 )
       else
         return undefined
@@ -652,6 +692,7 @@ class Value [compound]
     method operator:>>>:( other:Value )->Value
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 :>>>: other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   :>>>: other->Int )
         else                                                return Value( this->Int32 :>>>: other->Int32 )
       else
         return undefined
@@ -667,7 +708,7 @@ class Value [compound]
           return undefined
       endWhich
 
-    method remove_at( index:Int32 )->Value
+    method remove_at( index:Int )->Value
       which (type)
         case TYPE_LIST
           return object->(as Value[]).remove_at( index )
@@ -700,7 +741,7 @@ class Value [compound]
           return undefined
       endWhich
 
-    method set( index:Int32, value:Value )
+    method set( index:Int, value:Value )
       which (type)
         case TYPE_LIST
           local list = object->(as Value[])
@@ -742,8 +783,10 @@ class Value [compound]
         case TYPE_BYTE:      return byte
         case TYPE_CHARACTER: return character->Byte
         case TYPE_INT32:     return int32->Byte
+        case TYPE_INT:       return integer->Byte
         case TYPE_INT64:     return int64->Byte
         case TYPE_REAL32:    return real32->Byte
+        case TYPE_REAL:      return real->Byte
         case TYPE_REAL64:    return real64->Byte
         case TYPE_OBJECT:    return (object->String->Int32)?
         case TYPE_STRING:    return (object->String->Int32)?
@@ -755,8 +798,10 @@ class Value [compound]
         case TYPE_BYTE:      return byte->Character
         case TYPE_CHARACTER: return character
         case TYPE_INT32:     return int32->Character
+        case TYPE_INT:       return integer->Character
         case TYPE_INT64:     return int64->Character
         case TYPE_REAL32:    return real32->Character
+        case TYPE_REAL:      return real->Character
         case TYPE_REAL64:    return real64->Character
         case TYPE_OBJECT, TYPE_STRING
           local st = object->String
@@ -770,8 +815,10 @@ class Value [compound]
         case TYPE_BYTE:      return byte->Int32
         case TYPE_CHARACTER: return character->Int32
         case TYPE_INT32:     return int32->Int32
+        case TYPE_INT:       return integer->Int32
         case TYPE_INT64:     return int64->Int32
         case TYPE_REAL32:    return real32->Int32
+        case TYPE_REAL:      return real->Int32
         case TYPE_REAL64:    return real64->Int32
         case TYPE_OBJECT:    return object->String->Int32
         case TYPE_STRING:    return object->String->Int32
@@ -783,8 +830,10 @@ class Value [compound]
         case TYPE_BYTE:      return byte->Int64
         case TYPE_CHARACTER: return character->Int64
         case TYPE_INT32:     return int32->Int64
+        case TYPE_INT:       return integer->Int64
         case TYPE_INT64:     return int64->Int64
         case TYPE_REAL32:    return real32->Int64
+        case TYPE_REAL:      return real->Int64
         case TYPE_REAL64:    return real64->Int64
         case TYPE_OBJECT:    return object->String->Int64
         case TYPE_STRING:    return object->String->Int64
@@ -797,8 +846,10 @@ class Value [compound]
         case TYPE_BYTE:      return byte?
         case TYPE_CHARACTER: return character?
         case TYPE_INT32:     return int32?
+        case TYPE_INT:       return integer?
         case TYPE_INT64:     return int64?
         case TYPE_REAL32:    return real32?
+        case TYPE_REAL:      return real?
         case TYPE_REAL64:    return real64?
         case TYPE_INTXY:     return intxy.x? or intxy.y?
         case TYPE_XY:        return xy.x? or xy.y?
@@ -822,8 +873,10 @@ class Value [compound]
         case TYPE_BYTE:      return byte->Real32
         case TYPE_CHARACTER: return character->Real32
         case TYPE_INT32:     return int32->Real32
+        case TYPE_INT:       return integer->Real32
         case TYPE_INT64:     return int64->Real32
         case TYPE_REAL32:    return real32->Real32
+        case TYPE_REAL:      return real->Real32
         case TYPE_REAL64:    return real64->Real32
         case TYPE_OBJECT:    return object->String->Real32
         case TYPE_STRING:    return object->String->Real32
@@ -835,8 +888,10 @@ class Value [compound]
         case TYPE_BYTE:      return byte->Real64
         case TYPE_CHARACTER: return character->Real64
         case TYPE_INT32:     return int32->Real64
+        case TYPE_INT:       return integer->Real64
         case TYPE_INT64:     return int64->Real64
         case TYPE_REAL32:    return real32->Real64
+        case TYPE_REAL:      return real->Real64
         case TYPE_REAL64:    return real64->Real64
         case TYPE_OBJECT:    return object->String->Real64
         case TYPE_STRING:    return object->String->Real64
@@ -851,8 +906,10 @@ class Value [compound]
         case TYPE_BYTE:      return byte->String
         case TYPE_CHARACTER: return character->String
         case TYPE_INT32:     return int32->String
+        case TYPE_INT:       return integer->String
         case TYPE_INT64:     return int64->String
         case TYPE_REAL32:    return real32->String
+        case TYPE_REAL:      return real->String
         case TYPE_REAL64:    return real64->String
         case TYPE_INTXY:     return intxy->String
         case TYPE_XY:        return xy->String
@@ -924,8 +981,10 @@ class Value [compound]
 
       if (type <= TYPE_REAL64 and other.type <= TYPE_REAL64)
         if (type == TYPE_REAL64 or other.type == TYPE_REAL64) return (Value(this->Real64),Value(other->Real64))
+        if (type == TYPE_REAL   or other.type == TYPE_REAL)   return (Value(this->Real),  Value(other->Real))
         if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (Value(this->Real32),Value(other->Real32))
         if (type == TYPE_INT64 or other.type == TYPE_INT64)   return (Value(this->Int64), Value(other->Int64))
+        if (type == TYPE_INT   or other.type == TYPE_INT)     return (Value(this->Int),   Value(other->Int))
         if (type == TYPE_INT32 or other.type == TYPE_INT32)   return (Value(this->Int32), Value(other->Int32))
         if (type == TYPE_CHARACTER or other.type == TYPE_CHARACTER) return (Value(this->Character),Value(other->Character))
         return (Value(this->Byte),Value(other->Byte))
@@ -962,10 +1021,14 @@ class Value [compound]
           builder.print '"'
         case TYPE_INT32
           builder.print( int32 )
+        case TYPE_INT
+          builder.print( integer )
         case TYPE_INT64
           builder.print( int64 )
         case TYPE_REAL32
           builder.print( real32 )
+        case TYPE_REAL
+          builder.print( real )
         case TYPE_REAL64
           builder.print( real64 )
         case TYPE_LOGICAL
@@ -1051,7 +1114,7 @@ class Value [compound]
             # RE: 2028/2029:
             # http://stackoverflow.com/questions/2965293/javascript-parse-error-on-u2028-unicode-character
             builder.print( "\\u" )
-            local n = ch : Int32
+            local n = ch : Int
             loop 4
               local digit = (n :>>>: 12) & 15
               n = n:<<:4

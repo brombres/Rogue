@@ -17,15 +17,15 @@ class Program [singleton]
 
     debug_mode        = false
     gc_auto           = true
-    gc_threshold      = 1024*1024 : Int32
+    gc_threshold      = 1024*1024 : Int
     generate_main     = false
     generate_doc      = false
     no_stdlib         = false
     doc_root          : String
     output_filepath   : String
     stack_trace       = false
-    int_bits          : Int32 # Set with --int=[32|64] compile option
-    real_bits         : Int32 # Set with --real=[32|64] compile option
+    int_bits          : Int # Set with --int=[32|64] compile option
+    real_bits         : Int # Set with --real=[32|64] compile option
     api_patterns      = String[]
     api_filepaths     = Set<<String>>()
 
@@ -66,7 +66,7 @@ class Program [singleton]
     unorganized_types    = Type[]
 
     unique_strings       = [String:String]
-    string_table_indices = [String:Int32]
+    string_table_indices = [String:Int]
 
     dynamic_methods   = [String:DynamicMethodGroup]
     call_signatures   = [String:Procedure[]]
@@ -74,7 +74,7 @@ class Program [singleton]
     all_types         = Type[]
     all_properties    = Property[]
 
-    base_type_lookup  = Int32[]
+    base_type_lookup  = Int[]
 
     anonymous_class_names = [String:String]
 
@@ -94,7 +94,7 @@ class Program [singleton]
     handled_call_indices          : Logical[]
     handled_property_ids          : Logical[]
 
-    native_property_count : Int32
+    native_property_count : Int
 
     prior_warning : String
 
@@ -387,8 +387,8 @@ class Program [singleton]
 
     method print_warning( t:Token, message:String )
       local w = Console.width
-      if (w == 0) w = 90
-      else        w .= clamped(40,90)
+      if (w == 0) w = 100
+      else        w .= clamped(40,100)
       w -= "[WARNING] ".count
 
       if (message is not prior_warning)
@@ -673,17 +673,21 @@ class Program [singleton]
         definitions["INT_MINIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int64.MINIMUM->String )]
         definitions["INT_MAXIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int64.MAXIMUM->String )]
         definitions["INT_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Int64" )]
+        definitions["INT_BITS"] = [t.cloned( TokenType.INTEGER, "64" )]
       else
         definitions["INT_MINIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int32.MINIMUM->String )]
         definitions["INT_MAXIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int32.MAXIMUM->String )]
         definitions["INT_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Int32" )]
+        definitions["INT_BITS"] = [t.cloned( TokenType.INTEGER, "32" )]
       endIf
 
     method set_real_bits( @real_bits )
       if (real_bits == 64)
         definitions["REAL_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Real64" )]
+        definitions["REAL_BITS"] = [t.cloned( TokenType.INTEGER, "64" )]
       else
         definitions["REAL_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Real32" )]
+        definitions["REAL_BITS"] = [t.cloned( TokenType.INTEGER, "32" )]
       endIf
 
     method source_type->String

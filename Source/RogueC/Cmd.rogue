@@ -75,16 +75,22 @@ class Cmd( t:Token )
       return Character(this->Int32)
 
     method to->Int32
+      return this->Int->Int32
+
+    method to->Int
       return 0
 
     method to->Int64
-      return 0
+      return this->Int->Int64
 
     method to->Logical
-      return (this->Int32)?
+      return (this->Int)?
+
+    method to->Real
+      return this->Int
 
     method to->Real64
-      return this->Int32
+      return this->Int
 
     method to->String
       return description
@@ -391,7 +397,7 @@ class Identifier : Cmd
     method to->Character
       return Cmd.to_character(name)
 
-    method to->Int32:  return name
+    method to->Int:  return name->Int
     method to->Logical: return name?
     method to->String: return name
 
@@ -449,7 +455,7 @@ class LiteralCharacter : LiteralPrimitive
       return "LiteralCharacter($)" (%value)
 
     method to->Character: return value
-    method to->Int32:     return value
+    method to->Int:       return value
     method to->String:    return value
 
 endClass
@@ -457,15 +463,20 @@ endClass
 class LiteralInteger : LiteralPrimitive
   GLOBAL METHODS
     method create( t:Token, content:String, base:Int32 )->LiteralInteger
-      if (content.ends_with('LL')) return LiteralInt64( t, content.unright(2)->Int64(&=base) )
-      if (content.ends_with('L'))  return LiteralInt( t, content.unright(1)->Int64(&=base) )
+      if ("lLI".contains(content[content.count-1]))
+        return LiteralInt64( t, content.unright(1)->Int64(&=base) )
+      elseIf (content.ends_with('i'))
+        return LiteralInt32( t, content.unright(1)->Int32(&=base) )
+      elseIf (Program.int_bits == 64)
+        return LiteralInt( t, content->Int64(&=base) )
+      endIf
 
       contingent
         if (base == 10)
           sufficient (content.count > 10)
           local n64 = content->Int64(&=base)
           sufficient (n64 != n64->Int32->Int64)
-          return LiteralInt32( t, n64->Int32 )
+          return LiteralInt( t, n64->Int32 )
         endIf
 
         sufficient (base == 2 and content.count > 32)
@@ -474,7 +485,7 @@ class LiteralInteger : LiteralPrimitive
         endIf
         sufficient (base == 16 and content.count > 8)
 
-        return LiteralInt32( t, content->Int32(&=base) )
+        return LiteralInt( t, content->Int32(&=base) )
 
       satisfied
         return LiteralInt64( t, content->Int64(&=base) )
@@ -508,8 +519,7 @@ class LiteralInt32 : LiteralInteger
       return "LiteralInt32($)" (%value)
 
     method to->Character: return value
-    method to->Int32:     return value
-    method to->Int64:     return value
+    method to->Int:       return value
     method to->String:    return value
 
 endClass
@@ -529,12 +539,12 @@ class LiteralInt64 : LiteralInteger
       return "LiteralInt64($)" (%value)
 
     method to->Character: return value
-    method to->Int32:     return value
+    method to->Int:       return value
     method to->Int64:     return value
     method to->String:    return value
 endClass
 
-class LiteralReal : LiteralPrimitive
+class LiteralReal : LiteralRealNumber
   PROPERTIES
     value : Real
 
@@ -548,7 +558,7 @@ class LiteralReal : LiteralPrimitive
     method description->String
       return "LiteralReal($)" (%value)
 
-    method to->Int32:  return value
+    method to->Int:    return value
     method to->Real64: return value
     method to->String: return value
 
@@ -571,7 +581,7 @@ class LiteralString : Literal
     method to->Character
       return Cmd.to_character(value)
 
-    method to->Int32:  return value
+    method to->Int:    return value
     method to->Logical: return value?
     method to->String: return value
 
@@ -856,7 +866,7 @@ class Placeholder : Cmd
     method to->Character
       return Cmd.to_character(name)
 
-    method to->Int32:  return name
+    method to->Int:    return name
     method to->Logical: return name?
     method to->String: return name
 
@@ -942,7 +952,7 @@ class NativeProperty : Cmd
     method to->Character
       return Cmd.to_character(expression)
 
-    method to->Int32:  return expression
+    method to->Int:    return expression
     method to->Logical: return expression?
     method to->String: return expression
 
@@ -969,7 +979,7 @@ class NativeCode : Cmd
     method to->Character
       return Cmd.to_character(content)
 
-    method to->Int32:  return content
+    method to->Int:    return content
     method to->Logical: return content?
     method to->String: return content
 
@@ -996,7 +1006,7 @@ class NativeHeader : Cmd
     method to->Character
       return Cmd.to_character(content)
 
-    method to->Int32:  return content
+    method to->Int:    return content
     method to->Logical: return content?
     method to->String: return content
 
@@ -1140,7 +1150,7 @@ class ForEachAt : Cmd
     method to->Character
       return Cmd.to_character(name)
 
-    method to->Int32:  return name
+    method to->Int:    return name
     method to->Logical: return name?
     method to->String: return name
 
@@ -1331,7 +1341,7 @@ class LiteralLogical : LiteralPrimitive
     method description->String
       return "LiteralLogical($)" (%value)
 
-    method to->Int32:   return which{value:1 || 0}
+    method to->Int:     return which{value:1 || 0}
     method to->Logical: return value
     method to->String:  return which{value:"true" || "false"}
 
@@ -1486,7 +1496,7 @@ class NativeStatement : Cmd
     method to->Character
       return Cmd.to_character(content)
 
-    method to->Int32:  return content
+    method to->Int:    return content
     method to->Logical: return content?
     method to->String: return content
 
@@ -2528,7 +2538,7 @@ class DirectAccess : Cmd
     method to->Character
       return Cmd.to_character(name)
 
-    method to->Int32:  return name
+    method to->Int:    return name
     method to->Logical: return name?
     method to->String: return name
 
@@ -3310,9 +3320,9 @@ class PreDecrementLocal : Cmd
 
 endClass
 
-class LiteralReal32 : Literal
+class LiteralReal32 : LiteralRealNumber
   PROPERTIES
-    value : Real64
+    value : Real32
 
   METHODS
     method init( t, value )
@@ -3324,13 +3334,13 @@ class LiteralReal32 : Literal
     method description->String
       return "LiteralReal32($)" (%value)
 
-    method to->Int32:  return value
+    method to->Int:    return value
     method to->Real64: return value
     method to->String: return value
 
 endClass
 
-class LiteralReal64 : Literal
+class LiteralReal64 : LiteralRealNumber
   PROPERTIES
     value : Real64
 
@@ -3344,7 +3354,7 @@ class LiteralReal64 : Literal
     method description->String
       return "LiteralReal64($)" (%value)
 
-    method to->Int32:  return value
+    method to->Int:    return value
     method to->Real64: return value
     method to->String: return value
 
@@ -5169,8 +5179,38 @@ class LiteralInt : LiteralInteger
     method description->String
       return "LiteralInt($)" (%value)
 
-    method to->Int32:     return value->Int32
-    method to->Int64:     return value
+    method to->Int:       return value
     method to->String:    return value
+
+endClass
+
+class ConvertToInt : Convert
+  METHODS
+    method description->String
+      return "ConvertToInt($)" (%operand)
+
+endClass
+
+class ConvertToReal : Convert
+  METHODS
+    method description->String
+      return "ConvertToReal($)" (%operand)
+
+endClass
+
+class LiteralRealNumber : LiteralPrimitive
+  GLOBAL METHODS
+    method create( t:Token, content:String )->LiteralRealNumber
+      if ("rfF".contains(content[content.count-1]))
+        return LiteralReal32( t, content.unright(1)->Real32 )
+      elseIf (content.ends_with('R'))
+        return LiteralReal64( t, content.unright(1)->Real64 )
+      else
+        return LiteralReal( t, content->Real64 )
+      endIf
+
+  METHODS
+    method description->String
+      return "LiteralRealNumber"
 
 endClass

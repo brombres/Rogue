@@ -8,6 +8,13 @@ $localMacro FOLD_CONSTANTS<<$m,$Type,$op>>
 $endLocalMacro
 
 class Resolver : Poolable, Visitor
+  GLOBAL PROPERTIES
+    index_getters = String[][
+      "at(Rogue::Int)", "get(Rogue::Int)",
+      "at(Rogue::Int64)", "get(Rogue::Int64)",
+      "at(Rogue::Int32)", "get(Rogue::Int32)"
+    ]
+
   PROPERTIES
     visible_locals    = Local[]
     visible_locals_fp = Int32[]
@@ -227,6 +234,9 @@ class Resolver : Poolable, Visitor
         endBlock
         block left=cmd.left->(as LiteralReal64), right=cmd.right->(as LiteralReal64)
           if (left and right) return LiteralReal64( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralReal), right=cmd.right->(as LiteralReal)
+          if (left and right) return LiteralReal( cmd.t, left.value $op right.value )
         endBlock
         block left=cmd.left->(as LiteralReal32), right=cmd.right->(as LiteralReal32)
           if (left and right) return LiteralReal32( cmd.t, left.value $op right.value )
@@ -459,22 +469,22 @@ class Resolver : Poolable, Visitor
 
     method on_validate( cmd:CompareLT )->Cmd
       local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
-      if (result) return CompareLT( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      if (result) return CompareLT( cmd.t, result, LiteralInt( cmd.t, 0 ) )
       return cmd  # resolved primitive comparison
 
     method on_validate( cmd:CompareLE )->Cmd
       local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
-      if (result) return CompareLE( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      if (result) return CompareLE( cmd.t, result, LiteralInt( cmd.t, 0 ) )
       return cmd  # resolved primitive comparison
 
     method on_validate( cmd:CompareGT )->Cmd
       local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
-      if (result) return CompareGT( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      if (result) return CompareGT( cmd.t, result, LiteralInt( cmd.t, 0 ) )
       return cmd  # resolved primitive comparison
 
     method on_validate( cmd:CompareGE )->Cmd
       local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
-      if (result) return CompareGE( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      if (result) return CompareGE( cmd.t, result, LiteralInt( cmd.t, 0 ) )
       return cmd  # resolved primitive comparison
 
     method on_validate( cmd:CompareOp )->Cmd
@@ -1340,10 +1350,11 @@ class Resolver : Poolable, Visitor
       local operand = cmd.operand
       if (operand.is_literal)
         if (operand instanceOf LiteralReal64) return LiteralReal64( cmd.t,   -operand->(as LiteralReal64).value )
+        if (operand instanceOf LiteralReal)   return LiteralReal( cmd.t,   -operand->(as LiteralReal).value )
         if (operand instanceOf LiteralReal32) return LiteralReal32( cmd.t,   -operand->(as LiteralReal32).value )
-        if (operand instanceOf LiteralInt64) return LiteralInt64( cmd.t,     -operand->(as LiteralInt64).value )
-        if (operand instanceOf LiteralInt32) return LiteralInt32( cmd.t,     -operand->(as LiteralInt32).value )
-        if (operand instanceOf LiteralInt) return LiteralInt( cmd.t,         -operand->(as LiteralInt).value )
+        if (operand instanceOf LiteralInt64)  return LiteralInt64( cmd.t,     -operand->(as LiteralInt64).value )
+        if (operand instanceOf LiteralInt)    return LiteralInt( cmd.t,         -operand->(as LiteralInt).value )
+        if (operand instanceOf LiteralInt32)  return LiteralInt32( cmd.t,     -operand->(as LiteralInt32).value )
         if (operand instanceOf LiteralCharacter) return LiteralInt32( cmd.t, -(operand->(as LiteralCharacter).value->Int32) )
         if (operand instanceOf LiteralLogical) return LiteralLogical( cmd.t, not operand->(as LiteralLogical).value )
       endIf
@@ -1830,7 +1841,7 @@ class Resolver : Poolable, Visitor
       pop_scope
 
       contingent
-        necessary (cmd.condition.type is Program.type_Int32 or cmd.condition.type is Program.type_Int64)
+        necessary (cmd.condition.type.is_integer)
 
         forEach (cmd_case in cmd.cases)
           necessary ((forEach in cmd_case.args).is_literal_primitive)
@@ -3734,8 +3745,8 @@ augment
       if (collection.starting_index)
         if (collection.step_size)
           collection.step_size = resolver.visit( collection.step_size )
-          if local cmd_step = collection.step_size->(as LiteralInteger)
-            if (cmd_step->Int64 < 0)
+          if local cmd_step = collection.step_size.coerce_to_LiteralInt
+            if (cmd_step.value < 0)
               throw t.error( "Redundant pairing of forEach-of with a starting index and a negative step size. Use 'forEach (i in starting_index downTo 0)' instead." )
             endIf
           else
@@ -3801,30 +3812,14 @@ augment
       local has_count = collection_type.methods.contains("count()")
       if (not has_count) has_count = collection_type.properties.contains("count")
 
-      local m_get = collection_type.methods[ "at(Rogue::Int64)" ]
-      if (not m_get)
-        m_get = collection_type.methods[ "at(Rogue::Int32)" ]
-        if (not m_get)
-          m_get = collection_type.methods[ "get(Rogue::Int64)" ]
-          if (not m_get) m_get = collection_type.methods[ "get(Rogue::Int32)" ]
-        endIf
-      endIf
+      local m_get = collection_type.find_method( Resolver.index_getters )
 
       if (has_count and m_get)
         local down_to = false
-        local cmd_step : LiteralInt
         if (cmd_collection.step_size)
           cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
 
-          if local int64 = cmd_collection.step_size->(as LiteralInt64)
-            cmd_step = LiteralInt( int64.t, int64.value )
-          else
-            if local int32 = cmd_collection.step_size->(as LiteralInt32)
-              cmd_step = LiteralInt( int32.t, int32.value )
-            endIf
-          endIf
-
-          if (cmd_step)
+          if local cmd_step = cmd_collection.step_size.coerce_to_LiteralInt
             if (cmd_step.value < 0) down_to = true
           else
             throw cmd_collection.step_size.t.error( "Step size must be a literal integer." )
@@ -4019,30 +4014,14 @@ augment
       if (not has_count) has_count = collection_type.properties.contains("count")
 
       # forEach-of doesn't use get/at but if it's not there we need to use a different protocol.
-      local m_get = collection_type.methods[ "at(Rogue::Int64)" ]
-      if (not m_get)
-        m_get = collection_type.methods[ "at(Rogue::Int32)" ]
-        if (not m_get)
-          m_get = collection_type.methods[ "get(Rogue::Int64)" ]
-          if (not m_get) m_get = collection_type.methods[ "get(Rogue::Int32)" ]
-        endIf
-      endIf
+      local m_get = collection_type.find_method( Resolver.index_getters )
 
       if (has_count and m_get)
         # Standard/Collection implements count/at or count/get protocol
         local down_to = false
-        local cmd_step : LiteralInt
         if (cmd_collection.step_size)
           cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
-          if local int64 = cmd_collection.step_size->(as LiteralInt64)
-            cmd_step = LiteralInt( int64.t, int64.value )
-          else
-            if local int32 = cmd_collection.step_size->(as LiteralInt32)
-              cmd_step = LiteralInt( int32.t, int32.value )
-            endIf
-          endIf
-
-          if (cmd_step)
+          if local cmd_step = cmd_collection.step_size.coerce_to_LiteralInt
             if (cmd_step.value < 0) down_to = true
           else
             throw cmd_collection.step_size.t.error( "Step size must be a literal integer." )
@@ -4334,9 +4313,9 @@ augment
         endLoop
 
         if (cmd.symbol == "++")
-          return resolver.visit( AddAndAssign(t, cmd.operand, LiteralInt32(t,1)) )
+          return resolver.visit( AddAndAssign(t, cmd.operand, LiteralInt(t,1)) )
         elseIf (cmd.symbol == "--")
-          return resolver.visit( SubtractAndAssign(t, cmd.operand, LiteralInt32(t,1)) )
+          return resolver.visit( SubtractAndAssign(t, cmd.operand, LiteralInt(t,1)) )
         endIf
 
         if (suppress_error) return null
@@ -4434,9 +4413,9 @@ augment
         escapeContingent
       satisfied
         if ($Step == 1)
-          return resolver.visit( AddAndAssign(t, this, LiteralInt32(t,1)) )
+          return resolver.visit( AddAndAssign(t, this, LiteralInt(t,1)) )
         else
-          return resolver.visit( SubtractAndAssign(t, this, LiteralInt32(t,1)) )
+          return resolver.visit( SubtractAndAssign(t, this, LiteralInt(t,1)) )
         endIf
       endContingent
 
@@ -4485,9 +4464,9 @@ augment
         escapeContingent
       satisfied
         if ($Step == 1)
-          return resolver.visit( AddAndAssign(t, this, LiteralInt32(t,1)) )
+          return resolver.visit( AddAndAssign(t, this, LiteralInt(t,1)) )
         else
-          return resolver.visit( SubtractAndAssign(t, this, LiteralInt32(t,1)) )
+          return resolver.visit( SubtractAndAssign(t, this, LiteralInt(t,1)) )
         endIf
       endContingent
 
@@ -4559,7 +4538,7 @@ augment
       local index = resolver.visit( index ).require_value
 
       if (context.is_simple and index.is_simple)
-        return resolver.visit( Assign(t, this, Add(t,this.cloned,LiteralInt32(t,$Step))) )
+        return resolver.visit( Assign(t, this, Add(t,this.cloned,LiteralInt(t,$Step))) )
       else
         local v_context = resolver.add_local( t, "context", context.require_type )
         resolver.insert( SetLocal(v_context, context, &initial_assignment) )
@@ -4567,7 +4546,7 @@ augment
         resolver.insert( SetLocal(v_index, index, &initial_assignment) )
 
         local indexed_access = IndexedAccess( t, GetLocal(v_context), GetLocal(v_index) )
-        return resolver.visit( Assign(t, indexed_access, Add(t,indexed_access.cloned,LiteralInt32(t,$Step))) )
+        return resolver.visit( Assign(t, indexed_access, Add(t,indexed_access.cloned,LiteralInt(t,$Step))) )
       endIf
 
 endAugment

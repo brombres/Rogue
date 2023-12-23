@@ -10,8 +10,8 @@ class Parser : ParserCore, Poolable
     marked_token          : Token
     token_buffer          = Token[]
     inserted_tokens       = Token[]
-    id_start_stack        = Int32[]
-    string_start_stack    = Int32[]
+    id_start_stack        = Int[]
+    string_start_stack    = Int[]
     collecting_templates  = false
     _attribute_no_include = false
     _attribute_essential  = false
@@ -20,8 +20,8 @@ class Parser : ParserCore, Poolable
     augment_t             : Token
     augment_context_name  : String
 
-    generic_fn_args_depth : Int32
-    generic_fn_args_used  : Int32
+    generic_fn_args_depth : Int
+    generic_fn_args_used  : Int
 
     local_definitions     : [String:Token[]]
     local_macros          : [String:Macro[]]
@@ -596,7 +596,7 @@ class Parser : ParserCore, Poolable
       if (_cur_t.type == TokenType.SYMBOL_DOLLAR)
         generic_fn_args_used |= 1
       else
-        local n = _cur_t.content.rightmost(-1)->Int32
+        local n = _cur_t.content.rightmost(-1)->Int
         if (n == 0 or n > 5) throw _cur_t.error( "Only $1..$5 can be used as implicit function arguments." )
         generic_fn_args_used |= (1:<<:n)
       endIf

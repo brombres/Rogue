@@ -125,6 +125,7 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
 
 endClass
 
+
 class Real : CommonPrimitiveMethods<<Real>> [primitive]
   METHODS
     method acos->Real
@@ -252,6 +253,7 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
       return String().[ print(this,decimal_places) ]
 
 endClass
+
 
 class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
   METHODS
@@ -577,7 +579,7 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
       return result
 
     method to->String
-      if (this >= -1 and this <= 9) return this->Int->String
+      if (this >= -1 and this <= 9) return this->Int32->String
       return String().[ print(this) ]
 
     method to->String( digits=0:Int, &binary, &hex, &octal )
@@ -601,6 +603,7 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
       return this->Int32.to_digit( &= base64 )
 
 endClass
+
 
 class Int : CommonPrimitiveMethods<<Int>> [primitive]
   DEFINITIONS
@@ -802,7 +805,7 @@ class Int : CommonPrimitiveMethods<<Int>> [primitive]
       return result
 
     method to->String
-      if (this >= -1 and this <= 9) return this->Int->String
+      if (this >= -1 and this <= 9) return this->Int32->String
       return String().[ print(this) ]
 
     method to->String( digits=0:Int, &binary, &hex, &octal )
@@ -826,6 +829,7 @@ class Int : CommonPrimitiveMethods<<Int>> [primitive]
       return this->Int32.to_digit( &= base64 )
 
 endClass
+
 
 class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
   DEFINITIONS
@@ -1189,8 +1193,8 @@ class Character [primitive]
       if (not is_uppercase) return this
       return Character( this + ('a'-'A') )
 
-    method to_number( base=10:Int )->Int32
-      local value : Int32
+    method to_number( base=10:Int )->Int
+      local value : Int
       if (this >= '0' and this <= '9')     value = this - '0'
       elseIf (this >= 'A' and this <= 'Z') value = 10 + (this - 'A')
       elseIf (this >= 'a' and this <= 'z') value = 10 + (this - 'a')

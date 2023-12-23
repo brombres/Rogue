@@ -16,7 +16,9 @@ augment Cmd
         if (a is type or b is type) return type
         type = Program.type_Int64
         if (a is type or b is type) return type
-        return Program.type_Int32  # any mismatched pair Logical/Byte/Character/Int32 -> Int32
+        type = Program.type_Int32
+        if (a is type and b is type) return type
+        return Program.type_Int   # any mismatched pair Logical/Byte/Character/Int32/Int -> Int
       elseIf (a is Program.type_String or b is Program.type_String)
         return Program.type_String
       elseIf (a.is_reference)
@@ -34,15 +36,16 @@ augment Cmd
 
     method common_op_type( t:Token, a:Type, b:Type )->Type
       local type = common_type( t, a, b )
-      if (not type.is_primitive) return type
+      #if (not type.is_primitive) return type
+      return type
 
-      if (type is Program.type_Real64 or type is Program.type_Real32)
-        return Program.type_Real
-      elseIf (type is Program.type_Int64)
-        return Program.type_Int64
-      else
-        return Program.type_Int32
-      endIf
+      #if (type is Program.type_Real64 or type is Program.type_Real32)
+      #  return Program.type_Real
+      #elseIf (type is Program.type_Int64)
+      #  return Program.type_Int64
+      #else
+      #  return Program.type_Int32
+      #endIf
 
   METHODS
     method require_type->Type
@@ -265,13 +268,13 @@ augment
       return LiteralNull( cmd_t.cloned(TokenType.KEYWORD_NULL,null), this )
 
     method TypeByte.cmd_default_value( cmd_t:Token )->Cmd
-      return ConvertToByte( cmd_t, LiteralInt32(cmd_t.cloned(TokenType.INTEGER,"0"), 0) )
+      return ConvertToByte( cmd_t, LiteralInt(cmd_t.cloned(TokenType.INTEGER,"0"), 0) )
 
     method TypeCharacter.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralCharacter( cmd_t.cloned(TokenType.CHARACTER,"0"), 0 )
 
     method TypeInt32.cmd_default_value( cmd_t:Token )->Cmd
-      return LiteralInt32( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
+      return LiteralInt( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
 
     method TypeInt.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralInt( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
@@ -363,6 +366,9 @@ augment
     method NativeLiteralInt32.is_literal_primitive->Logical
       return true
 
+    method Convert.is_literal_primitive->Logical
+      return operand.is_literal_primitive
+
 endAugment
 
 # is_simple
@@ -432,10 +438,10 @@ augment
     method LiteralInt32.is_truthy->Logical
       return value?
 
-    method LiteralInt64.is_truthy->Logical
+    method LiteralInt.is_truthy->Logical
       return value?
 
-    method LiteralInt.is_truthy->Logical
+    method LiteralInt64.is_truthy->Logical
       return value?
 
     method LiteralLogical.is_truthy->Logical
@@ -445,6 +451,9 @@ augment
       return false
 
     method LiteralReal32.is_truthy->Logical
+      return value? and not value.is_NaN
+
+    method LiteralReal.is_truthy->Logical
       return value? and not value.is_NaN
 
     method LiteralReal64.is_truthy->Logical
@@ -491,8 +500,10 @@ augment
 
       if (cmd instanceOf LiteralPrimitive)
         if (type is Program.type_Real64)    return LiteralLogical( cmd.t, cmd->(as LiteralReal64).value? )
+        if (type is Program.type_Real)      return LiteralLogical( cmd.t, cmd->(as LiteralReal).value? )
         if (type is Program.type_Real32)    return LiteralLogical( cmd.t, cmd->(as LiteralReal32).value? )
         if (type is Program.type_Int64)     return LiteralLogical( cmd.t, cmd->(as LiteralInt64).value? )
+        if (type is Program.type_Int)       return LiteralLogical( cmd.t, cmd->(as LiteralInt).value? )
         if (type is Program.type_Int32)     return LiteralLogical( cmd.t, cmd->(as LiteralInt32).value? )
         if (type is Program.type_Character) return LiteralLogical( cmd.t, cmd->(as LiteralCharacter).value? )
       endIf
@@ -721,12 +732,11 @@ augment
     method LiteralInt32.type->Type
       return Program.type_Int32
 
+    method LiteralInt.type->Type
+      return Program.type_Int
+
     method LiteralInt64.type->Type
       return Program.type_Int64
-
-    method LiteralInt.type->Type
-      if (Program.int_bits == 64) return Program.type_Int64
-      else                        return Program.type_Int32
 
     method LiteralList.type->Type
       contingent
@@ -745,8 +755,14 @@ augment
     method LiteralPi.type->Type
       return Program.type_Real
 
+    method LiteralReal32.type->Type
+      return Program.type_Real32
+
     method LiteralReal.type->Type
       return Program.type_Real
+
+    method LiteralReal64.type->Type
+      return Program.type_Real64
 
     method LiteralString.type->Type
       return Program.type_String
@@ -898,3 +914,19 @@ augment
     method CallThisDynamicMethod.is_dynamic_call->Logical
       return true
 endAugment
+
+augment
+  METHODS
+    method Cmd.coerce_to_LiteralInt->LiteralInt
+      return null
+
+    method LiteralInt.coerce_to_LiteralInt->LiteralInt
+      return this
+
+    method LiteralInt32.coerce_to_LiteralInt->LiteralInt
+      return LiteralInt( t, value )
+
+    method LiteralInt64.coerce_to_LiteralInt->LiteralInt
+      return LiteralInt( t, value )
+endAugment
+

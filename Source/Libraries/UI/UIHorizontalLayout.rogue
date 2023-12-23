@@ -3,7 +3,7 @@ module UI
 class UIHorizontalLayout : UILayout
   METHODS
     method measure_content_width( subcomponents:UIComponent[] )->Int?
-      local total_w = 0LL
+      local total_w = 0L
       forEach (component in subcomponents)
         local w = component.measure_width( null )
         if (not w) return null
@@ -22,8 +22,8 @@ class UIHorizontalLayout : UILayout
 
     method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int )
       use subcomponent_widths = WorkList<<Int?>>
-        local fixed_w = 0LL
-        local flex_count = 0LL
+        local fixed_w = 0L
+        local flex_count = 0L
         local flex_weight = 0.0
         forEach (component in subcomponents)
           local w = component.measure_width( null )
