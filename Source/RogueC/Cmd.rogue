@@ -457,15 +457,22 @@ endClass
 class LiteralInteger : LiteralPrimitive
   GLOBAL METHODS
     method create( t:Token, content:String, base:Int32 )->LiteralInteger
-      if (content.ends_with('LL')) return LiteralInt64( t, content.unright(2)->Int64(&=base) )
-      if (content.ends_with('L'))  return LiteralInt( t, content.unright(1)->Int64(&=base) )
+      #if (content.ends_with('L')) return LiteralInt64( t, content.unright(1)->Int64(&=base) )
+
+      if ("lLI".contains(content[content.count-1]))
+        return LiteralInt64( t, content.unright(1)->Int64(&=base) )
+      elseIf (content.ends_with('i'))
+        return LiteralInt32( t, content.unright(1)->Int32(&=base) )
+      elseIf (Program.int_bits == 64)
+        return LiteralInt( t, content->Int64(&=base) )
+      endIf
 
       contingent
         if (base == 10)
           sufficient (content.count > 10)
           local n64 = content->Int64(&=base)
           sufficient (n64 != n64->Int32->Int64)
-          return LiteralInt32( t, n64->Int32 )
+          return LiteralInt( t, n64->Int32 )
         endIf
 
         sufficient (base == 2 and content.count > 32)
@@ -474,7 +481,7 @@ class LiteralInteger : LiteralPrimitive
         endIf
         sufficient (base == 16 and content.count > 8)
 
-        return LiteralInt32( t, content->Int32(&=base) )
+        return LiteralInt( t, content->Int32(&=base) )
 
       satisfied
         return LiteralInt64( t, content->Int64(&=base) )

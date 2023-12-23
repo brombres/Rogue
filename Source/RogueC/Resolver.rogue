@@ -3734,8 +3734,8 @@ augment
       if (collection.starting_index)
         if (collection.step_size)
           collection.step_size = resolver.visit( collection.step_size )
-          if local cmd_step = collection.step_size->(as LiteralInteger)
-            if (cmd_step->Int64 < 0)
+          if local cmd_step = collection.step_size.coerce_to_LiteralInt
+            if (cmd_step.value < 0)
               throw t.error( "Redundant pairing of forEach-of with a starting index and a negative step size. Use 'forEach (i in starting_index downTo 0)' instead." )
             endIf
           else
@@ -3812,19 +3812,10 @@ augment
 
       if (has_count and m_get)
         local down_to = false
-        local cmd_step : LiteralInt
         if (cmd_collection.step_size)
           cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
 
-          if local int64 = cmd_collection.step_size->(as LiteralInt64)
-            cmd_step = LiteralInt( int64.t, int64.value )
-          else
-            if local int32 = cmd_collection.step_size->(as LiteralInt32)
-              cmd_step = LiteralInt( int32.t, int32.value )
-            endIf
-          endIf
-
-          if (cmd_step)
+          if local cmd_step = cmd_collection.step_size.coerce_to_LiteralInt
             if (cmd_step.value < 0) down_to = true
           else
             throw cmd_collection.step_size.t.error( "Step size must be a literal integer." )
@@ -4031,18 +4022,9 @@ augment
       if (has_count and m_get)
         # Standard/Collection implements count/at or count/get protocol
         local down_to = false
-        local cmd_step : LiteralInt
         if (cmd_collection.step_size)
           cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
-          if local int64 = cmd_collection.step_size->(as LiteralInt64)
-            cmd_step = LiteralInt( int64.t, int64.value )
-          else
-            if local int32 = cmd_collection.step_size->(as LiteralInt32)
-              cmd_step = LiteralInt( int32.t, int32.value )
-            endIf
-          endIf
-
-          if (cmd_step)
+          if local cmd_step = cmd_collection.step_size.coerce_to_LiteralInt
             if (cmd_step.value < 0) down_to = true
           else
             throw cmd_collection.step_size.t.error( "Step size must be a literal integer." )

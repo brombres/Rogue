@@ -629,6 +629,11 @@ class CGenerator : Visitor
       print_parenthesized( cmd.operand )
       writer.print ')'
 
+    method on_visit( cmd:ConvertToInt )
+      writer.print "((%Ns%RogueInt)"
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
     method on_visit( cmd:ConvertToInt64 )
       writer.print "((%Ns%RogueInt64)"
       print_parenthesized( cmd.operand )
@@ -640,6 +645,11 @@ class CGenerator : Visitor
 
     method on_visit( cmd:ConvertToReal32 )
       writer.print "((%Ns%RogueReal32)"
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:ConvertToReal )
+      writer.print "((%Ns%RogueReal)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 

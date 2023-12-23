@@ -75,11 +75,11 @@ augment
           endIf
           return resolver.validate( ConvertToInt32( t, this ) )
         endIf
-        #if (target_type is Program.type_Int)       return resolver.validate( ConvertToInt( t, this ) )
+        if (target_type is Program.type_Int)       return resolver.validate( ConvertToInt( t, this ) )
         if (target_type is Program.type_Int64)     return resolver.validate( ConvertToInt64( t, this ) )
         if (target_type is Program.type_Logical)   return resolver.validate( ConvertToLogical( t, this ) )
         if (target_type is Program.type_Real32)    return resolver.validate( ConvertToReal32( t, this ) )
-        #if (target_type is Program.type_Real)      return resolver.validate( ConvertToReal( t, this ) )
+        if (target_type is Program.type_Real)      return resolver.validate( ConvertToReal( t, this ) )
         if (target_type is Program.type_Real64)    return resolver.validate( ConvertToReal64( t, this ) )
         throw t.error( "[INTERNAL] Unhandled primitive conversion." )
       endIf
@@ -265,13 +265,13 @@ augment
       return LiteralNull( cmd_t.cloned(TokenType.KEYWORD_NULL,null), this )
 
     method TypeByte.cmd_default_value( cmd_t:Token )->Cmd
-      return ConvertToByte( cmd_t, LiteralInt32(cmd_t.cloned(TokenType.INTEGER,"0"), 0) )
+      return ConvertToByte( cmd_t, LiteralInt(cmd_t.cloned(TokenType.INTEGER,"0"), 0) )
 
     method TypeCharacter.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralCharacter( cmd_t.cloned(TokenType.CHARACTER,"0"), 0 )
 
     method TypeInt32.cmd_default_value( cmd_t:Token )->Cmd
-      return LiteralInt32( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
+      return LiteralInt( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
 
     method TypeInt.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralInt( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
@@ -447,6 +447,9 @@ augment
     method LiteralReal32.is_truthy->Logical
       return value? and not value.is_NaN
 
+    method LiteralReal.is_truthy->Logical
+      return value? and not value.is_NaN
+
     method LiteralReal64.is_truthy->Logical
       return value? and not value.is_NaN
 
@@ -491,8 +494,10 @@ augment
 
       if (cmd instanceOf LiteralPrimitive)
         if (type is Program.type_Real64)    return LiteralLogical( cmd.t, cmd->(as LiteralReal64).value? )
+        if (type is Program.type_Real)      return LiteralLogical( cmd.t, cmd->(as LiteralReal).value? )
         if (type is Program.type_Real32)    return LiteralLogical( cmd.t, cmd->(as LiteralReal32).value? )
         if (type is Program.type_Int64)     return LiteralLogical( cmd.t, cmd->(as LiteralInt64).value? )
+        if (type is Program.type_Int)       return LiteralLogical( cmd.t, cmd->(as LiteralInt).value? )
         if (type is Program.type_Int32)     return LiteralLogical( cmd.t, cmd->(as LiteralInt32).value? )
         if (type is Program.type_Character) return LiteralLogical( cmd.t, cmd->(as LiteralCharacter).value? )
       endIf
@@ -721,12 +726,12 @@ augment
     method LiteralInt32.type->Type
       return Program.type_Int32
 
-    method LiteralInt64.type->Type
-      return Program.type_Int64
-
     method LiteralInt.type->Type
       if (Program.int_bits == 64) return Program.type_Int64
       else                        return Program.type_Int32
+
+    method LiteralInt64.type->Type
+      return Program.type_Int64
 
     method LiteralList.type->Type
       contingent
@@ -898,3 +903,19 @@ augment
     method CallThisDynamicMethod.is_dynamic_call->Logical
       return true
 endAugment
+
+augment
+  METHODS
+    method Cmd.coerce_to_LiteralInt->LiteralInt
+      return null
+
+    method LiteralInt.coerce_to_LiteralInt->LiteralInt
+      return this
+
+    method LiteralInt32.coerce_to_LiteralInt->LiteralInt
+      return LiteralInt( t, value )
+
+    method LiteralInt64.coerce_to_LiteralInt->LiteralInt
+      return LiteralInt( t, value )
+endAugment
+

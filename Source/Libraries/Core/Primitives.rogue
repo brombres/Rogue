@@ -126,7 +126,6 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
 endClass
 
 
-#{
 class Real : CommonPrimitiveMethods<<Real>> [primitive]
   METHODS
     method acos->Real
@@ -254,7 +253,6 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
       return String().[ print(this,decimal_places) ]
 
 endClass
-}#
 
 
 class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
@@ -607,7 +605,6 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
 endClass
 
 
-#{
 class Int : CommonPrimitiveMethods<<Int>> [primitive]
   DEFINITIONS
     #MAXIMUM = INT_MAXIMUM  # defined by compiler
@@ -808,7 +805,7 @@ class Int : CommonPrimitiveMethods<<Int>> [primitive]
       return result
 
     method to->String
-      if (this >= -1 and this <= 9) return this->Int->String
+      if (this >= -1 and this <= 9) return this->Int32->String
       return String().[ print(this) ]
 
     method to->String( digits=0:Int, &binary, &hex, &octal )
@@ -832,7 +829,6 @@ class Int : CommonPrimitiveMethods<<Int>> [primitive]
       return this->Int32.to_digit( &= base64 )
 
 endClass
-}#
 
 
 class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]

@@ -359,20 +359,17 @@ scanner
     case "0b"
       base = 2
       scan_binary_integer
-      scan('L')
-      scan('L')
+      scan({[iIlL]})
       produce BINARY_INTEGER
     case "0c"
       base = 8
       scan_octal_integer
-      scan('L')
-      scan('L')
+      scan({[iIlL]})
       produce OCTAL_INTEGER
     case "0x"
       base = 16
       scan_hex_integer
-      scan('L')
-      scan('L')
+      scan({[iIlL]})
       produce HEX_INTEGER
     others
       scan_integer
@@ -380,16 +377,15 @@ scanner
         ch = peek(1)
         if (ch >= 'a' and ch <= 'z' or ch >= 'A' and ch <= 'Z' or ch == '_' or ch == '.') produce INTEGER
       endIf
-      if (scan('L'))
-        scan('L')
-        produce INTEGER
-      endIf
+      if (scan({[iIlL]})) produce INTEGER
+      if (scan({[fFrR]})) produce REAL_NUMBER
       if (not scan('.')) produce INTEGER
       scan_integer
-      if (scan([eE]))
+      if (scan({[eE]}))
         scan [+-]
         if (not scan([0-9]+)) syntaxError "Integer exponent expected."
       endIf
+      scan( {[fFrR]} )
       produce REAL_NUMBER
   endMatch
 
