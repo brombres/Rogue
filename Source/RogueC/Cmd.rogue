@@ -5174,3 +5174,17 @@ class LiteralInt : LiteralInteger
     method to->String:    return value
 
 endClass
+
+class ConvertToInt : Convert
+  METHODS
+    method description->String
+      return "ConvertToInt($)" (%operand)
+
+endClass
+
+class ConvertToReal : Convert
+  METHODS
+    method description->String
+      return "ConvertToReal($)" (%operand)
+
+endClass

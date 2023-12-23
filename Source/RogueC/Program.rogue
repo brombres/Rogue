@@ -108,10 +108,10 @@ class Program [singleton]
       type_Byte      = TypeByte( t )
       type_Character = TypeCharacter( t )
       type_Int32     = TypeInt32( t )
-      type_Int       = TypeInt( t )
+      #type_Int       = TypeInt( t )
       type_Int64     = TypeInt64( t )
       type_Real32    = TypeReal32( t )
-      type_Real      = TypeReal( t )
+      #type_Real      = TypeReal( t )
       type_Real64    = TypeReal64( t )
       int_bits       = 64  # default; overridden with --int=32
       real_bits      = 64  # default; overridden with --real=32
@@ -135,11 +135,11 @@ class Program [singleton]
       type_Byte.attributes.is_essential      = true
       type_Character.attributes.is_essential = true
       type_Int32.attributes.is_essential     = true
-      type_Int.attributes.is_essential       = true
+      #type_Int.attributes.is_essential       = true
       type_Int64.attributes.is_essential     = true
       type_Real32.attributes.is_essential    = true
       type_Real64.attributes.is_essential    = true
-      type_Real.attributes.is_essential      = true
+      #type_Real.attributes.is_essential      = true
       type_String.attributes.is_essential    = true
 
     method add_include_search_path( path:String, &library )
@@ -669,20 +669,28 @@ class Program [singleton]
       File( output_filepath ).save( doc.to_json(&formatted) )
 
     method set_int_bits( @int_bits )
+      definitions["Int"] = [t.cloned( TokenType.IDENTIFIER, "Int"+int_bits )]
+      definitions["NewInt"] = [t.cloned( TokenType.IDENTIFIER, "Int"+int_bits )]
       if (int_bits == 64)
+        type_Int = type_Int64
         definitions["INT_MINIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int64.MINIMUM->String )]
         definitions["INT_MAXIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int64.MAXIMUM->String )]
         definitions["INT_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Int64" )]
       else
+        type_Int = type_Int32
         definitions["INT_MINIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int32.MINIMUM->String )]
         definitions["INT_MAXIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int32.MAXIMUM->String )]
         definitions["INT_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Int32" )]
       endIf
 
     method set_real_bits( @real_bits )
+      definitions["Real"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
+      definitions["NewReal"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
       if (real_bits == 64)
+        type_Real = type_Real64
         definitions["REAL_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Real64" )]
       else
+        type_Real = type_Real32
         definitions["REAL_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Real32" )]
       endIf
 

@@ -3747,9 +3747,11 @@ parser
   create ConvertToByte(operand):Convert
   create ConvertToCharacter(operand):Convert
   create ConvertToInt32(operand):Convert
+  create ConvertToInt(operand):Convert
   create ConvertToInt64(operand):Convert
   create ConvertToLogical(operand):Convert
   create ConvertToReal32(operand):Convert
+  create ConvertToReal(operand):Convert
   create ConvertToReal64(operand):Convert
   create CreateObject(of_type:Type,args)
   create CreateObject(of_type:Type,info:Local)

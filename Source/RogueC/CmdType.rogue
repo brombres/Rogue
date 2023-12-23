@@ -75,11 +75,11 @@ augment
           endIf
           return resolver.validate( ConvertToInt32( t, this ) )
         endIf
-        if (target_type is Program.type_Int)       return resolver.validate( ConvertToInt( t, this ) )
+        #if (target_type is Program.type_Int)       return resolver.validate( ConvertToInt( t, this ) )
         if (target_type is Program.type_Int64)     return resolver.validate( ConvertToInt64( t, this ) )
         if (target_type is Program.type_Logical)   return resolver.validate( ConvertToLogical( t, this ) )
         if (target_type is Program.type_Real32)    return resolver.validate( ConvertToReal32( t, this ) )
-        if (target_type is Program.type_Real)      return resolver.validate( ConvertToReal( t, this ) )
+        #if (target_type is Program.type_Real)      return resolver.validate( ConvertToReal( t, this ) )
         if (target_type is Program.type_Real64)    return resolver.validate( ConvertToReal64( t, this ) )
         throw t.error( "[INTERNAL] Unhandled primitive conversion." )
       endIf
