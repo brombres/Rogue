@@ -669,7 +669,6 @@ class Program [singleton]
       File( output_filepath ).save( doc.to_json(&formatted) )
 
     method set_int_bits( @int_bits )
-      definitions["Int"] = [t.cloned( TokenType.IDENTIFIER, "Int"+int_bits )]
       definitions["NewInt"] = [t.cloned( TokenType.IDENTIFIER, "Int"+int_bits )]
       if (int_bits == 64)
         type_Int = type_Int64
@@ -684,7 +683,6 @@ class Program [singleton]
       endIf
 
     method set_real_bits( @real_bits )
-      definitions["Real"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
       definitions["NewReal"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
       if (real_bits == 64)
         type_Real = type_Real64

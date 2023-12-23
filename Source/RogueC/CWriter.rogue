@@ -145,9 +145,13 @@ class CWriter : BufferedPrintWriter
 
        if (Program.int_bits == 32)  println "typedef %Ns%RogueInt32 %Ns%RogueNewInt;"
        else                         println "typedef %Ns%RogueInt64 %Ns%RogueNewInt;"
-
        if (Program.real_bits == 32) println "typedef %Ns%RogueReal32 %Ns%RogueNewReal;"
        else                         println "typedef %Ns%RogueReal64 %Ns%RogueNewReal;"
+
+       if (Program.int_bits == 32)  println "typedef %Ns%RogueInt32  %Ns%RogueInt;"
+       else                         println "typedef %Ns%RogueInt64  %Ns%RogueInt;"
+       if (Program.real_bits == 32) println "typedef %Ns%RogueReal32 %Ns%RogueReal;"
+       else                         println "typedef %Ns%RogueReal64 %Ns%RogueReal;"
 
         println "#define %NS%ROGUE_TYPE_PRIMITIVE $" (Attribute.PRIMITIVE)
         println "#define %NS%ROGUE_TYPE_COMPOUND  $" (Attribute.COMPOUND)
