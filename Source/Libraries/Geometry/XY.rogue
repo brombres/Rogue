@@ -1,18 +1,18 @@
 module Geometry
 
-class XY( x:Real, y:Real ) [compound]
+class XY( x:NewReal, y:NewReal ) [compound]
   DEFINITIONS
     zero = XY(0,0)
 
   GLOBAL METHODS
-    method create( r:Real, angle:Radians )->XY
+    method create( r:NewReal, angle:Radians )->XY
       return XY( r*angle.cos, r*angle.sin )
 
-    method create( r:Real, angle:Degrees )->XY
+    method create( r:NewReal, angle:Degrees )->XY
       local radians = angle->Radians
       return XY( r*angle.cos, r*angle.sin )
 
-    method create( n:Real )->XY
+    method create( n:NewReal )->XY
       return XY(n,n)
 
     method create( xy:IntXY )->XY
@@ -27,7 +27,7 @@ class XY( x:Real, y:Real ) [compound]
     method operator*( a:XY, b:XY )->XY
       return XY( a.x*b.x, a.y*b.y )
 
-    method operator*( a:XY, b:Real )->XY
+    method operator*( a:XY, b:NewReal )->XY
       return XY( a.x*b, a.y*b )
 
     method operator*( a:XY, b:IntXY )->XY
@@ -39,13 +39,13 @@ class XY( x:Real, y:Real ) [compound]
     method operator/( a:XY, b:XY )->XY
       return XY( a.x/b.x, a.y/b.y )
 
-    method operator/( a:XY, b:Real )->XY
+    method operator/( a:XY, b:NewReal )->XY
       return XY( a.x/b, a.y/b )
 
     method operator/( a:XY, b:IntXY )->XY
       return XY( a.x/b.x, a.y/b.y )
 
-    method operator/( a:Real, b:XY )->XY
+    method operator/( a:NewReal, b:XY )->XY
       return XY( a/b.x, a/b.y )
 
     method operator/( a:IntXY, b:XY )->XY
@@ -54,11 +54,11 @@ class XY( x:Real, y:Real ) [compound]
     method operator%( a:XY, b:XY )->XY
       return XY( a.x%b.x, a.y%b.y )
 
-    method operator%( a:XY, b:Real )->XY
+    method operator%( a:XY, b:NewReal )->XY
       if (b == 0) return a
       return XY( a.x%b, a.y%b )
 
-    method operator%( a:Real, b:XY )->XY
+    method operator%( a:NewReal, b:XY )->XY
       return XY( a%b.x, a%b.y )
 
     method operator%( a:IntXY, b:XY )->XY
@@ -67,10 +67,10 @@ class XY( x:Real, y:Real ) [compound]
     method operator^( a:XY, b:XY )->XY
       return XY( a.x^b.x, a.y^b.y )
 
-    method operator^( a:XY, b:Real )->XY
+    method operator^( a:XY, b:NewReal )->XY
       return XY( a.x^b, a.y^b )
 
-    method operator*( a:Real, b:XY )->XY
+    method operator*( a:NewReal, b:XY )->XY
       return XY( a*b.x, a*b.y )
 
   METHODS
@@ -157,16 +157,16 @@ class XY( x:Real, y:Real ) [compound]
     method clamped_low( limit:XY )->XY
       return XY( this.x.clamped_low(limit.x), this.y.clamped_low(limit.y) )
 
-    method cross( other:IntXY )->Real
+    method cross( other:IntXY )->NewReal
       return x * other.y - y * other.x
 
     method degrees->Degrees
       return Radians( y.atan2(x) )->Degrees
 
-    method distance_to( other:XY )->Int
+    method distance_to( other:XY )->NewInt
       return (other - this).magnitude
 
-    method dot( other:IntXY )->Real
+    method dot( other:IntXY )->NewReal
       return x * other.x + y * other.y
 
     method floor->XY
@@ -175,16 +175,16 @@ class XY( x:Real, y:Real ) [compound]
     method is_zero->Logical
       return x == 0 and y == 0
 
-    method magnitude->Real
+    method magnitude->NewReal
       return (x*x + y*y).sqrt
 
-    method magnitude_squared->Real
+    method magnitude_squared->NewReal
       return x*x + y*y
 
-    method max->Real
+    method max->NewReal
       return which{ x>=y:x || y }
 
-    method min->Real
+    method min->NewReal
       return which{ x<=y:x || y }
 
     method max( other:XY )->XY
@@ -219,7 +219,7 @@ class XY( x:Real, y:Real ) [compound]
     method operator-()->XY
       return XY( -x, -y )
 
-    method operator<>( other:XY )->Int
+    method operator<>( other:XY )->NewInt
       if (x == other.x) return y <> other.y
       else              return x <> other.x
 
@@ -231,7 +231,7 @@ class XY( x:Real, y:Real ) [compound]
       # Returns the smaller X and the smaller Y between this value and the other value.
       return XY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
 
-    method product->Real
+    method product->NewReal
       return x * y
 
     method radians->Radians
@@ -254,7 +254,7 @@ class XY( x:Real, y:Real ) [compound]
     method sign->XY
       return XY( x.sign, y.sign )
 
-    method sum->Real
+    method sum->NewReal
       return x + y
 
     method to->String
@@ -272,7 +272,7 @@ endClass
 
 augment Rogue::Random
   METHODS
-    method xy( limit:Real )->Geometry::XY
+    method xy( limit:NewReal )->Geometry::XY
       return Geometry::XY( real(limit), real(limit) )
 
     method xy( limit:Geometry::XY )->Geometry::XY

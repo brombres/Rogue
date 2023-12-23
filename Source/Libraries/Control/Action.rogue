@@ -2,6 +2,6 @@ $include Control/State
 
 class Action : State<<Action>>
   METHODS
-    method default_duration->Real
+    method default_duration->NewReal
       return INSTANT
 endClass

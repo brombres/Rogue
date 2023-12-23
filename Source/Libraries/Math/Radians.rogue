@@ -1,4 +1,4 @@
-class Radians( value:Real ) [compound]
+class Radians( value:NewReal ) [compound]
   GLOBAL METHODS
     method create( degrees:Degrees )->Radians
       return Radians( (degrees.value / 180.0) * pi )
@@ -21,7 +21,7 @@ class Radians( value:Real ) [compound]
         return max  # clamp to max
       endIf
 
-    method cos->Real
+    method cos->NewReal
       return value.cos
 
     method delta_to( other:Radians )->Radians
@@ -37,22 +37,22 @@ class Radians( value:Real ) [compound]
     method operator-()->Radians
       return Radians( -this.value )
 
-    method operator+( radians:Real )->Radians
+    method operator+( radians:NewReal )->Radians
       return Radians( this.value + radians )
 
-    method operator-( radians:Real )->Radians
+    method operator-( radians:NewReal )->Radians
       return Radians( this.value - radians )
 
-    method operator*( radians:Real )->Radians
+    method operator*( radians:NewReal )->Radians
       return Radians( this.value * radians )
 
-    method operator/( radians:Real )->Radians
+    method operator/( radians:NewReal )->Radians
       return Radians( this.value / radians )
 
-    method operator%( radians:Real )->Radians
+    method operator%( radians:NewReal )->Radians
       return Radians( this.value % radians )
 
-    method operator^( radians:Real )->Radians
+    method operator^( radians:NewReal )->Radians
       return Radians( this.value ^ radians )
 
     method operator+( other:Radians )->Radians
@@ -76,22 +76,22 @@ class Radians( value:Real ) [compound]
     method operator==( other:Degrees )->Logical
       return value == other.value
 
-    method operator==( other_value:Real )->Logical
+    method operator==( other_value:NewReal )->Logical
       return value == other_value
 
-    method operator<>( other:Degrees )->Real
+    method operator<>( other:Degrees )->NewReal
       return value <> other.value
 
-    method operator<>( other_value:Real )->Real
+    method operator<>( other_value:NewReal )->NewReal
       return value <> other_value
 
-    method sin->Real
+    method sin->NewReal
       return value.sin
 
-    method tan->Real
+    method tan->NewReal
       return value.tan
 
-    method to->Real
+    method to->NewReal
       return value
 
     method to->String

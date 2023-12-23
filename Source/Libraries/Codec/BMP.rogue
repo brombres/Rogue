@@ -17,7 +17,7 @@ enum BMPVersion
   BITMAPV5HEADER      = 124
 
   METHODS
-    method operator<>(other:BMPVersion)->Int
+    method operator<>(other:BMPVersion)->NewInt
       return value <> other.value
 endEnum
 
@@ -86,7 +86,7 @@ class BMPBitField( bitmask:Int32, left_shift_for_argb:Int32 ) [compound]
 
       return n
 
-    method operator<>(other:BMPBitField)->Int
+    method operator<>(other:BMPBitField)->NewInt
       return (bit_shift <> other.bit_shift)
 
     method reader( next=null:BMPColorComponentReader )->BMPColorComponentReader

@@ -3,7 +3,7 @@ uses Geometry [export]
 $include Math/AxisAngle
 $include Math/Matrix
 
-class Quaternion( x=0:Real, y=0:Real, z=0:Real, w=1.0:Real ) [compound]
+class Quaternion( x=0:NewReal, y=0:NewReal, z=0:NewReal, w=1.0:NewReal ) [compound]
   # Adapted from the Iirlicht Quaternion by Nikolaus Gebhardt
   GLOBAL METHODS
     method create( aa:AxisAngle )->Quaternion
@@ -112,7 +112,7 @@ class Quaternion( x=0:Real, y=0:Real, z=0:Real, w=1.0:Real ) [compound]
       return Quaternion(0,0,0,1)
 
   METHODS
-    method dot( other:Quaternion )->Real
+    method dot( other:Quaternion )->NewReal
       return (x * other.x) + (y * other.y) + (z * other.z) + (w * other.w)
 
     method inverted->Quaternion
@@ -121,10 +121,10 @@ class Quaternion( x=0:Real, y=0:Real, z=0:Real, w=1.0:Real ) [compound]
     method is_identity->Logical
       return not (x or y or z or w != 1)
 
-    method linear_tween( target:Quaternion, t:Real )->Quaternion
+    method linear_tween( target:Quaternion, t:NewReal )->Quaternion
       return this * (1 - t) + target * t
 
-    method matches( other:Quaternion, tolerance:Real )->Logical
+    method matches( other:Quaternion, tolerance:NewReal )->Logical
       return ((x - other.x).abs <= tolerance) and
              ((y - other.y).abs <= tolerance) and
              ((z - other.z).abs <= tolerance) and
@@ -149,7 +149,7 @@ class Quaternion( x=0:Real, y=0:Real, z=0:Real, w=1.0:Real ) [compound]
     method operator+( other:Quaternion )->Quaternion
       return Quaternion( x+other.x, y+other.y, z+other.z, w+other.w )
 
-    method operator*( n:Real )->Quaternion
+    method operator*( n:NewReal )->Quaternion
       return Quaternion( n*x, n*y, n*z, n*w )
 
     method operator*( v:XYZ )->XYZ
@@ -160,7 +160,7 @@ class Quaternion( x=0:Real, y=0:Real, z=0:Real, w=1.0:Real ) [compound]
       uuv *= 2
       return v + uv + uuv
 
-    method operator/( n:Real )->Quaternion
+    method operator/( n:NewReal )->Quaternion
       return Quaternion( x/n, y/n, z/n, w/n )
 
     method to->Matrix
@@ -194,7 +194,7 @@ class Quaternion( x=0:Real, y=0:Real, z=0:Real, w=1.0:Real ) [compound]
 
       return m
 
-    method tween( target:Quaternion, t:Real, threshold=0.05:Real )->Quaternion
+    method tween( target:Quaternion, t:NewReal, threshold=0.05:NewReal )->Quaternion
       local angle = this.dot( target )
 
       local source = this

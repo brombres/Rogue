@@ -22,7 +22,7 @@ class UILayout : UIComponent
     method table->UITableLayout
       return UITableLayout()
 
-    method table( columns:Int, rows:Int )->UITableLayout
+    method table( columns:NewInt, rows:NewInt )->UITableLayout
       return UITableLayout(columns,rows)
 
     method table( size:IntXY )->UITableLayout

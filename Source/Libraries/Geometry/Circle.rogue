@@ -1,6 +1,6 @@
 module Geometry
 
-class Circle( position:XY, radius:Int ) [compound]
+class Circle( position:XY, radius:NewInt ) [compound]
   METHODS
     method at( angle:Radians )->XY
       # Returns the point along the edge of the circle at the given angle.
@@ -43,10 +43,10 @@ class Circle( position:XY, radius:Int ) [compound]
     method operator-( delta:XY )->Circle
       return Circle( position-delta, radius )
 
-    method operator*( scale:Real )->Circle
+    method operator*( scale:NewReal )->Circle
       return Circle( position*scale, radius*scale )
 
-    method operator/( scale:Real )->Circle
+    method operator/( scale:NewReal )->Circle
       return Circle( position/scale, radius/scale )
 
     method to->String

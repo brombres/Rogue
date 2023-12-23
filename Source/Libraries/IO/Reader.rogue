@@ -1,6 +1,6 @@
 class Reader<<$DataType>> [abstract aspect]
   PROPERTIES
-    position : Int
+    position : NewInt
 
   METHODS
     method close
@@ -16,12 +16,12 @@ class Reader<<$DataType>> [abstract aspect]
     method on_end_use
       close
 
-    method position->Int [fallback]
+    method position->NewInt [fallback]
       return @position
 
     method read->$DataType [abstract]
 
-    method read( buffer:$DataType[], limit:Int )->Int
+    method read( buffer:$DataType[], limit:NewInt )->NewInt
       forEach (n in 0..<limit)
         if (not has_another) close; return n
         buffer.add( read )
@@ -32,12 +32,12 @@ class Reader<<$DataType>> [abstract aspect]
     method reset
       seek( 0 )
 
-    method seek( pos:Int )
+    method seek( pos:NewInt )
       local delta = pos - position
       if (delta >= 0) skip( delta )
       else            Global.error.println( "Unsupported operation $.seek(<backwards position>)"(type_name) )
 
-    method skip( n:Int )
+    method skip( n:NewInt )
       forEach (1..n) read
 
     method to->String

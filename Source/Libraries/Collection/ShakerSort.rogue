@@ -21,7 +21,7 @@ class ShakerSort<<$DataType>>
     method single_forward_pass( list:$DataType[], compare_fn:(Function(a:$DataType,b:$DataType)->Logical) )->Logical
       return single_forward_pass( list, 0, list.count-1, compare_fn )
 
-    method single_forward_pass( list:$DataType[], i1:Int, i2:Int,
+    method single_forward_pass( list:$DataType[], i1:NewInt, i2:NewInt,
           compare_fn:(Function(a:$DataType,b:$DataType)->Logical) )->Logical
       # Returns 'true' if any changes occur.
       local any_changes = false
@@ -36,7 +36,7 @@ class ShakerSort<<$DataType>>
     method single_reverse_pass( list:$DataType[], compare_fn:(Function(a:$DataType,b:$DataType)->Logical) )->Logical
       return single_reverse_pass( list, 0, list.count-1, compare_fn )
 
-    method single_reverse_pass( list:$DataType[], i1:Int, i2:Int,
+    method single_reverse_pass( list:$DataType[], i1:NewInt, i2:NewInt,
           compare_fn:(Function(a:$DataType,b:$DataType)->Logical) )->Logical
       # Returns 'true' if any changes occur.
       local any_changes = false

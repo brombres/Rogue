@@ -58,7 +58,7 @@ class LineReader : Reader<<String>>
     method reset
       seek( 0 )
 
-    method seek( pos:Int )
+    method seek( pos:NewInt )
       if (pos < 0) pos = 0
 
       if (pos < position)

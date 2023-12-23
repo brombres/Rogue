@@ -2,9 +2,9 @@ class ListType [aspect];
 
 class List<<$DataType>> : Poolable ListType
   PROPERTIES
-    count        : Int
-    capacity     : Int
-    element_size : Int
+    count        : NewInt
+    capacity     : NewInt
+    element_size : NewInt
     is_ref_array : Logical
     is_borrowed  : Logical
     element_type : $DataType  # Used by native code to determine sizeof($DataType)
@@ -33,15 +33,15 @@ class List<<$DataType>> : Poolable ListType
   METHODS
     method init
 
-    method init( capacity:Int )
+    method init( capacity:NewInt )
       reserve( capacity )
 
     method init_object
       if ($DataType isType Logical) element_size = 1
-      else                          element_size = native("sizeof($element_type)")->Int
+      else                          element_size = native("sizeof($element_type)")->NewInt
       if ($DataType instanceOf Object) is_ref_array = true
 
-    method cloned( minimum_capacity=0:Int )->$DataType[]
+    method cloned( minimum_capacity=0:NewInt )->$DataType[]
       local result = $DataType[]( count.or_larger(minimum_capacity) )
       result.count = count
       copy( 0, count, result, 0 )
@@ -87,10 +87,10 @@ class List<<$DataType>> : Poolable ListType
     method contains( other:$DataType[] )->Logical
       return this.locate( other )?
 
-    method copy( dest:$DataType[], dest_i1=0:Int )
+    method copy( dest:$DataType[], dest_i1=0:NewInt )
       copy( 0, count, dest, dest_i1 )
 
-    method copy( src_i1:Int, src_count:Int, dest:$DataType[], dest_i1:Int )
+    method copy( src_i1:NewInt, src_count:NewInt, dest:$DataType[], dest_i1:NewInt )
       if (src_count <= 0) return
 
       dest.expand_to_count( dest_i1 + src_count )
@@ -109,7 +109,7 @@ class List<<$DataType>> : Poolable ListType
                 |);
       endIf
 
-    method count( query:Function($DataType)->Logical )->Int
+    method count( query:Function($DataType)->Logical )->NewInt
       local n = 0L
       if (query(forEach in this)) ++n
       return n
@@ -124,12 +124,12 @@ class List<<$DataType>> : Poolable ListType
       result.print ']'
       return result
 
-    method dim( n:Int )
+    method dim( n:NewInt )
       clear
       reserve( n )
       count = n
 
-    method discard( i1:Int, n=1:Int )
+    method discard( i1:NewInt, n=1:NewInt )
       local i2 = i1 + n
       copy( i2, (count-i2), this, i1 )
       discard_from( count-n )
@@ -144,34 +144,34 @@ class List<<$DataType>> : Poolable ListType
       # Returns a copy of the list without any item that passes the query function.
       return cloned.[ discard(discard_if) ]
 
-    method discard_from( index:Int )
+    method discard_from( index:NewInt )
       local n = (count - index)
       if (n > 0)
         zero( index, n )
         count = index
       endIf
 
-    method ensure_capacity( desired_capacity:Int )
+    method ensure_capacity( desired_capacity:NewInt )
       reserve( desired_capacity - count )
 
-    method expand( additional_count:Int )
+    method expand( additional_count:NewInt )
       # Adds 'additional_count' items to this list, each with the default
       # value of null/0/false.
       reserve( additional_count )
       count += additional_count
 
-    method expand_to_count( minimum_count:Int )
+    method expand_to_count( minimum_count:NewInt )
       # Expands the list if necessary to have at least 'minimum_count' elements.
       if (count < minimum_count)
         ensure_capacity( minimum_count )
         count = minimum_count
       endIf
 
-    method expand_to_include( index:Int )
+    method expand_to_include( index:NewInt )
       # Expands the list if necessary to include the specified index.
       expand_to_count( index + 1 )
 
-    method fill( value:$DataType, i1=0:Int, count=null:Int? )
+    method fill( value:$DataType, i1=0:NewInt, count=null:NewInt? )
       local n = which{ count || this.count }
 
       if ($DataType isType Logical) native @|//A
@@ -188,7 +188,7 @@ class List<<$DataType>> : Poolable ListType
         endIf
       endIf
 
-      native @|%Ns%RogueInt n = $n;
+      native @|%Ns%RogueNewInt n = $n;
               |$<<element_type>>* ptr = (($<<element_type>>*)$this->data) + ($i1 - 1);
               |while (--n >= 0) *(++ptr) = $value;
 
@@ -214,13 +214,13 @@ class List<<$DataType>> : Poolable ListType
 
       return null
 
-    method from( i1:Int )->ListIterator<<$DataType>>
+    method from( i1:NewInt )->ListIterator<<$DataType>>
       return ListIterator<<$DataType>>( this, i1 )
 
-    method from( i1:Int, i2:Int )->ListIterator<<$DataType>>
+    method from( i1:NewInt, i2:NewInt )->ListIterator<<$DataType>>
       return ListIterator<<$DataType>>( this, i1, i2+1 )
 
-    method get( index:Int )->$DataType
+    method get( index:NewInt )->$DataType
       if ($DataType isType Logical)
         return native("$this->as_logicals[$index]")->$DataType
       else
@@ -236,7 +236,7 @@ class List<<$DataType>> : Poolable ListType
 
       return results
 
-    method insert( value:$DataType, before_index=0:Int )
+    method insert( value:$DataType, before_index=0:NewInt )
       if (before_index < 0) before_index = 0
 
       if (before_index >= count)
@@ -247,7 +247,7 @@ class List<<$DataType>> : Poolable ListType
         this[ before_index ] = value
       endIf
 
-    method insert( other:$DataType[], before_index=0:Int )
+    method insert( other:$DataType[], before_index=0:NewInt )
       if (before_index < 0) before_index = 0
 
       local n = other.count
@@ -309,7 +309,7 @@ class List<<$DataType>> : Poolable ListType
 
       return null
 
-    method locate( value:$DataType, i1=null:Int? )->Int?
+    method locate( value:$DataType, i1=null:NewInt? )->NewInt?
       if (not i1) i1 = 0
 
       if ($isReference<<$DataType>>)
@@ -326,7 +326,7 @@ class List<<$DataType>> : Poolable ListType
       endForEach
       return null
 
-    method locate( query:(Function($DataType)->Logical), i1=null:Int? )->Int?
+    method locate( query:(Function($DataType)->Logical), i1=null:NewInt? )->NewInt?
       if (not i1) i1 = 0
 
       forEach (value at index in this from i1.value)
@@ -335,7 +335,7 @@ class List<<$DataType>> : Poolable ListType
 
       return null
 
-    method locate( other:$DataType[], i1=null:Int? )->Int?
+    method locate( other:$DataType[], i1=null:NewInt? )->NewInt?
       if (not i1) i1 = 0
 
       local other_count = other.count
@@ -367,7 +367,7 @@ class List<<$DataType>> : Poolable ListType
       endForEach
       return null
 
-    method locate_last( value:$DataType, i1=null:Int? )->Int?
+    method locate_last( value:$DataType, i1=null:NewInt? )->NewInt?
       local starting_index = which{ i1 || count-1 }
       if ($isReference<<$DataType>>)
         if (value is null)
@@ -383,14 +383,14 @@ class List<<$DataType>> : Poolable ListType
       endForEach
       return null
 
-    method locate_last( query:(Function($DataType)->Logical), i1=null:Int? )->Int?
+    method locate_last( query:(Function($DataType)->Logical), i1=null:NewInt? )->NewInt?
       local starting_index = which{ i1 || count-1 }
       forEach (value at index in this from starting_index step -1)
         if (query(value)) return index
       endForEach
       return null
 
-    method locate_last( other:$DataType[], i1=null:Int? )->Int?
+    method locate_last( other:$DataType[], i1=null:NewInt? )->NewInt?
       local starting_index = which{ i1 || count-1 }
       local other_count = other.count
       if (count < other_count) return null
@@ -439,7 +439,7 @@ class List<<$DataType>> : Poolable ListType
       if (this is other) return true
       return count == other.count and locate(other).exists
 
-    method operator*( n:Int )->$DataType[]
+    method operator*( n:NewInt )->$DataType[]
       # Creates a new list containing 'n' concatenated copies of this list.
       # Useful for creating an array-style list. For example, a list of 256 0's: [0] * 256
       local result = $DataType[]( this.count * n )
@@ -489,7 +489,7 @@ class List<<$DataType>> : Poolable ListType
     method reader->ListReader<<$DataType>>
       return ListReader<<$DataType>>( this )
 
-    method reduce<<$ToType>>( reduce_fn:(Function(Int,$DataType,$ToType)->$ToType) )->$ToType
+    method reduce<<$ToType>>( reduce_fn:(Function(NewInt,$DataType,$ToType)->$ToType) )->$ToType
       local result : $ToType
       forEach (index of this)
         result = reduce_fn( index, this[index], result )
@@ -514,7 +514,7 @@ class List<<$DataType>> : Poolable ListType
       endForEach
       return result
 
-    method remove_at( index:Int )->$DataType
+    method remove_at( index:NewInt )->$DataType
       local result = this[ index ]
       copy( index+1, count-(index+1), this, index )
       --count
@@ -568,19 +568,19 @@ class List<<$DataType>> : Poolable ListType
       endIf
       return remove_at( generator.int32(this.count) )
 
-    method reserve( additional_capacity:Int )
+    method reserve( additional_capacity:NewInt )
       local required_capacity = count + additional_capacity
       if (required_capacity <= capacity) return
 
       required_capacity = required_capacity.or_larger( count*2 ).or_larger( 10 )
 
-      native @|RogueInt total_size = $required_capacity * $element_size;
+      native @|RogueNewInt total_size = $required_capacity * $element_size;
               |%Ns%RogueMM_bytes_allocated_since_gc += total_size;
               |%Ns%RogueByte* new_data = (%Ns%RogueByte*) %NS%ROGUE_MALLOC( total_size );
               |
               |if ($this->as_bytes)
               |{
-              |  RogueInt old_size = $capacity * $element_size;
+              |  RogueNewInt old_size = $capacity * $element_size;
               |  %Ns%RogueByte* old_data = $this->as_bytes;
               |  memcpy( new_data, old_data, old_size );
               |  memset( new_data+old_size, 0, total_size-old_size );
@@ -595,7 +595,7 @@ class List<<$DataType>> : Poolable ListType
 
       capacity = required_capacity
 
-    method resize( new_count:Int )
+    method resize( new_count:NewInt )
       if (count != new_count)
         expand_to_count( new_count )
         discard_from( new_count )
@@ -604,7 +604,7 @@ class List<<$DataType>> : Poolable ListType
     method reverse
       reverse( 0, count-1 )
 
-    method reverse( i1:Int, i2:Int )
+    method reverse( i1:NewInt, i2:NewInt )
       if (i1 < 0) i1 = 0
       if (i2 >= count) i2 = count - 1
 
@@ -622,7 +622,7 @@ class List<<$DataType>> : Poolable ListType
     method rewriter_object->ListRewriterObject<<$DataType>>
       return ListRewriterObject<<$DataType>>( this )
 
-    method rotate_left( w:Int, h:Int )
+    method rotate_left( w:NewInt, h:NewInt )
       # Treats this list as a 2D WxH set of data and rotates it 90º counter-clockwise.
       # The data must then be accessed using HxW.
       local total_count = w * h
@@ -642,7 +642,7 @@ class List<<$DataType>> : Poolable ListType
         new_data.copy( 0, new_data.count, this, 0 )
       endUse
 
-    method rotate_right( w:Int, h:Int )
+    method rotate_right( w:NewInt, h:NewInt )
       # Treats this list as a 2D WxH set of data and rotates it 90º clockwise.
       # The data must then be accessed using HxW.
       local total_count = w * h
@@ -662,7 +662,7 @@ class List<<$DataType>> : Poolable ListType
         new_data.copy( 0, new_data.count, this, 0 )
       endUse
 
-    method set( index:Int, value:$DataType )
+    method set( index:NewInt, value:$DataType )
       if ($DataType isType Logical)
         native @|$this->as_logicals[$index] = (%Ns%RogueByte) $value;
       else
@@ -675,7 +675,7 @@ class List<<$DataType>> : Poolable ListType
     method set_last( new_value:$DataType )
       this[ count - 1 ] = new_value
 
-    method shift( delta:Int )
+    method shift( delta:NewInt )
       if (delta == 0) return
 
       if (delta > 0)
@@ -703,10 +703,10 @@ class List<<$DataType>> : Poolable ListType
     method sorted( compare_fn:(Function($DataType,$DataType)->Logical) )->$DataType[]
       return cloned.[ sort(compare_fn) ]
 
-    method subset( i1:Int )->$DataType[]
+    method subset( i1:NewInt )->$DataType[]
       return subset( i1, count-i1 )
 
-    method subset( i1:Int, n:Int )->$DataType[]
+    method subset( i1:NewInt, n:NewInt )->$DataType[]
       if (n < 0)
         n = (count - i1) + n
         if (n <= 0) return $DataType[]
@@ -715,7 +715,7 @@ class List<<$DataType>> : Poolable ListType
       forEach (i in i1..<i1+n) result.add( this[i] )
       return result
 
-    method swap( i1:Int, i2:Int )
+    method swap( i1:NewInt, i2:NewInt )
       swapValues( this[i1], this[i2] )
 
     method to->String
@@ -724,23 +724,23 @@ class List<<$DataType>> : Poolable ListType
     method writer->ListWriter<<$DataType>>
       return ListWriter<<$DataType>>( this )
 
-    method zero( i1=0:Int, count=null:Int? )
+    method zero( i1=0:NewInt, count=null:NewInt? )
       local n = which{ count || this.count }
       native @|memset( $this->as_bytes + $i1*$element_size, 0, $n*$element_size );
 
 endClass
 
-class ListIterator<<$DataType>>( list:$DataType[], position=0:Int, limit=-1:Int ) [compound]
+class ListIterator<<$DataType>>( list:$DataType[], position=0:NewInt, limit=-1:NewInt ) [compound]
   METHODS
     method has_another->Logical
       if (limit == -1) return (position < list.count)
       else             return (position < limit)
 
-    method has_another( n:Int )->Logical
+    method has_another( n:NewInt )->Logical
       if (limit == -1) return (position + n <= list.count)
       else             return (position + n <= limit)
 
-    method peek( lookahead=0:Int )->$DataType
+    method peek( lookahead=0:NewInt )->$DataType
       return list[ position+lookahead ]
 
     method read->$DataType [mutating]
@@ -771,8 +771,8 @@ endClass
 class ListReader<<$DataType>> : Reader<<$DataType>>
   PROPERTIES
     list       : $DataType[]
-    position   : Int
-    limit      : Int
+    position   : NewInt
+    limit      : NewInt
     is_limited : Logical
 
   METHODS
@@ -795,7 +795,7 @@ class ListReader<<$DataType>> : Reader<<$DataType>>
     method reset
       seek( 0 )
 
-    method seek( pos:Int )
+    method seek( pos:NewInt )
       if (pos < 0) pos = 0
 
       if (is_limited)
@@ -811,7 +811,7 @@ endClass
 class ListWriter<<$DataType>> : Writer<<$DataType>>
   PROPERTIES
     list     : $DataType[]
-    position : Int
+    position : NewInt
 
   METHODS
     method init( list )
@@ -820,7 +820,7 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
     method close
       list.discard_from( position )
 
-    method seek( pos:Int )
+    method seek( pos:NewInt )
       if (pos < 0) pos = 0
       position = pos
       list.expand_to_count( pos )

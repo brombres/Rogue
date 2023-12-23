@@ -83,7 +83,7 @@ class StandardUIScrollViewController : UIScrollViewController
         content_offset = IntXY( 0, view.bottom_offset )
       endIf
 
-    method default_scroll_rate->Int
+    method default_scroll_rate->NewInt
       if (UI.active instanceOf ConsoleUI) return 3
       else                                return 5
 
@@ -187,7 +187,7 @@ class StandardUIScrollViewController : UIScrollViewController
       endIf
 
     method on_update
-      local ticks = (UI.active.dt * 60)->Int.clamped_low(1)
+      local ticks = (UI.active.dt * 60)->NewInt.clamped_low(1)
       loop (ticks) on_update_tick
 
     method on_update_tick

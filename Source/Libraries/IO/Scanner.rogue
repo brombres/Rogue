@@ -4,11 +4,11 @@ class Scanner : Reader<<Character>>
   PROPERTIES
     data           : Character[]
     source         : String
-    position       : Int
-    count          : Int
-    line           : Int
-    column         : Int
-    spaces_per_tab : Int
+    position       : NewInt
+    count          : NewInt
+    line           : NewInt
+    column         : NewInt
+    spaces_per_tab : NewInt
 
   METHODS
     method init( source, spaces_per_tab=0, &preserve_crlf )
@@ -24,14 +24,14 @@ class Scanner : Reader<<Character>>
 
       native @|char* src = $source->data->as_utf8 - 1;
               |%Ns%RogueCharacter* dest = $data->as_characters - 1;
-              |for (RogueInt i=$source->count; --i>=0; )
+              |for (RogueNewInt i=$source->count; --i>=0; )
               |{
               |  %Ns%RogueCharacter ch = (%Ns%RogueCharacter) *(++src);
               |  if (ch == '\t')
               |  {
               |    if ($spaces_per_tab)
               |    {
-              |      for (RogueInt j=$spaces_per_tab; --j>=0; ) *(++dest) = ' ';
+              |      for (RogueNewInt j=$spaces_per_tab; --j>=0; ) *(++dest) = ' ';
               |    }
               |    else
               |    {
@@ -154,7 +154,7 @@ class Scanner : Reader<<Character>>
     method has_another->Logical
       return (position < count)
 
-    method has_another( n:Int )->Logical
+    method has_another( n:NewInt )->Logical
       return (position+n <= count)
 
     method next_is( ch:Character )->Logical
@@ -178,7 +178,7 @@ class Scanner : Reader<<Character>>
     method next_is_identifier( additional_characters="":String )->Logical
       return peek.is_identifier_start( additional_characters )
 
-    method next_is_number( base=10:Int )->Logical
+    method next_is_number( base=10:NewInt )->Logical
       if (next_is('-')) return peek(1).is_number( base )
       return peek.is_number( base )
 
@@ -203,7 +203,7 @@ class Scanner : Reader<<Character>>
       if (position == count) return 0->Character
       return data[position]
 
-    method peek( lookahead:Int )->Character
+    method peek( lookahead:NewInt )->Character
       # Zero-based
       local peek_pos = position + lookahead
       if (peek_pos >= count) return 0->Character
@@ -220,7 +220,7 @@ class Scanner : Reader<<Character>>
       endIf
       return result
 
-    method read_hex_value->Int
+    method read_hex_value->NewInt
       local ch = read
       if (ch >= '0' and ch <= '9') return (ch - '0')
       if (ch >= 'a' and ch <= 'f') return 10 + (ch - 'a')
@@ -277,7 +277,7 @@ class Scanner : Reader<<Character>>
         buffer.print( ch )
       endWhile
 
-    method scan_hex_value( digits=6:Int, &variable_length )->Int
+    method scan_hex_value( digits=6:NewInt, &variable_length )->NewInt
       local value = 0
       local i = 1
       while (i <= digits)
@@ -295,7 +295,7 @@ class Scanner : Reader<<Character>>
       while (peek.is_identifier(&=additional_characters)) buffer.print( read )
       return buffer
 
-    method scan_int64( base=10:Int )->Int64
+    method scan_int64( base=10:NewInt )->Int64
       local is_negative = consume( '-' )
       local result : Int64
       while (peek.is_number(base))
@@ -324,10 +324,10 @@ class Scanner : Reader<<Character>>
       endIf
       return is_real
 
-    method scan_real->Real
+    method scan_real->NewReal
       use buffer = StringPool
         scan_number_string( buffer )
-        return buffer->Real
+        return buffer->NewReal
       endUse
 
     method scan_string->String
@@ -353,7 +353,7 @@ class Scanner : Reader<<Character>>
       if (ch == '\\')
         read
 
-        local value : Int
+        local value : NewInt
         if     (consume('b')) value = 8
         elseIf (consume('e')) value = 27
         elseIf (consume('f')) value = 12
@@ -376,10 +376,10 @@ class Scanner : Reader<<Character>>
         buffer.print( value->Character )
 
       else
-        local value = read->Int
+        local value = read->NewInt
         if ((value & 0x80) != 0)
           # Handle UTF8 encoding
-          local ch2 = read->Int
+          local ch2 = read->NewInt
 
           if ((value & 0x20) == 0)
             # %110xxxxx 10xxxxxx
@@ -388,7 +388,7 @@ class Scanner : Reader<<Character>>
             buffer.print( ((value:<<:6) | ch2)->Character )
           else
             # %1110xxxx 10xxxxxx 10xxxxxx
-            local ch3 = read->Int
+            local ch3 = read->NewInt
             value = value & 15
             ch2 = ch2 & 0x3f
             ch3 = ch3 & 0x3f
@@ -401,7 +401,7 @@ class Scanner : Reader<<Character>>
 
       endIf
 
-    method seek( pos:Int )
+    method seek( pos:NewInt )
       if (pos < 0)         pos = 0
       elseIf (pos > count) pos = count
 
@@ -413,7 +413,7 @@ class Scanner : Reader<<Character>>
 
       while (position < pos) read
 
-    method seek_location( new_line:Int, new_column:Int )
+    method seek_location( new_line:NewInt, new_column:NewInt )
       if (new_line < line or (new_line == line and new_column < column))
         # start over at (1,1)
         position = 0
@@ -433,4 +433,4 @@ class Scanner : Reader<<Character>>
 
 endClass
 
-class ScannerLocation( position:Int, line:Int, column:Int ) [compound];
+class ScannerLocation( position:NewInt, line:NewInt, column:NewInt ) [compound];

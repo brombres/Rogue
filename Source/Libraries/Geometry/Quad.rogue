@@ -92,10 +92,10 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
     method operator-( position:XY )->Quad
       return Quad( a-position, b-position, c-position, d-position )
 
-    method operator*( scale:Real )->Quad
+    method operator*( scale:NewReal )->Quad
       return Quad( a*scale, b*scale, c*scale, d*scale )
 
-    method operator/( scale:Real )->Quad
+    method operator/( scale:NewReal )->Quad
       return Quad( a/scale, b/scale, c/scale, d/scale )
 
     method operator*( scale:XY )->Quad

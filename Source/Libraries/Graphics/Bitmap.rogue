@@ -639,7 +639,7 @@ class Bitmap
       fill( IntBox(box.top_left,            IntXY(1,box.height)), color, channel_mask )
       fill( IntBox(box.top_right - IntXY(1,0), IntXY(1,box.height)), color, channel_mask )
 
-    method draw( line:Line, color:Color, thickness=1:Real )
+    method draw( line:Line, color:Color, thickness=1:NewReal )
       if (thickness == 1)
         local a = line.a
         local b = line.b
@@ -773,7 +773,7 @@ class Bitmap
       local new_height  = other.height
 
       # Each ARGB component needs a separate Int32 + divisor + number of 0 value pixels
-      use resize_row_buffer = WorkList<<Real>>
+      use resize_row_buffer = WorkList<<NewReal>>
         resize_row_buffer.expand_to_count( new_width * 6 )
 
         local src_i = 0
@@ -802,7 +802,7 @@ class Bitmap
         endForEach
       endUse
 
-    method resize_add_row( src_i:Int32, new_width:Int32, multiplier:Real, resize_row_buffer:Real[] )
+    method resize_add_row( src_i:Int32, new_width:Int32, multiplier:NewReal, resize_row_buffer:NewReal[] )
       local this_width = width
       local available = new_width
       local buffer = resize_row_buffer
@@ -819,10 +819,10 @@ class Bitmap
         local need = this_width
         while (need >= available)
           if (native("*((%Ns%RogueInt32*)src)")->Int32)
-            b += native("(%Ns%RogueReal)src[0]")->Real * available
-            g += native("(%Ns%RogueReal)src[1]")->Real * available
-            r += native("(%Ns%RogueReal)src[2]")->Real * available
-            a += native("(%Ns%RogueReal)src[3]")->Real * available
+            b += native("(%Ns%RogueNewReal)src[0]")->NewReal * available
+            g += native("(%Ns%RogueNewReal)src[1]")->NewReal * available
+            r += native("(%Ns%RogueNewReal)src[2]")->NewReal * available
+            a += native("(%Ns%RogueNewReal)src[3]")->NewReal * available
             n += available
           else
             # Transparent black (0x00000000) can't be averaged in as usual or else it will
@@ -838,10 +838,10 @@ class Bitmap
 
         if (need)
           if (native("*((%Ns%RogueInt32*)src)")->Int32)
-            b += native("(%Ns%RogueReal)src[0]")->Real * need
-            g += native("(%Ns%RogueReal)src[1]")->Real * need
-            r += native("(%Ns%RogueReal)src[2]")->Real * need
-            a += native("(%Ns%RogueReal)src[3]")->Real * need
+            b += native("(%Ns%RogueNewReal)src[0]")->NewReal * need
+            g += native("(%Ns%RogueNewReal)src[1]")->NewReal * need
+            r += native("(%Ns%RogueNewReal)src[2]")->NewReal * need
+            a += native("(%Ns%RogueNewReal)src[3]")->NewReal * need
             n += need
           else
             # Transparent black (0x00000000) can't be averaged in as usual or else it will
@@ -867,16 +867,16 @@ class Bitmap
         buffer_i += 6
       endForEach
 
-    method resize_write_row( dest_bitmap:Bitmap, dest_i:Int32, new_width:Int32, resize_row_buffer:Real[] )
+    method resize_write_row( dest_bitmap:Bitmap, dest_i:Int32, new_width:Int32, resize_row_buffer:NewReal[] )
       local row_buffer = resize_row_buffer
       native @|%Ns%RogueByte*   dest = (%Ns%RogueByte*)($dest_bitmap->pixels->as_int32s + $dest_i);
-              |%Ns%RogueReal*   buffer = $row_buffer->as_real64s;
-              |%Ns%RogueReal    divisor;
+              |%Ns%RogueNewReal*   buffer = $row_buffer->as_real64s;
+              |%Ns%RogueNewReal    divisor;
 
       forEach (1..new_width)
         native @|if ((divisor = buffer[4]))
                 |{
-                |  %Ns%RogueReal z;
+                |  %Ns%RogueNewReal z;
                 |  if ((z = buffer[5]))
                 |  {
                 |    // Incorporate zero values (transparent black). Increase each R,G,B component by
@@ -910,8 +910,8 @@ class Bitmap
       endForEach
 
     method resize_to_fill( min_width:Int32, min_height:Int32, crop=null:Anchor? )
-      local scale_x = min_width->Real / width
-      local scale_y = min_height->Real / height
+      local scale_x = min_width->NewReal / width
+      local scale_y = min_height->NewReal / height
       local scale = scale_x.or_larger( scale_y )
       resize( (width*scale)->Int32, (height*scale)->Int32 )
       if (crop)
@@ -919,8 +919,8 @@ class Bitmap
       endIf
 
     method resize_to_fit( max_width:Int32, max_height:Int32 )
-      local scale_x = max_width->Real / width
-      local scale_y = max_height->Real / height
+      local scale_x = max_width->NewReal / width
+      local scale_y = max_height->NewReal / height
       local scale = scale_x.or_smaller( scale_y )
       resize( (width*scale)->Int32, (height*scale)->Int32 )
 
@@ -937,7 +937,7 @@ class Bitmap
       # The aspect ratio is preserved. This bitmap is returned if no
       # resizing is required; otherwise a new bitmap is returned.
       if (height == new_height) return this
-      local new_width = Int32( width * (new_height / Real(height)) )
+      local new_width = Int32( width * (new_height / NewReal(height)) )
       return resized( new_width, new_height )
 
     method resized_to_width( new_width:Int32 )->Bitmap
@@ -945,7 +945,7 @@ class Bitmap
       # The aspect ratio is preserved. This bitmap is returned if no
       # resizing is required; otherwise a new bitmap is returned.
       if (width == new_width) return this
-      local new_height = Int32( height * (new_width / Real(width)) )
+      local new_height = Int32( height * (new_width / NewReal(width)) )
       return resized( new_width, new_height )
 
     method rotate_180

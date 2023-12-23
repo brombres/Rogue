@@ -2,25 +2,25 @@ module UI
 
 class UIBorder : UIComponent
   PROPERTIES
-    left, top, right, bottom : Int
+    left, top, right, bottom : NewInt
 
   METHODS
-    method init( content:Entity, size:Int )
+    method init( content:Entity, size:NewInt )
       prior.init( content )
       left = size
       top = size
       right = size
       bottom = size
 
-    method init( content:Entity, left:Int, top:Int, right:Int, bottom:Int )
+    method init( content:Entity, left:NewInt, top:NewInt, right:NewInt, bottom:NewInt )
       prior.init( content )
 
-    method measure_height( container_height:Int? )->Int?
+    method measure_height( container_height:NewInt? )->NewInt?
       if (is_fixed_height) return placement.size.y
       if (is_expand_to_fill_height) return container_height
 
       # Shrink to fit content height
-      local result : Int?
+      local result : NewInt?
       use subcomponents = collect<<UIComponent>>
         result = measure_content_height( subcomponents )
       endUse
@@ -28,12 +28,12 @@ class UIBorder : UIComponent
       if (result) return result.value + top + bottom
       return container_height
 
-    method measure_width( container_width:Int? )->Int?
+    method measure_width( container_width:NewInt? )->NewInt?
       if (is_fixed_width) return placement.size.x
       if (is_expand_to_fill_width) return container_width
 
       # Shrink to fit content width
-      local result : Int?
+      local result : NewInt?
       use subcomponents = collect<<UIComponent>>
         result = measure_content_width( subcomponents )
       endUse
@@ -41,7 +41,7 @@ class UIBorder : UIComponent
       if (result) return result.value + left + right
       return container_width
 
-    method update_layout_height( container_height:Int ) [override]
+    method update_layout_height( container_height:NewInt ) [override]
       height = which{ measure_height(container_height) || container_height }
 
       use subcomponents = collect<<UIComponent>>
@@ -52,7 +52,7 @@ class UIBorder : UIComponent
       position = IntBox(placement.size).positioned_within( container, placement.anchor ).position
       update_subcomponent_placement( IntBox(left,top,(placement.size-IntXY(left+right,top+bottom)).clamped_low(IntXY(0,0))) )
 
-    method update_layout_width( container_width:Int ) [override]
+    method update_layout_width( container_width:NewInt ) [override]
       width = which{ measure_width(container_width) || container_width }
 
       use subcomponents = collect<<UIComponent>>

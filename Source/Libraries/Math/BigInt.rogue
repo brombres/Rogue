@@ -403,7 +403,7 @@ class BigInt
       endForEach
       return true
 
-    method operator<>(other:BigInt)->Int
+    method operator<>(other:BigInt)->NewInt
       if (is_zero)
         if (other.is_zero)         return  0
         elseIf (other.is_negative) return  1
@@ -653,7 +653,7 @@ class BigInt
     method operator==( n:Int64 )->Logical
       return this == BigInt(n)
 
-    method operator<>(n:Int64)->Int
+    method operator<>(n:Int64)->NewInt
       return this.operator<>( BigInt(n) )
 
     method operator+( n:Int64 )->BigInt

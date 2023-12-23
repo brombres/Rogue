@@ -101,7 +101,7 @@ class Spreadsheet
       endForEach
       return rows[j]
 
-    method delete_column( index:Int )
+    method delete_column( index:NewInt )
       if (index < 0 or index >= columns.count) return
       columns.remove_at( index )
       forEach (row in rows)
@@ -109,7 +109,7 @@ class Spreadsheet
       endForEach
       _reindex
 
-    method delete_row( index:Int )
+    method delete_row( index:NewInt )
       if (index < 0 or index >= rows.count) return
       rows.remove_at( index )
       forEach (column in columns)
@@ -117,7 +117,7 @@ class Spreadsheet
       endForEach
       _reindex
 
-    method get( column:Int, row:Int )->Value
+    method get( column:NewInt, row:NewInt )->Value
       if (column < 0 or column >= columns.count) return undefined
       if (row < 0    or row    >= rows.count)    return undefined
       return columns[ column ][ row ].value
@@ -125,7 +125,7 @@ class Spreadsheet
     method save( file:File )
       file.save( to_csv )
 
-    method set( column:Int, row:Int, value:Value )
+    method set( column:NewInt, row:NewInt, value:Value )
       while (column >= columns.count) add_column
       while (row    >= rows.count)    add_row
 
@@ -162,7 +162,7 @@ endClass
 class Header
   PROPERTIES
     table : Spreadsheet
-    index : Int
+    index : NewInt
     cells = Cell[]
 
   METHODS
@@ -171,13 +171,13 @@ class Header
     method add( cell:Cell )
       cells.add( cell )
 
-    method count->Int
+    method count->NewInt
       return cells.count
 
     method find( query:(Function(Cell)->Logical) )->Cell?
       return cells.find( query )
 
-    method get( index:Int )->Cell
+    method get( index:NewInt )->Cell
       if (index < 0 or index >= cells.count) return null
       return cells[ index ]
 
@@ -191,7 +191,7 @@ class Row : Header
     method delete
       table.delete_row( index )
 
-    method set( column_index:Int, value:Value )
+    method set( column_index:NewInt, value:Value )
       table.set( column_index, index, value )
 
     method to->String
@@ -208,7 +208,7 @@ class Column : Header
     method delete
       table.delete_column( index )
 
-    method set( row_index:Int, value:Value )
+    method set( row_index:NewInt, value:Value )
       table.set( index, row_index, value )
 
     method to->String
@@ -234,7 +234,7 @@ class Format
     method parse( value:Value )->Value
       return value
 
-    method print( value:Value, builder:String, width:Int )
+    method print( value:Value, builder:String, width:NewInt )
       loop (width.or_larger(1)) builder.print( '?' )
 endClass
 
@@ -242,7 +242,7 @@ class GeneralFormat : Format
   METHODS
     method init
 
-    method print( value:Value, builder:String, width:Int )
+    method print( value:Value, builder:String, width:NewInt )
       if (width)
         builder.print( value->String.justified(-width).leftmost(width) )
       else
@@ -255,10 +255,10 @@ class MoneyFormat : Format
     method init
 
     method parse( value:Value )->Value
-      return Value( value->String.after_any('$').replacing(",","")->Real )
+      return Value( value->String.after_any('$').replacing(",","")->NewReal )
 
-    method print( value:Value, builder:String, width:Int )
-      local st = "$" + value->Real.format(",.2")
+    method print( value:Value, builder:String, width:NewInt )
+      local st = "$" + value->NewReal.format(",.2")
       if (width)
         if (st.count > width)
           st = st.before_first( '.' )
@@ -291,7 +291,7 @@ class Cell
     method is_empty->Logical
       return value.is_empty
 
-    method print( builder:String, width=0:Int, &csv )
+    method print( builder:String, width=0:NewInt, &csv )
       if (csv)
         use temp = StringPool
           format.print( value, temp, width )
@@ -312,14 +312,14 @@ class Cell
     method to->Logical
       return value->Logical
 
-    method to->Int
-      return value->Int
+    method to->NewInt
+      return value->NewInt
 
     method to->Int64
       return value->Int64
 
-    method to->Real
-      return value->Real
+    method to->NewReal
+      return value->NewReal
 
     method to->String
       return value->String
@@ -330,8 +330,8 @@ class CSVScanner
   PROPERTIES
     scanner : Scanner
     builder = String()
-    row     : Int
-    column  : Int
+    row     : NewInt
+    column  : NewInt
 
   METHODS
     method init( file:File )

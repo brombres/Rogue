@@ -25,9 +25,9 @@ class Timer
   #     println
   #   endBlock
   PROPERTIES
-    duration   : Real
-    start_time : Real
-    stop_time  : Real?
+    duration   : NewReal
+    start_time : NewReal
+    stop_time  : NewReal?
     counting_down : Logical
 
   METHODS
@@ -43,8 +43,8 @@ class Timer
       if (stopped) stop_time = start_time
       else         stop_time = null
 
-    method elapsed->Real
-      local s : Real
+    method elapsed->NewReal
+      local s : NewReal
 
       if (stop_time.exists) s = (stop_time.value - start_time)
       else                  s = (System.execution_time - start_time)
@@ -79,12 +79,12 @@ class Timer
       # Stops if currently running; otherwise no effect.
       if (not stop_time.exists) stop_time = System.execution_time
 
-    method operator+( delta_time:Real )->this
+    method operator+( delta_time:NewReal )->this
       # Increase the elapsed interval of this stopwatch.
       start_time -= delta_time
       return this
 
-    method operator-( delta_time:Real )->this
+    method operator-( delta_time:NewReal )->this
       # Decrease the elapsed interval of this stopwatch.
       start_time += delta_time
       return this

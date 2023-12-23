@@ -6,7 +6,7 @@ class TimeInterval( total_ms:Int64 ) [compound]
       # 'flag' is ignored and is a kludge to disambiguate the compound initializers from this global create method.
       return TimeInterval( days * (3600000*24) + hours*3600000 + minutes*60000 + seconds*1000 + milliseconds )
 
-    method hms( hours:Real, minutes:Real, seconds:Real, ms=0:Real )->TimeInterval
+    method hms( hours:NewReal, minutes:NewReal, seconds:NewReal, ms=0:NewReal )->TimeInterval
       return TimeInterval( &hours=hours, &minutes=minutes, &seconds=seconds, &milliseconds=ms )
 
 
@@ -63,10 +63,10 @@ class TimeInterval( total_ms:Int64 ) [compound]
 
       return result
 
-    method total_days->Real
+    method total_days->NewReal
       return this.total_ms / (3600000.0*24)
 
-    method total_hours->Real
+    method total_hours->NewReal
       return this.total_ms / 3600000.0
 
 endClass

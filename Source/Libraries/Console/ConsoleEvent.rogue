@@ -19,7 +19,7 @@ enum UnixConsoleMouseEventType
   SCROLL_DOWN = 97
 endEnum
 
-class ConsoleEvent( type:ConsoleEventType, x:Int, y:Int ) [compound]
+class ConsoleEvent( type:ConsoleEventType, x:NewInt, y:NewInt ) [compound]
   METHODS
     method is_character->Logical
       return (type == ConsoleEventType.CHARACTER)
@@ -45,7 +45,7 @@ class ConsoleEvent( type:ConsoleEventType, x:Int, y:Int ) [compound]
     method to->String
       which (type)
         case ConsoleEventType.CHARACTER
-          which (Int(x))
+          which (NewInt(x))
             case 8:                   return "BACKSPACE"
             case '\t':                return "TAB"
             case 10:                  return "NEWLINE"
@@ -61,7 +61,7 @@ class ConsoleEvent( type:ConsoleEventType, x:Int, y:Int ) [compound]
              ConsoleEventType.SCROLL_DOWN
           return type->String
       endWhich
-      return "$($,$)" (type,x->Int,y->Int)
+      return "$($,$)" (type,x->NewInt,y->NewInt)
 
     method unicode->Character
       return Character(x)

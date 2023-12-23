@@ -2,11 +2,11 @@ module Geometry
 
 class Line( a:XY, b:XY ) [compound]
   GLOBAL METHODS
-    method create( ax:Int, ay:Int, bx:Int, by:Int )->Line
+    method create( ax:NewInt, ay:NewInt, bx:NewInt, by:NewInt )->Line
       return Line( XY(ax,ay), XY(bx,by) )
 
   METHODS
-    method at( p:Real )->XY
+    method at( p:NewReal )->XY
       return a + (b - a) * p
 
     method direction->XY
@@ -95,10 +95,10 @@ class Line( a:XY, b:XY ) [compound]
     method operator-( position:XY )->Line
       return Line( a-position, b-position )
 
-    method operator*( scale:Real )->Line
+    method operator*( scale:NewReal )->Line
       return Line( a*scale, b*scale )
 
-    method operator/( scale:Real )->Line
+    method operator/( scale:NewReal )->Line
       if (scale) return Line( a/scale, b/scale )
       else       return this
 

@@ -1,9 +1,9 @@
 class FileReader : Reader<<Byte>>
   PROPERTIES
     filepath        : String
-    count           : Int
-    position        : Int
-    buffer_position : Int
+    count           : NewInt
+    position        : NewInt
+    buffer_position : NewInt
     buffer          = Byte[](1024)
     error           : Logical
     native "FILE* fp;"
@@ -53,7 +53,7 @@ class FileReader : Reader<<Byte>>
                endIf
       native @|
               |fseek( $this->fp, 0, SEEK_END );
-              |$count = (%Ns%RogueInt) ftell( $this->fp );
+              |$count = (%Ns%RogueNewInt) ftell( $this->fp );
               |fseek( $this->fp, 0, SEEK_SET );
 
       # Always close after the last byte is read, so if there are no
@@ -66,7 +66,7 @@ class FileReader : Reader<<Byte>>
       if (position == count) return 0
 
       if (buffer_position == buffer.count)
-        native @|$buffer->count = (%Ns%RogueInt) fread( $buffer->as_bytes, 1, 1024, $this->fp );
+        native @|$buffer->count = (%Ns%RogueNewInt) fread( $buffer->as_bytes, 1, 1024, $this->fp );
         buffer_position = 0
       endIf
 
@@ -83,7 +83,7 @@ class FileReader : Reader<<Byte>>
 
       return result
 
-    method read( result:Byte[], limit:Int )->Int
+    method read( result:Byte[], limit:NewInt )->NewInt
       if (position == count) return 0
       result.reserve( limit )
 
@@ -101,7 +101,7 @@ class FileReader : Reader<<Byte>>
 
       if (limit > 0)
         # fread directly from file
-        native @|$n = (%Ns%RogueInt) fread( $result->as_bytes+$result->count, 1, $limit, $this->fp );
+        native @|$n = (%Ns%RogueNewInt) fread( $result->as_bytes+$result->count, 1, $limit, $this->fp );
         result.count += n
         total_read += n
         position += n
@@ -111,15 +111,15 @@ class FileReader : Reader<<Byte>>
 
       return total_read
 
-    method remaining->Int
+    method remaining->NewInt
       return count - position
 
     method reset
       if (not fp) return
-      count = native( "(%Ns%RogueInt)ftell($this->fp)" )->Int
+      count = native( "(%Ns%RogueNewInt)ftell($this->fp)" )->NewInt
       seek( 0 )
 
-    method seek( pos:Int )
+    method seek( pos:NewInt )
       if (not fp) return
 
       if (pos < 0) pos = 0

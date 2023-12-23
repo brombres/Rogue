@@ -1,6 +1,6 @@
 class Object
   GLOBAL METHODS
-    method __type_name( type_index:Int )->String [essential]
+    method __type_name( type_index:NewInt )->String [essential]
       if (native("!%Ns%Rogue_types[$type_index]->name_object")->Logical)
         native @|%Ns%Rogue_types[$type_index]->name_object = %Ns%RogueString_create_permanent( %Ns%Rogue_types[$type_index]->name );
       endIf
@@ -10,8 +10,8 @@ class Object
     method description->String
       return this->String
 
-    method hash_code->Int
-      return object_id->Int
+    method hash_code->NewInt
+      return object_id->NewInt
 
     method object_id->Int64
       local addr : Int64

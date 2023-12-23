@@ -68,13 +68,13 @@ class WAVChannel
   METHODS
     method init( wav )
 
-    method add( sample:Real )
+    method add( sample:NewReal )
       samples.add( sample )
 
     method count->Int32
       return samples.count
 
-    method get( index:Int32 )->Real
+    method get( index:Int32 )->NewReal
       return samples[index]
 
     method read( reader:DataReader )

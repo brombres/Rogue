@@ -1,7 +1,7 @@
 # An RGB color compound specialized for use with ANSIBitmap
 uses Graphics
 
-class ANSIRGB( red:Real, green:Real, blue:Real ) [compound]
+class ANSIRGB( red:NewReal, green:NewReal, blue:NewReal ) [compound]
   GLOBAL METHODS
     method create( color:Color )->ANSIRGB
       return ANSIRGB( color.red, color.green, color.blue )
@@ -16,12 +16,12 @@ class ANSIRGB( red:Real, green:Real, blue:Real ) [compound]
     method operator-( other:ANSIRGB )->ANSIRGB
       return ANSIRGB( red-other.red, green-other.green, blue-other.blue )
 
-    method operator*( value:Real )->ANSIRGB
+    method operator*( value:NewReal )->ANSIRGB
       return ANSIRGB( red*value, green*value, blue*value )
 
     method to->ANSIColor
-      local r = Int( red*255 ).clamped( 0, 255 )
-      local g = Int( green*255 ).clamped( 0, 255 )
-      local b = Int( blue*255 ).clamped( 0, 255 )
+      local r = NewInt( red*255 ).clamped( 0, 255 )
+      local g = NewInt( green*255 ).clamped( 0, 255 )
+      local b = NewInt( blue*255 ).clamped( 0, 255 )
       return ANSIColors[ ANSIColorLookup[ ((r & 0xF0):<<:4) | (g & 0xF0) | ((b & 0xF0):>>>:4) ] ]
 endClass

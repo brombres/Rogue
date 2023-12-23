@@ -1830,15 +1830,15 @@ augment
       endForEach
       if (wrote_any) h_writer.println
 
-      h_writer.println "extern %Ns%RogueInt %Ns%Rogue_type_count;"
+      h_writer.println "extern %Ns%RogueNewInt %Ns%Rogue_type_count;"
       h_writer.println "extern %Ns%RogueRuntimeType* %Ns%Rogue_types[$];"(types.count)
 
-      h_writer.println "extern %Ns%RogueInt %Ns%Rogue_base_types[$];" (Program.base_type_lookup.count)
+      h_writer.println "extern %Ns%RogueNewInt %Ns%Rogue_base_types[$];" (Program.base_type_lookup.count)
 
       if (Program.default_module.types.contains("MethodInfo"))
-        h_writer.println "extern %Ns%RogueInt %Ns%Rogue_method_count;"
-        h_writer.println "extern %Ns%RogueInt %Ns%Rogue_method_info[];"
-        h_writer.println "extern %Ns%RogueInt %Ns%Rogue_type_data[];"
+        h_writer.println "extern %Ns%RogueNewInt %Ns%Rogue_method_count;"
+        h_writer.println "extern %Ns%RogueNewInt %Ns%Rogue_method_info[];"
+        h_writer.println "extern %Ns%RogueNewInt %Ns%Rogue_type_data[];"
         h_writer.println "extern void* %Ns%Rogue_method_pointers[];"
         h_writer.println
         forEach (group in Program.call_signatures.values)
@@ -1901,7 +1901,7 @@ augment
       local type_data : Int32[]
       if (Program.default_module.types.contains("MethodInfo"))
         c_writer.println
-        c_writer.println "%Ns%RogueInt %Ns%Rogue_method_count = $;"(Program.all_methods.count)
+        c_writer.println "%Ns%RogueNewInt %Ns%Rogue_method_count = $;"(Program.all_methods.count)
 
         local string_indices = Program.string_table_indices
         method_info = Int32[]
@@ -1947,7 +1947,7 @@ augment
 
         block
           local column = 0;
-          c_writer.println "%Ns%RogueInt %Ns%Rogue_method_info[$] ="(method_info.count)
+          c_writer.println "%Ns%RogueNewInt %Ns%Rogue_method_info[$] ="(method_info.count)
           c_writer.println "{"
           c_writer.indent += 2
           forEach (value at index in method_info)
@@ -1967,7 +1967,7 @@ augment
 
         block
           local column = 0;
-          c_writer.println "%Ns%RogueInt %Ns%Rogue_type_data[$] ="(type_data.count)
+          c_writer.println "%Ns%RogueNewInt %Ns%Rogue_type_data[$] ="(type_data.count)
           c_writer.println "{"
           c_writer.indent += 2
           forEach (value at index in type_data)
@@ -2002,7 +2002,7 @@ augment
 
       endIf
 
-      c_writer.println "%Ns%RogueInt %Ns%Rogue_type_count = $;" (types.count)
+      c_writer.println "%Ns%RogueNewInt %Ns%Rogue_type_count = $;" (types.count)
 
       local including_type_info = Program.default_module.types.contains("TypeInfo")
 
@@ -2179,7 +2179,7 @@ augment
         c_writer.println
       endBlock
 
-      c_writer.println "%Ns%RogueInt %Ns%Rogue_base_types[$] =" (Program.base_type_lookup.count)
+      c_writer.println "%Ns%RogueNewInt %Ns%Rogue_base_types[$] =" (Program.base_type_lookup.count)
       c_writer.println "{"
       c_writer.indent += 2
       forEach (id at index in Program.base_type_lookup)
@@ -2295,9 +2295,9 @@ augment
          |  // Move all objects still requiring cleanup to the regular object list.
          |  // We cannot call on_cleanup() on them because e.g. lists could clean up
          |  // before objects that rely on those lists clean up.
-         |  %Ns%RogueInt n = %Ns%RogueMM_objects_requiring_cleanup.count;
+         |  %Ns%RogueNewInt n = %Ns%RogueMM_objects_requiring_cleanup.count;
          |  %Ns%RogueObject** refptr = %Ns%RogueMM_objects_requiring_cleanup.data + n;
-         |  %Ns%RogueInt i;
+         |  %Ns%RogueNewInt i;
          |  for (i=n; --i>=0; )
          |  {
          |    %Ns%RogueObjectList_add( &%Ns%RogueMM_objects, (%Ns%RogueObject*) *(--refptr) );
@@ -2326,7 +2326,7 @@ augment
       # Reset each RogueRuntimeType
       c_writer.println ...
       @|  {
-       |    %Ns%RogueInt i;
+       |    %Ns%RogueNewInt i;
        |    for (i=%Ns%Rogue_type_count; --i>=0; )
        |    {
        |      %Ns%RogueRuntimeType* type = %Ns%Rogue_types[i];
@@ -2363,8 +2363,8 @@ augment
                           |
                           |%Ns%RogueObject*  ref;
                           |%Ns%RogueObject** refptr;
-                          |%Ns%RogueInt i;
-                          |%Ns%RogueInt write_i;
+                          |%Ns%RogueNewInt i;
+                          |%Ns%RogueNewInt write_i;
                           |
                           |// Trace all retained objects (positive refcount)
                           |for (i=%Ns%RogueMM_objects.count, refptr=%Ns%RogueMM_objects.data-1; --i>=0; )
@@ -2438,8 +2438,8 @@ augment
                         |// We can't delete them yet because they could add themselves back to the object
                         |// graph during cleanup. They'll be deleted from the regular list the next time
                         |// they're unreferenced with no chance to clean up again.
-                        |%Ns%RogueInt cleanup_count = 0;
-                        |%Ns%RogueInt end_i = %Ns%RogueMM_objects_requiring_cleanup.count;
+                        |%Ns%RogueNewInt cleanup_count = 0;
+                        |%Ns%RogueNewInt end_i = %Ns%RogueMM_objects_requiring_cleanup.count;
                         |refptr = %Ns%RogueMM_objects_requiring_cleanup.data + end_i;
                         |for (i=end_i; --i>=0; )
                         |{
@@ -2507,7 +2507,7 @@ augment
       (forEach in modules).generate_c_class_initialization( c_writer )
       c_writer.println
 
-      c_writer.println @|%Ns%RogueInt i;
+      c_writer.println @|%Ns%RogueNewInt i;
                         |for (i=1; i<%Ns%Rogue_argc; ++i)
                         |{
                         |  %Ns%RogueSystem___add_command_line_argument__%Ns%RogueString(
@@ -2675,7 +2675,7 @@ augment
             writer.print   "%Ns%RogueObject** cursor = ((%Ns%RogueObject**)(("
             writer.print   c_name
             writer.println "*)THISOBJ)->data) - 1;"
-            writer.print   "%Ns%RogueInt n = ((%Ns%%RogueInt%)(("
+            writer.print   "%Ns%RogueNewInt n = ((%Ns%%RogueNewInt%)(("
             writer.print   c_name
             writer.println "*)THISOBJ)->capacity);"
             writer.println @|while (--n >=0)
@@ -2692,7 +2692,7 @@ augment
             writer.print   "*)((("
             writer.print   c_name
             writer.println "*)THISOBJ)->data);"
-            writer.print   "%Ns%RogueInt n = ((%Ns%%RogueInt%)(("
+            writer.print   "%Ns%RogueNewInt n = ((%Ns%%RogueNewInt%)(("
             writer.print   c_name
             writer.println "*)THISOBJ)->capacity);"
 

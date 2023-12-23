@@ -536,7 +536,7 @@ endClass
 
 class LiteralReal : LiteralPrimitive
   PROPERTIES
-    value : Real
+    value : NewReal
 
   METHODS
     method init( t, value )
@@ -673,7 +673,7 @@ class Local : Cmd
     initial_value : Cmd
     type          : Type
     attributes    : Attributes
-    index         : Int
+    index         : NewInt
 
   METHODS
     method init( t, name, type )
@@ -891,7 +891,7 @@ class Property : Cmd
     type              : Type
     attributes        : Attributes
     native_expression : String
-    id = -1           : Int
+    id = -1           : NewInt
     doc               : String
 
   METHODS
@@ -950,7 +950,7 @@ endClass
 
 class NativeCode : Cmd
   PROPERTIES
-    ordinal : Int
+    ordinal : NewInt
     content : String
 
   METHODS
@@ -977,7 +977,7 @@ endClass
 
 class NativeHeader : Cmd
   PROPERTIES
-    ordinal : Int
+    ordinal : NewInt
     content : String
 
   METHODS
@@ -1501,7 +1501,7 @@ class CreateObject : Cmd
 
   METHODS
     method init( t, of_type, m_init, args )
-      # Real constructor
+      # NewReal constructor
 
     method init( t, of_type, args )
       # Froley constructor
@@ -3997,7 +3997,7 @@ class Category : Cmd
     name    : String
     args    : Cmd
     value   : Cmd
-    ordinal : Int    # final resolved 'value'
+    ordinal : NewInt    # final resolved 'value'
     doc     : String
 
   METHODS
@@ -5157,7 +5157,7 @@ endClass
 
 class LiteralInt : LiteralInteger
   PROPERTIES
-    value : Int
+    value : NewInt
 
   METHODS
     method init( t, value )

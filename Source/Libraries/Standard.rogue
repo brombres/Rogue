@@ -15,7 +15,7 @@ $include Math
 # creates
 #   - nativeType<<"%Ns%RogueInt32*">> RogueInt32Pointer
 #   - With Rogue-side .exists and operator? methods.
-ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueReal*",      RogueRealPointer      >>
+ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueNewReal*",      RogueRealPointer      >>
 ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueReal64*",    RogueReal64Pointer    >>
 ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueReal32*",    RogueReal32Pointer    >>
 ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueInt64*",     RogueInt64Pointer     >>

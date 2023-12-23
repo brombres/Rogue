@@ -4,8 +4,8 @@ uses UI
 class Event
   PROPERTIES
     is_consumed  : Logical
-    refcount     : Int
-    timestamp    : Int
+    refcount     : NewInt
+    timestamp    : NewInt
 
   METHODS
     method init( timestamp=System.execution_time_ms )
@@ -35,11 +35,11 @@ endClass
 
 class KeyEvent : Event
   PROPERTIES
-    keycode            : Int   # if keycode == Keycode.UNICODE then 'syscode' contains unicode value
-    syscode            : Int
+    keycode            : NewInt   # if keycode == Keycode.UNICODE then 'syscode' contains unicode value
+    syscode            : NewInt
     is_press           : Logical
     is_repeat          : Logical
-    modifier_key_state : Int
+    modifier_key_state : NewInt
 
   METHODS
     method init( keycode, syscode, is_press=false, is_repeat=false, modifier_key_state=Keyboard.modifier_key_state )
@@ -56,16 +56,16 @@ class KeyEvent : Event
     method is_os_pressed->Logical
       return (modifier_key_state & Keyboard.OS_MODIFIER_FLAG)
 
-    method is_press( _keycode:Int )->Logical
+    method is_press( _keycode:NewInt )->Logical
       return keycode == _keycode and is_press
 
-    method is_repeat( _keycode:Int )->Logical
+    method is_repeat( _keycode:NewInt )->Logical
       return keycode == _keycode and is_repeat
 
     method is_release->Logical
       return not this.is_press
 
-    method is_release( _keycode:Int )->Logical
+    method is_release( _keycode:NewInt )->Logical
       return keycode == _keycode and not is_press
 
     method is_shift_pressed->Logical
@@ -85,7 +85,7 @@ class KeyEvent : Event
          case   32: buffer.print( "[Space] " )
          case  127: buffer.print( "[Delete] " )
          others
-           buffer.[ print("(Keycode "), print(Int(keycode)), print(") ") ]
+           buffer.[ print("(Keycode "), print(NewInt(keycode)), print(") ") ]
        endWhich
 
        if (is_press)
@@ -121,7 +121,7 @@ class TextEvent : Event
       if (not @text) text = "" + character
       return @text
 
-    method count->Int
+    method count->NewInt
       if (@text) return @text.count
       else       return 1
 
@@ -157,10 +157,10 @@ class PointerEvent : Event
     MIDDLE   = 2
 
   PROPERTIES
-    type      : Int
+    type      : NewInt
     position  : IntXY
     delta     : IntXY
-    index     : Int
+    index     : NewInt
     cancelled : Logical
     # When a touch event in progress is interrupted then a RELEASE event is sent
     # with .cancelled==true.
@@ -193,7 +193,7 @@ class PointerEvent : Event
     method is_press->Logical
       return (this.type == PointerEvent.PRESS)
 
-    method is_press( button_index:Int )->Logical
+    method is_press( button_index:NewInt )->Logical
       return (this.type == PRESS and index == button_index)
 
     method is_press_left->Logical
@@ -208,7 +208,7 @@ class PointerEvent : Event
     method is_release->Logical
       return (this.type == PointerEvent.RELEASE)
 
-    method is_release( button_index:Int )->Logical
+    method is_release( button_index:NewInt )->Logical
       return (this.type == RELEASE and index == button_index)
 
     method is_release_left->Logical
@@ -255,7 +255,7 @@ class ScrollEvent : Event
       # or that a "momentum scroll" is active. Either way scroll events are guaranteed to continue
       # to be received until one where 'in_progress' is false.
     is_momentum   : Logical
-    density       : Int
+    density       : NewInt
 
   METHODS
     method init( delta, precise=false, in_progress=false, is_momentum=false, density=1 )
@@ -280,7 +280,7 @@ class ScrollRate
   # Other OS or input device:
   # - Scales each scroll delta by 'base_scale' with no acceleration.
   PROPERTIES
-    base_scale     : Int
+    base_scale     : NewInt
     delta          : IntXY
     history_x      = ScrollEvent[]
     history_y      = ScrollEvent[]
@@ -313,11 +313,11 @@ class ScrollRate
 
       return delta
 
-    method _same_direction( v1:Real, v2:Real )->Logical
+    method _same_direction( v1:NewReal, v2:NewReal )->Logical
       if (v1 == 0 or v2 == 0) return true  # 0 matches either sign
       return not ((v1 > 0) xor (v2 > 0))
 
-    method _process<<$history,$xy,$acceleration>>( e:ScrollEvent )->Real
+    method _process<<$history,$xy,$acceleration>>( e:ScrollEvent )->NewReal
       while ($history.count and $history.first.timestamp < e.timestamp - 250) $history.remove_first
 
       local result = 0.0

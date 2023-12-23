@@ -47,15 +47,15 @@ class Type : Cmd
 
     id    : Int32     # used for dynamic dispatch tables; introspection data may not exist for all type ids
     index = -1L       # index of type in lookup table; used for introspection
-    class_data_index : Int
+    class_data_index : NewInt
 
     m_init_class          : GlobalMethod
     m_on_singleton_change : GlobalMethod
     m_on_cleanup          : Method
     m_primary_constructor : GlobalMethod   # for compounds; indicates what types are for destructuring assignments
 
-    base_type_lookup_index  : Int
-    base_type_ids           = Int[]
+    base_type_lookup_index  : NewInt
+    base_type_ids           = NewInt[]
 
     method_vtable           = [String:Method]
 

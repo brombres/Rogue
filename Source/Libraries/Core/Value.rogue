@@ -58,7 +58,7 @@ class Value [compound]
     int32     : Int32     [faux]
     int64     : Int64     [faux]
     logical   : Logical   [faux]
-    real      : Real      [faux]
+    real      : NewReal      [faux]
     real32    : Real32    [faux]
     real64    : Real32    [faux]
     intxy     : IntXY        [faux]
@@ -73,7 +73,7 @@ class Value [compound]
             |  %Ns%RogueInt32     int32;
             |  %Ns%RogueInt64     int64;
             |  %Ns%RogueLogical   logical;
-            |  %Ns%RogueReal      real;
+            |  %Ns%RogueNewReal      real;
             |  %Ns%RogueReal32    real32;
             |  %Ns%RogueReal64    real64;
             |  %Ns%GeometryIntXY  intxy;
@@ -406,7 +406,7 @@ class Value [compound]
       endForEach
       return undefined
 
-    method locate( value:Value, i1=null:Int? )->Int?
+    method locate( value:Value, i1=null:NewInt? )->NewInt?
       which (type)
         case TYPE_STRING
           which (value.type)
@@ -420,7 +420,7 @@ class Value [compound]
           return null
       endWhich
 
-    method locate_last( value:Value, i1=null:Int? )->Int?
+    method locate_last( value:Value, i1=null:NewInt? )->NewInt?
       which (type)
         case TYPE_STRING
           which (value.type)
@@ -438,10 +438,10 @@ class Value [compound]
       if (type == TYPE_NULL or type == TYPE_UNDEFINED) return false
       return this->Logical
 
-    method operator==(other:Value)->Int
+    method operator==(other:Value)->NewInt
       return (this <> other) == 0
 
-    method operator<>(other:Value)->Int
+    method operator<>(other:Value)->NewInt
       if (type == TYPE_UNDEFINED) return (other.type != TYPE_UNDEFINED)
 
       if (type <= TYPE_REAL64 and other.type <= TYPE_REAL64)

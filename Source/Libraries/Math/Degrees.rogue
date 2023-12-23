@@ -1,4 +1,4 @@
-class Degrees( value:Real ) [compound]
+class Degrees( value:NewReal ) [compound]
   GLOBAL METHODS
     method create( degrees:Radians )->Degrees
       return Degrees( (degrees.value / pi) * 180.0 )
@@ -21,7 +21,7 @@ class Degrees( value:Real ) [compound]
         return max  # clamp to max
       endIf
 
-    method cos->Real
+    method cos->NewReal
       return ((value / 180.0) * pi).cos
 
     method delta_to( other:Degrees )->Degrees
@@ -40,22 +40,22 @@ class Degrees( value:Real ) [compound]
     method operator-()->Degrees
       return Degrees( -this.value )
 
-    method operator+( degrees:Real )->Degrees
+    method operator+( degrees:NewReal )->Degrees
       return Degrees( this.value + degrees )
 
-    method operator-( degrees:Real )->Degrees
+    method operator-( degrees:NewReal )->Degrees
       return Degrees( this.value - degrees )
 
-    method operator*( degrees:Real )->Degrees
+    method operator*( degrees:NewReal )->Degrees
       return Degrees( this.value * degrees )
 
-    method operator/( degrees:Real )->Degrees
+    method operator/( degrees:NewReal )->Degrees
       return Degrees( this.value / degrees )
 
-    method operator%( degrees:Real )->Degrees
+    method operator%( degrees:NewReal )->Degrees
       return Degrees( this.value % degrees )
 
-    method operator^( degrees:Real )->Degrees
+    method operator^( degrees:NewReal )->Degrees
       return Degrees( this.value ^ degrees )
 
     method operator+( other:Degrees )->Degrees
@@ -79,22 +79,22 @@ class Degrees( value:Real ) [compound]
     method operator==( other:Degrees )->Logical
       return value == other.value
 
-    method operator==( other_value:Real )->Logical
+    method operator==( other_value:NewReal )->Logical
       return value == other_value
 
-    method operator<>( other:Degrees )->Real
+    method operator<>( other:Degrees )->NewReal
       return value <> other.value
 
-    method operator<>( other_value:Real )->Real
+    method operator<>( other_value:NewReal )->NewReal
       return value <> other_value
 
-    method sin->Real
+    method sin->NewReal
       return ((value / 180.0) * pi).sin
 
-    method tan->Real
+    method tan->NewReal
       return ((value / 180.0) * pi).tan
 
-    method to->Real
+    method to->NewReal
       return value
 
     method to->String

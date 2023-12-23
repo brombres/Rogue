@@ -34,7 +34,7 @@ endClass
 
 class StandardConsoleMode : ConsoleMode
   PROPERTIES
-    next_input_character : Int?
+    next_input_character : NewInt?
 
   METHODS
     method init
@@ -71,7 +71,7 @@ class StandardConsoleMode : ConsoleMode
             else
               necessary (b1 >= 0xC0)
 
-              local result : Int
+              local result : NewInt
 
               # UTF-8
               if ((b1 & 0b1110_0000) == 0b1100_0000)
@@ -110,7 +110,7 @@ class StandardConsoleMode : ConsoleMode
             endIf
 
           unsatisfied
-            next_input_character = b1->Int
+            next_input_character = b1->NewInt
 
           endContingent
 
@@ -151,7 +151,7 @@ class ImmediateConsoleMode : ConsoleMode
 
     decode_utf8 = true
 
-    windows_button_state    : Int
+    windows_button_state    : NewInt
     windows_last_press_type : ConsoleEventType
 
   METHODS
@@ -243,14 +243,14 @@ class ImmediateConsoleMode : ConsoleMode
          |if ($force_input_blocking)
          |{
          |  ReadConsoleInput( h_stdin, buffer, 100, &event_count );
-            while (native("(%Ns%RogueInt32)event_count")->Int)
-              forEach (i in 0..<native("(%Ns%RogueInt32)event_count")->Int)
+            while (native("(%Ns%RogueInt32)event_count")->NewInt)
+              forEach (i in 0..<native("(%Ns%RogueInt32)event_count")->NewInt)
                 local record : WindowsInputRecord
                 native @|memcpy( &$record.value, buffer+$i, sizeof(INPUT_RECORD) );
                 _fill_event_queue_windows_process_next( record )
               endForEach
               native @|GetNumberOfConsoleInputEvents( h_stdin, &event_count );
-              if (native("(%Ns%RogueInt32)event_count")->Int)
+              if (native("(%Ns%RogueInt32)event_count")->NewInt)
                 native...
                   @|ReadConsoleInput( h_stdin, buffer, 100, &event_count );
               endIf
@@ -260,8 +260,8 @@ class ImmediateConsoleMode : ConsoleMode
          |else
          |{
          |  GetNumberOfConsoleInputEvents( h_stdin, &event_count );
-            while (native("(%Ns%RogueInt32)event_count")->Int)
-              loop (native("(%Ns%RogueInt32)event_count")->Int) _fill_event_queue_windows_process_next
+            while (native("(%Ns%RogueInt32)event_count")->NewInt)
+              loop (native("(%Ns%RogueInt32)event_count")->NewInt) _fill_event_queue_windows_process_next
                native @|GetNumberOfConsoleInputEvents( h_stdin, &event_count );
             endWhile
       native...
@@ -286,7 +286,7 @@ class ImmediateConsoleMode : ConsoleMode
       native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
 
       # If Windows is in immediate mode use Peek/ReadConsoleInput.
-      local unicode, event_flags, new_button_state, x, y : Int
+      local unicode, event_flags, new_button_state, x, y : NewInt
 
       native @|if ($record.value.EventType == MOUSE_EVENT)
               |{
@@ -304,12 +304,12 @@ class ImmediateConsoleMode : ConsoleMode
               |  }
 
                  if (event_flags)
-                   if (event_flags & native("DOUBLE_CLICK")->Int)
+                   if (event_flags & native("DOUBLE_CLICK")->NewInt)
                      events.add ConsoleEvent( windows_last_press_type, x, y )
                      events.add ConsoleEvent( ConsoleEventType.POINTER_RELEASE, x, y )
-                   elseIf (event_flags & native("MOUSE_MOVED")->Int)
+                   elseIf (event_flags & native("MOUSE_MOVED")->NewInt)
                      events.add ConsoleEvent( ConsoleEventType.POINTER_MOVE, x, y )
-                   elseIf (event_flags & native("MOUSE_WHEELED")->Int)
+                   elseIf (event_flags & native("MOUSE_WHEELED")->NewInt)
                      local delta = new_button_state :>>>: 16
                      if (delta > 0)
                        events.add ConsoleEvent( ConsoleEventType.SCROLL_UP, x, y )
@@ -321,15 +321,15 @@ class ImmediateConsoleMode : ConsoleMode
                    # Button pressed or released
                    local toggled = (windows_button_state ~ new_button_state)
                    if (toggled)
-                     if (toggled & native("FROM_LEFT_1ST_BUTTON_PRESSED")->Int)
-                       if (new_button_state & native("FROM_LEFT_1ST_BUTTON_PRESSED")->Int)
+                     if (toggled & native("FROM_LEFT_1ST_BUTTON_PRESSED")->NewInt)
+                       if (new_button_state & native("FROM_LEFT_1ST_BUTTON_PRESSED")->NewInt)
                          windows_last_press_type = ConsoleEventType.POINTER_PRESS_LEFT
                          events.add ConsoleEvent( ConsoleEventType.POINTER_PRESS_LEFT, x, y )
                        else
                          events.add ConsoleEvent( ConsoleEventType.POINTER_RELEASE, x, y )
                        endIf
-                     elseIf (toggled & native("RIGHTMOST_BUTTON_PRESSED")->Int)
-                       if (new_button_state & native("RIGHTMOST_BUTTON_PRESSED")->Int)
+                     elseIf (toggled & native("RIGHTMOST_BUTTON_PRESSED")->NewInt)
+                       if (new_button_state & native("RIGHTMOST_BUTTON_PRESSED")->NewInt)
                          windows_last_press_type = ConsoleEventType.POINTER_PRESS_RIGHT
                          events.add ConsoleEvent( ConsoleEventType.POINTER_PRESS_RIGHT, x, y )
                        else
@@ -384,8 +384,8 @@ class ImmediateConsoleMode : ConsoleMode
                 others: return
               endWhich
 
-              local x = _input_bytes.remove_first->Int - 33
-              local y = _input_bytes.remove_first->Int - 33
+              local x = _input_bytes.remove_first->NewInt - 33
+              local y = _input_bytes.remove_first->NewInt - 33
               events.add ConsoleEvent( event_type, x, y )
               return
             endIf
@@ -417,7 +417,7 @@ class ImmediateConsoleMode : ConsoleMode
         return
       endIf
 
-      local ch = b1 : Int
+      local ch = b1 : NewInt
 
       contingent
         # UTF-8

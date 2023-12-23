@@ -245,7 +245,7 @@ class ExpressionParser [singleton]
           endContingent
           builder.print( scanner.read )
         endWhile
-        return Value( builder->Real )
+        return Value( builder->NewReal )
       endUse
 
 endClass

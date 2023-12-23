@@ -29,11 +29,11 @@ class UIFont [abstract]
     method draw( text:String, container:UIComponent )
       draw( text, container.display_bounds, container.alignment )
 
-    method height->Int                              [abstract]
+    method height->NewInt                              [abstract]
 
     method measure( ch:Character )->XY            [abstract]
 
-    method measure( text:String, i1=0:Int, count=-1:Int )->XY
+    method measure( text:String, i1=0:NewInt, count=-1:NewInt )->XY
       if (count == -1) count = text.count - i1
 
       local max_w = 0.0

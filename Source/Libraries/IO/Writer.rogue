@@ -4,7 +4,7 @@
 
 class Writer<<$DataType>> [abstract aspect]
   PROPERTIES
-    position : Int
+    position : NewInt
 
   METHODS
     method close
@@ -20,19 +20,19 @@ class Writer<<$DataType>> [abstract aspect]
       close
       return err
 
-    method position->Int [fallback]
+    method position->NewInt [fallback]
       return @position
 
     method reset
       seek( 0 )
 
-    method seek( pos:Int )
+    method seek( pos:NewInt )
       position = pos
 
     method seek_end()
       noAction
 
-    method skip( n:Int )
+    method skip( n:NewInt )
       seek( position + n )
 
     method write( value:$DataType ) [abstract]

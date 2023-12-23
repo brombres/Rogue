@@ -423,7 +423,7 @@ class RogueC
                |    output.
                |
                |  --real=32, -r 32
-               |    Specifies that the 'Real' datatype should be Real32 instead of Real64.
+               |    Specifies that the 'NewReal' datatype should be Real32 instead of Real64.
                |    This affects the type of floating point literals (2.54, pi) as well.
                |
                |  --target=Target1,"Target2",..., -t Target

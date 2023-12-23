@@ -141,13 +141,13 @@ class Time( total_ms:Int64 ) [compound]
 
       return format
 
-    method total_days->Real
+    method total_days->NewReal
       return total_ms / (24*3600000.0)
 
-    method total_hours->Real
+    method total_hours->NewReal
       return total_ms / 3600000.0
 
-    method total_minutes->Real
+    method total_minutes->NewReal
       return total_ms / 60000.0
 
     method _replace_hours_12( text:String, find:String, h:Int32, fmt:String )->String

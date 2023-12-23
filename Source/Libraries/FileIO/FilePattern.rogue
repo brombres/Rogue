@@ -51,7 +51,7 @@ class FilePattern( pattern:String ) [compound]
       # Try ignoring the ./ prefix on the filepath
       return (_matches(filepath,2,filepath.count-2,pattern,0,pattern.count,&=ignore_case))
 
-    method _matches( filepath:String, f0:Int, fcount:Int, pattern:String, p0:Int, pcount:Int,
+    method _matches( filepath:String, f0:NewInt, fcount:NewInt, pattern:String, p0:NewInt, pcount:NewInt,
        &ignore_case )->Logical
       # f0     - starting index in filepath
       # fcount - remaining filepath count

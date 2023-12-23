@@ -10,7 +10,7 @@ class MutexFile
   #   endUse
   PROPERTIES
     file : File
-    fd   : Int
+    fd   : NewInt
 
   METHODS
     method init( file )
