@@ -1,9 +1,9 @@
-class Span( index:NewInt, count:NewInt ) [compound]
+class Span( index:Int, count:Int ) [compound]
   METHODS
-    method i2->NewInt
+    method i2->Int
       return index + (count-1)
 
-    method limit->NewInt
+    method limit->Int
       return index + count
 
     method to->String

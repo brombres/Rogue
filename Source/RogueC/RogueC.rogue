@@ -399,7 +399,7 @@ class RogueC
                |    '1048576', '1024K', and '1MB' are all equivalent. The default is 1MB.
                |
                |  --int=32, -i 32
-               |    Specifies that the 'Int' datatype should be Int32 instead of Int64.
+               |    Specifies that the 'Int' datatype should be 32 bits instead of 64.
                |    This affects the type of integer literals (0, 1, 0xff, ...) as well.
                |
                |  --libraries="path1;path2", -L path1:path2
@@ -423,7 +423,7 @@ class RogueC
                |    output.
                |
                |  --real=32, -r 32
-               |    Specifies that the 'NewReal' datatype should be Real32 instead of Real64.
+               |    Specifies that the 'Real' datatype should be 32 bits instead of 64.
                |    This affects the type of floating point literals (2.54, pi) as well.
                |
                |  --target=Target1,"Target2",..., -t Target

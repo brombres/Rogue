@@ -4,7 +4,7 @@ class Quicksort<<$DataType>>
       sort( list, compare_fn, 0, list.count-1 )
       return list
 
-    method sort( list:$DataType[], compare_fn:(Function($DataType,$DataType)->Logical), i1:NewInt, i2:NewInt )
+    method sort( list:$DataType[], compare_fn:(Function($DataType,$DataType)->Logical), i1:Int, i2:Int )
       if (i1 >= i2)
         # Zero or one elements - already sorted
         return

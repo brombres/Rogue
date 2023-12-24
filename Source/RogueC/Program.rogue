@@ -669,23 +669,25 @@ class Program [singleton]
       File( output_filepath ).save( doc.to_json(&formatted) )
 
     method set_int_bits( @int_bits )
-      definitions["NewInt"] = [t.cloned( TokenType.IDENTIFIER, "Int"+int_bits )]
       if (int_bits == 64)
         definitions["INT_MINIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int64.MINIMUM->String )]
         definitions["INT_MAXIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int64.MAXIMUM->String )]
         definitions["INT_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Int64" )]
+        definitions["INT_BITS"] = [t.cloned( TokenType.INTEGER, "64" )]
       else
         definitions["INT_MINIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int32.MINIMUM->String )]
         definitions["INT_MAXIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int32.MAXIMUM->String )]
         definitions["INT_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Int32" )]
+        definitions["INT_BITS"] = [t.cloned( TokenType.INTEGER, "32" )]
       endIf
 
     method set_real_bits( @real_bits )
-      definitions["NewReal"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
       if (real_bits == 64)
         definitions["REAL_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Real64" )]
+        definitions["REAL_BITS"] = [t.cloned( TokenType.INTEGER, "64" )]
       else
         definitions["REAL_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Real32" )]
+        definitions["REAL_BITS"] = [t.cloned( TokenType.INTEGER, "32" )]
       endIf
 
     method source_type->String

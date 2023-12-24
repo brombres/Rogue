@@ -69,7 +69,7 @@ class HuffmanWriter : Writer<<Int32>>
   PROPERTIES
     buffer  = Int32[]
     builder = HuffmanBuilder()
-    prev_compression : NewReal
+    prev_compression : Real
 
     output_bytes : Byte[]
     writer       : BitWriter
@@ -336,8 +336,8 @@ class HuffmanBuilder
 
       ++node.count
 
-    method compression->NewReal
-      return size->NewReal / data.count
+    method compression->Real
+      return size->Real / data.count
 
     method construct->HuffmanNode
       if (@root) return @root

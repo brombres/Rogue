@@ -2,14 +2,14 @@ module UI
 
 class UIFlowLayout : UILayout
   PROPERTIES
-    content_height : NewInt
-    line_spacing   : NewInt   # Extra pixels between lines
+    content_height : Int
+    line_spacing   : Int   # Extra pixels between lines
 
   METHODS
     method init_object
       shrink_to_fit_height
 
-    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:NewInt )
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int )
       forEach (component in subcomponents)
         component.update_layout_height( component.measure_height(0).value )
       endForEach
@@ -106,7 +106,7 @@ class UIFlowLayout : UILayout
       cursor += IntXY(0,line_height+line_spacing)
       content_height = cursor.y
 
-    method measure_height( container_height:NewInt? )->NewInt?
+    method measure_height( container_height:Int? )->Int?
       if (is_fixed_height) return size.y
       if (is_expand_to_fill_height) return container_height
 
@@ -114,7 +114,7 @@ class UIFlowLayout : UILayout
       # so content_height will always be set by now.
       return content_height
 
-    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:NewInt )
+    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int )
       noAction  # already done as part of update_subcomponent_widths()
 
     method update_subcomponent_placement( subcomponents:UIComponent[], container:IntBox ) [override]
@@ -168,13 +168,13 @@ class UIFlowLayout : UILayout
       endWhile
       justify( subcomponents, i1, i-1, max_width )
 
-    method justify( subcomponents:UIComponent[], i1:NewInt, i2:NewInt, max_width:NewInt )
+    method justify( subcomponents:UIComponent[], i1:Int, i2:Int, max_width:Int )
       if (i2 < i1) return
       localize alignment
       if (alignment.position.x == 0.0) return  # already left-justified
 
       max_width -= subcomponents[ forEach in i1..i2 ].size.x
-      local delta = ((max_width * alignment.position.x) / 2).floor->NewInt
+      local delta = ((max_width * alignment.position.x) / 2).floor->Int
       if (delta)
         forEach (i in i1..i2)
           subcomponents[i].position += IntXY(delta,0)

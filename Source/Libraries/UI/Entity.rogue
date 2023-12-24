@@ -21,7 +21,7 @@ class Entity : Node<<Entity>>
 
   PROPERTIES
     name        : String
-    attributes  : NewInt
+    attributes  : Int
     actions     : Action
     properties  : DynamicProperty
 

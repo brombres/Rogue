@@ -59,19 +59,19 @@ class Random [singleton]
       # Returns a random byte between 0 and 255.
       return next32->Byte
 
-    method chance( p:NewReal )->Logical
+    method chance( p:Real )->Logical
       # Has a proportional chance 'p' to return true (0 < p < 1.0).
       # Example:
       #   Random.chance(0.75)  # returns true 75% of the time statistically speaking.
       return (real < p)
 
-    method gaussian->NewReal
+    method gaussian->Real
       # Returns a random number from a normal distribution of avg=0, stddev=1
       # 68.2% chance of being between -1..1
       # 95.45% chance of being between -2..2
       # 99.73% chance of being -3..3
       # 99.994% chance of being -4..4
-      # NewReal number precision limits the results to [-8.5,8.5]
+      # Real number precision limits the results to [-8.5,8.5]
       # From: https://stackoverflow.com/a/218600/135791
       local u1 = 1.0 - real
       local u2 = 1.0 - real
@@ -132,15 +132,15 @@ class Random [singleton]
        |$result = (RogueInt32)((xorshifted >> rot) | (xorshifted << ((-rot) & 31)));
       return result
 
-    method real->NewReal
+    method real->Real
       # Returns a random number 0 < n < 1.0
-      return real64->NewReal
+      return real64->Real
 
-    method real( limit:NewReal )->NewReal
+    method real( limit:Real )->Real
       # Returns a random number 0 < n < limit
       return real * limit
 
-    method real( low:NewReal, high:NewReal )->NewReal
+    method real( low:Real, high:Real )->Real
       # Returns a random number low < n < high
       return (real * (high-low)) + low
 

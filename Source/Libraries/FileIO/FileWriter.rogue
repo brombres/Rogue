@@ -62,7 +62,7 @@ class FileWriter : Writer<<Byte>>
       flush
       seek( 0 )
 
-    method seek( pos:NewInt )
+    method seek( pos:Int )
       if (not fp) return
       flush
       if (pos < 0) pos = 0
@@ -75,7 +75,7 @@ class FileWriter : Writer<<Byte>>
       flush
 
       native "fseek( $this->fp, 0, SEEK_END );"
-      position = native( "(%Ns%RogueNewInt)ftell( $this->fp )" )->NewInt
+      position = native( "(%Ns%RogueInt)ftell( $this->fp )" )->Int
 
     method write( ch:Byte )
       if (not fp) return

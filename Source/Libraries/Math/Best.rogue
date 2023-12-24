@@ -7,7 +7,7 @@ class Best<<$DataType,$ScoreType>>( better_fn:Function($ScoreType,$ScoreType)->L
   #
   #   local numbers = [3.1, 0.2, 5.8, -1.0, 4.0]
   #
-  #   local best = Best<<Int32,NewReal>>( (a,b) => a < b )
+  #   local best = Best<<Int32,Real>>( (a,b) => a < b )
   #   # The comparison function (a,b) should return true when score 'a' is better than score 'b'.
   #
   #   forEach (value at i in numbers)
@@ -46,7 +46,7 @@ class Best<<$DataType>>( better_fn:Function($DataType,$DataType)->Logical ) [com
   #
   #   local numbers = [3.1, 0.2, 5.8, -1.0, 4.0]
   #
-  #   local best = Best<<NewReal>>( (a,b) => a < b )
+  #   local best = Best<<Real>>( (a,b) => a < b )
   #
   #   forEach (value in numbers)
   #     best.consider( value )

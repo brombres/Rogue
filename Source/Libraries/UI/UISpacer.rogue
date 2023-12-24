@@ -2,9 +2,9 @@ module UI
 
 class UISpacer : UIComponent
   GLOBAL METHODS
-    method h( width:NewInt )->UISpacer
+    method h( width:Int )->UISpacer
       return UISpacer( IntXY(width,0) )
 
-    method v( height:NewInt )->UISpacer
+    method v( height:Int )->UISpacer
       return UISpacer( IntXY(0,height) )
 endClass

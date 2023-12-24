@@ -67,17 +67,17 @@ endEnum
 class XML
   GLOBAL PROPERTIES
     next_filepath : String
-    next_line     : NewInt
-    next_column   : NewInt
+    next_line     : Int
+    next_column   : Int
 
   GLOBAL METHODS
-    method create( file:File, line=1:NewInt, column=1:NewInt )->XML
+    method create( file:File, line=1:Int, column=1:Int )->XML
       return XMLParser().parse( file, line, column )
 
-    method create( content:String, line=1:NewInt, column=1:NewInt )->XML
+    method create( content:String, line=1:Int, column=1:Int )->XML
       return create( "[Internal]", content, line, column )
 
-    method create( filepath:String, content:String, line=1:NewInt, column=1:NewInt )->XML
+    method create( filepath:String, content:String, line=1:Int, column=1:Int )->XML
       return XMLParser().parse( filepath, content, line, column )
 
     method element( name=null:String )->XML
@@ -86,7 +86,7 @@ class XML
     method list->XML
       return XML( XMLNodeType.LIST )
 
-    method set_position( filepath:String, line:NewInt, column:NewInt )
+    method set_position( filepath:String, line:Int, column:Int )
       next_filepath = filepath
       next_line = line
       next_column = column
@@ -97,8 +97,8 @@ class XML
 
   PROPERTIES
     filepath   = next_filepath : String
-    line       = next_line     : NewInt
-    column     = next_column   : NewInt
+    line       = next_line     : Int
+    column     = next_column   : Int
     type       : XMLNodeType
     attributes : [String:String]
     text       : String
@@ -118,7 +118,7 @@ class XML
       builder.print( forEach in children )
       return builder
 
-    method count->NewInt
+    method count->Int
       return children.count
 
     method find( fn:Function(XML)->Logical )->XML
@@ -127,7 +127,7 @@ class XML
       endForEach
       return null
 
-    method get( index:NewInt )->XML
+    method get( index:Int )->XML
       if (index < 0 or index >= children.count) return null
       return children[ index ]
 
@@ -135,7 +135,7 @@ class XML
       if (attributes is null) return null
       return attributes[ name ]
 
-    method insert( child:XML, before_index=0:NewInt )
+    method insert( child:XML, before_index=0:Int )
       children.insert( child, before_index )
 
     method is_end_tag( name=null:String )->Logical
@@ -252,10 +252,10 @@ class XMLParser
     method configure_standalone_tags
       add_standalone_tag( forEach in default_standalone_tags )
 
-    method parse( file:File, line=1:NewInt, column=1:NewInt )->XML
+    method parse( file:File, line=1:Int, column=1:Int )->XML
       return parse( file.filepath, String(file), line, column )
 
-    method parse( filepath:String, content:String, line=1:NewInt, column=1:NewInt )->XML
+    method parse( filepath:String, content:String, line=1:Int, column=1:Int )->XML
       local nodes = XMLNodifier().nodify( filepath, content, line, column )
       collapse_nodes( nodes )
       local result = XML.list
@@ -314,10 +314,10 @@ class XMLNodifier
   METHODS
     method init
 
-    method nodify( file:File, line=1:NewInt, column=1:NewInt )->XML[]
+    method nodify( file:File, line=1:Int, column=1:Int )->XML[]
       return nodify( file.filepath, String(file), line, column )
 
-    method nodify( filepath:String, content:String, line=1:NewInt, column=1:NewInt )->XML[]
+    method nodify( filepath:String, content:String, line=1:Int, column=1:Int )->XML[]
       scanner = XMLScanner( filepath, content, line, column )
       nodes  = XML[]
       while (nodify_another) noAction
@@ -409,7 +409,7 @@ class XMLScanner : Scanner
     filepath    : String
 
   METHODS
-    method init( filepath, content:String, line=1:NewInt, column=1:NewInt )
+    method init( filepath, content:String, line=1:Int, column=1:Int )
       prior.init( content, &spaces_per_tab=2 )
       this.line = line
       this.column = column

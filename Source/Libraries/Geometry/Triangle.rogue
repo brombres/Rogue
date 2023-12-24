@@ -55,10 +55,10 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
     method operator-( position:XY )->Triangle
       return Triangle( a-position, b-position, c-position )
 
-    method operator*( scale:NewReal )->Triangle
+    method operator*( scale:Real )->Triangle
       return Triangle( a*scale, b*scale, c*scale )
 
-    method operator/( scale:NewReal )->Triangle
+    method operator/( scale:Real )->Triangle
       return Triangle( a/scale, b/scale, c/scale )
 
     method operator*( scale:XY )->Triangle

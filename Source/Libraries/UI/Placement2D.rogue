@@ -6,7 +6,7 @@ class Placement2D [compound]
     size             : IntXY
     anchor           = Anchor.CENTER : Anchor
     rotation         : XYZ
-    z                : NewInt
+    z                : Int
 
   METHODS
     method display_bounds->IntBox

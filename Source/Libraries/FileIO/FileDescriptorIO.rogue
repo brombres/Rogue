@@ -1,15 +1,15 @@
 class FDReader : Reader<<Byte>>
   GLOBAL METHODS
     method stderr->FDReader
-      return FDReader( native("STDERR_FILENO")->NewInt, &!auto_close )
+      return FDReader( native("STDERR_FILENO")->Int, &!auto_close )
 
     method stdin->FDReader
-      return FDReader( native("STDIN_FILENO")->NewInt, &!auto_close )
+      return FDReader( native("STDIN_FILENO")->Int, &!auto_close )
 
   PROPERTIES
-    fd              : NewInt
-    position        : NewInt
-    buffer_position : NewInt
+    fd              : Int
+    position        : Int
+    buffer_position : Int
     auto_close      : Logical
     buffer          = Byte[](1024)
 
@@ -27,8 +27,8 @@ class FDReader : Reader<<Byte>>
       buffer.reserve( 1024 )
       local cur_count = buffer.count
 
-      local n : NewInt
-      native @|$n = (%Ns%RogueNewInt) read( $fd, $buffer->as_bytes+$cur_count, 1024 );
+      local n : Int
+      native @|$n = (%Ns%RogueInt) read( $fd, $buffer->as_bytes+$cur_count, 1024 );
       if (n <= 0)
         if (auto_close) close
         fd = -1
@@ -77,10 +77,10 @@ endClass
 class FDWriter : Writer<<Byte>>
   GLOBAL METHODS
     method stdout->FDWriter
-      return FDWriter( native("STDOUT_FILENO")->NewInt, &!auto_close )
+      return FDWriter( native("STDOUT_FILENO")->Int, &!auto_close )
 
   PROPERTIES
-    fd         : NewInt
+    fd         : Int
     auto_close : Logical
     error      : Logical
     buffer     = Byte[](1024)

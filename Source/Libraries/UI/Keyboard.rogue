@@ -15,7 +15,7 @@ class Keyboard [singleton]
       # Clears the key_pressed array - used when window focus is lost and regained
       key_pressed[ forEach of key_pressed ] = false
 
-    method modifier_key_state->NewInt
+    method modifier_key_state->Int
       local state = 0L
       if (is_shift_pressed)   state |= SHIFT_MODIFIER_FLAG
       if (is_control_pressed) state |= CONTROL_MODIFIER_FLAG
@@ -23,7 +23,7 @@ class Keyboard [singleton]
       if (is_os_pressed)      state |= OS_MODIFIER_FLAG
       return state
 
-    method is_key_pressed( keycode:NewInt )->Logical
+    method is_key_pressed( keycode:Int )->Logical
       return this.key_pressed[ keycode & 255 ]
 
     method is_alt_pressed->Logical
@@ -192,11 +192,11 @@ class Keycode
       ''@ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}  ~             \n                 '' ...
       ''              * +-./0123456789   =''
 
-    unicode_to_keycode     : NewInt[]
+    unicode_to_keycode     : Int[]
     unicode_to_shift_state : Logical[]
 
   GLOBAL METHODS
-    method keycode_to_unicode( keycode:NewInt, &is_shift_pressed )->Character
+    method keycode_to_unicode( keycode:Int, &is_shift_pressed )->Character
       if (keycode <= SPACE)
         which (keycode)
           case Keycode.SPACE:  return ' '
@@ -215,9 +215,9 @@ class Keycode
       if (result == ' ') return 0  # we already handled actual SPACE; others are placeholders for zero
       return result
 
-    method unicode_to_keycode( unicode:Character )->(NewInt,Logical)  # keycode, is_shifted
+    method unicode_to_keycode( unicode:Character )->(Int,Logical)  # keycode, is_shifted
       if (not @unicode_to_keycode)
-        @unicode_to_keycode    = Dim<<NewInt>>(128)
+        @unicode_to_keycode    = Dim<<Int>>(128)
         unicode_to_shift_state = Dim<<Logical>>(128)
         forEach (keycode in 32..127)
           local ucode = shifted_keycode_to_unicode[ keycode ]

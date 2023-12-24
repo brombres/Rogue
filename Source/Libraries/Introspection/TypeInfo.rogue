@@ -16,7 +16,7 @@ class TypeInfo
        |    ++type_info->__refcount;
        |
        |    type_info->module_name = %Ns%Rogue_string_table[ THISOBJ->module_name_index ];
-       |    type_info->name        = %Ns%RogueObject____type_name__%Ns%%RogueNewInt%( THISOBJ->index );
+       |    type_info->name        = %Ns%RogueObject____type_name__%Ns%%RogueInt%( THISOBJ->index );
        |    type_info->index       = THISOBJ->index;
        |    type_info->id          = THISOBJ->id;
        |    type_info->attributes  = THISOBJ->attributes;

@@ -10,7 +10,7 @@ class State<<$ExtendedType>>
     method create( fn:Function() )->$ExtendedType
       return StateCall<<$ExtendedType>>( fn )
 
-    method create( fn:Function(NewReal), duration:NewReal, progress_fn=ProgressFn.LINEAR:Function(NewReal)->NewReal )->$ExtendedType
+    method create( fn:Function(Real), duration:Real, progress_fn=ProgressFn.LINEAR:Function(Real)->Real )->$ExtendedType
       return StateCallWithProgress<<$ExtendedType>>( fn, duration, progress_fn )
 
     method operator+( a:$ExtendedType, b:$ExtendedType )->$ExtendedType
@@ -23,22 +23,22 @@ class State<<$ExtendedType>>
       if (not b) return a
       return a.also( b )
 
-    method wait( duration:NewReal )->$ExtendedType
+    method wait( duration:Real )->$ExtendedType
       return StateWait<<$ExtendedType>>( duration )
 
-    method wait_for( condition:Function->Logical, duration=$ExtendedType.INDEFINITE:NewReal )->$ExtendedType
+    method wait_for( condition:Function->Logical, duration=$ExtendedType.INDEFINITE:Real )->$ExtendedType
       return StateWaitFor<<$ExtendedType>>( condition, duration )
 
   PROPERTIES
-    duration    : NewReal
-    progress_fn = ProgressFn.LINEAR : Function(NewReal)->NewReal
+    duration    : Real
+    progress_fn = ProgressFn.LINEAR : Function(Real)->Real
 
     next_state       : $ExtendedType
     concurrent_state : $ExtendedType
 
-    t          : NewReal
-    delta_time : NewReal
-    prev_time  : NewReal  # 0 = not started
+    t          : Real
+    delta_time : Real
+    prev_time  : Real  # 0 = not started
 
     exited : Logical # flag that assists when states finish outside of updated()
 
@@ -83,7 +83,7 @@ class State<<$ExtendedType>>
       if (concurrent_state) n += concurrent_state.count
       return n
 
-    method default_duration->NewReal
+    method default_duration->Real
       return INDEFINITE
 
     method describe->String
@@ -127,7 +127,7 @@ class State<<$ExtendedType>>
 
     method on_finish
 
-    method progress->NewReal
+    method progress->Real
       return which{ duration>0:progress_fn(t/duration) || 1.0 }
 
     method start_next->$ExtendedType
@@ -202,7 +202,7 @@ class StateCall<<$ExtendedType>>( fn:Function(), duration=$ExtendedType.INSTANT 
       fn()
 endClass
 
-class StateCallWithProgress<<$ExtendedType>>( fn:Function(NewReal), duration, progress_fn ) : State<<$ExtendedType>>
+class StateCallWithProgress<<$ExtendedType>>( fn:Function(Real), duration, progress_fn ) : State<<$ExtendedType>>
   METHODS
     method on_update
       fn( progress )

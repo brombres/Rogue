@@ -1,6 +1,6 @@
 module Graphics
 
-class HSV( hue:NewReal, saturation:NewReal, value:NewReal ) [compound]
+class HSV( hue:Real, saturation:Real, value:Real ) [compound]
   GLOBAL METHODS
     method create( color:Color )->HSV
       # Creates a HSV compound from the given Color compound.
@@ -13,7 +13,7 @@ class HSV( hue:NewReal, saturation:NewReal, value:NewReal ) [compound]
       local delta  = maxrgb - minrgb
 
       local value = maxrgb
-      local hue, saturation : NewReal
+      local hue, saturation : Real
 
       if (maxrgb) saturation = delta / maxrgb
 
@@ -28,11 +28,11 @@ class HSV( hue:NewReal, saturation:NewReal, value:NewReal ) [compound]
       return HSV( hue, saturation, value )
 
   METHODS
-    method hash_code->NewInt
+    method hash_code->Int
       return hue.hash_code ~ saturation.hash_code ~ value.hash_code
 
     method to->Color
-      local r, g, b : NewReal
+      local r, g, b : Real
       if (saturation)
         local hue = (hue * 6) % 6
         local i = Int32( hue )

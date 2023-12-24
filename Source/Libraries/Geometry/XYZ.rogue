@@ -1,6 +1,6 @@
 module Geometry
 
-class XYZ( x:NewReal, y:NewReal, z=0:NewReal ) [compound]
+class XYZ( x:Real, y:Real, z=0:Real ) [compound]
   GLOBAL METHODS
     method create->XYZ
       return XYZ( 0, 0, 0 )
@@ -8,13 +8,13 @@ class XYZ( x:NewReal, y:NewReal, z=0:NewReal ) [compound]
 		method create( xy:XY )->XYZ
       return XYZ( xy.x, xy.y, 0 )
 
-		method create( xy:XY, z:NewReal )->XYZ
+		method create( xy:XY, z:Real )->XYZ
       return XYZ( xy.x, xy.y, z )
 
     method create( xy:IntXY )->XYZ
       return XYZ( xy.x, xy.y, 0 )
 
-    method create( xy:IntXY, z:NewReal )->XYZ
+    method create( xy:IntXY, z:Real )->XYZ
       return XYZ( xy.x, xy.y, z )
 
   METHODS
@@ -25,13 +25,13 @@ class XYZ( x:NewReal, y:NewReal, z=0:NewReal ) [compound]
           x*other.y - (y*other.x)
       )
 
-    method dot( other:XYZ )->NewReal
+    method dot( other:XYZ )->Real
       return x*other.x + y*other.y + z*other.z
 
-    method magnitude->NewReal
+    method magnitude->Real
       return ( x*x + y*y + z*z ).sqrt
 
-    method magnitude_squared->NewReal
+    method magnitude_squared->Real
       return x*x + y*y + z*z
 
     method normalized->XYZ
@@ -43,7 +43,7 @@ class XYZ( x:NewReal, y:NewReal, z=0:NewReal ) [compound]
     method operator==( other:XYZ )->Logical
       return (x == other.x) and (y == other.y) and (z == other.z)
 
-    method operator<>( other:XYZ )->NewInt
+    method operator<>( other:XYZ )->Int
       if (x == other.x)
         if (y == other.y) return z <> other.z
         else              return y <> other.y
@@ -54,7 +54,7 @@ class XYZ( x:NewReal, y:NewReal, z=0:NewReal ) [compound]
     method operator+( other:XYZ )->XYZ
       return XYZ( x+other.x, y+other.y, z+other.z )
 
-    method operator+( value:NewReal )->XYZ
+    method operator+( value:Real )->XYZ
       return XYZ( x+value, y+value, z+value )
 
     method operator-()->XYZ
@@ -63,31 +63,31 @@ class XYZ( x:NewReal, y:NewReal, z=0:NewReal ) [compound]
     method operator-( other:XYZ )->XYZ
       return XYZ( x-other.x, y-other.y, z-other.z )
 
-    method operator-( value:NewReal )->XYZ
+    method operator-( value:Real )->XYZ
       return XYZ( x-value, y-value, z-value )
 
     method operator*( other:XYZ )->XYZ
       return XYZ( x*other.x, y*other.y, z*other.z )
 
-    method operator*( value:NewReal )->XYZ
+    method operator*( value:Real )->XYZ
       return XYZ( x*value, y*value, z*value )
 
     method operator/( other:XYZ )->XYZ
       return XYZ( x/other.x, y/other.y, z/other.z )
 
-    method operator/( value:NewReal )->XYZ
+    method operator/( value:Real )->XYZ
       return XYZ( x/value, y/value, z/value )
 
     method operator%( other:XYZ )->XYZ
       return XYZ( x%other.x, y%other.y, z%other.z )
 
-    method operator%( value:NewReal )->XYZ
+    method operator%( value:Real )->XYZ
       return XYZ( x%value, y%value, z%value )
 
     method operator^( other:XYZ )->XYZ
       return XYZ( x^other.x, y^other.y, z^other.z )
 
-    method operator^( value:NewReal )->XYZ
+    method operator^( value:Real )->XYZ
       return XYZ( x^value, y^value, z^value )
 
     method to->XY [essential]
@@ -102,7 +102,7 @@ endClass
 
 class DegreesXYZ( value:XYZ ) [compound]
   GLOBAL METHODS
-    method create( x:NewReal, y:NewReal, z:NewReal )->DegreesXYZ
+    method create( x:Real, y:Real, z:Real )->DegreesXYZ
       return DegreesXYZ( XYZ(x,y,z) )
 
   METHODS
@@ -118,7 +118,7 @@ endClass
 
 class RadiansXYZ( value:XYZ ) [compound]
   GLOBAL METHODS
-    method create( x:NewReal, y:NewReal, z:NewReal )->RadiansXYZ
+    method create( x:Real, y:Real, z:Real )->RadiansXYZ
       return RadiansXYZ( XYZ(x,y,z) )
 
   METHODS
@@ -139,7 +139,7 @@ augment Rogue::Random
       # each in the range (0.0,1.0) exclusive.
       return XYZ( real, real, real )
 
-    method xyz( low:NewReal, high:NewReal )->XYZ
+    method xyz( low:Real, high:Real )->XYZ
       # Returns a XYZ compound with an evenly distributed random real number in
       # the range (low,high) exclusive (does not include low or high).
       # for each of the (x,y,z) values.

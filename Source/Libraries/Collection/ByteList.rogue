@@ -33,7 +33,7 @@ augment Byte[]
       return true
 
     method is_valid_utf8->Logical
-      native @|%Ns%%RogueNewInt% n = $count;
+      native @|%Ns%%RogueInt% n = $count;
               |unsigned char* src = $this->as_bytes - 1;
               |while (--n >= 0)
               |{

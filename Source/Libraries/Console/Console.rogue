@@ -30,7 +30,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
     input_buffer = Byte[]
 
-    next_input_character : NewInt?
+    next_input_character : Int?
     _input_bytes         = Byte[]
 
     force_input_blocking = false
@@ -86,8 +86,8 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     method has_another_event->Logical
       return mode.has_another_event
 
-    method height->NewInt
-      local result : NewInt
+    method height->Int
+      local result : Int
       native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  CONSOLE_SCREEN_BUFFER_INFO info;
@@ -113,7 +113,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       native @|}
               |
               |// discard \n
-              |%Ns%%RogueNewInt% len = strlen( st );
+              |%Ns%%RogueInt% len = strlen( st );
               |if (len) st[--len] = 0;
               |else st[0] = 0;
 
@@ -150,12 +150,12 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       is_end_of_input = false
       native @|clearerr( stdin );
 
-    method set_cursor( x:NewInt, y:NewInt, output=Global:PrintWriter )
+    method set_cursor( x:Int, y:Int, output=Global:PrintWriter )
       ++x
       ++y
       output.[ flush, print("\e["), print(y), print(';'), print(x), print('H'), flush ]
 
-    method set_cursor( position:(x:NewInt,y:NewInt), output=Global:PrintWriter )
+    method set_cursor( position:(x:Int,y:Int), output=Global:PrintWriter )
       set_cursor( position.x, position.y, output )
 
     method set_immediate_mode( setting:Logical )
@@ -172,8 +172,8 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
         @mode._on_enter
       endIf
 
-    method width->NewInt
-      local result : NewInt
+    method width->Int
+      local result : Int
       native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  CONSOLE_SCREEN_BUFFER_INFO info;
@@ -194,7 +194,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |  %Ns%Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDOUT_FILENO );
               |#endif
 
-    method _fill_input_buffer( minimum=1:NewInt )->Logical
+    method _fill_input_buffer( minimum=1:Int )->Logical
       if (_input_bytes.count >= minimum) return true
 
       local needs_unblock : Logical
@@ -266,15 +266,15 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       |  #define STDERR_FILENO 2
       |#endif
       |
-      |void %Ns%Rogue_fwrite( const char* utf8, %Ns%%RogueNewInt% byte_count, %Ns%%RogueNewInt% out );
+      |void %Ns%Rogue_fwrite( const char* utf8, %Ns%%RogueInt% byte_count, %Ns%%RogueInt% out );
 
     nativeCode
-      @|void %Ns%Rogue_fwrite( const char* utf8, %Ns%%RogueNewInt% byte_count, %Ns%%RogueNewInt% out )
+      @|void %Ns%Rogue_fwrite( const char* utf8, %Ns%%RogueInt% byte_count, %Ns%%RogueInt% out )
        |{
        |  #if !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
        |  while (byte_count)
        |  {
-       |    %Ns%RogueNewInt n = (%Ns%RogueNewInt) write( out, utf8, byte_count );
+       |    %Ns%RogueInt n = (%Ns%RogueInt) write( out, utf8, byte_count );
        |    if (n > 0)
        |    {
        |      utf8 += n;

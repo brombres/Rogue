@@ -20,7 +20,7 @@ class DataReader : Reader<<Byte>>
     method has_another->Logical
       return input.has_another
 
-    method position->NewInt
+    method position->Int
       return input.position
 
     method peek->Byte
@@ -111,8 +111,8 @@ class DataReader : Reader<<Byte>>
     method read_logical->Logical
       return (read != 0)
 
-    method read_real->NewReal
-      if (NewReal isType Real32) return read_int32.real_bits
+    method read_real->Real
+      if (Real isType Real32) return read_int32.real_bits
       else                    return read_int64.real_bits
 
     method read_real32->Real32
@@ -171,7 +171,7 @@ class DataWriter : Writer<<Byte>>
       flush
       return @output_bytes
 
-    method position->NewInt
+    method position->Int
       return output.position
 
     method reset
@@ -179,13 +179,13 @@ class DataWriter : Writer<<Byte>>
       output.reset
       if (output_bytes) output_bytes.clear
 
-    method seek( pos:NewInt )
+    method seek( pos:Int )
       output.seek( pos )
 
     method seek_end()
       output.seek_end
 
-    method skip( n:NewInt )
+    method skip( n:Int )
       output.skip( n )
 
     method write( value:Byte )
@@ -202,7 +202,7 @@ class DataWriter : Writer<<Byte>>
     method write_byte( value:Byte )
       this.write( value )
 
-    method write_bytes( data:Byte[], index=0:NewInt, count=null:NewInt? )
+    method write_bytes( data:Byte[], index=0:Int, count=null:Int? )
       if (index > data.count)
         write_int32x( 0 )
         return
@@ -277,8 +277,8 @@ class DataWriter : Writer<<Byte>>
     method write_logical( value:Logical )
       write( which{value:1 || 0} )
 
-    method write_real( value:NewReal )
-      if (NewReal isType Real32) write_int32( value.integer_bits )
+    method write_real( value:Real )
+      if (Real isType Real32) write_int32( value.integer_bits )
       else                    write_int64( value.integer_bits )
 
     method write_real32( value:Real32 )

@@ -80,7 +80,7 @@ class Resolver : Poolable, Visitor
 
                 forEach (category in type.categories)
                   if (category.name == entry.key)
-                    category.ordinal = value->(as LiteralInteger)->NewInt
+                    category.ordinal = value->(as LiteralInteger)->Int
                     escapeForEach
                   endIf
                 endForEach
@@ -1841,7 +1841,7 @@ class Resolver : Poolable, Visitor
       pop_scope
 
       contingent
-        necessary (cmd.condition.type is Program.type_Int32 or cmd.condition.type is Program.type_Int64)
+        necessary (cmd.condition.type.is_integer)
 
         forEach (cmd_case in cmd.cases)
           necessary ((forEach in cmd_case.args).is_literal_primitive)
@@ -1854,11 +1854,11 @@ class Resolver : Poolable, Visitor
             forEach (arg in cmd_case.args)
               local n = arg->(as LiteralInteger)
               if (n)
-                used_cases.expand_to_include( n->NewInt )
-                if (used_cases[n->NewInt])
+                used_cases.expand_to_include( n->Int )
+                if (used_cases[n->Int])
                   throw arg.t.error( "Illegal duplicate category value - each enum category must have a unique value. Use DEFINITIONS to support alternate names, e.g. 'CATEGORIES / WHITE, GRAY', 'DEFINITIONS / GREY=GRAY'." )
                 else
-                  used_cases[n->NewInt] = true
+                  used_cases[n->Int] = true
                 endIf
               endIf
             endForEach
@@ -2678,9 +2678,9 @@ class Resolver : Poolable, Visitor
           contingent
             forEach (arg at i in args)
               local arg_precision = arg.type.precision_index
-              if (arg_precision >= Type.PRECISION_BYTE and arg_precision <= Type.PRECISION_INT64)  # Byte, Character, Int32, NewInt, Int64
+              if (arg_precision >= Type.PRECISION_BYTE and arg_precision <= Type.PRECISION_INT64)  # Byte, Character, Int32, Int, Int64
                 local param_precision = m.parameters[i].type.precision_index
-                necessary (param_precision >= Type.PRECISION_INT32 and param_precision <= Type.PRECISION_INT64)  # Int32, NewInt, Int64
+                necessary (param_precision >= Type.PRECISION_INT32 and param_precision <= Type.PRECISION_INT64)  # Int32, Int, Int64
               endIf
             endForEach
             Candidates.keep m
@@ -3983,8 +3983,8 @@ augment
       local builder = String()
       builder.println @|Standard/Collection does not implement any of the collection protocols:
                        |
-                       |  count()->NewInt/count:NewInt + at(index:NewInt)->ElementType
-                       |  count()->NewInt/count:NewInt + get(index:NewInt)->ElementType
+                       |  count()->Int/count:Int + at(index:Int)->ElementType
+                       |  count()->Int/count:Int + get(index:Int)->ElementType
                        |  read_another()->ElementType?
                        |  iterator()->Standard/Collection (result must implement one of the above protocols)
                        |  reader()->Standard/Collection (result must implement one of the above protocols)
@@ -4151,8 +4151,8 @@ augment
       local builder = String()
       builder.println @|Standard/Collection does not implement any of the collection protocols:
                        |
-                       |  count()->NewInt/count:NewInt + at(index:NewInt)->ElementType
-                       |  count()->NewInt/count:NewInt + get(index:NewInt)->ElementType
+                       |  count()->Int/count:Int + at(index:Int)->ElementType
+                       |  count()->Int/count:Int + get(index:Int)->ElementType
                        |  read_another()->ElementType?
                        |  iterator()->Standard/Collection (result must implement one of the above protocols)
                        |  reader()->Standard/Collection (result must implement one of the above protocols)

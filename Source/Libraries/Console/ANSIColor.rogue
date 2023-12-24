@@ -4,7 +4,7 @@ uses Graphics
 # https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
 # https://stackoverflow.com/a/27165165/135791
 
-class ANSIColor( index:NewInt, color:Color ) [compound]
+class ANSIColor( index:Int, color:Color ) [compound]
 endClass
 
 class ANSIColors : ANSIColor[] [singleton]
@@ -78,17 +78,17 @@ class ANSIColorLookup : Byte[] [singleton]
     method init
       init( COLOR_240 )
 
-    method init( color_mode:NewInt )
+    method init( color_mode:Int )
       # color_mode
       #   COLOR_240, COLOR_16, GRAY_24, or GRAY_4
       #   Windows is limited to COLOR_16 and GRAY_4
       prior.init( 16*16*16 )
       count = 16*16*16
 
-      local target_colors = NewInt[](256)
+      local target_colors = Int[](256)
       target_colors.add( (forEach in ANSIColors).color.argb )
 
-      local palette = NewInt[](240)  # indices into target_colors[]
+      local palette = Int[](240)  # indices into target_colors[]
       which (color_mode)
         case GRAY_4
           palette.[ add(0), add(7), add(8), add(15) ]

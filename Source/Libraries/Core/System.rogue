@@ -36,7 +36,7 @@ class System [essential]
     execution_start_ms     = System.time_ms - 1 : Int64  # Minus 1 so that initial time is not 0
 
   GLOBAL METHODS
-    method execution_time->NewReal
+    method execution_time->Real
       # Execution time in seconds.
       return (System.time_ms - execution_start_ms)->Int64 / 1000.0
 
@@ -198,7 +198,7 @@ class System [essential]
               |#endif
       return return_val
 
-    method sleep( seconds:NewReal )
+    method sleep( seconds:Real )
       # Suspends execution of this program for the specified number of seconds.
       sleep_ms( (seconds * 1000)->Int32 )
 

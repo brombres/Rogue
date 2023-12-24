@@ -26,7 +26,7 @@ class UIText : UIComponent
       init( text )
       set_font( font )
 
-    method can_split_h( max_width:NewInt )->Logical
+    method can_split_h( max_width:Int )->Logical
       local index = @text.locate(' ')
       if (not index) return false
       return font.measure( @text, 0, index.value+1 ).x <= max_width
@@ -44,10 +44,10 @@ class UIText : UIComponent
     method on_prepare_layout [override]
       fixed_size = font.measure( @text )
 
-    method split_after( i:NewInt )->UIComponent [override]
+    method split_after( i:Int )->UIComponent [override]
       return _split_at( i+1 )
 
-    method split_h( max_width=null:NewInt? )->UIComponent [override]
+    method split_h( max_width=null:Int? )->UIComponent [override]
       if (not max_width)
         # Split at the first possible location
         local index = @text.locate(' ')
@@ -72,7 +72,7 @@ class UIText : UIComponent
     method text_content->String
       return @text
 
-    method _split_at( index:NewInt )->UIComponent
+    method _split_at( index:Int )->UIComponent
       local right = create_text( @text.substring(index) )
       @text .= leftmost( index )
       insert_next( right )

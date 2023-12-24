@@ -8,7 +8,7 @@ ENTITY_PROPERTY<< Drawable2D, weight, XY, XY(1,1), WeightProperty >>
 class Drawable2D : Entity
   PROPERTIES
     position       : IntXY
-    draw_order     : NewInt
+    draw_order     : Int
     placement      : Placement2D
     last_placement : Placement2D  # for dirty rectangle tracking
 
@@ -139,13 +139,13 @@ class Drawable2D : Entity
     method set_clip( clip_bounds:IntBox? )
       UI.active.clip = clip_bounds
 
-    method set_draw_order( new_draw_order:NewInt )
+    method set_draw_order( new_draw_order:Int )
       if (new_draw_order != @draw_order)
         @draw_order = new_draw_order
         needs_redraw = true
       endIf
 
-    method set_fixed_height( h:NewInt )
+    method set_fixed_height( h:Int )
       attributes = (attributes & !HEIGHT_MASK) | FIXED_HEIGHT
       placement.size = IntXY( placement.size.x, h )
 
@@ -153,11 +153,11 @@ class Drawable2D : Entity
       attributes = (attributes & !SIZE_MASK) | FIXED_WIDTH | FIXED_HEIGHT
       placement.size = new_fixed_size
 
-    method set_fixed_width( w:NewInt )
+    method set_fixed_width( w:Int )
       attributes = (attributes & !WIDTH_MASK) | FIXED_WIDTH
       placement.size = IntXY( w, placement.size.y )
 
-    method set_height( value:NewInt )
+    method set_height( value:Int )
       placement.size = IntXY( placement.size.x, value )
 
     method set_rotation( value:Radians )
@@ -173,7 +173,7 @@ class Drawable2D : Entity
       prior.set_structure_modified( setting )
       if (setting) request_layout
 
-    method set_width( value:NewInt )
+    method set_width( value:Int )
       placement.size = IntXY( value, placement.size.y )
 
     method size->IntXY

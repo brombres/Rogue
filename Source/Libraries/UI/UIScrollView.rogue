@@ -27,11 +27,11 @@ class UIScrollView : UILayout
     method create_controller->UIScrollViewController
       return StandardUIScrollViewController( this )
 
-    method bottom_offset->NewInt
+    method bottom_offset->Int
       # Result will be negative or zero.
       return (size.y - content_height).clamped_high(0)
 
-    method content_height->NewInt
+    method content_height->Int
       if local component = first_child<<UIComponent>>
         return component.size.y
       else
@@ -93,7 +93,7 @@ class UIScrollView : UILayout
       prior.save_display_state
       last_content_offset = @content_offset
 
-    method scroll_to( vertical_offset:NewInt )
+    method scroll_to( vertical_offset:Int )
       scroll_to( IntXY(0,vertical_offset) )
 
     method scroll_to( content_offset:IntXY )
@@ -107,7 +107,7 @@ class UIScrollView : UILayout
       if (controller) controller.scroll_to_top
       else            position = top_offset
 
-    method set_content_offset( offset:NewReal )
+    method set_content_offset( offset:Real )
       set_content_offset( IntXY(@content_offset.x, offset) )
 
     method set_content_offset( @content_offset )
@@ -115,7 +115,7 @@ class UIScrollView : UILayout
         component.position = @content_offset.floor->IntXY
       endIf
 
-    method top_offset->NewInt
+    method top_offset->Int
       return 0
 
     method update_subcomponent_placement( subcomponents:UIComponent[], container:IntBox )

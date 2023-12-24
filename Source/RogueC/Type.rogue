@@ -47,15 +47,15 @@ class Type : Cmd
 
     id    : Int32     # used for dynamic dispatch tables; introspection data may not exist for all type ids
     index = -1L       # index of type in lookup table; used for introspection
-    class_data_index : NewInt
+    class_data_index : Int
 
     m_init_class          : GlobalMethod
     m_on_singleton_change : GlobalMethod
     m_on_cleanup          : Method
     m_primary_constructor : GlobalMethod   # for compounds; indicates what types are for destructuring assignments
 
-    base_type_lookup_index  : NewInt
-    base_type_ids           = NewInt[]
+    base_type_lookup_index  : Int
+    base_type_ids           = Int[]
 
     method_vtable           = [String:Method]
 
@@ -724,6 +724,9 @@ class Type : Cmd
 
     method is_enum->Logical
       return attributes.is_enum
+
+    method is_integer->Logical
+      return this is Program.type_Int or this is Program.type_Int32 or this is Program.type_Int64
 
     method is_object->Logical
       return attributes.is_object

@@ -46,10 +46,10 @@
 uses Geometry [export]
 
 class Matrix( ...
-    r0c0:NewReal, r1c0:NewReal, r2c0:NewReal, r3c0:NewReal,
-    r0c1:NewReal, r1c1:NewReal, r2c1:NewReal, r3c1:NewReal,
-    r0c2:NewReal, r1c2:NewReal, r2c2:NewReal, r3c2:NewReal,
-    r0c3:NewReal, r1c3:NewReal, r2c3:NewReal, r3c3:NewReal
+    r0c0:Real, r1c0:Real, r2c0:Real, r3c0:Real,
+    r0c1:Real, r1c1:Real, r2c1:Real, r3c1:Real,
+    r0c2:Real, r1c2:Real, r2c2:Real, r3c2:Real,
+    r0c3:Real, r1c3:Real, r2c3:Real, r3c3:Real
     ) [compound]
 
   DEFINITIONS
@@ -96,7 +96,7 @@ class Matrix( ...
 
       return result * Matrix.translate( -origin )
 
-    method perspective( fov_y:Radians, aspect_ratio:NewReal, z_near:NewReal, z_far:NewReal )->Matrix
+    method perspective( fov_y:Radians, aspect_ratio:Real, z_near:Real, z_far:Real )->Matrix
       # Returns a right-handed projection matrix (OpenGL is also right-hand).
       local f = 1.0 / (fov_y * 0.5).tan
       local m = Matrix()
@@ -107,7 +107,7 @@ class Matrix( ...
       m.r3c2 = -1
       return m
 
-    method perspective( left:NewReal, top:NewReal, right:NewReal, bottom:NewReal, near:NewReal, far:NewReal )->Matrix
+    method perspective( left:Real, top:Real, right:Real, bottom:Real, near:Real, far:Real )->Matrix
       # Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
       local m = identity
 
@@ -238,7 +238,7 @@ class Matrix( ...
       m.r2c3 = delta.z
       return m
 
-    method scale( k:NewReal )->Matrix
+    method scale( k:Real )->Matrix
       return scale( XYZ(k,k,1) )
 
     method scale( k:XY )->Matrix
@@ -252,7 +252,7 @@ class Matrix( ...
       m.r3c3 = 1
       return m
 
-    method scale( k:NewReal, origin:XY )->Matrix
+    method scale( k:Real, origin:XY )->Matrix
       return scale( XYZ(k,k,1), XYZ(origin,0) )
 
     method scale( k:XY, origin:XY )->Matrix
@@ -279,8 +279,8 @@ class Matrix( ...
     method count->Int32
       return 16
 
-    method get( index:Int32 )->NewReal
-      return native( "(&$this.r0c0)[ $index ]" )->NewReal
+    method get( index:Int32 )->Real
+      return native( "(&$this.r0c0)[ $index ]" )->Real
 
     method operator*( other:Matrix )->Matrix
       local result = Matrix()
@@ -424,7 +424,7 @@ class Matrix( ...
         this[15]  * v.w
       )
 
-    method set( index:Int32, value:NewReal ) [mutating]
+    method set( index:Int32, value:Real ) [mutating]
       native( "(&$this->r0c0)[ $index ] = $value;" )
 
     method to->Matrix32
@@ -459,13 +459,13 @@ class Matrix( ...
       return buffer
 
   GLOBAL METHODS
-    method whole_digit_count( value:NewReal )->Int32
+    method whole_digit_count( value:Real )->Int32
       use buffer = StringPool
         buffer.print( value, 0 )
         return buffer.count
       endUse
 
-    method decimal_digit_count( value:NewReal )->Int32
+    method decimal_digit_count( value:Real )->Int32
       use builder = StringPool
         forEach (n in 0..4)
           if (value.is_string_accurate_at(n,builder))

@@ -75,19 +75,22 @@ class Cmd( t:Token )
       return Character(this->Int32)
 
     method to->Int32
+      return this->Int->Int32
+
+    method to->Int
       return 0
 
     method to->Int64
-      return 0
+      return this->Int->Int64
 
     method to->Logical
-      return (this->Int32)?
+      return (this->Int)?
 
     method to->Real
-      return this->Int32
+      return this->Int
 
     method to->Real64
-      return this->Int32
+      return this->Int
 
     method to->String
       return description
@@ -394,7 +397,7 @@ class Identifier : Cmd
     method to->Character
       return Cmd.to_character(name)
 
-    method to->Int32:  return name
+    method to->Int:  return name->Int
     method to->Logical: return name?
     method to->String: return name
 
@@ -452,7 +455,7 @@ class LiteralCharacter : LiteralPrimitive
       return "LiteralCharacter($)" (%value)
 
     method to->Character: return value
-    method to->Int32:     return value
+    method to->Int:       return value
     method to->String:    return value
 
 endClass
@@ -516,8 +519,7 @@ class LiteralInt32 : LiteralInteger
       return "LiteralInt32($)" (%value)
 
     method to->Character: return value
-    method to->Int32:     return value
-    method to->Int64:     return value
+    method to->Int:       return value
     method to->String:    return value
 
 endClass
@@ -537,14 +539,14 @@ class LiteralInt64 : LiteralInteger
       return "LiteralInt64($)" (%value)
 
     method to->Character: return value
-    method to->Int32:     return value
+    method to->Int:       return value
     method to->Int64:     return value
     method to->String:    return value
 endClass
 
 class LiteralReal : LiteralRealNumber
   PROPERTIES
-    value : NewReal
+    value : Real
 
   METHODS
     method init( t, value )
@@ -556,7 +558,7 @@ class LiteralReal : LiteralRealNumber
     method description->String
       return "LiteralReal($)" (%value)
 
-    method to->Int32:  return value
+    method to->Int:    return value
     method to->Real64: return value
     method to->String: return value
 
@@ -579,7 +581,7 @@ class LiteralString : Literal
     method to->Character
       return Cmd.to_character(value)
 
-    method to->Int32:  return value
+    method to->Int:    return value
     method to->Logical: return value?
     method to->String: return value
 
@@ -681,7 +683,7 @@ class Local : Cmd
     initial_value : Cmd
     type          : Type
     attributes    : Attributes
-    index         : NewInt
+    index         : Int
 
   METHODS
     method init( t, name, type )
@@ -864,7 +866,7 @@ class Placeholder : Cmd
     method to->Character
       return Cmd.to_character(name)
 
-    method to->Int32:  return name
+    method to->Int:    return name
     method to->Logical: return name?
     method to->String: return name
 
@@ -899,7 +901,7 @@ class Property : Cmd
     type              : Type
     attributes        : Attributes
     native_expression : String
-    id = -1           : NewInt
+    id = -1           : Int
     doc               : String
 
   METHODS
@@ -950,7 +952,7 @@ class NativeProperty : Cmd
     method to->Character
       return Cmd.to_character(expression)
 
-    method to->Int32:  return expression
+    method to->Int:    return expression
     method to->Logical: return expression?
     method to->String: return expression
 
@@ -958,7 +960,7 @@ endClass
 
 class NativeCode : Cmd
   PROPERTIES
-    ordinal : NewInt
+    ordinal : Int
     content : String
 
   METHODS
@@ -977,7 +979,7 @@ class NativeCode : Cmd
     method to->Character
       return Cmd.to_character(content)
 
-    method to->Int32:  return content
+    method to->Int:    return content
     method to->Logical: return content?
     method to->String: return content
 
@@ -985,7 +987,7 @@ endClass
 
 class NativeHeader : Cmd
   PROPERTIES
-    ordinal : NewInt
+    ordinal : Int
     content : String
 
   METHODS
@@ -1004,7 +1006,7 @@ class NativeHeader : Cmd
     method to->Character
       return Cmd.to_character(content)
 
-    method to->Int32:  return content
+    method to->Int:    return content
     method to->Logical: return content?
     method to->String: return content
 
@@ -1148,7 +1150,7 @@ class ForEachAt : Cmd
     method to->Character
       return Cmd.to_character(name)
 
-    method to->Int32:  return name
+    method to->Int:    return name
     method to->Logical: return name?
     method to->String: return name
 
@@ -1339,7 +1341,7 @@ class LiteralLogical : LiteralPrimitive
     method description->String
       return "LiteralLogical($)" (%value)
 
-    method to->Int32:   return which{value:1 || 0}
+    method to->Int:     return which{value:1 || 0}
     method to->Logical: return value
     method to->String:  return which{value:"true" || "false"}
 
@@ -1494,7 +1496,7 @@ class NativeStatement : Cmd
     method to->Character
       return Cmd.to_character(content)
 
-    method to->Int32:  return content
+    method to->Int:    return content
     method to->Logical: return content?
     method to->String: return content
 
@@ -1509,7 +1511,7 @@ class CreateObject : Cmd
 
   METHODS
     method init( t, of_type, m_init, args )
-      # NewReal constructor
+      # Real constructor
 
     method init( t, of_type, args )
       # Froley constructor
@@ -2536,7 +2538,7 @@ class DirectAccess : Cmd
     method to->Character
       return Cmd.to_character(name)
 
-    method to->Int32:  return name
+    method to->Int:    return name
     method to->Logical: return name?
     method to->String: return name
 
@@ -3332,7 +3334,7 @@ class LiteralReal32 : LiteralRealNumber
     method description->String
       return "LiteralReal32($)" (%value)
 
-    method to->Int32:  return value
+    method to->Int:    return value
     method to->Real64: return value
     method to->String: return value
 
@@ -3352,7 +3354,7 @@ class LiteralReal64 : LiteralRealNumber
     method description->String
       return "LiteralReal64($)" (%value)
 
-    method to->Int32:  return value
+    method to->Int:    return value
     method to->Real64: return value
     method to->String: return value
 
@@ -4005,7 +4007,7 @@ class Category : Cmd
     name    : String
     args    : Cmd
     value   : Cmd
-    ordinal : NewInt    # final resolved 'value'
+    ordinal : Int    # final resolved 'value'
     doc     : String
 
   METHODS
@@ -5165,7 +5167,7 @@ endClass
 
 class LiteralInt : LiteralInteger
   PROPERTIES
-    value : NewInt
+    value : Int
 
   METHODS
     method init( t, value )
@@ -5177,8 +5179,7 @@ class LiteralInt : LiteralInteger
     method description->String
       return "LiteralInt($)" (%value)
 
-    method to->Int32:     return value->Int32
-    method to->Int64:     return value
+    method to->Int:       return value
     method to->String:    return value
 
 endClass

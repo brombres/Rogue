@@ -2,7 +2,7 @@ module UI
 
 class UIHorizontalLayout : UILayout
   METHODS
-    method measure_content_width( subcomponents:UIComponent[] )->NewInt?
+    method measure_content_width( subcomponents:UIComponent[] )->Int?
       local total_w = 0L
       forEach (component in subcomponents)
         local w = component.measure_width( null )
@@ -11,7 +11,7 @@ class UIHorizontalLayout : UILayout
       endForEach
       return total_w
 
-    method measure_content_height( subcomponents:UIComponent[] )->NewInt?
+    method measure_content_height( subcomponents:UIComponent[] )->Int?
       local max_h = 0L
       forEach (component in subcomponents)
         local h = component.measure_height( null )
@@ -20,8 +20,8 @@ class UIHorizontalLayout : UILayout
       endForEach
       return max_h
 
-    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:NewInt )
-      use subcomponent_widths = WorkList<<NewInt?>>
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int )
+      use subcomponent_widths = WorkList<<Int?>>
         local fixed_w = 0L
         local flex_count = 0L
         local flex_weight = 0.0
@@ -36,15 +36,15 @@ class UIHorizontalLayout : UILayout
           endIf
         endForEach
 
-        local excess_w = NewInt( (container_width - fixed_w).clamped_low(0) )
+        local excess_w = Int( (container_width - fixed_w).clamped_low(0) )
         local remaining_w = excess_w
         forEach (component at i in subcomponents)
           local w = subcomponent_widths[i]
-          local new_w : NewInt
+          local new_w : Int
           if (w)
             new_w = component.size.x
           else
-            new_w = which{ flex_count==1:remaining_w || (excess_w*(component.weight.x/flex_weight))->NewInt }
+            new_w = which{ flex_count==1:remaining_w || (excess_w*(component.weight.x/flex_weight))->Int }
             remaining_w -= new_w
             --flex_count
           endIf

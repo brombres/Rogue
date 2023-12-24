@@ -234,8 +234,8 @@ class Timestamp( value=System.time:Real64 ) [compound]
               |$result = (%Ns%RogueInt32) date->tm_mday;
       return result
 
-    method hash_code->NewInt
-      return value->NewInt
+    method hash_code->Int
+      return value->Int
 
     method hour->Int32
       local result : Int32

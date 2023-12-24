@@ -5,16 +5,16 @@ class Box( position:XY, size:XY ) [essential compound]
     method create( corners:Corners )->Box
       return corners->Box
 
-    method create( x:NewReal, y:NewReal, width:NewReal, height:NewReal )->Box
+    method create( x:Real, y:Real, width:Real, height:Real )->Box
       return Box( XY(x,y), XY(width,height) )
 
-    method create( width:NewReal, height:NewReal )->Box
+    method create( width:Real, height:Real )->Box
       return Box( XY(0,0), XY(width,height) )
 
-    method create( x:NewReal, y:NewReal, size:XY )->Box
+    method create( x:Real, y:Real, size:XY )->Box
       return Box( XY(x,y), size )
 
-    method create( position:XY, width:NewReal, height:NewReal )->Box
+    method create( position:XY, width:Real, height:Real )->Box
       return Box( position, XY(width,height) )
 
     method create( size:XY )->Box
@@ -37,13 +37,13 @@ class Box( position:XY, size:XY ) [essential compound]
     method at( proportional_position:XY )->XY
       return position + XY( proportional_position * XY(size) )
 
-    method at( u:NewReal, v:NewReal )->XY
+    method at( u:Real, v:Real )->XY
       return position + XY(u*size.x,v*size.y)
 
     method at_random( gen=Random:Random )->XY
       return XY(gen.real64(position.x,size.x+position.x),gen.real64(position.y,size.y+position.y))
 
-    method bottom->NewReal
+    method bottom->Real
       return this.position.y + this.size.y
 
     method bottom_left->XY
@@ -52,7 +52,7 @@ class Box( position:XY, size:XY ) [essential compound]
     method bottom_right->XY
       return (position + size)
 
-    method bottommost( height:NewReal )->Box
+    method bottommost( height:Real )->Box
       if (height < 0) height = size.y + height
       local h = height.or_smaller(size.y)
       return Box( position+XY(0,size.y-h), size.x, h )
@@ -106,19 +106,19 @@ class Box( position:XY, size:XY ) [essential compound]
       if (pos.y < position.y or pos.y >= position.y + size.y) return false
       return true
 
-    method cropped( delta:NewReal )->Box
+    method cropped( delta:Real )->Box
       return Box( XY(x+delta,y+delta), XY(width-(delta+delta),height-(delta+delta)) )
 
-    method cropped( left:NewReal, top:NewReal, right:NewReal, bottom:NewReal )->Box
+    method cropped( left:Real, top:Real, right:Real, bottom:Real )->Box
       return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)).or_larger(XY.zero) )
 
-    method expanded( delta:NewReal )->Box
+    method expanded( delta:Real )->Box
       return cropped( -delta )
 
-    method expanded( left:NewReal, top:NewReal, right:NewReal, bottom:NewReal )->Box
+    method expanded( left:Real, top:Real, right:Real, bottom:Real )->Box
       return cropped( -left, -top, -right, -bottom )
 
-    method height->NewReal
+    method height->Real
       return this.size.y
 
     method intersection( rhs:Box )->Box?
@@ -157,10 +157,10 @@ class Box( position:XY, size:XY ) [essential compound]
     method intersects( triangle:Triangle )->Logical
       return this->Quad.intersects( triangle )
 
-    method left->NewReal
+    method left->Real
       return this.position.x
 
-    method leftmost( width:NewReal )->Box
+    method leftmost( width:Real )->Box
       if (width < 0) width = size.x + width
       return Box( position, width.or_smaller(size.x), size.y )
 
@@ -173,13 +173,13 @@ class Box( position:XY, size:XY ) [essential compound]
     method operator-( offset:XY )->Box
       return Box( position-offset, size )
 
-    method operator*( scale:NewReal )->Box
+    method operator*( scale:Real )->Box
       return Box( position*scale, size*scale )
 
     method operator*( scale:XY )->Box
       return Box( position*scale, size*scale )
 
-    method operator/( scale:NewReal )->Box
+    method operator/( scale:Real )->Box
       return this * (1.0/scale)
 
     method operator/( scale:XY )->Box
@@ -210,10 +210,10 @@ class Box( position:XY, size:XY ) [essential compound]
       # - Box(640,480,100,100).relative_to(Anchor.BOTTOM_RIGHT) places the bottom-right corner of the box on (640,480)
       return Box( position - anchor * size, size )
 
-    method right->NewReal
+    method right->Real
       return this.position.x + this.size.x
 
-    method rightmost( width:NewReal )->Box
+    method rightmost( width:Real )->Box
       if (width < 0) width = size.x + width
       local w = width.or_smaller(size.x)
       return Box( position+XY(size.x-w,0), w, size.y )
@@ -227,10 +227,10 @@ class Box( position:XY, size:XY ) [essential compound]
     method subset( subset_size:XY, anchor=Anchor.CENTER:Anchor )->Box
       return Box( position + anchor * (size-subset_size), subset_size )
 
-    method subset_x( new_width:NewReal, anchor=Anchor.CENTER:Anchor )->Box
+    method subset_x( new_width:Real, anchor=Anchor.CENTER:Anchor )->Box
       return subset( XY(new_width,height), anchor )
 
-    method subset_y( new_height:NewReal, anchor=Anchor.CENTER:Anchor )->Box
+    method subset_y( new_height:Real, anchor=Anchor.CENTER:Anchor )->Box
       return subset( XY(width,new_height), anchor )
 
     method to->IntBox
@@ -242,7 +242,7 @@ class Box( position:XY, size:XY ) [essential compound]
     method to->String
       return "[$,$ $x$]" (position.x,position.y,size.x,size.y)
 
-    method top->NewReal
+    method top->Real
       return this.position.y
 
     method top_left->XY
@@ -251,11 +251,11 @@ class Box( position:XY, size:XY ) [essential compound]
     method top_right->XY
       return (position + XY(size.x,0))
 
-    method topmost( height:NewReal )->Box
+    method topmost( height:Real )->Box
       if (height < 0) height = size.y + height
       return Box( position, size.x, height.or_smaller(size.y) )
 
-    method with_height( new_height:NewReal )->Box
+    method with_height( new_height:Real )->Box
       return Box( this.position, this.size.x, new_height )
 
     method with_position( new_position:XY )->Box
@@ -264,28 +264,28 @@ class Box( position:XY, size:XY ) [essential compound]
     method with_size( new_size:XY )->Box
       return Box( this.position, new_size )
 
-    method with_width( new_width:NewReal )->Box
+    method with_width( new_width:Real )->Box
       return Box( this.position, new_width, this.size.y )
 
-    method width->NewReal
+    method width->Real
       return this.size.x
 
-    method x->NewReal
+    method x->Real
       return position.x
 
-    method y->NewReal
+    method y->Real
       return position.y
 
-    method x1->NewReal
+    method x1->Real
       return position.x
 
-    method y1->NewReal
+    method y1->Real
       return position.y
 
-    method x2->NewReal
+    method x2->Real
       return position.x + this.size.x
 
-    method y2->NewReal
+    method y2->Real
       return position.y + this.size.y
 
 endClass

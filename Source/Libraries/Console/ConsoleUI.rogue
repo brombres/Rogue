@@ -14,7 +14,7 @@ class ConsoleUI : UI
     underline_font : ConsoleUIFont
 
   PROPERTIES
-    last_update_ms       : NewInt
+    last_update_ms       : Int
     mouse_position       : IntXY?
     button_pressed       = Dim<<Logical>>(2)
     is_running           : Logical
@@ -44,7 +44,7 @@ class ConsoleUI : UI
     method default_font->ConsoleUIFont
       return ConsoleUIFont
 
-    method drag_threshold->NewInt
+    method drag_threshold->Int
       return 1
 
     method draw
@@ -70,14 +70,14 @@ class ConsoleUI : UI
       keep_active( 0.5 )
       prior.handle( e )
 
-    method handle( type:NewInt, index:NewInt, e:ConsoleEvent )
+    method handle( type:Int, index:Int, e:ConsoleEvent )
       # Only called when e is a pointer or scroll event
       local pos = IntXY( e.x, e.y )
       Pointer.position = pos
       Pointer.positions.[clear].add( pos )
       handle( PointerEvent(type,pos,IntXY(0,0),index) )
 
-    method keep_active( seconds:NewReal )
+    method keep_active( seconds:Real )
       keep_active_timer.init( seconds.or_larger(keep_active_timer.duration) )
 
     method on_draw [override]
@@ -124,7 +124,7 @@ class ConsoleUI : UI
               endWhich
             endIf
             local (keycode,is_shifted) = Keycode.unicode_to_keycode( unicode )
-            local syscode              = which{ keycode==Keycode.UNICODE:unicode->NewInt || 0 }
+            local syscode              = which{ keycode==Keycode.UNICODE:unicode->Int || 0 }
             local modifier_key_state   = which{ is_shifted:Keyboard.SHIFT_MODIFIER_FLAG || 0 }
             Keyboard.key_pressed[ keycode ] = true
             Keyboard.key_pressed[ Keycode.LEFT_SHIFT ]  = is_shifted
@@ -196,7 +196,7 @@ class ConsoleUI : UI
         println error
       endTry
 
-    method send_release_event( index:NewInt, event:ConsoleEvent )
+    method send_release_event( index:Int, event:ConsoleEvent )
       if (not button_pressed[index]) return
       button_pressed[index] = false
       handle( PointerEvent.RELEASE, index, event )

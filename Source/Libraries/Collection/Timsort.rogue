@@ -8,7 +8,7 @@ class Timsort<<$DataType>>
 
   GLOBAL PROPERTIES
     runs             = Span[]
-    gallop_threshold = INITIAL_GALLOP_THRESHOLD : NewInt
+    gallop_threshold = INITIAL_GALLOP_THRESHOLD : Int
 
   GLOBAL METHODS
     method sort( list:$DataType[], compare_fn:(Function($DataType,$DataType)->Logical) )
@@ -50,8 +50,8 @@ class Timsort<<$DataType>>
       assert runs.count == 1
       runs.remove_last
 
-    method _count_and_order_run( list:$DataType[], low:NewInt, limit:NewInt,
-        compare_fn:(Function($DataType,$DataType)->Logical) )->NewInt
+    method _count_and_order_run( list:$DataType[], low:Int, limit:Int,
+        compare_fn:(Function($DataType,$DataType)->Logical) )->Int
       assert low < limit
 
       local run_limit = low + 1
@@ -74,7 +74,7 @@ class Timsort<<$DataType>>
 
       return run_limit - low
 
-    method _binary_sort( list:$DataType[], low:NewInt, limit:NewInt, start:NewInt,
+    method _binary_sort( list:$DataType[], low:Int, limit:Int, start:Int,
                         compare_fn:(Function($DataType,$DataType)->Logical) )
       assert low <= start and start <= limit
 
@@ -113,8 +113,8 @@ class Timsort<<$DataType>>
         ++start
       endWhile
 
-    method _gallop_left( key:$DataType, list:$DataType[], base:NewInt, len:NewInt, hint:NewInt,
-        compare_fn:(Function($DataType,$DataType)->Logical) )->NewInt
+    method _gallop_left( key:$DataType, list:$DataType[], base:Int, len:Int, hint:Int,
+        compare_fn:(Function($DataType,$DataType)->Logical) )->Int
       assert len > 0 and hint >= 0 and hint < len
 
       local last_ofs = 0L
@@ -159,8 +159,8 @@ class Timsort<<$DataType>>
       assert last_ofs == ofs
       return ofs
 
-    method _gallop_right( key:$DataType, list:$DataType[], base:NewInt, len:NewInt, hint:NewInt,
-        compare_fn:(Function($DataType,$DataType)->Logical) )->NewInt
+    method _gallop_right( key:$DataType, list:$DataType[], base:Int, len:Int, hint:Int,
+        compare_fn:(Function($DataType,$DataType)->Logical) )->Int
       assert len > 0 and hint >= 0 and hint < len
 
       local ofs = 1L
@@ -203,7 +203,7 @@ class Timsort<<$DataType>>
       assert last_ofs == ofs
       return ofs
 
-    method _merge_at( list:$DataType[], i:NewInt, compare_fn:(Function($DataType,$DataType)->Logical) )
+    method _merge_at( list:$DataType[], i:Int, compare_fn:(Function($DataType,$DataType)->Logical) )
       assert runs.count >= 2
       assert i >= 0
       assert i == runs.count - 2 or i == runs.count - 3
@@ -255,7 +255,7 @@ class Timsort<<$DataType>>
         _merge_at( list, n, compare_fn )
       endWhile
 
-    method _merge_high( list:$DataType[], base1:NewInt, len1:NewInt, base2:NewInt, len2:NewInt,
+    method _merge_high( list:$DataType[], base1:Int, len1:Int, base2:Int, len2:Int,
         compare_fn:(Function($DataType,$DataType)->Logical) )
       assert len1 > 0 and len2 > 0 and base1 + len1 == base2
 
@@ -374,7 +374,7 @@ class Timsort<<$DataType>>
         endIf
       endUse
 
-    method _merge_low( list:$DataType[], base1:NewInt, len1:NewInt, base2:NewInt, len2:NewInt,
+    method _merge_low( list:$DataType[], base1:Int, len1:Int, base2:Int, len2:Int,
         compare_fn:(Function($DataType,$DataType)->Logical) )
       assert len1 > 0 and len2 > 0 and base1 + len1 == base2
 
@@ -492,7 +492,7 @@ class Timsort<<$DataType>>
         endIf
       endUse
 
-    method _min_run_length( n:NewInt )->NewInt
+    method _min_run_length( n:Int )->Int
       assert n >= 0
 
       local r = 0L
@@ -502,7 +502,7 @@ class Timsort<<$DataType>>
       endWhile
       return n + r
 
-    method _reverse_range( list:$DataType[], low:NewInt, limit:NewInt )
+    method _reverse_range( list:$DataType[], low:Int, limit:Int )
       --limit
       while (low < limit)
         list.swap( low, limit )

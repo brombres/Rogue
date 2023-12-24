@@ -45,7 +45,7 @@ class UIContent : UIFlowLayout, BufferedPrintWriter<<text_buffer>>
       if (new_font != cur_group.font) begin_new_group
       cur_group.font = new_font
 
-    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:NewInt ) [override]
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int ) [override]
       flush
       prior.update_subcomponent_widths( subcomponents, container_width )
 

@@ -20,18 +20,18 @@ class UILabel : UIComponent
       table//text = text
       }#
 
-    method measure_height( container_height:NewInt? )->NewInt?
+    method measure_height( container_height:Int? )->Int?
       if (is_shrink_to_fit_height)
         if local font = font
-          return font.measure( text ).y->NewInt
+          return font.measure( text ).y->Int
         endIf
       endIf
       return prior.measure_height( container_height )
 
-    method measure_width( container_width:NewInt? )->NewInt?
+    method measure_width( container_width:Int? )->Int?
       if (is_shrink_to_fit_width)
         if local font = font
-          return font.measure( text ).x->NewInt
+          return font.measure( text ).x->Int
         endIf
       endIf
       return prior.measure_width( container_width )
