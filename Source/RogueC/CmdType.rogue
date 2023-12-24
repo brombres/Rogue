@@ -366,6 +366,9 @@ augment
     method NativeLiteralInt32.is_literal_primitive->Logical
       return true
 
+    method Convert.is_literal_primitive->Logical
+      return operand.is_literal_primitive
+
 endAugment
 
 # is_simple

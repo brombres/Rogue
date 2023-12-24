@@ -1114,7 +1114,7 @@ class Value [compound]
             # RE: 2028/2029:
             # http://stackoverflow.com/questions/2965293/javascript-parse-error-on-u2028-unicode-character
             builder.print( "\\u" )
-            local n = ch : Int32
+            local n = ch : Int
             loop 4
               local digit = (n :>>>: 12) & 15
               n = n:<<:4

@@ -1193,8 +1193,8 @@ class Character [primitive]
       if (not is_uppercase) return this
       return Character( this + ('a'-'A') )
 
-    method to_number( base=10:Int )->Int32
-      local value : Int32
+    method to_number( base=10:Int )->Int
+      local value : Int
       if (this >= '0' and this <= '9')     value = this - '0'
       elseIf (this >= 'A' and this <= 'Z') value = 10 + (this - 'A')
       elseIf (this >= 'a' and this <= 'z') value = 10 + (this - 'a')

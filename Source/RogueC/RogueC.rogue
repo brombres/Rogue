@@ -113,7 +113,7 @@ class RogueC
       endIf
 
       if (command//options//int)
-        local int_bits = command//options//int->Int32
+        local int_bits = command//options//int->Int
         if (int_bits != 32 and int_bits != 64)
           throw Error( "--int can only be set to 32 or 64." )
         endIf
@@ -121,7 +121,7 @@ class RogueC
       endIf
 
       if (command//options//real)
-        local real_bits = command//options//real->Int32
+        local real_bits = command//options//real->Int
         if (real_bits != 32 and real_bits != 64)
           throw Error( "--real can only be set to 32 or 64." )
         endIf
@@ -281,7 +281,7 @@ class RogueC
 
       if (command//options.contains("gc-threshold"))
         local option = command//options["gc-threshold"]->String
-        local value = option->Int32
+        local value = option->Int
         if (option.ends_with("m",&ignore_case) or option.ends_with("mb",&ignore_case))
           value *= 1024*1024
         elseIf (option.ends_with("k",&ignore_case) or option.ends_with("kb",&ignore_case))

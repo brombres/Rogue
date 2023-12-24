@@ -45,7 +45,7 @@ class Type : Cmd
     scoped_name           : String
     name_tokens           : Token[]
 
-    id    : Int32     # used for dynamic dispatch tables; introspection data may not exist for all type ids
+    id    : Int       # used for dynamic dispatch tables; introspection data may not exist for all type ids
     index = -1L       # index of type in lookup table; used for introspection
     class_data_index : Int
 
@@ -286,7 +286,7 @@ class Type : Cmd
       endIf
       methods[ m.signature ] = m
 
-    method add_base_type_id( id:Int32 )
+    method add_base_type_id( id:Int )
       if (not base_type_ids.contains(id)) base_type_ids.add( id )
 
     method add_property( p:Property )
@@ -899,7 +899,7 @@ class Type : Cmd
           throw p.t.error( "Because this class contains STATES it cannot have a property named 'state'." )
         else
           local t = states.first.t
-          properties//state = Property( t, "state", LiteralInt32(t,-1), Program.type_Int32 ).[ type_context=this ]
+          properties//state = Property( t, "state", LiteralInt(t,-1), Program.type_Int ).[ type_context=this ]
         endIf
       endIf
 
@@ -1051,10 +1051,10 @@ class Type : Cmd
         m.organize
         methods[ m.signature ] = m
 
-        # type_info_index()->Int32
+        # type_info_index()->Int
         m = Method( t, this, "type_info_index" )
         m.attributes.omit_doc = (this is not Program.type_Object)
-        m.return_type = Program.type_Int32
+        m.return_type = Program.type_Int
         m.statements.add( Return(t,TypeIndex(t,this)) )
         m.organize
         methods[ m.signature ] = m
@@ -1109,10 +1109,10 @@ class Type : Cmd
             endBlock
           endIf
 
-          block m = methods["set_state(Rogue::Int32)"]
+          block m = methods["set_state(Rogue::Int)"]
             if (not m)
               m = Method( t, this, "set_state" )
-              m.parameters.add( Local(t,"new_state",null,Program.type_Int32) )
+              m.parameters.add( Local(t,"new_state",null,Program.type_Int) )
 
               local cmd_else : If
               if (has_leave)
@@ -1121,8 +1121,8 @@ class Type : Cmd
 
               m.statements.add(
                 If( t,
-                  CompareEQ(t,Access(t,"new_state"),LiteralInt32(t,-1)),
-                  Statements(t,Assign(t,Access(t,"new_state"),LiteralInt32(t,0))),
+                CompareEQ(t,Access(t,"new_state"),LiteralInt(t,-1)),
+                  Statements(t,Assign(t,Access(t,"new_state"),LiteralInt(t,0))),
                   Statements(t,cmd_else)
                 )
               )
@@ -1301,10 +1301,10 @@ class Type : Cmd
 
       # Enums
       if (is_enum)
-        # create(Int32) constructor
+        # create(Int) constructor
         block
           local m = GlobalMethod( t, this, "create" )
-          m.parameters.add( Local(t,"value",Program.type_Int32) )
+          m.parameters.add( Local(t,"value",Program.type_Int) )
           m.return_type = this
           m.statements.add( Return(t, CreateCompound(t,this)) )
           m.attributes.is_primary = true
@@ -1329,7 +1329,7 @@ class Type : Cmd
               )
             )
           )
-          m.statements.add( Return(t,TypeAccess(t,this,Args(t,LiteralInt32(t,0)))) )
+          m.statements.add( Return(t,TypeAccess(t,this,Args(t,LiteralInt(t,0)))) )
           m.attributes.is_global = true
           m.organize
           global_methods[ m.signature ] = m
@@ -1380,29 +1380,41 @@ class Type : Cmd
           endIf
         endBlock
 
-        # to->Int32
+        ## to->Int32
+        #block
+        #  local m = methods[ "to<<Rogue::Int32>>()" ]
+        #  if (not m or m.type_context is not this)
+        #    m = Method( t, this, "to<<Rogue::Int32>>" )
+        #    m.return_type = Program.type_Int32
+        #    m.statements.add( Return(t,Access(t,"value")) )
+        #    m.organize
+        #    methods[ m.signature ] = m
+        #  endIf
+        #endBlock
+
+        # to->Int
         block
-          local m = methods[ "to<<Rogue::Int32>>()" ]
+          local m = methods[ "to<<Rogue::Int>>()" ]
           if (not m or m.type_context is not this)
-            m = Method( t, this, "to<<Rogue::Int32>>" )
-            m.return_type = Program.type_Int32
+            m = Method( t, this, "to<<Rogue::Int>>" )
+            m.return_type = Program.type_Int
             m.statements.add( Return(t,Access(t,"value")) )
             m.organize
             methods[ m.signature ] = m
           endIf
         endBlock
 
-        # to->Int64
-        block
-          local m = methods[ "to<<Rogue::Int64>>()" ]
-          if (not m or m.type_context is not this)
-            m = Method( t, this, "to<<Rogue::Int64>>" )
-            m.return_type = Program.type_Int64
-            m.statements.add( Return(t,Access(t,"value")) )
-            m.organize
-            methods[ m.signature ] = m
-          endIf
-        endBlock
+        ## to->Int64
+        #block
+        #  local m = methods[ "to<<Rogue::Int64>>()" ]
+        #  if (not m or m.type_context is not this)
+        #    m = Method( t, this, "to<<Rogue::Int64>>" )
+        #    m.return_type = Program.type_Int64
+        #    m.statements.add( Return(t,Access(t,"value")) )
+        #    m.organize
+        #    methods[ m.signature ] = m
+        #  endIf
+        #endBlock
 
         # to->String
         block
@@ -1901,7 +1913,7 @@ class Type : Cmd
       endForEach
       return true
 
-    method precision_index->Int32
+    method precision_index->Int
       return PRECISION_OBJECT
 
     method resolve
@@ -1935,7 +1947,7 @@ class Type : Cmd
       return Cmd.to_character(name)
 
 
-    method to->Int32:  return name
+    method to->Int:     return name
     method to->Logical: return name?
 
     method to->String: return name
@@ -1955,7 +1967,7 @@ class TypeLogical : BuiltInType
     method init( t:Token )
       prior.init( t, "Logical", Attribute.PRIMITIVE )
 
-    method precision_index->Int32
+    method precision_index->Int
       return PRECISION_LOGICAL
 endClass
 
@@ -1964,7 +1976,7 @@ class TypeByte : BuiltInType
     method init( t:Token )
       prior.init( t, "Byte", Attribute.PRIMITIVE )
 
-    method precision_index->Int32
+    method precision_index->Int
       return PRECISION_BYTE
 endClass
 
@@ -1973,7 +1985,7 @@ class TypeCharacter : BuiltInType
     method init( t:Token )
       prior.init( t, "Character", Attribute.PRIMITIVE )
 
-    method precision_index->Int32
+    method precision_index->Int
       return PRECISION_CHARACTER
 endClass
 
@@ -1982,7 +1994,7 @@ class TypeInt32 : BuiltInType
     method init( t:Token )
       prior.init( t, "Int32", Attribute.PRIMITIVE )
 
-    method precision_index->Int32
+    method precision_index->Int
       return PRECISION_INT32
 endClass
 
@@ -1991,7 +2003,7 @@ class TypeInt : BuiltInType
     method init( t:Token )
       prior.init( t, "Int", Attribute.PRIMITIVE )
 
-    method precision_index->Int32
+    method precision_index->Int
       return PRECISION_INT
 endClass
 
@@ -2000,7 +2012,7 @@ class TypeInt64 : BuiltInType
     method init( t:Token )
       prior.init( t, "Int64", Attribute.PRIMITIVE )
 
-    method precision_index->Int32
+    method precision_index->Int
       return PRECISION_INT64
 endClass
 
@@ -2009,7 +2021,7 @@ class TypeReal32 : BuiltInType
     method init( t:Token )
       prior.init( t, "Real32", Attribute.PRIMITIVE )
 
-    method precision_index->Int32
+    method precision_index->Int
       return PRECISION_REAL32
 endClass
 
@@ -2018,7 +2030,7 @@ class TypeReal : BuiltInType
     method init( t:Token )
       prior.init( t, "Real", Attribute.PRIMITIVE )
 
-    method precision_index->Int32
+    method precision_index->Int
       return PRECISION_REAL
 endClass
 
@@ -2027,7 +2039,7 @@ class TypeReal64 : BuiltInType
     method init( t:Token )
       prior.init( t, "Real64", Attribute.PRIMITIVE )
 
-    method precision_index->Int32
+    method precision_index->Int
       return PRECISION_REAL64
 endClass
 
