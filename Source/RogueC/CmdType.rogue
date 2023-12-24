@@ -16,7 +16,9 @@ augment Cmd
         if (a is type or b is type) return type
         type = Program.type_Int64
         if (a is type or b is type) return type
-        return Program.type_Int32  # any mismatched pair Logical/Byte/Character/Int32 -> Int32
+        type = Program.type_Int32
+        if (a is type and b is type) return type
+        return Program.type_Int   # any mismatched pair Logical/Byte/Character/Int32/Int -> Int
       elseIf (a is Program.type_String or b is Program.type_String)
         return Program.type_String
       elseIf (a.is_reference)
@@ -34,15 +36,16 @@ augment Cmd
 
     method common_op_type( t:Token, a:Type, b:Type )->Type
       local type = common_type( t, a, b )
-      if (not type.is_primitive) return type
+      #if (not type.is_primitive) return type
+      return type
 
-      if (type is Program.type_Real64 or type is Program.type_Real32)
-        return Program.type_Real
-      elseIf (type is Program.type_Int64)
-        return Program.type_Int64
-      else
-        return Program.type_Int32
-      endIf
+      #if (type is Program.type_Real64 or type is Program.type_Real32)
+      #  return Program.type_Real
+      #elseIf (type is Program.type_Int64)
+      #  return Program.type_Int64
+      #else
+      #  return Program.type_Int32
+      #endIf
 
   METHODS
     method require_type->Type
