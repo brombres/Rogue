@@ -533,6 +533,14 @@ class Type : Cmd
 
       endUse
 
+    method find_method( signatures:String[] )->Method
+      forEach (sig in signatures)
+        if local m = methods[ sig ]
+          return m
+        endIf
+      endForEach
+      return null
+
     method has_global_method_named( name:String )->Logical
       forEach (m in global_methods.values)
         if (m.name == name) return true
