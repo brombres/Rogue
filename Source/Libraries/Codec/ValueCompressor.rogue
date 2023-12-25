@@ -1,6 +1,6 @@
-augment Value
+augment Variant
   METHODS
-    method compressed->Value
+    method compressed->Variant
       if (this.is_table and contains("@id_list") and contains("@indexed_data")) return this
       # Already compressed?
 
@@ -10,13 +10,13 @@ augment Value
       local result = @{ "@id_list":builder.id_list, "@indexed_data":indexed_data }
       return result
 
-    method decompressed->Value
+    method decompressed->Variant
       if (not contains("@id_list") or not contains("@indexed_data")) return this
 
       local table = ValueIDLookupTable( this )
       return this["@indexed_data"].decode_indexed( table )
 
-    method decode_indexed( id_table:ValueIDLookupTable )->Value
+    method decode_indexed( id_table:ValueIDLookupTable )->Variant
       which (type)
         case TYPE_STRING
           return id_table[ object->(as String) ]
@@ -27,7 +27,7 @@ augment Value
         case TYPE_TABLE
           local result = @{}
           forEach (cur in entries)
-            local key = Value( cur.key ).decode_indexed( id_table )
+            local key = Variant( cur.key ).decode_indexed( id_table )
             local value = cur.value.decode_indexed( id_table )
             result[ key ] = value
           endForEach
@@ -36,7 +36,7 @@ augment Value
           return this
       endWhich
 
-    method encode_indexed( id_table_builder:ValueIDTableBuilder )->Value
+    method encode_indexed( id_table_builder:ValueIDTableBuilder )->Variant
       which (type)
         case TYPE_STRING
           return id_table_builder[ object->(as String) ]
@@ -47,7 +47,7 @@ augment Value
         case TYPE_TABLE
           local result = @{}
           forEach (cur in entries)
-            local key = Value( cur.key ).encode_indexed( id_table_builder )
+            local key = Variant( cur.key ).encode_indexed( id_table_builder )
             local value = cur.value.encode_indexed( id_table_builder )
             result[ key ] = value
           endForEach
@@ -63,7 +63,7 @@ class ValueIDTableBuilder
     id_list  = @[]
 
   METHODS
-    method get( value:Value )->Value
+    method get( value:Variant )->Variant
       local text = value->String
       local encoded_value = id_table[ text ]
       if (encoded_value) return encoded_value
@@ -84,13 +84,13 @@ endClass
 
 class ValueIDLookupTable
   PROPERTIES
-    id_list : Value
+    id_list : Variant
 
   METHODS
-    method init( info:Value )
+    method init( info:Variant )
       id_list = info[ "@id_list" ]
 
-    method get( index_string:String )->Value
+    method get( index_string:String )->Variant
       if (not index_string.begins_with('@')) return index_string
 
       local index = 0

@@ -1020,7 +1020,16 @@ class Parser : ParserCore, Poolable
       Scanner.uses_autoinclude = true
 
     method use_Value
-      Scanner.uses_Value = true
+      use_Variant
+      if (not _filepath.contains("StandardMacros.rogue"))
+        Program.print_warning(
+          _cur_t.cloned(TokenType.IDENTIFIER).[ line=0 ],
+          "Type name 'Value' is deprecated and will be removed in the future. Use 'Variant' instead."
+        )
+      endIf
+
+    method use_Variant
+      Scanner.uses_Variant = true
       Scanner.uses_autoinclude = true
 
     method write_this_module_id

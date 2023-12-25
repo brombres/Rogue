@@ -6,7 +6,7 @@ $include Console
 $include IO
 $include Math
 
-# RogueC auto-includes Value and JSON if they are referenced during tokenization.
+# RogueC auto-includes Variant and JSON if they are referenced during tokenization.
 
 # This
 #

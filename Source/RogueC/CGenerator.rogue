@@ -2695,7 +2695,7 @@ augment
 
           elseIf (element_type and element_type.contains_reference)
             writer.println
-            # %Ns%RogueValue* cursor = ((%Ns%RogueValue*)(((%Ns%RogueValueList*)THISOBJ)->data)) - 1;
+            # %Ns%RogueVariant* cursor = ((%Ns%RogueVariant*)(((%Ns%RogueVariantList*)THISOBJ)->data)) - 1;
             writer.print   element_type.c_name
             writer.print   "* cursor = ("
             writer.print   element_type.c_name

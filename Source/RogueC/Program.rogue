@@ -13,7 +13,7 @@ class Program [singleton]
     targets_cpp          : Logical
     targets_windows      : Logical
 
-    command           : Value  # RogueC launch command with //options and //args
+    command           : Variant  # RogueC launch command with //options and //args
 
     debug_mode        = false
     gc_auto           = true
@@ -55,7 +55,7 @@ class Program [singleton]
     type_Math            : Type
     type_Object          : Type
     type_String          : Type
-    type_Value           : Type
+    type_Variant           : Type
     type_Exception       : Type
     type_TableType       : Type
     type_TypeInfo        : Type
@@ -97,6 +97,7 @@ class Program [singleton]
     native_property_count : Int
 
     prior_warning : String
+    prior_warnings = Set<<String>>()
 
   METHODS
     method init
@@ -184,10 +185,10 @@ class Program [singleton]
         which (name)
           case "Date", "Time", "Timestamp", "TimeInterval": fix = "uses Standard/DateTime"
           case "File":  fix = "uses Standard/FileIO"
-          case "JSON":  fix = "uses Value"
+          case "JSON":  fix = "uses Variant"
           case "Set":   fix = "uses Standard/Collection/Set"
           case "Table": fix = "uses Standard/Collection/Table"
-          case "Value": fix = "uses Value"
+          case "Variant": fix = "uses Variant"
         endWhich
       endIf
 
@@ -386,12 +387,21 @@ class Program [singleton]
       endIf
 
     method print_warning( t:Token, message:String )
+      local warning_line = ''          "$"''(t.filepath)
+      if (t.line) warning_line += "line $"(t.line)
+
+      local combined_warning = message + warning_line
+      if (prior_warnings.contains(combined_warning)) return
+      prior_warnings.add( combined_warning )
+
       local w = Console.width
       if (w == 0) w = 100
       else        w .= clamped(40,100)
       w -= "[WARNING] ".count
 
       if (message is not prior_warning)
+        prior_warning = message
+
         ConsoleStyle.set( ConsoleStyle.FG_LIGHT_YELLOW )
 
         local lines = message.word_wrapped( w )
@@ -402,11 +412,9 @@ class Program [singleton]
         endForEach
 
         ConsoleStyle.set( ConsoleStyle.FG_DEFAULT )
-
-        prior_warning = message
       endIf
 
-      error.println   ''          "$" line $''(t.filepath,t.line)
+      error.println warning_line
 
     method resolve
       Analytics.resolve_used_elements.start
@@ -705,10 +713,10 @@ class Program [singleton]
       type_TypeInfo = default_module.must_find_type( t, "TypeInfo" )
       return @type_TypeInfo
 
-    method type_Value->Type
-      if (@type_Value) return @type_Value
-      type_Value = default_module.must_find_type( t, "Value" )
-      return @type_Value
+    method type_Variant->Type
+      if (@type_Variant) return @type_Variant
+      type_Variant = default_module.must_find_type( t, "Variant" )
+      return @type_Variant
 
 endClass
 

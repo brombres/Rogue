@@ -5,7 +5,7 @@ $include Codec/JSON
 
 uses Geometry
 
-class Value [compound]
+class Variant [compound]
   DEFINITIONS
     # Internal use.
     TYPE_UNDEFINED =  0
@@ -88,98 +88,98 @@ class Value [compound]
             |};
 
   GLOBAL METHODS
-    method create->Value
-      return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_UNDEFINED }" )->Value  # undefined
+    method create->Variant
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_UNDEFINED }" )->Variant  # undefined
 
-    method create( value:Logical )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_LOGICAL, 0, {.logical=$value} }" )->Value
+    method create( value:Logical )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_LOGICAL, 0, {.logical=$value} }" )->Variant
 
-    method create( value:Byte )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_BYTE, 0, {.byte=$value} }" )->Value
+    method create( value:Byte )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_BYTE, 0, {.byte=$value} }" )->Variant
 
-    method create( value:Character )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_CHARACTER, 0, {.character=$value} }" )->Value
+    method create( value:Character )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_CHARACTER, 0, {.character=$value} }" )->Variant
 
-    method create( value:Int32 )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_INT32, 0, {.int32=$value} }" )->Value
+    method create( value:Int32 )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_INT32, 0, {.int32=$value} }" )->Variant
 
-    method create( value:Int )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_INT, 0, {.integer=$value} }" )->Value
+    method create( value:Int )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_INT, 0, {.integer=$value} }" )->Variant
 
-    method create( value:Int64 )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_INT64, 0, {.int64=$value} }" )->Value
+    method create( value:Int64 )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_INT64, 0, {.int64=$value} }" )->Variant
 
-    method create( value:Real32 )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_REAL32, 0, {.real32=$value} }" )->Value
+    method create( value:Real32 )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_REAL32, 0, {.real32=$value} }" )->Variant
 
-    method create( value:Real )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_REAL, 0, {.real=$value} }" )->Value
+    method create( value:Real )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_REAL, 0, {.real=$value} }" )->Variant
 
-    method create( value:Real64 )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_REAL64, 0, {.real64=$value} }" )->Value
+    method create( value:Real64 )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_REAL64, 0, {.real64=$value} }" )->Variant
 
-    method create( value:IntXY )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_INTXY, 0, {.intxy=$value} }" )->Value
+    method create( value:IntXY )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_INTXY, 0, {.intxy=$value} }" )->Variant
 
-    method create( value:XY )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_XY, 0, {.xy=$value} }" )->Value
+    method create( value:XY )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_XY, 0, {.xy=$value} }" )->Variant
 
-    method create( value:XYZ )->Value
-      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_XYZ, 0, {.xyz=$value} }" )->Value
+    method create( value:XYZ )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_XYZ, 0, {.xyz=$value} }" )->Variant
 
-    method create( value:Box )->Value
-      return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_BOX, 0, {.box=$value} }" )->Value
+    method create( value:Box )->Variant
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_BOX, 0, {.box=$value} }" )->Variant
 
-    method create( value:Object )->Value [preferred]
-      if (value) return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_OBJECT, $value }" )->Value
-      else       return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
+    method create( value:Object )->Variant [preferred]
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_OBJECT, $value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Variant  # null value
 
-    method create( value:String )->Value
-      if (value) return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_STRING, (%Ns%RogueObject*)$value }" )->Value
-      else       return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
+    method create( value:String )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_STRING, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Variant  # null value
 
-    method create( value:Value[] )->Value
-      if (value) return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_LIST, (%Ns%RogueObject*)$value }" )->Value
-      else       return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
+    method create( value:Variant[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Variant  # null value
 
-    method create( value:[String:Value] )->Value
-      if (value) return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_TABLE, (%Ns%RogueObject*)$value }" )->Value
-      else       return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
+    method create( value:[String:Variant] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_TABLE, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Variant  # null value
 
-    method create_list->Value
-      # Convenience syntax: @[] is equivalent to Value.create_list()
-      local data = Value[]
-      return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_LIST, (%Ns%RogueObject*)$data }" )->Value
+    method create_list->Variant
+      # Convenience syntax: @[] is equivalent to Variant.create_list()
+      local data = Variant[]
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_LIST, (%Ns%RogueObject*)$data }" )->Variant
 
-    method create_table->Value
-      # Convenience syntax: @{} is equivalent to Value.create_table()
-      local data = [String:Value]
-      return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_TABLE, (%Ns%RogueObject*)$data }" )->Value
+    method create_table->Variant
+      # Convenience syntax: @{} is equivalent to Variant.create_table()
+      local data = [String:Variant]
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_TABLE, (%Ns%RogueObject*)$data }" )->Variant
 
   METHODS
-    method add( value:Value )
+    method add( value:Variant )
       which (type)
         case TYPE_LIST
-          object->(as Value[]).add( value )
+          object->(as Variant[]).add( value )
       endWhich
 
-    method add_all( value:Value )
+    method add_all( value:Variant )
       which (type)
         case TYPE_LIST
-          local list = object->(as Value[])
+          local list = object->(as Variant[])
           list.reserve( value.count )
           list.add( forEach in value )
       endWhich
 
-    method as_list->Value[]
-      # If this value .is_list, returns the backing Value[] list; otherwise returns null.
+    method as_list->Variant[]
+      # If this value .is_list, returns the backing Variant[] list; otherwise returns null.
       if (type != TYPE_LIST) return null
-      return object->(as Value[])
+      return object->(as Variant[])
 
     method as_string->String
       # If this value .is_string, returns the backing String; otherwise returns null.
       #
-      #   Value     | ->String  |  .as_string
+      #   Variant     | ->String  |  .as_string
       #   ----------|-----------|------------
       #   null      | "null"    | null
       #   undefined | ""        | null
@@ -189,20 +189,20 @@ class Value [compound]
       if (type != TYPE_STRING) return null
       return object->(as String)
 
-    method as_table->[String:Value]
-      # If this value .is_table, returns the backing [String:Value] table; otherwise returns null.
+    method as_table->[String:Variant]
+      # If this value .is_table, returns the backing [String:Variant] table; otherwise returns null.
       if (type != TYPE_TABLE) return null
-      return object->(as [String:Value])
+      return object->(as [String:Variant])
 
     method clear
       which (type)
         case TYPE_LIST
-          object->(as Value[]).clear
+          object->(as Variant[]).clear
         case TYPE_TABLE
-          object->(as [String:Value]).clear
+          object->(as [String:Variant]).clear
       endWhich
 
-    method contains( value:Value )->Logical
+    method contains( value:Variant )->Logical
       which (type)
         case TYPE_STRING
           which (value.type)
@@ -211,9 +211,9 @@ class Value [compound]
             others:              return false
           endWhich
         case TYPE_LIST
-          return object->(as Value[]).contains( value )
+          return object->(as Variant[]).contains( value )
         case TYPE_TABLE
-          return object->(as [String:Value]).contains( value->String )
+          return object->(as [String:Variant]).contains( value->String )
         others
           return false
       endWhich
@@ -223,20 +223,20 @@ class Value [compound]
         case TYPE_STRING
           return object->(as String).count
         case TYPE_LIST
-          return object->(as Value[]).count
+          return object->(as Variant[]).count
         case TYPE_TABLE
-          return object->(as [String:Value]).count
+          return object->(as [String:Variant]).count
         case TYPE_UNDEFINED
           return 0
         others
           return 1
       endWhich
 
-    method entries->TableEntriesIterator<<String,Value>>
-      if (type != TYPE_TABLE) return TableEntriesIterator<<String,Value>>( null )
-      return object->(as [String:Value]).entries
+    method entries->TableEntriesIterator<<String,Variant>>
+      if (type != TYPE_TABLE) return TableEntriesIterator<<String,Variant>>( null )
+      return object->(as [String:Variant]).entries
 
-    method ensure_list( name:String )->Value
+    method ensure_list( name:String )->Variant
       if (not is_table) return @[]
 
       local list = this[name]
@@ -246,7 +246,7 @@ class Value [compound]
       this[name] = list
       return list
 
-    method ensure_table( name:String )->Value
+    method ensure_table( name:String )->Variant
       if (not is_table) return @{}
 
       local table = this[name]
@@ -256,10 +256,10 @@ class Value [compound]
       this[name] = table
       return table
 
-    method first->Value
+    method first->Variant
       which (type)
         case TYPE_LIST
-          local list = object->(as Value[])
+          local list = object->(as Variant[])
           if (list.count == 0) return undefined
           return list[0]
 
@@ -269,7 +269,7 @@ class Value [compound]
           return st[0]
 
         case TYPE_TABLE
-          local table = object->(as [String:Value])
+          local table = object->(as [String:Variant])
           if (table.count == 0) return undefined
           return table.at(0)
 
@@ -277,16 +277,16 @@ class Value [compound]
           return this
       endWhich
 
-    method first( query:Function(Value)->Logical )->Value
+    method first( query:Function(Variant)->Logical )->Variant
       forEach (value in this)
         if (query(value)) return value
       endForEach
       return undefined
 
-    method get( index:Int )->Value
+    method get( index:Int )->Variant
       which (type)
         case TYPE_LIST
-          local list = object->(as Value[])
+          local list = object->(as Variant[])
           if (index < 0 or index >= list.count) return undefined
           return list[index]
 
@@ -296,7 +296,7 @@ class Value [compound]
           return st[index]
 
         case TYPE_TABLE
-          local table = object->(as [String:Value])
+          local table = object->(as [String:Variant])
           if (index < 0 or index >= table.count) return undefined
           return table.at(index)
 
@@ -305,18 +305,18 @@ class Value [compound]
           return undefined
       endWhich
 
-    method get( key:String )->Value
+    method get( key:String )->Variant
       which (type)
         case TYPE_TABLE
-          return object->(as [String:Value])[ key ]
+          return object->(as [String:Variant])[ key ]
         others
           return undefined
       endWhich
 
-    method insert( value:Value, before_index=0:Int )
+    method insert( value:Variant, before_index=0:Int )
       which (type)
         case TYPE_LIST
-          object->(as Value[]).insert( value, before_index )
+          object->(as Variant[]).insert( value, before_index )
       endWhich
 
     method is_collection->Logical
@@ -393,14 +393,14 @@ class Value [compound]
     method is_xyz->Logical
       return (type == TYPE_XYZ)
 
-    method keys->TableKeysIterator<<String,Value>>
-      if (type != TYPE_TABLE) return TableKeysIterator<<String,Value>>( null )
-      return object->(as [String:Value]).keys
+    method keys->TableKeysIterator<<String,Variant>>
+      if (type != TYPE_TABLE) return TableKeysIterator<<String,Variant>>( null )
+      return object->(as [String:Variant]).keys
 
-    method last->Value
+    method last->Variant
       which (type)
         case TYPE_LIST
-          local list = object->(as Value[])
+          local list = object->(as Variant[])
           if (list.count == 0) return undefined
           return list[list.count-1]
 
@@ -410,7 +410,7 @@ class Value [compound]
           return st[st.count-1]
 
         case TYPE_TABLE
-          local table = object->(as [String:Value])
+          local table = object->(as [String:Variant])
           if (table.count == 0) return undefined
           return table.at( table.count-1 )
 
@@ -418,13 +418,13 @@ class Value [compound]
           return this
       endWhich
 
-    method last( query:Function(Value)->Logical )->Value
+    method last( query:Function(Variant)->Logical )->Variant
       forEach (value in this step -1)
         if (query(value)) return value
       endForEach
       return undefined
 
-    method locate( value:Value, i1=null:Int? )->Int?
+    method locate( value:Variant, i1=null:Int? )->Int?
       which (type)
         case TYPE_STRING
           which (value.type)
@@ -433,12 +433,12 @@ class Value [compound]
             others:              return null
           endWhich
         case TYPE_LIST
-          return object->(as Value[]).locate( value, i1 )
+          return object->(as Variant[]).locate( value, i1 )
         others
           return null
       endWhich
 
-    method locate_last( value:Value, i1=null:Int? )->Int?
+    method locate_last( value:Variant, i1=null:Int? )->Int?
       which (type)
         case TYPE_STRING
           which (value.type)
@@ -447,7 +447,7 @@ class Value [compound]
             others:              return null
           endWhich
         case TYPE_LIST
-          return object->(as Value[]).locate_last( value, i1 )
+          return object->(as Variant[]).locate_last( value, i1 )
         others
           return null
       endWhich
@@ -456,10 +456,10 @@ class Value [compound]
       if (type == TYPE_NULL or type == TYPE_UNDEFINED) return false
       return this->Logical
 
-    method operator==(other:Value)->Int
+    method operator==(other:Variant)->Int
       return (this <> other) == 0
 
-    method operator<>(other:Value)->Int
+    method operator<>(other:Variant)->Int
       if (type == TYPE_UNDEFINED) return (other.type != TYPE_UNDEFINED)
 
       if (type <= TYPE_REAL64 and other.type <= TYPE_REAL64)
@@ -491,283 +491,283 @@ class Value [compound]
         case TYPE_STRING
           return object->(as String) <> other.object->(as String)
         case TYPE_LIST
-          if (object->(as Value[]) == other.object->(as Value[])) return 0
+          if (object->(as Variant[]) == other.object->(as Variant[])) return 0
           return object.object_id <> other.object.object_id
         case TYPE_TABLE
-          if (object->(as [String:Value]) == other.object->(as [String:Value])) return 0
+          if (object->(as [String:Variant]) == other.object->(as [String:Variant])) return 0
           return object.object_id <> other.object.object_id
         others
           return type <> other.type
       endWhich
 
-    method operator-()->Value
+    method operator-()->Variant
       which (type)
-        case TYPE_BYTE:      return Value( -byte )
-        case TYPE_INT32:     return Value( -int32 )
-        case TYPE_INT:       return Value( -integer )
-        case TYPE_INT64:     return Value( -int64 )
-        case TYPE_REAL32:    return Value( -real32 )
-        case TYPE_REAL:      return Value( -real )
-        case TYPE_REAL64:    return Value( -real64 )
-        case TYPE_LOGICAL:   return Value( -logical )
-        case TYPE_INTXY:     return Value( -intxy )
-        case TYPE_XY:        return Value( -xy )
-        case TYPE_XYZ:       return Value( -xyz )
+        case TYPE_BYTE:      return Variant( -byte )
+        case TYPE_INT32:     return Variant( -int32 )
+        case TYPE_INT:       return Variant( -integer )
+        case TYPE_INT64:     return Variant( -int64 )
+        case TYPE_REAL32:    return Variant( -real32 )
+        case TYPE_REAL:      return Variant( -real )
+        case TYPE_REAL64:    return Variant( -real64 )
+        case TYPE_LOGICAL:   return Variant( -logical )
+        case TYPE_INTXY:     return Variant( -intxy )
+        case TYPE_XY:        return Variant( -xy )
+        case TYPE_XYZ:       return Variant( -xyz )
         others
           return undefined
       endWhich
 
-    method operator!()->Value
+    method operator!()->Variant
       if (this.is_number)
         which (type)
-          case TYPE_INT32: return Value( !int32 )
-          case TYPE_INT64: return Value( !int64 )
-          others:          return Value( !(this->Int) )
+          case TYPE_INT32: return Variant( !int32 )
+          case TYPE_INT64: return Variant( !int64 )
+          others:          return Variant( !(this->Int) )
         endWhich
       else
         return undefined
       endIf
 
-    method operator+( other:Value )->Value
+    method operator+( other:Variant )->Variant
       local (a,b) = to_compatible_values( other )
       which (a.type)
-        case TYPE_BYTE:      return Value( a.byte      + b.byte )
-        case TYPE_CHARACTER: return Value( a.character + b.character )
-        case TYPE_INT32:     return Value( a.int32     + b.int32 )
-        case TYPE_INT:       return Value( a.integer   + b.integer )
-        case TYPE_INT64:     return Value( a.int64     + b.int64 )
-        case TYPE_REAL32:    return Value( a.real32    + b.real32 )
-        case TYPE_REAL:      return Value( a.real      + b.real )
-        case TYPE_REAL64:    return Value( a.real64    + b.real64 )
-        case TYPE_LOGICAL:   return Value( a.logical or b.logical )
-        case TYPE_INTXY:     return Value( a.intxy     + b.intxy )
-        case TYPE_XY:        return Value( a.xy        + b.xy )
-        case TYPE_XYZ:       return Value( a.xyz       + b.xyz )
-        case TYPE_STRING:    return Value( a->String   + b->String )
+        case TYPE_BYTE:      return Variant( a.byte      + b.byte )
+        case TYPE_CHARACTER: return Variant( a.character + b.character )
+        case TYPE_INT32:     return Variant( a.int32     + b.int32 )
+        case TYPE_INT:       return Variant( a.integer   + b.integer )
+        case TYPE_INT64:     return Variant( a.int64     + b.int64 )
+        case TYPE_REAL32:    return Variant( a.real32    + b.real32 )
+        case TYPE_REAL:      return Variant( a.real      + b.real )
+        case TYPE_REAL64:    return Variant( a.real64    + b.real64 )
+        case TYPE_LOGICAL:   return Variant( a.logical or b.logical )
+        case TYPE_INTXY:     return Variant( a.intxy     + b.intxy )
+        case TYPE_XY:        return Variant( a.xy        + b.xy )
+        case TYPE_XYZ:       return Variant( a.xyz       + b.xyz )
+        case TYPE_STRING:    return Variant( a->String   + b->String )
         others
           return undefined
       endWhich
 
-    method operator-( other:Value )->Value
+    method operator-( other:Variant )->Variant
       local (a,b) = to_compatible_values( other )
       which (a.type)
-        case TYPE_BYTE:      return Value( a.byte      - b.byte )
-        case TYPE_CHARACTER: return Value( a.character - b.character )
-        case TYPE_INT32:     return Value( a.int32     - b.int32 )
-        case TYPE_INT:       return Value( a.integer   - b.integer )
-        case TYPE_INT64:     return Value( a.int64     - b.int64 )
-        case TYPE_REAL32:    return Value( a.real32    - b.real32 )
-        case TYPE_REAL:      return Value( a.real      - b.real )
-        case TYPE_REAL64:    return Value( a.real64    - b.real64 )
-        case TYPE_INTXY:     return Value( a.intxy     - b.intxy )
-        case TYPE_XY:        return Value( a.xy        - b.xy )
-        case TYPE_XYZ:       return Value( a.xyz       - b.xyz )
+        case TYPE_BYTE:      return Variant( a.byte      - b.byte )
+        case TYPE_CHARACTER: return Variant( a.character - b.character )
+        case TYPE_INT32:     return Variant( a.int32     - b.int32 )
+        case TYPE_INT:       return Variant( a.integer   - b.integer )
+        case TYPE_INT64:     return Variant( a.int64     - b.int64 )
+        case TYPE_REAL32:    return Variant( a.real32    - b.real32 )
+        case TYPE_REAL:      return Variant( a.real      - b.real )
+        case TYPE_REAL64:    return Variant( a.real64    - b.real64 )
+        case TYPE_INTXY:     return Variant( a.intxy     - b.intxy )
+        case TYPE_XY:        return Variant( a.xy        - b.xy )
+        case TYPE_XYZ:       return Variant( a.xyz       - b.xyz )
         others
           return undefined
       endWhich
 
-    method operator*( other:Value )->Value
-      if (this.type == TYPE_STRING and other.is_number) return Value( this->String * other->Int32 )
-      if (this.is_number and other.type == TYPE_STRING) return Value( other->String * this->Int32 )
+    method operator*( other:Variant )->Variant
+      if (this.type == TYPE_STRING and other.is_number) return Variant( this->String * other->Int32 )
+      if (this.is_number and other.type == TYPE_STRING) return Variant( other->String * this->Int32 )
 
       local (a,b) = to_compatible_values( other )
       which (a.type)
-        case TYPE_BYTE:      return Value( a.byte      * b.byte )
-        case TYPE_CHARACTER: return Value( a.character * b.character )
-        case TYPE_INT32:     return Value( a.int32     * b.int32 )
-        case TYPE_INT:       return Value( a.integer   * b.integer )
-        case TYPE_INT64:     return Value( a.int64     * b.int64 )
-        case TYPE_REAL32:    return Value( a.real32    * b.real32 )
-        case TYPE_REAL:      return Value( a.real      * b.real )
-        case TYPE_REAL64:    return Value( a.real64    * b.real64 )
-        case TYPE_LOGICAL:   return Value( a.logical and b.logical )
-        case TYPE_INTXY:     return Value( a.intxy     * b.intxy )
-        case TYPE_XY:        return Value( a.xy        * b.xy )
-        case TYPE_XYZ:       return Value( a.xyz       * b.xyz )
+        case TYPE_BYTE:      return Variant( a.byte      * b.byte )
+        case TYPE_CHARACTER: return Variant( a.character * b.character )
+        case TYPE_INT32:     return Variant( a.int32     * b.int32 )
+        case TYPE_INT:       return Variant( a.integer   * b.integer )
+        case TYPE_INT64:     return Variant( a.int64     * b.int64 )
+        case TYPE_REAL32:    return Variant( a.real32    * b.real32 )
+        case TYPE_REAL:      return Variant( a.real      * b.real )
+        case TYPE_REAL64:    return Variant( a.real64    * b.real64 )
+        case TYPE_LOGICAL:   return Variant( a.logical and b.logical )
+        case TYPE_INTXY:     return Variant( a.intxy     * b.intxy )
+        case TYPE_XY:        return Variant( a.xy        * b.xy )
+        case TYPE_XYZ:       return Variant( a.xyz       * b.xyz )
         others
           return undefined
       endWhich
 
-    method operator/( other:Value )->Value
-      if (type == TYPE_STRING and other.type == TYPE_STRING) return Value( this->String / other->String )
+    method operator/( other:Variant )->Variant
+      if (type == TYPE_STRING and other.type == TYPE_STRING) return Variant( this->String / other->String )
 
       local (a,b) = to_compatible_values( other )
       which (a.type)
-        case TYPE_BYTE:      return Value( a.byte      / b.byte )
-        case TYPE_CHARACTER: return Value( a.character / b.character )
-        case TYPE_INT32:     return Value( a.int32     / b.int32 )
-        case TYPE_INT:       return Value( a.integer   / b.integer )
-        case TYPE_INT64:     return Value( a.int64     / b.int64 )
-        case TYPE_REAL32:    return Value( a.real32    / b.real32 )
-        case TYPE_REAL:      return Value( a.real      / b.real )
-        case TYPE_REAL64:    return Value( a.real64    / b.real64 )
-        case TYPE_INTXY:     return Value( a.intxy     / b.intxy )
-        case TYPE_XY:        return Value( a.xy        / b.xy )
-        case TYPE_XYZ:       return Value( a.xyz       / b.xyz )
+        case TYPE_BYTE:      return Variant( a.byte      / b.byte )
+        case TYPE_CHARACTER: return Variant( a.character / b.character )
+        case TYPE_INT32:     return Variant( a.int32     / b.int32 )
+        case TYPE_INT:       return Variant( a.integer   / b.integer )
+        case TYPE_INT64:     return Variant( a.int64     / b.int64 )
+        case TYPE_REAL32:    return Variant( a.real32    / b.real32 )
+        case TYPE_REAL:      return Variant( a.real      / b.real )
+        case TYPE_REAL64:    return Variant( a.real64    / b.real64 )
+        case TYPE_INTXY:     return Variant( a.intxy     / b.intxy )
+        case TYPE_XY:        return Variant( a.xy        / b.xy )
+        case TYPE_XYZ:       return Variant( a.xyz       / b.xyz )
         others
           return undefined
       endWhich
 
-    method operator%( other:Value )->Value
+    method operator%( other:Variant )->Variant
       local (a,b) = to_compatible_values( other )
       which (a.type)
-        case TYPE_BYTE:      return Value( a.byte      % b.byte )
-        case TYPE_CHARACTER: return Value( a.character % b.character )
-        case TYPE_INT32:     return Value( a.int32     % b.int32 )
-        case TYPE_INT:       return Value( a.integer   % b.integer )
-        case TYPE_INT64:     return Value( a.int64     % b.int64 )
-        case TYPE_REAL32:    return Value( a.real32    % b.real32 )
-        case TYPE_REAL:      return Value( a.real      % b.real )
-        case TYPE_REAL64:    return Value( a.real64    % b.real64 )
-        case TYPE_INTXY:     return Value( a.intxy     % b.intxy )
-        case TYPE_XY:        return Value( a.xy        % b.xy )
-        case TYPE_XYZ:       return Value( a.xyz       % b.xyz )
+        case TYPE_BYTE:      return Variant( a.byte      % b.byte )
+        case TYPE_CHARACTER: return Variant( a.character % b.character )
+        case TYPE_INT32:     return Variant( a.int32     % b.int32 )
+        case TYPE_INT:       return Variant( a.integer   % b.integer )
+        case TYPE_INT64:     return Variant( a.int64     % b.int64 )
+        case TYPE_REAL32:    return Variant( a.real32    % b.real32 )
+        case TYPE_REAL:      return Variant( a.real      % b.real )
+        case TYPE_REAL64:    return Variant( a.real64    % b.real64 )
+        case TYPE_INTXY:     return Variant( a.intxy     % b.intxy )
+        case TYPE_XY:        return Variant( a.xy        % b.xy )
+        case TYPE_XYZ:       return Variant( a.xyz       % b.xyz )
         others
           return undefined
       endWhich
 
-    method operator^( other:Value )->Value
+    method operator^( other:Variant )->Variant
       local (a,b) = to_compatible_values( other )
       which (a.type)
-        case TYPE_BYTE:      return Value( a.byte      ^ b.byte )
-        case TYPE_CHARACTER: return Value( a.character ^ b.character )
-        case TYPE_INT32:     return Value( a.int32     ^ b.int32 )
-        case TYPE_INT:       return Value( a.integer   ^ b.integer )
-        case TYPE_INT64:     return Value( a.int64     ^ b.int64 )
-        case TYPE_REAL32:    return Value( a.real32    ^ b.real32 )
-        case TYPE_REAL:      return Value( a.real      ^ b.real )
-        case TYPE_REAL64:    return Value( a.real64    ^ b.real64 )
-        case TYPE_INTXY:     return Value( a.intxy     ^ b.intxy )
-        case TYPE_XY:        return Value( a.xy        ^ b.xy )
-        case TYPE_XYZ:       return Value( a.xyz       ^ b.xyz )
+        case TYPE_BYTE:      return Variant( a.byte      ^ b.byte )
+        case TYPE_CHARACTER: return Variant( a.character ^ b.character )
+        case TYPE_INT32:     return Variant( a.int32     ^ b.int32 )
+        case TYPE_INT:       return Variant( a.integer   ^ b.integer )
+        case TYPE_INT64:     return Variant( a.int64     ^ b.int64 )
+        case TYPE_REAL32:    return Variant( a.real32    ^ b.real32 )
+        case TYPE_REAL:      return Variant( a.real      ^ b.real )
+        case TYPE_REAL64:    return Variant( a.real64    ^ b.real64 )
+        case TYPE_INTXY:     return Variant( a.intxy     ^ b.intxy )
+        case TYPE_XY:        return Variant( a.xy        ^ b.xy )
+        case TYPE_XYZ:       return Variant( a.xyz       ^ b.xyz )
         others
           return undefined
       endWhich
 
-    method operator&( other:Value )->Value
+    method operator&( other:Variant )->Variant
       if (this.is_number and other.is_number)
-        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 & other->Int64 )
-        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   & other->Int )
-        else                                                return Value( this->Int32 & other->Int32 )
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 & other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   & other->Int )
+        else                                                return Variant( this->Int32 & other->Int32 )
       else
         return undefined
       endIf
 
-    method operator|( other:Value )->Value
+    method operator|( other:Variant )->Variant
       if (this.is_number and other.is_number)
-        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 | other->Int64 )
-        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   | other->Int )
-        else                                                return Value( this->Int32 | other->Int32 )
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 | other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   | other->Int )
+        else                                                return Variant( this->Int32 | other->Int32 )
       else
         return undefined
       endIf
 
-    method operator~( other:Value )->Value
+    method operator~( other:Variant )->Variant
       if (this.is_number and other.is_number)
-        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 ~ other->Int64 )
-        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   ~ other->Int )
-        else                                                return Value( this->Int32 ~ other->Int32 )
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 ~ other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   ~ other->Int )
+        else                                                return Variant( this->Int32 ~ other->Int32 )
       else
         return undefined
       endIf
 
-    method operator:<<:( other:Value )->Value
+    method operator:<<:( other:Variant )->Variant
       if (this.is_number and other.is_number)
-        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 :<<: other->Int64 )
-        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   :<<: other->Int )
-        else                                                return Value( this->Int32 :<<: other->Int32 )
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 :<<: other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   :<<: other->Int )
+        else                                                return Variant( this->Int32 :<<: other->Int32 )
       else
         return undefined
       endIf
 
-    method operator:>>:( other:Value )->Value
+    method operator:>>:( other:Variant )->Variant
       if (this.is_number and other.is_number)
-        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 :>>: other->Int64 )
-        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   :>>: other->Int )
-        else                                                return Value( this->Int32 :>>: other->Int32 )
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 :>>: other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   :>>: other->Int )
+        else                                                return Variant( this->Int32 :>>: other->Int32 )
       else
         return undefined
       endIf
 
-    method operator:>>>:( other:Value )->Value
+    method operator:>>>:( other:Variant )->Variant
       if (this.is_number and other.is_number)
-        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 :>>>: other->Int64 )
-        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Value( this->Int   :>>>: other->Int )
-        else                                                return Value( this->Int32 :>>>: other->Int32 )
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 :>>>: other->Int64 )
+        elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   :>>>: other->Int )
+        else                                                return Variant( this->Int32 :>>>: other->Int32 )
       else
         return undefined
       endIf
 
-    method remove( value:Value )->Value
+    method remove( value:Variant )->Variant
       which (type)
         case TYPE_LIST
-          return object->(as Value[]).remove( value )
+          return object->(as Variant[]).remove( value )
         case TYPE_TABLE
-          return object->(as [String:Value]).remove( value )
+          return object->(as [String:Variant]).remove( value )
         others
           return undefined
       endWhich
 
-    method remove_at( index:Int )->Value
+    method remove_at( index:Int )->Variant
       which (type)
         case TYPE_LIST
-          return object->(as Value[]).remove_at( index )
+          return object->(as Variant[]).remove_at( index )
         case TYPE_TABLE
-          return object->(as [String:Value]).remove_at( index )
+          return object->(as [String:Variant]).remove_at( index )
         others
           return undefined
       endWhich
 
-    method remove_first->Value
+    method remove_first->Variant
       if (count == 0) return undefined
       which (type)
         case TYPE_LIST
-          return object->(as Value[]).remove_at( 0 )
+          return object->(as Variant[]).remove_at( 0 )
         case TYPE_TABLE
-          return object->(as [String:Value]).remove_at( 0 )
+          return object->(as [String:Variant]).remove_at( 0 )
         others
           return undefined
       endWhich
 
-    method remove_last->Value
+    method remove_last->Variant
       local n = count
       if (n == 0) return undefined
       which (type)
         case TYPE_LIST
-          return object->(as Value[]).remove_at( n-1 )
+          return object->(as Variant[]).remove_at( n-1 )
         case TYPE_TABLE
-          return object->(as [String:Value]).remove_at( n-1 )
+          return object->(as [String:Variant]).remove_at( n-1 )
         others
           return undefined
       endWhich
 
-    method set( index:Int, value:Value )
+    method set( index:Int, value:Variant )
       which (type)
         case TYPE_LIST
-          local list = object->(as Value[])
+          local list = object->(as Variant[])
           if (index < 0 or index >= list.count) return
           list[index] = value
       endWhich
 
-    method set( key:String, value:Value ) [preferred]
+    method set( key:String, value:Variant ) [preferred]
       which (type)
         case TYPE_TABLE
-          object->(as [String:Value])[ key ] = value
+          object->(as [String:Variant])[ key ] = value
       endWhich
 
-    method set( key:Value, value:Value )
+    method set( key:Variant, value:Variant )
       if (key.is_number) set( key->Int32, value )
       else               set( key->String, value )
 
-    method sort( compare_fn:(Function(Value,Value)->Logical) )
+    method sort( compare_fn:(Function(Variant,Variant)->Logical) )
       # 'compare_fn' should return true if the first parameter should be positioned before the second parameter.
-      # The values passed will be keys for a Value Table or elements for a Value List.
+      # The values passed will be keys for a Variant Table or elements for a Variant List.
       which (type)
         case TYPE_LIST
-          local list = object->(as Value[])
+          local list = object->(as Variant[])
           list.sort( compare_fn )
         case TYPE_TABLE
-          local table = object->(as [String:Value])
+          local table = object->(as [String:Variant])
           table.sort( (a,b) => compare_fn(a.key,b.key) )
       endWhich
 
@@ -917,8 +917,8 @@ class Value [compound]
         case TYPE_BOX:       return box->String
         case TYPE_OBJECT:    return object->String
         case TYPE_STRING:    return object->(as String)
-        case TYPE_LIST:      return object->(as Value[])->String
-        case TYPE_TABLE:     return object->(as [String:Value])->String
+        case TYPE_LIST:      return object->(as Variant[])->String
+        case TYPE_TABLE:     return object->(as [String:Variant])->String
         others:              return null
       endWhich
 
@@ -974,20 +974,20 @@ class Value [compound]
       if (type == TYPE_NULL or type == TYPE_UNDEFINED) return null
       return to<<$Type>>
 
-    method to_compatible_values( other:Value )->(Value,Value)
+    method to_compatible_values( other:Variant )->(Variant,Variant)
       if (type == other.type) return (this,other)
-      if (type == TYPE_STRING or other.type == TYPE_STRING) return (Value(this->String),Value(other->String))
+      if (type == TYPE_STRING or other.type == TYPE_STRING) return (Variant(this->String),Variant(other->String))
       if (type == TYPE_UNDEFINED or other.type == TYPE_UNDEFINED) return (undefined,undefined)
 
       if (type <= TYPE_REAL64 and other.type <= TYPE_REAL64)
-        if (type == TYPE_REAL64 or other.type == TYPE_REAL64) return (Value(this->Real64),Value(other->Real64))
-        if (type == TYPE_REAL   or other.type == TYPE_REAL)   return (Value(this->Real),  Value(other->Real))
-        if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (Value(this->Real32),Value(other->Real32))
-        if (type == TYPE_INT64 or other.type == TYPE_INT64)   return (Value(this->Int64), Value(other->Int64))
-        if (type == TYPE_INT   or other.type == TYPE_INT)     return (Value(this->Int),   Value(other->Int))
-        if (type == TYPE_INT32 or other.type == TYPE_INT32)   return (Value(this->Int32), Value(other->Int32))
-        if (type == TYPE_CHARACTER or other.type == TYPE_CHARACTER) return (Value(this->Character),Value(other->Character))
-        return (Value(this->Byte),Value(other->Byte))
+        if (type == TYPE_REAL64 or other.type == TYPE_REAL64) return (Variant(this->Real64),Variant(other->Real64))
+        if (type == TYPE_REAL   or other.type == TYPE_REAL)   return (Variant(this->Real),  Variant(other->Real))
+        if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (Variant(this->Real32),Variant(other->Real32))
+        if (type == TYPE_INT64 or other.type == TYPE_INT64)   return (Variant(this->Int64), Variant(other->Int64))
+        if (type == TYPE_INT   or other.type == TYPE_INT)     return (Variant(this->Int),   Variant(other->Int))
+        if (type == TYPE_INT32 or other.type == TYPE_INT32)   return (Variant(this->Int32), Variant(other->Int32))
+        if (type == TYPE_CHARACTER or other.type == TYPE_CHARACTER) return (Variant(this->Character),Variant(other->Character))
+        return (Variant(this->Byte),Variant(other->Byte))
       endIf
 
       return (undefined,undefined)
@@ -1004,9 +1004,9 @@ class Value [compound]
       endForEach
       return result
 
-    method values->TableValuesIterator<<String,Value>>
-      if (type != TYPE_TABLE) return TableValuesIterator<<String,Value>>( null )
-      return object->(as [String:Value]).values
+    method values->TableValuesIterator<<String,Variant>>
+      if (type != TYPE_TABLE) return TableValuesIterator<<String,Variant>>( null )
+      return object->(as [String:Variant]).values
 
     method write_json( builder:String, &formatted, &omit_commas )
       which (type)
@@ -1052,7 +1052,7 @@ class Value [compound]
           if (count)
             builder.print '['
             if (formatted) builder.indent+=2; builder.println
-            forEach (item at i in object->(as Value[]))
+            forEach (item at i in object->(as Variant[]))
               if (i)
                 if (omit_commas) builder.print ' '
                 else             builder.print ','
@@ -1069,7 +1069,7 @@ class Value [compound]
           if (count)
             builder.print '{'
             if (formatted) builder.indent+=2; builder.println
-            forEach (entry at i in object->(as [String:Value]).entries)
+            forEach (entry at i in object->(as [String:Variant]).entries)
               if (i)
                 if (omit_commas) builder.print ' '
                 else             builder.print ','
@@ -1139,19 +1139,19 @@ endAugment
 
 augment Optional
   GLOBAL METHODS
-    method create_from( value:Value )->$DataType?
+    method create_from( value:Variant )->$DataType?
       return $DataType?( value->$DataType )
 endAugment
 
-augment TableKeysIterator<<Rogue::String,Rogue::Value>>
+augment TableKeysIterator<<Rogue::String,Rogue::Variant>>
   METHODS
-    method to->Value
-      return Value(to_list)
+    method to->Variant
+      return Variant(to_list)
 endAugment
 
-augment TableValuesIterator<<Rogue::String,Rogue::Value>>
+augment TableValuesIterator<<Rogue::String,Rogue::Variant>>
   METHODS
-    method to->Value
-      return Value(to_list)
+    method to->Variant
+      return Variant(to_list)
 endAugment
 

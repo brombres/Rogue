@@ -1,20 +1,20 @@
 class PropertyInfo( id:Int32, name:String, type_index:Int32, is_global:Logical ) [compound]
   METHODS
-    method get_value->Value
+    method get_value->Variant
       if (not is_global) return undefined
       return get_global_property( id )
 
     method property_type_name->String
       return Object.__type_name( type_index )
 
-    method get_value( context:Value )->Value
+    method get_value( context:Variant )->Variant
       if (is_global) return get_global_property( id )
       else           return get_property( id, context )
 
-    method set_value( new_value:Value )
+    method set_value( new_value:Variant )
       if (is_global) set_global_property( id, new_value )
 
-    method set_value( context:Value, new_value:Value )
+    method set_value( context:Variant, new_value:Variant )
       if (is_global) set_global_property( id, new_value )
       else           set_property( id, context, new_value )
 
@@ -25,19 +25,19 @@ class PropertyInfo( id:Int32, name:String, type_index:Int32, is_global:Logical )
       return TypeInfo[type_index]
 
   GLOBAL METHODS
-    method get_global_property( id:Int32 )->Value [essential]
-      local result : Value
+    method get_global_property( id:Int32 )->Variant [essential]
+      local result : Variant
       # <Compiler will insert generated code here>
 
-    method get_property( id:Int32, context:Value )->Value [essential]
-      local result : Value
+    method get_property( id:Int32, context:Variant )->Variant [essential]
+      local result : Variant
       # <Compiler will insert generated code here>
 
-    method set_global_property( id:Int32, new_value:Value ) [essential]
+    method set_global_property( id:Int32, new_value:Variant ) [essential]
       # <Compiler will insert generated code here>
 
-    method set_property( id:Int32, context:Value, new_value:Value ) [essential]
-      local result : Value
+    method set_property( id:Int32, context:Variant, new_value:Variant ) [essential]
+      local result : Variant
       # <Compiler will insert generated code here>
 endClass
 
@@ -52,18 +52,18 @@ endAugment
 
 augment PropertyInfo?
   METHODS
-    method get_value->Value
+    method get_value->Variant
       if (exists) return value.get_value
       else        return undefined
 
-    method get_value( context:Value )->Value
+    method get_value( context:Variant )->Variant
       if (exists) return value.get_value( context )
       else        return undefined
 
-    method set_value( new_value:Value )
+    method set_value( new_value:Variant )
       if (exists) value.set_value( new_value )
 
-    method set_value( context:Value, new_value:Value )
+    method set_value( context:Variant, new_value:Variant )
       if (exists) value.set_value( context, new_value )
 
 endAugment

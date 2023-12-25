@@ -77,7 +77,7 @@ class Spreadsheet
       endForEach
       return c
 
-    method add_column( values:Value )->Column
+    method add_column( values:Variant )->Column
       local i = columns.count
       forEach (value at j in values)
         set( i, j, value )
@@ -94,7 +94,7 @@ class Spreadsheet
       endForEach
       return r
 
-    method add_row( values:Value )->Row
+    method add_row( values:Variant )->Row
       local j = rows.count
       forEach (value at i in values)
         set( i, j, value )
@@ -117,7 +117,7 @@ class Spreadsheet
       endForEach
       _reindex
 
-    method get( column:Int, row:Int )->Value
+    method get( column:Int, row:Int )->Variant
       if (column < 0 or column >= columns.count) return undefined
       if (row < 0    or row    >= rows.count)    return undefined
       return columns[ column ][ row ].value
@@ -125,7 +125,7 @@ class Spreadsheet
     method save( file:File )
       file.save( to_csv )
 
-    method set( column:Int, row:Int, value:Value )
+    method set( column:Int, row:Int, value:Variant )
       while (column >= columns.count) add_column
       while (row    >= rows.count)    add_row
 
@@ -191,7 +191,7 @@ class Row : Header
     method delete
       table.delete_row( index )
 
-    method set( column_index:Int, value:Value )
+    method set( column_index:Int, value:Variant )
       table.set( column_index, index, value )
 
     method to->String
@@ -208,7 +208,7 @@ class Column : Header
     method delete
       table.delete_column( index )
 
-    method set( row_index:Int, value:Value )
+    method set( row_index:Int, value:Variant )
       table.set( index, row_index, value )
 
     method to->String
@@ -226,15 +226,15 @@ class Format
     MONEY   = MoneyFormat()
 
   GLOBAL METHODS
-    method create( value:Value )->Format
+    method create( value:Variant )->Format
       if (value->String.begins_with('$')) return MONEY
       return GENERAL
 
   METHODS
-    method parse( value:Value )->Value
+    method parse( value:Variant )->Variant
       return value
 
-    method print( value:Value, builder:String, width:Int )
+    method print( value:Variant, builder:String, width:Int )
       loop (width.or_larger(1)) builder.print( '?' )
 endClass
 
@@ -242,7 +242,7 @@ class GeneralFormat : Format
   METHODS
     method init
 
-    method print( value:Value, builder:String, width:Int )
+    method print( value:Variant, builder:String, width:Int )
       if (width)
         builder.print( value->String.justified(-width).leftmost(width) )
       else
@@ -254,10 +254,10 @@ class MoneyFormat : Format
   METHODS
     method init
 
-    method parse( value:Value )->Value
-      return Value( value->String.after_any('$').replacing(",","")->Real )
+    method parse( value:Variant )->Variant
+      return Variant( value->String.after_any('$').replacing(",","")->Real )
 
-    method print( value:Value, builder:String, width:Int )
+    method print( value:Variant, builder:String, width:Int )
       local st = "$" + value->Real.format(",.2")
       if (width)
         if (st.count > width)
@@ -274,7 +274,7 @@ class Cell
   PROPERTIES
     row    : Row
     column : Column
-    value  : Value
+    value  : Variant
     format : Format
 
   METHODS
@@ -305,7 +305,7 @@ class Cell
         format.print( value, builder, width )
       endIf
 
-    method set_value( value:Value )
+    method set_value( value:Variant )
       if (format is null or format is Format.GENERAL) format = Format( value )
       @value = format.parse( value )
 
@@ -430,7 +430,7 @@ class CSVParser : CSVScanner
       scan_table
 
     method on_cell( content:String ) [override]
-      row_builder.add( Value(content) )
+      row_builder.add( Variant(content) )
 
     method on_row [override]
       table.add_row( row_builder )
