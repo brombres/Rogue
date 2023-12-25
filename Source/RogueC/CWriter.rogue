@@ -97,6 +97,7 @@ class CWriter : BufferedPrintWriter
          |  #include <signal.h>
          |#else
          |  #define %NS%ROGUE_PLATFORM_UNIX_COMPATIBLE 1
+         |  #include <limits.h>
          |  #include <stdint.h>
          |#endif
          |
