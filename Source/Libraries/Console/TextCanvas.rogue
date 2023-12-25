@@ -32,7 +32,7 @@ Epilog.println( "CanvasData() 2 $x$"(width,height) )
 Epilog.println( "CanvasData() 3" )
       init( width, height, ' ' )
       if (content.contains('\n'))
-        local y = 0L
+        local y = 0
         forEach (line in LineReader(content))
           forEach (ch at x in line)
             set( x, y, ch )
@@ -55,7 +55,7 @@ Epilog.println( "CanvasData() 4" )
 
     method init( lines:String[] )
 Epilog.println( "CanvasData() 6" )
-      local max_w = 0L
+      local max_w = 0
       max_w .= or_larger( (forEach in lines).count )
       lines = lines.map<<String>>( (line) with (max_w) => line.justified(-max_w) )
       init( lines.join(""), max_w )
@@ -83,7 +83,7 @@ Epilog.println( "CanvasData() 6" )
       ConsoleStyle.reset( output )
 
       local cur_style = CharacterStyle.NONE
-      local index = 0L
+      local index = 0
       loop height
         loop width
           local ch = buffer[ index ]
@@ -106,7 +106,7 @@ Epilog.println( "CanvasData() 6" )
       ConsoleStyle.reset
 
       local cur_style = CharacterStyle.NONE
-      local line_start = 0L
+      local line_start = 0
       forEach (j in 0..<height)
         local is_drawing = false
         forEach (i in 0..<width)
@@ -133,8 +133,8 @@ Epilog.println( "CanvasData() 6" )
       display( xy.x, xy.y )
 
     method draw( src:TextCanvas, x:Int, y:Int )
-      local i1 = 0L
-      local j1 = 0L
+      local i1 = 0
+      local j1 = 0
       local i2 = src.width-1
       local j2 = src.height-1
       local x2 = x + i2
@@ -222,7 +222,7 @@ Epilog.println( "CanvasData() 6" )
 
     method draw( text_image:String, width:Int, position=IntXY.zero:IntXY )
       local height = text_image.count / width
-      local src = 0L
+      local src = 0
       forEach (j in 0..<height)
         forEach (i in 0..<width)
           set( position+IntXY(i,j), text_image[src] )
@@ -415,9 +415,9 @@ Epilog.println( "CanvasData() 6" )
       local ch11 = StyledCharacter( '\[2588]', style )
 
       local result = TextCanvas( w, h/2 )
-      local dj = 0L
+      local dj = 0
       forEach (j in 0..<h step 2)
-        local di = 0L
+        local di = 0
         forEach (i in 0..<w)
           if (get(i,j).value == ' ')
             if (get(i,j+1).value == ' ') result.set( di, dj, ch00 )
@@ -724,57 +724,57 @@ class CharacterStyle( flags:Int, fg=Color(0):Color, bg=Color(0):Color ) [compoun
   DEFINITIONS
     NONE                 = CharacterStyle(0)
 
-    FG_MASK              = 0b000000000_111111111_0000000L
-    BG_MASK              = 0b111111111_000000000_0000000L
-    FG_SHIFT             = 7L
-    BG_SHIFT             = 16L
+    FG_MASK              = 0b000000000_111111111_0000000
+    BG_MASK              = 0b111111111_000000000_0000000
+    FG_SHIFT             = 7
+    BG_SHIFT             = 16
 
-    BOLD                 = (1L :<<: 0)
-    DIM                  = (1L :<<: 1)
-    UNDERLINE            = (1L :<<: 2)
-    BLINK                = (1L :<<: 3)
-    INVERSE              = (1L :<<: 4)
-    HIDDEN               = (1L :<<: 5)
-    TRUECOLOR            = (1L :<<: 6)
+    BOLD                 = (1 :<<: 0)
+    DIM                  = (1 :<<: 1)
+    UNDERLINE            = (1 :<<: 2)
+    BLINK                = (1 :<<: 3)
+    INVERSE              = (1 :<<: 4)
+    HIDDEN               = (1 :<<: 5)
+    TRUECOLOR            = (1 :<<: 6)
 
-    FG_DEFAULT           = (0L  :<<: 7)
-    FG_BLACK             = (1L  :<<: 7)
-    FG_RED               = (2L  :<<: 7)
-    FG_GREEN             = (3L  :<<: 7)
-    FG_YELLOW            = (4L  :<<: 7)
-    FG_BLUE              = (5L  :<<: 7)
-    FG_MAGENTA           = (6L  :<<: 7)
-    FG_CYAN              = (7L  :<<: 7)
-    FG_LIGHT_GRAY        = (8L  :<<: 7)
-    FG_DARK_GRAY         = (9L  :<<: 7)
-    FG_LIGHT_RED         = (10L :<<: 7)
-    FG_LIGHT_GREEN       = (11L :<<: 7)
-    FG_LIGHT_YELLOW      = (12L :<<: 7)
-    FG_LIGHT_BLUE        = (13L :<<: 7)
-    FG_LIGHT_MAGENTA     = (14L :<<: 7)
-    FG_LIGHT_CYAN        = (15L :<<: 7)
-    FG_WHITE             = (16L :<<: 7)
-    FG_EXTENDED          = (17L :<<: 7)
+    FG_DEFAULT           = (0  :<<: 7)
+    FG_BLACK             = (1  :<<: 7)
+    FG_RED               = (2  :<<: 7)
+    FG_GREEN             = (3  :<<: 7)
+    FG_YELLOW            = (4  :<<: 7)
+    FG_BLUE              = (5  :<<: 7)
+    FG_MAGENTA           = (6  :<<: 7)
+    FG_CYAN              = (7  :<<: 7)
+    FG_LIGHT_GRAY        = (8  :<<: 7)
+    FG_DARK_GRAY         = (9  :<<: 7)
+    FG_LIGHT_RED         = (10 :<<: 7)
+    FG_LIGHT_GREEN       = (11 :<<: 7)
+    FG_LIGHT_YELLOW      = (12 :<<: 7)
+    FG_LIGHT_BLUE        = (13 :<<: 7)
+    FG_LIGHT_MAGENTA     = (14 :<<: 7)
+    FG_LIGHT_CYAN        = (15 :<<: 7)
+    FG_WHITE             = (16 :<<: 7)
+    FG_EXTENDED          = (17 :<<: 7)
     # (17..256) :<<: 6 - extended 256 fg colors
 
-    BG_DEFAULT           = (0L  :<<: 16)
-    BG_BLACK             = (1L  :<<: 16)
-    BG_RED               = (2L  :<<: 16)
-    BG_GREEN             = (3L  :<<: 16)
-    BG_YELLOW            = (4L  :<<: 16)
-    BG_BLUE              = (5L  :<<: 16)
-    BG_MAGENTA           = (6L  :<<: 16)
-    BG_CYAN              = (7L  :<<: 16)
-    BG_LIGHT_GRAY        = (8L  :<<: 16)
-    BG_DARK_GRAY         = (9L  :<<: 16)
-    BG_LIGHT_RED         = (10L :<<: 16)
-    BG_LIGHT_GREEN       = (11L :<<: 16)
-    BG_LIGHT_YELLOW      = (12L :<<: 16)
-    BG_LIGHT_BLUE        = (13L :<<: 16)
-    BG_LIGHT_MAGENTA     = (14L :<<: 16)
-    BG_LIGHT_CYAN        = (15L :<<: 16)
-    BG_WHITE             = (16L :<<: 16)
-    BG_EXTENDED          = (17L :<<: 16)
+    BG_DEFAULT           = (0  :<<: 16)
+    BG_BLACK             = (1  :<<: 16)
+    BG_RED               = (2  :<<: 16)
+    BG_GREEN             = (3  :<<: 16)
+    BG_YELLOW            = (4  :<<: 16)
+    BG_BLUE              = (5  :<<: 16)
+    BG_MAGENTA           = (6  :<<: 16)
+    BG_CYAN              = (7  :<<: 16)
+    BG_LIGHT_GRAY        = (8  :<<: 16)
+    BG_DARK_GRAY         = (9  :<<: 16)
+    BG_LIGHT_RED         = (10 :<<: 16)
+    BG_LIGHT_GREEN       = (11 :<<: 16)
+    BG_LIGHT_YELLOW      = (12 :<<: 16)
+    BG_LIGHT_BLUE        = (13 :<<: 16)
+    BG_LIGHT_MAGENTA     = (14 :<<: 16)
+    BG_LIGHT_CYAN        = (15 :<<: 16)
+    BG_WHITE             = (16 :<<: 16)
+    BG_EXTENDED          = (17 :<<: 16)
     # (17..256) :<<: 6 - extended 256 bg colors
 
   GLOBAL PROPERTIES
@@ -940,8 +940,8 @@ augment Graphics::Bitmap
       local evens = Bitmap.transparent_checkerboard_evens
       local odds = Bitmap.transparent_checkerboard_odds
 
-      local src_index = 0L
-      local dest_index = 0L
+      local src_index = 0
+      local dest_index = 0
 
       if (height & 1)
         # First line contains default BG color on the top and the first row of color data on the bottom.

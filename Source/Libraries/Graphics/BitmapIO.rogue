@@ -17,7 +17,7 @@ augment Graphics::Bitmap
       return PNGDecoder().decode( bytes )
 
   METHODS
-    method to_jpeg_bytes( quality=75:Int32 )->Byte[]
+    method to_jpeg_bytes( quality=75:Int )->Byte[]
       if (System.is_macos) return MacOS.to_jpeg_bytes( this )
       return JPEGEncoder().encode( this, null, quality )
 
