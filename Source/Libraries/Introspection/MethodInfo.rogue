@@ -65,7 +65,7 @@ class MethodInfo
     method init
       noAction
 
-    method call( context_or_args=undefined:Value )->Value
+    method call( context_or_args=undefined:Variant )->Variant
       # Call this global or object method.
       #
       # context_or_args
@@ -77,7 +77,7 @@ class MethodInfo
         return call_object_method( call_index, native("(%Ns%RogueInt64)%Ns%Rogue_method_pointers[$method_index]")->Int64, context_or_args, undefined )
       endIf
 
-    method call( context:Value, args:Value )->Value
+    method call( context:Variant, args:Variant )->Variant
       # Call this object method.
       #
       # context
@@ -98,7 +98,7 @@ class MethodInfo
       return TypeInfo[type_context_index]
 
   GLOBAL METHODS
-    method call_global_method( call_index:Int32, fnptr:Int64, args:Value )->Value [essential]
+    method call_global_method( call_index:Int32, fnptr:Int64, args:Variant )->Variant [essential]
       # args
       #   A single arg, a @[list], or 'undefined'.
 
@@ -106,7 +106,7 @@ class MethodInfo
 
       return undefined
 
-    method call_object_method( call_index:Int32, fnptr:Int64, context:Value, args:Value )->Value [essential]
+    method call_object_method( call_index:Int32, fnptr:Int64, context:Variant, args:Variant )->Variant [essential]
       # context
       #   The context object to call the method on.
       #

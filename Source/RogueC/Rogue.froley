@@ -325,7 +325,7 @@ scanner
   match buffer
     case "Date": call use_DateTime; produce IDENTIFIER
     case "File": call use_File; produce IDENTIFIER
-    case "JSON": call use_Value; produce IDENTIFIER
+    case "JSON": call use_Variant; produce IDENTIFIER
     case "Process": call use_Process; produce IDENTIFIER
     case "Promise": call use_Promise; produce IDENTIFIER
     case "Scanner": call use_Scanner; produce IDENTIFIER
@@ -334,6 +334,7 @@ scanner
     case "TimeInterval": call use_DateTime; produce IDENTIFIER
     case "Timestamp": call use_DateTime; produce IDENTIFIER
     case "Value": call use_Value; produce IDENTIFIER
+    case "Variant": call use_Variant; produce IDENTIFIER
     produceAny Keywords
     case "GLOBAL"
       # "GLOBAL PROPERTIES" / "GLOBAL METHODS"
@@ -943,7 +944,7 @@ parser
     endOn
 
   elseOn '['
-    # [Key:Value] -> Table<<Key,Value>>
+    # [Key:Variant] -> Table<<Key,Variant>>
     type
     mustConsume ':'
     type
@@ -3039,7 +3040,7 @@ parser
     expression
     if (nextIs(':'))
       restorePosition
-      type  # [Key:Value] table
+      type  # [Key:Variant] table
       call use_Table
       if (nextIs('{'))
         literal_table
@@ -3072,7 +3073,7 @@ parser
   endOn
 
   on "undefined"
-    call use_Value
+    call use_Variant
     produce LiteralUndefined
   endOn
 
@@ -3170,7 +3171,7 @@ parser
   expression
 
 - value_list
-  call use_Value
+  call use_Variant
   consume_eols
   if (consume(']')) produce EmptyValueList
 
@@ -3188,7 +3189,7 @@ parser
   produce ValueList(args)
 
 - value_table
-  call use_Value
+  call use_Variant
   consume_eols
   if (consume('}')) produce EmptyValueTable
 

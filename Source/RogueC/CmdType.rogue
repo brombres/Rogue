@@ -145,10 +145,10 @@ augment
         this_type.organize
         target_type.organize
 
-        if (this_type is Program.@type_Value)
-          if (target_type is Program.@type_Value) return cmd
+        if (this_type is Program.@type_Variant)
+          if (target_type is Program.@type_Variant) return cmd
           if (target_type.attributes.is_optional)
-            if (target_type.core_type is not Program.@type_Value)
+            if (target_type.core_type is not Program.@type_Variant)
               return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to_optional",target_type.core_type,null) )
             endIf
           else
@@ -163,7 +163,7 @@ augment
 
         if (not limit_conversions)
           # Look for a TargetType(cmd) constructor.
-          local exact_arg_types = not (this_type.is_reference and (target_type.is_reference or target_type is Program.@type_Value))
+          local exact_arg_types = not (this_type.is_reference and (target_type.is_reference or target_type is Program.@type_Variant))
           result = resolver.resolve_type_access( t, target_type, Args(t,cmd), &suppress_error, &=exact_arg_types, &limit_conversions )
           if (result) return result
         endIf
@@ -219,8 +219,8 @@ augment
       target_type.organize
       if (target_type.attributes.is_optional)
         return resolver.validate( LiteralNullOptional(t,target_type) )
-      elseIf (target_type is Program.@type_Value)
-        return NativeExpression( t, "(RogueValue) { ROGUE_VALUE_TYPE_NULL }", Program.type_Value )
+      elseIf (target_type is Program.@type_Variant)
+        return NativeExpression( t, "(RogueVariant) { ROGUE_VALUE_TYPE_NULL }", Program.type_Variant )
       elseIf (target_type.is_reference)
         of_type = target_type
         return this
@@ -664,10 +664,10 @@ augment
       return of_type
 
     method EmptyValueList.type->Type
-      return Program.type_Value
+      return Program.type_Variant
 
     method EmptyValueTable.type->Type
-      return Program.type_Value
+      return Program.type_Variant
 
     method ExplicitCast.type->Type
       return to_type
@@ -814,7 +814,7 @@ augment
       return optional_type
 
     method LiteralUndefined.type->Type
-      return Program.type_Value
+      return Program.type_Variant
 
     method PreDecrementLocal.type->Type
       return info.type
@@ -865,10 +865,10 @@ augment
       return operand.type
 
     method ValueList.type->Type
-      return Program.type_Value
+      return Program.type_Variant
 
     method ValueTable.type->Type
-      return Program.type_Value
+      return Program.type_Variant
 
     method WideningCast.type->Type
       return to_type

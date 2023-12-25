@@ -121,7 +121,7 @@ class CommandLineParser
         endFunction
       )
 
-    method option( name:String, &require_value, &optional, &multi, default=null:Value, &alias=null:String, &aliases=null:String[] )
+    method option( name:String, &require_value, &optional, &multi, default=null:Variant, &alias=null:String, &aliases=null:String[] )
       if (name.ends_with('=') and not optional) require_value = true
 
       if (alias)
@@ -210,7 +210,7 @@ class CommandLineParser
 
       handlers[ name ] = handler
 
-    method parse( args:String[] )->Value
+    method parse( args:String[] )->Variant
       args .= cloned
 
       options  = @{}

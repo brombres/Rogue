@@ -56,7 +56,7 @@
 #
 #   class RandomNumber : Expression
 #     METHODS
-#       method call->Value
+#       method call->Variant
 #         return Random.real
 #
 #       method to->String
@@ -81,8 +81,8 @@ class ExpressionParser [singleton]
   PROPERTIES
     symbols      = ["+","-","*","/","%","^","(",")"]
     scanner      : Scanner
-    tokens       : Value[]
-    token_reader : Reader<<Value>>
+    tokens       : Variant[]
+    token_reader : Reader<<Variant>>
     id_lookup    : Function(String)->Expression
 
   METHODS
@@ -170,7 +170,7 @@ class ExpressionParser [singleton]
 
     method tokenize
       symbols.sort( (a,b) => a.count >= b.count )
-      tokens = Value[]
+      tokens = Variant[]
       while (tokenize_another) noAction
 
     method tokenize_another->Logical
@@ -184,14 +184,14 @@ class ExpressionParser [singleton]
 
       forEach (sym in symbols)
         if (scanner.consume(sym))
-          tokens.add( Value(sym) )
+          tokens.add( Variant(sym) )
           return true
         endIf
       endForEach
 
       if (next_is_identifier)
-        # Tokens use string-Value for symbols and object-Value for identifiers
-        tokens.add( Value(scan_identifier->(as Object)) )
+        # Tokens use string-Variant for symbols and object-Variant for identifiers
+        tokens.add( Variant(scan_identifier->(as Object)) )
         return true
       endIf
 
@@ -221,7 +221,7 @@ class ExpressionParser [singleton]
       endWhile
       return builder
 
-    method scan_number->Value
+    method scan_number->Variant
       use builder = StringPool
         local saw_period = false
         local saw_e = false
@@ -245,7 +245,7 @@ class ExpressionParser [singleton]
           endContingent
           builder.print( scanner.read )
         endWhile
-        return Value( builder->Real )
+        return Variant( builder->Real )
       endUse
 
 endClass
@@ -256,7 +256,7 @@ class Expression [abstract]
       return ExpressionParser.parse( command, id_lookup )
 
   METHODS
-    method call()->Value [abstract]
+    method call()->Variant [abstract]
 endClass
 
 class UnaryExpression( operand:Expression ) : Expression [abstract]
@@ -277,7 +277,7 @@ endClass
 
 class AddExpression : BinaryExpression
   METHODS
-    method call()->Value
+    method call()->Variant
       return left() + right()
 
     method symbol->String
@@ -286,7 +286,7 @@ endClass
 
 class SubtractExpression : BinaryExpression
   METHODS
-    method call()->Value
+    method call()->Variant
       return left() - right()
 
     method symbol->String
@@ -295,7 +295,7 @@ endClass
 
 class MultiplyExpression : BinaryExpression
   METHODS
-    method call()->Value
+    method call()->Variant
       return left() * right()
 
     method symbol->String
@@ -304,7 +304,7 @@ endClass
 
 class DivideExpression : BinaryExpression
   METHODS
-    method call()->Value
+    method call()->Variant
       return left() / right()
 
     method symbol->String
@@ -313,7 +313,7 @@ endClass
 
 class ModuloExpression : BinaryExpression
   METHODS
-    method call()->Value
+    method call()->Variant
       return left() % right()
 
     method symbol->String
@@ -322,7 +322,7 @@ endClass
 
 class PowerExpression : BinaryExpression
   METHODS
-    method call()->Value
+    method call()->Variant
       return left() ^ right()
 
     method symbol->String
@@ -331,16 +331,16 @@ endClass
 
 class NegateExpression : UnaryExpression
   METHODS
-    method call()->Value
+    method call()->Variant
       return -operand()
 
     method symbol->String
       return "-"
 endClass
 
-class NumberExpression( value:Value ) : Expression
+class NumberExpression( value:Variant ) : Expression
   METHODS
-    method call()->Value
+    method call()->Variant
       return value
 
     method to->String

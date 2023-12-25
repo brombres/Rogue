@@ -27,3 +27,4 @@ $macro NATIVE_POINTER_TYPE<<$Name,$NativeType>>
   endAugment
 $endMacro
 
+$define Value Variant

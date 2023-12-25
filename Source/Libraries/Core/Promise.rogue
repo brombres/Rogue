@@ -32,12 +32,12 @@ enum PromiseState
   REJECTED
 endEnum
 
-class PromiseHandler( on_success:Function(Value)->Value, on_failure:Function(Exception)->Value ) [compound]
+class PromiseHandler( on_success:Function(Variant)->Variant, on_failure:Function(Exception)->Variant ) [compound]
 endClass
 
 class Promise
   GLOBAL METHODS
-    method handler( on_success:Function(Value)->Value, on_failure:Function(Exception)->Value )->PromiseHandler
+    method handler( on_success:Function(Variant)->Variant, on_failure:Function(Exception)->Variant )->PromiseHandler
       return PromiseHandler( on_success, on_failure )
 
   PROPERTIES
@@ -47,14 +47,14 @@ class Promise
     error    : Exception
 
   METHODS
-    method init( callback:Function(Function(Value)->Value) )
+    method init( callback:Function(Function(Variant)->Variant) )
       try
         callback( resolver )
       catch (e:Exception)
         reject( e )
       endTry
 
-    method init( callback:Function(Function(Value)->Value,Function(Exception)->Value) )
+    method init( callback:Function(Function(Variant)->Variant,Function(Exception)->Variant) )
       try
         callback( resolver, rejector )
       catch (e:Exception)
@@ -73,7 +73,7 @@ class Promise
 
       handlers.clear
 
-    method finally( callback:Function()->Value )->Promise
+    method finally( callback:Function()->Variant )->Promise
       return Promise(
         (resolve,reject) with (original_promise=this,result=undefined,error=null->(as Exception),callback) =>
         {
@@ -95,10 +95,10 @@ class Promise
     method is_resolved->Logical
       return state == PromiseState.RESOLVED
 
-    method on_catch( on_failure:Function(Exception)->Value )->Promise
+    method on_catch( on_failure:Function(Exception)->Variant )->Promise
       return this.then( (value)=>value, on_failure )
 
-    method rejector->(Function(Exception)->Value)
+    method rejector->(Function(Exception)->Variant)
       return (reason) with (promise=this) => promise.reject( reason )
 
     method reject( error:Exception )
@@ -116,10 +116,10 @@ class Promise
 
       execute_handlers
 
-    method resolver->(Function(Value)->Value)
+    method resolver->(Function(Variant)->Variant)
       return (result) with (promise=this) => promise.resolve( result )
 
-    method resolve( result:Value )
+    method resolve( result:Variant )
       if (state != PromiseState.PENDING) return
 
       if (result.is_object)
@@ -134,12 +134,12 @@ class Promise
 
       execute_handlers
 
-    method then( on_success:Function(Value)->Value, on_failure=null:Function(Exception)->Value )->Promise
+    method then( on_success:Function(Variant)->Variant, on_failure=null:Function(Exception)->Variant )->Promise
       return Promise(
-        function( resolve:Function(Value)->Value, reject:Function(Exception)->Value ) with (promise=this,on_success,on_failure)
+        function( resolve:Function(Variant)->Variant, reject:Function(Exception)->Variant ) with (promise=this,on_success,on_failure)
           promise.handlers.add(
             PromiseHandler(
-              function (result:Value)->Value with (resolve,reject,on_success)
+              function (result:Variant)->Variant with (resolve,reject,on_success)
                 if (on_success)
                   try
                     resolve( on_success(result) )
@@ -150,7 +150,7 @@ class Promise
                   resolve( result )
                 endIf
               endFunction,
-              function (reason:Exception)->Value with (resolve,reject,on_failure)
+              function (reason:Exception)->Variant with (resolve,reject,on_failure)
                 if (on_failure)
                   try
                     resolve( on_failure(reason) )

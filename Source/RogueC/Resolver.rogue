@@ -610,10 +610,10 @@ class Resolver : Poolable, Visitor
       return resolve_direct_access( cmd.t, null, cmd.name )
 
     method on( cmd:EmptyValueList )->Cmd
-      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Value), "create_list" ) )
+      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Variant), "create_list" ) )
 
     method on( cmd:EmptyValueTable )->Cmd
-      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Value), "create_table" ) )
+      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Variant), "create_table" ) )
 
     method on( cmd:Ensure )->Cmd
       local t = cmd.expression.t
@@ -1049,7 +1049,7 @@ class Resolver : Poolable, Visitor
     method on( cmd:LiteralList )->Cmd
       if (cmd.count == 0)
         throw cmd.t.error( "Cannot determine type of empty literal list. Write e.g. 'Int32[]' "...
-                           "for an empty Int32 list or '@[]' for an empty Value list." )
+                           "for an empty Int32 list or '@[]' for an empty Variant list." )
       endIf
 
       visit_children( cmd )
@@ -1073,7 +1073,7 @@ class Resolver : Poolable, Visitor
     method on( cmd:KeyValuePairList )->Cmd
       if (cmd.count == 0)
         throw cmd.t.error( "Cannot determine type of empty literal table. Write e.g. '[String:Int32]' "...
-                           "for an empty table of String-to-Int32 mappings or '@{}' for an empty Value table." )
+                           "for an empty table of String-to-Int32 mappings or '@{}' for an empty Variant table." )
       endIf
 
       visit_children( cmd )
@@ -1720,7 +1720,7 @@ class Resolver : Poolable, Visitor
       return cmd.operand.require_type.resolve_unary_op( cmd, this )
 
     method on( cmd:LiteralUndefined )->Cmd
-      return visit( TypeAccess(cmd.t,Program.type_Value,Args(cmd.t)) )
+      return visit( TypeAccess(cmd.t,Program.type_Variant,Args(cmd.t)) )
 
     method on( cmd:Use )->Cmd
       if (cmd.resources.count > 1)
@@ -1787,7 +1787,7 @@ class Resolver : Poolable, Visitor
 
     method on( cmd:ValueList )->Cmd
       local t = cmd.t
-      local cmd_list = ContextAccess( t, TypeContext(t,Program.type_Value), "create_list" )
+      local cmd_list = ContextAccess( t, TypeContext(t,Program.type_Variant), "create_list" )
 
       local build_list = CmdList( t )
       forEach (arg in cmd.args)
@@ -1798,7 +1798,7 @@ class Resolver : Poolable, Visitor
 
     method on( cmd:ValueTable )->Cmd
       local t = cmd.t
-      local cmd_table = ContextAccess( t, TypeContext(t,Program.type_Value), "create_table" )
+      local cmd_table = ContextAccess( t, TypeContext(t,Program.type_Variant), "create_table" )
 
       local build_list = CmdList( t )
       forEach (arg in cmd.args)
@@ -2798,10 +2798,10 @@ class Resolver : Poolable, Visitor
       Candidates.refine
 
       if (arg_count == 1)
-        # Prefer methods with single Value parameter; the arg will be to->Value'd
+        # Prefer methods with single Variant parameter; the arg will be to->Variant'd
         forEach (m in Candidates)
           if (has_named_arg) m.arrange_args( args, this )
-          if (m.parameters.first.type is Program.@type_Value) Candidates.keep m
+          if (m.parameters.first.type is Program.@type_Variant) Candidates.keep m
         endForEach
         if (Candidates.found_match) return Candidates.match
         Candidates.refine
@@ -2940,7 +2940,7 @@ class Resolver : Poolable, Visitor
         return arg_type_is_compatible( arg, param_type.core_type, &=allow_conversions, &=exact_logical, &=limit_conversions )
       endIf
 
-      if (param_type is Program.type_Object or param_type is Program.@type_Value or param_type is Program.type_String)
+      if (param_type is Program.type_Object or param_type is Program.@type_Variant or param_type is Program.type_String)
         return true
       endIf
 

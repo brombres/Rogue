@@ -2,9 +2,9 @@ module RogueC
 
 augment
   METHODS
-    method Cmd.evaluate->Value
+    method Cmd.evaluate->Variant
       throw t.error( "Invalid metacondition." )
 
-    method LiteralLogical.evaluate->Value
+    method LiteralLogical.evaluate->Variant
       return value
 endAugment

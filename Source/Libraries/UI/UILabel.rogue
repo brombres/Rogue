@@ -15,7 +15,7 @@ class UILabel : UIComponent
       this.alignment = alignment
 
       #{
-    method _extended_description( table:Value )
+    method _extended_description( table:Variant )
       prior._extended_description( table )
       table//text = text
       }#

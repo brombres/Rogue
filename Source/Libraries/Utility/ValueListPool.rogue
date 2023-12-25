@@ -1,4 +1,4 @@
-class ValueListPool : ObjectPool<<Value>> [singleton]
+class ValueListPool : ObjectPool<<Variant>> [singleton]
   # USAGE
   #   # High GC impact if called frequently
   #   obj.call( @[1,2] )
@@ -12,11 +12,11 @@ class ValueListPool : ObjectPool<<Value>> [singleton]
   #     obj.call( args )
   #   endUse
   METHODS
-    method on_use->Value
+    method on_use->Variant
       if (available.is_empty) return @[]
       return available.remove_last
 
-    method on_end_use( value:Value )
+    method on_end_use( value:Variant )
       value.clear
       available.add( value )
 endClass

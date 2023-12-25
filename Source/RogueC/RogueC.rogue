@@ -72,7 +72,7 @@ endTry
 
 class RogueC
   PROPERTIES
-    command : Value
+    command : Variant
 
   METHODS
     method init( args:String[] )
@@ -166,7 +166,7 @@ class RogueC
       endIf
 
       if (Program.generate_doc)
-        if (command//options//doc == Value(true))
+        if (command//options//doc == Variant(true))
           # Include all Standard Library files to generate the docs from.
           Program.doc_root = libraries_folder.abs.filepath + '/'
           Program.include( "Standard" )
@@ -184,7 +184,7 @@ class RogueC
       endIf
 
       forEach (option in command//options//api)
-        if (option == Value(true)) nextIteration
+        if (option == Variant(true)) nextIteration
         if (option->String.ends_with(".rogue"))
           Program.include( option->String, &api )
         else
@@ -223,10 +223,10 @@ class RogueC
         if (Scanner.uses_Scanner)  Program.include( t, "IO/Scanner" ); Scanner.uses_Scanner = false
         if (Scanner.uses_Set)      Program.include( t, "Collection/Set" ); Scanner.uses_Set = false
         if (Scanner.uses_Table)    Program.include( t, "Collection/Table" ); Scanner.uses_Table = false
-        if (Scanner.uses_Value)    Program.include( t, "Core/Value" ); Scanner.uses_Value = false
+        if (Scanner.uses_Variant)    Program.include( t, "Core/Variant" ); Scanner.uses_Variant = false
       endWhile
 
-    method parse_args( args:String[] )->Value
+    method parse_args( args:String[] )->Variant
       local command = CommandLineParser().
       [
         option( "--api=", &optional, &multi )
