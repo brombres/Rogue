@@ -14,7 +14,7 @@ class FilePattern( pattern:String ) [compound]
       # Note: A filepath with a ./ prefix is checked with and without the prefix.
 
       # Check non-wildcard characters at the end of pattern first as an easy out
-      local last_wildcard = -1L
+      local last_wildcard = -1
       forEach (ch at i in pattern step -1)
         if (ch == '*')
           last_wildcard = i

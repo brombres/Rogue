@@ -58,7 +58,7 @@ class UIText : UIComponent
       else
         block max_width = max_width.value
           local font = font
-          local last_sp = 0L
+          local last_sp = 0
           local w = 0.0
           forEach (ch at i in @text)
             w += font.measure( ch ).x

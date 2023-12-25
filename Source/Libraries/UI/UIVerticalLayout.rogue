@@ -3,7 +3,7 @@ module UI
 class UIVerticalLayout : UILayout
   METHODS
     method measure_content_height( subcomponents:UIComponent[] )->Int?
-      local total_h = 0L
+      local total_h = 0
       forEach (component in subcomponents)
         local h = component.measure_height( null )
         if (not h) return null
@@ -12,7 +12,7 @@ class UIVerticalLayout : UILayout
       return total_h
 
     method measure_content_width( subcomponents:UIComponent[] )->Int?
-      local max_w = 0L
+      local max_w = 0
       forEach (component in subcomponents)
         local w = component.measure_width( null )
         if (not w) return null
@@ -22,8 +22,8 @@ class UIVerticalLayout : UILayout
 
     method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int )
       use subcomponent_heights = WorkList<<Int?>>
-        local fixed_w = 0L
-        local flex_count = 0L
+        local fixed_w = 0
+        local flex_count = 0
         local flex_weight = 0.0
         forEach (component in subcomponents)
           local h = component.measure_height( null )

@@ -166,9 +166,9 @@ class PNGEncoder
       |void %Ns%Rogue_png_encoder_write_callback( png_structp png_ptr, png_bytep bytes, png_size_t count )
       |{
       |  %Ns%RoguePNGEncoder* encoder = (%Ns%RoguePNGEncoder*) png_get_io_ptr( png_ptr );
-      |  %Ns%RogueByteList__reserve__%Ns%%RogueInt%( encoder->encoded_bytes, (%Ns%%RogueInt%) count );
-      |  memcpy( encoder->encoded_bytes->as_bytes + encoder->encoded_bytes->count, (%Ns%RogueByte*)bytes, (%Ns%%RogueInt%) count );
-      |  encoder->encoded_bytes->count += (%Ns%%RogueInt%) count;
+      |  %Ns%RogueByteList__reserve__%Ns%RogueInt( encoder->encoded_bytes, (%Ns%RogueInt) count );
+      |  memcpy( encoder->encoded_bytes->as_bytes + encoder->encoded_bytes->count, (%Ns%RogueByte*)bytes, (%Ns%RogueInt) count );
+      |  encoder->encoded_bytes->count += (%Ns%RogueInt) count;
       |}
       |
       |void %Ns%Rogue_png_encoder_flush_callback( png_structp png_ptr )

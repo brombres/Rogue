@@ -38,8 +38,8 @@ class StackTrace
     method to->String
       if (not frames) return "(Call history unavailable - compile with '--debug')"
 
-      local left_w = 0L
-      local right_w = 0L
+      local left_w = 0
+      local right_w = 0
       forEach (frame in frames)
         left_w .= or_larger( frame.procedure.count )
         right_w .= or_larger( frame.filename.count + frame.line.digit_count )

@@ -16,7 +16,7 @@ class Keyboard [singleton]
       key_pressed[ forEach of key_pressed ] = false
 
     method modifier_key_state->Int
-      local state = 0L
+      local state = 0
       if (is_shift_pressed)   state |= SHIFT_MODIFIER_FLAG
       if (is_control_pressed) state |= CONTROL_MODIFIER_FLAG
       if (is_alt_pressed)     state |= ALT_MODIFIER_FLAG

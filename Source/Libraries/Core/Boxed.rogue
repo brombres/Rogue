@@ -13,7 +13,7 @@ class Boxed<<$DataType>>( value:$DataType ) : Boxed
       return value->String
 
     method size->Int32
-      return native( "(%Ns%RogueInt32)(%Ns%%RogueInt%)sizeof($value)" )->Int32
+      return native( "(%Ns%RogueInt32)(%Ns%RogueInt)sizeof($value)" )->Int32
 
     method to->$DataType
       return value

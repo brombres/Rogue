@@ -2685,7 +2685,7 @@ augment
             writer.print   "%Ns%RogueObject** cursor = ((%Ns%RogueObject**)(("
             writer.print   c_name
             writer.println "*)THISOBJ)->data) - 1;"
-            writer.print   "%Ns%RogueInt n = ((%Ns%%RogueInt%)(("
+            writer.print   "%Ns%RogueInt n = ((%Ns%RogueInt)(("
             writer.print   c_name
             writer.println "*)THISOBJ)->capacity);"
             writer.println @|while (--n >=0)
@@ -2702,7 +2702,7 @@ augment
             writer.print   "*)((("
             writer.print   c_name
             writer.println "*)THISOBJ)->data);"
-            writer.print   "%Ns%RogueInt n = ((%Ns%%RogueInt%)(("
+            writer.print   "%Ns%RogueInt n = ((%Ns%RogueInt)(("
             writer.print   c_name
             writer.println "*)THISOBJ)->capacity);"
 
