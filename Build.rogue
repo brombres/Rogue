@@ -586,7 +586,7 @@ class Build [singleton]
         endForEach
       endIf
 
-    method _join( value:Value )->String
+    method _join( value:Variant )->String
       local args = String[]
       args.add( forEach in value )
       return args.join( "_" )
