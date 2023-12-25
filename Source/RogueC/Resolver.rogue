@@ -2671,62 +2671,104 @@ class Resolver : Poolable, Visitor
         Candidates.refine
       endIf
 
-      # Prefer methods with integer args and non-real parameters
+      # Prefer methods with the smallest "precision index gap".
       if (arg_count)
-        forEach (m in Candidates)
-          if (has_named_arg) m.arrange_args( args, this )
-          contingent
-            forEach (arg at i in args)
-              local arg_precision = arg.type.precision_index
-              if (arg_precision >= Type.PRECISION_BYTE and arg_precision <= Type.PRECISION_INT64)  # Byte, Character, Int32, Int, Int64
-                local param_precision = m.parameters[i].type.precision_index
-                necessary (param_precision >= Type.PRECISION_INT32 and param_precision <= Type.PRECISION_INT64)  # Int32, Int, Int64
+        use gaps = WorkList<<Int?>>
+          forEach (m in Candidates)
+            if (has_named_arg) m.arrange_args( args, this )
+            local gap = precision_index_gap( args, m )
+            gaps.add( gap )
+          endForEach
+
+          # Prefer non-negative
+          local smallest_gap = Best<<Int32>>( (a,b) => (a < b) )
+          forEach (gap in gaps)
+            if (gap and gap.value >= 0) smallest_gap.consider( gap.value )
+          endForEach
+          if (smallest_gap.exists)
+            forEach (m at i in Candidates)
+              local gap = gaps[i]
+              if (gap and gap.value == smallest_gap.value)
+                Candidates.keep( m )
               endIf
             endForEach
-            Candidates.keep m
-          endContingent
-        endForEach
-        if (Candidates.found_match) return Candidates.match
-        Candidates.refine
+            if (Candidates.found_match) return Candidates.match
+            Candidates.refine
+          else
+            # Allow negative gaps (narrowing coercion)
+            forEach (gap in gaps)
+              if (gap) smallest_gap.consider( gap.value )
+            endForEach
+            if (smallest_gap.exists)
+              forEach (m at i in Candidates)
+                local gap = gaps[i]
+                if (gap and gap.value == smallest_gap.value)
+                  Candidates.keep( m )
+                endIf
+              endForEach
+              if (Candidates.found_match) return Candidates.match
+              Candidates.refine
+            endIf
+          endIf
+        endUse
       endIf
+
+      # Prefer methods with integer args and non-real parameters
+      #if (arg_count)
+      #  forEach (m in Candidates)
+      #    if (has_named_arg) m.arrange_args( args, this )
+      #    contingent
+      #      forEach (arg at i in args)
+      #        local arg_precision = arg.type.precision_index
+      #        if (arg_precision >= Type.PRECISION_BYTE and arg_precision <= Type.PRECISION_INT64)  # Byte, Character, Int32, Int, Int64
+      #          local param_precision = m.parameters[i].type.precision_index
+      #          necessary (param_precision >= Type.PRECISION_INT32 and param_precision <= Type.PRECISION_INT64)  # Int32, Int, Int64
+      #        endIf
+      #      endForEach
+      #      Candidates.keep m
+      #    endContingent
+      #  endForEach
+      #  if (Candidates.found_match) return Candidates.match
+      #  Candidates.refine
+      #endIf
 
       # Prefer methods with primitive parameters that are higher precision than the args
-      if (arg_count)
-        forEach (m in Candidates)
-          if (has_named_arg) m.arrange_args( args, this )
-          contingent
-            forEach (arg at i in args)
-              local arg_type = arg.type
-              if (arg_type.is_primitive)
-                local param_type = m.parameters[i].type
-                if (param_type.is_primitive)
-                  necessary (param_type.precision_index >= arg_type.precision_index)
-                endIf
-              endIf
-            endForEach
-            Candidates.keep m
-          endContingent
-        endForEach
-        if (Candidates.found_match) return Candidates.match
-        Candidates.refine
-      endIf
+      #if (arg_count)
+      #  forEach (m in Candidates)
+      #    if (has_named_arg) m.arrange_args( args, this )
+      #    contingent
+      #      forEach (arg at i in args)
+      #        local arg_type = arg.type
+      #        if (arg_type.is_primitive)
+      #          local param_type = m.parameters[i].type
+      #          if (param_type.is_primitive)
+      #            necessary (param_type.precision_index >= arg_type.precision_index)
+      #          endIf
+      #        endIf
+      #      endForEach
+      #      Candidates.keep m
+      #    endContingent
+      #  endForEach
+      #  if (Candidates.found_match) return Candidates.match
+      #  Candidates.refine
+      #endIf
 
       # Prefer methods with the most same-precision primitive parameters
-      if (arg_count)
-        local best = Best<<Int32>>( (a,b) => a > b )
-        forEach (m in Candidates)
-          if (has_named_arg) m.arrange_args( args, this )
-          best.consider( same_precision_primitive_count(args, m) )
-        endForEach
+      #if (arg_count)
+      #  local best = Best<<Int32>>( (a,b) => a > b )
+      #  forEach (m in Candidates)
+      #    if (has_named_arg) m.arrange_args( args, this )
+      #    best.consider( same_precision_primitive_count(args, m) )
+      #  endForEach
 
-        local best_count = best.value
-        forEach (m in Candidates)
-          if (same_precision_primitive_count(args,m) == best_count ) Candidates.keep m
-        endForEach
+      #  local best_count = best.value
+      #  forEach (m in Candidates)
+      #    if (same_precision_primitive_count(args,m) == best_count ) Candidates.keep m
+      #  endForEach
 
-        if (Candidates.found_match) return Candidates.match
-        Candidates.refine
-      endIf
+      #  if (Candidates.found_match) return Candidates.match
+      #  Candidates.refine
+      #endIf
 
       # Keep methods with the fewest maximum args. More default args usually means more options that
       # aren't being used.
@@ -2784,18 +2826,42 @@ class Resolver : Poolable, Visitor
 
       return null
 
-    method same_precision_primitive_count( args:Cmd, m:Procedure )->Int32
+    method precision_index_gap( args:Cmd, m:Procedure )->Int?
       local result = 0
       forEach (arg at i in args)
         local arg_type = arg.type
+        if (arg_type.is_optional) arg_type = arg_type.core_type
+
         local param_type = m.parameters[i].type
-        local arg_is_primitive = (arg_type.is_primitive or (arg_type.is_optional and arg_type.core_type.is_primitive))
-        local param_is_primitive = (param_type.is_primitive or (param_type.is_optional and param_type.core_type.is_primitive))
-        if (arg_is_primitive and param_is_primitive)
-          if (param_type.precision_index == arg_type.precision_index) ++result
+        if (param_type.is_optional) param_type = param_type.core_type
+
+        if (arg_type.is_primitive)
+          if (param_type.is_primitive)
+            result += (param_type.precision_index - arg_type.precision_index)
+          else
+            return null
+          endIf
+        elseIf (param_type.is_primitive)
+          return null
         endIf
       endForEach
+
       return result
+
+      #method same_precision_primitive_count( args:Cmd, m:Procedure )->Int
+      #  local result = 0
+      #  forEach (arg at i in args)
+      #    local arg_type = arg.type
+      #    if (arg_type.is_optional) arg_type = arg_type.core_type
+      #    if (arg_type.is_primitive)
+      #      local param_type = m.parameters[i].type
+      #      if (param_type.is_optional) param_type = param_type.core_type
+      #      if (param_type.is_primitive)
+      #        if (param_type.precision_index == arg_type.precision_index) ++result
+      #      endIf
+      #    endIf
+      #  endForEach
+      #  return result
 
     method exact_type_match( arg:Cmd, param_type:Type )->Logical
       # Exact in principle but in practice it's a little fuzzy
