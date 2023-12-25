@@ -228,18 +228,18 @@ class CWriter : BufferedPrintWriter
            |{
            |  const char*        name;
            |  %Ns%RogueString*   name_object;
-           |  %Ns%%RogueInt%     index;
-           |  %Ns%%RogueInt%     id;
-           |  %Ns%%RogueInt%     module_name_index;
-           |  %Ns%%RogueInt%     class_data_index;
+           |  %Ns%RogueInt     index;
+           |  %Ns%RogueInt     id;
+           |  %Ns%RogueInt     module_name_index;
+           |  %Ns%RogueInt     class_data_index;
            |  %Ns%RogueInt64     attributes;
            |  void**             vtable;
            |  void**             local_pointer_stack; // Objects + compounds with embedded refs
-           |  %Ns%%RogueInt%     local_pointer_capacity;
-           |  %Ns%%RogueInt%     local_pointer_count;
-           |  %Ns%%RogueInt%     size;
-           |  %Ns%%RogueInt%*    base_type_ids;
-           |  %Ns%%RogueInt%     base_type_count;
+           |  %Ns%RogueInt     local_pointer_capacity;
+           |  %Ns%RogueInt     local_pointer_count;
+           |  %Ns%RogueInt     size;
+           |  %Ns%RogueInt*    base_type_ids;
+           |  %Ns%RogueInt     base_type_count;
            |  %Ns%RogueObject*   type_info;
            |  %Ns%RogueFn_Object fn_init_object;
            |  %Ns%RogueFn_Object fn_init;
@@ -252,14 +252,14 @@ class CWriter : BufferedPrintWriter
            |{
            |  const char* procedure;
            |  const char* filename;
-           |  %Ns%%RogueInt% line;
+           |  %Ns%RogueInt line;
            |} %Ns%RogueCallFrame;
            |
            |typedef struct %Ns%RogueObjectList
            |{
            |  %Ns%RogueObject** data;
-           |  %Ns%%RogueInt%    count;
-           |  %Ns%%RogueInt%    capacity;
+           |  %Ns%RogueInt    count;
+           |  %Ns%RogueInt    capacity;
            |} %Ns%RogueObjectList;
            |
            |//------------------------------------------------------------------------------
@@ -285,7 +285,7 @@ class CWriter : BufferedPrintWriter
            |
            |void  %Ns%Rogue_print_exception(void);
            |
-           |void  %Ns%Rogue_call_stack_push( const char* procedure, const char* filename, %Ns%%RogueInt% line );
+           |void  %Ns%Rogue_call_stack_push( const char* procedure, const char* filename, %Ns%RogueInt line );
            |void  %Ns%Rogue_call_stack_pop(void);
            |void  %Ns%RogueRuntimeType_local_pointer_stack_add( %Ns%RogueRuntimeType* type, void* local_pointer );
            |void  %Ns%RogueObjectList_add( %Ns%RogueObjectList* list, void* obj );
@@ -294,17 +294,17 @@ class CWriter : BufferedPrintWriter
            |
            |extern struct %Ns%RogueObject* %Ns%Rogue_exception;  // if non-null then an exception is being thrown
            |extern %Ns%RogueCallFrame*     %Ns%Rogue_call_stack;
-           |extern %Ns%%RogueInt%                 %Ns%Rogue_call_stack_count;
-           |extern %Ns%%RogueInt%                 %Ns%Rogue_call_stack_capacity;
-           |extern %Ns%%RogueInt%                 %Ns%Rogue_call_stack_line;
+           |extern %Ns%RogueInt                 %Ns%Rogue_call_stack_count;
+           |extern %Ns%RogueInt                 %Ns%Rogue_call_stack_capacity;
+           |extern %Ns%RogueInt                 %Ns%Rogue_call_stack_line;
            |
-           |extern %Ns%%RogueInt% %Ns%RogueMM_bytes_allocated_since_gc;
-           |extern %Ns%%RogueInt% %Ns%RogueMM_gc_request;  // 0:none, !0:requested
+           |extern %Ns%RogueInt %Ns%RogueMM_bytes_allocated_since_gc;
+           |extern %Ns%RogueInt %Ns%RogueMM_gc_request;  // 0:none, !0:requested
            |extern %Ns%RogueObjectList %Ns%RogueMM_objects;
            |extern %Ns%RogueObjectList %Ns%RogueMM_objects_requiring_cleanup;
            |
-           |void*        %Ns%Rogue_as( void* obj, %Ns%%RogueInt% recast_type_id );
-           |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%%RogueInt% ancestor_id );
+           |void*        %Ns%Rogue_as( void* obj, %Ns%RogueInt recast_type_id );
+           |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%RogueInt ancestor_id );
         println
 
       else
@@ -419,7 +419,7 @@ class CWriter : BufferedPrintWriter
            |
            |int %Ns%Rogue_quit(void)
            |{
-           |  %Ns%%RogueInt% status = !!%Ns%Rogue_exception;
+           |  %Ns%RogueInt status = !!%Ns%Rogue_exception;
            |  %Ns%Rogue_print_exception();  // Only has an effect if there is a pending exception
            |
            |  %Ns%RogueGlobal__call_exit_functions();
@@ -439,14 +439,14 @@ class CWriter : BufferedPrintWriter
            |  %Ns%RogueException__display__%Ns%RogueException( (%Ns%RogueException*)%Ns%Rogue_exception );
            |}
            |
-           |void %Ns%Rogue_call_stack_push( const char* procedure, const char* filename, %Ns%%RogueInt% line )
+           |void %Ns%Rogue_call_stack_push( const char* procedure, const char* filename, %Ns%RogueInt line )
            |{
            |  if (%Ns%Rogue_call_stack_count) %Ns%Rogue_call_stack[ %Ns%Rogue_call_stack_count-1 ].line = %Ns%Rogue_call_stack_line;
            |  %Ns%Rogue_call_stack_line = line;
            |
            |  if (%Ns%Rogue_call_stack_count == %Ns%Rogue_call_stack_capacity)
            |  {
-           |    %Ns%%RogueInt% required_capacity = %Ns%Rogue_call_stack_capacity << 1;
+           |    %Ns%RogueInt required_capacity = %Ns%Rogue_call_stack_capacity << 1;
            |    if (required_capacity < 32) required_capacity = 32;
            |
            |    %Ns%RogueCallFrame* new_data = (%Ns%RogueCallFrame*) %NS%ROGUE_MALLOC( sizeof(%Ns%RogueCallFrame) * required_capacity );
@@ -474,7 +474,7 @@ class CWriter : BufferedPrintWriter
            |{
            |  if (type->local_pointer_count == type->local_pointer_capacity)
            |  {
-           |    %Ns%%RogueInt% required_capacity = type->local_pointer_capacity << 1;
+           |    %Ns%RogueInt required_capacity = type->local_pointer_capacity << 1;
            |    if (required_capacity < 32) required_capacity = 32;
            |
            |    void** new_data = (void**) %NS%ROGUE_MALLOC( sizeof(void*) * required_capacity );
@@ -493,7 +493,7 @@ class CWriter : BufferedPrintWriter
            |{
            |  if (list->count == list->capacity)
            |  {
-           |    %Ns%%RogueInt% required_capacity = list->capacity << 1;
+           |    %Ns%RogueInt required_capacity = list->capacity << 1;
            |    if (required_capacity < 1024) required_capacity = 1024;
            |
            |    %Ns%RogueObject** new_data = (%Ns%RogueObject**) %NS%ROGUE_MALLOC( sizeof(%Ns%RogueObject*) * required_capacity );
@@ -511,23 +511,23 @@ class CWriter : BufferedPrintWriter
            |
            |%Ns%RogueObject*     %Ns%Rogue_exception  = 0;
            |%Ns%RogueCallFrame*  %Ns%Rogue_call_stack = 0;
-           |%Ns%%RogueInt%              %Ns%Rogue_call_stack_count    = 0;
-           |%Ns%%RogueInt%              %Ns%Rogue_call_stack_capacity = 0;
-           |%Ns%%RogueInt%              %Ns%Rogue_call_stack_line     = 0;
+           |%Ns%RogueInt              %Ns%Rogue_call_stack_count    = 0;
+           |%Ns%RogueInt              %Ns%Rogue_call_stack_capacity = 0;
+           |%Ns%RogueInt              %Ns%Rogue_call_stack_line     = 0;
            |
-           |%Ns%%RogueInt%              %Ns%RogueMM_bytes_allocated_since_gc  = 0;
-           |%Ns%%RogueInt%              %Ns%RogueMM_gc_request                = 0;
+           |%Ns%RogueInt              %Ns%RogueMM_bytes_allocated_since_gc  = 0;
+           |%Ns%RogueInt              %Ns%RogueMM_gc_request                = 0;
            |%Ns%RogueObjectList  %Ns%RogueMM_objects                   = {0};
            |%Ns%RogueObjectList  %Ns%RogueMM_objects_requiring_cleanup = {0};
            |
-           |void* %Ns%Rogue_as( void* obj, %Ns%%RogueInt% recast_type_id )
+           |void* %Ns%Rogue_as( void* obj, %Ns%RogueInt recast_type_id )
            |{
            |  if ( !obj ) return 0;
            |  %Ns%RogueRuntimeType* type = ((%Ns%RogueObject*)obj)->__type;
            |  if (type->id == recast_type_id) return obj;
            |
-           |  %Ns%%RogueInt%* base_ids = type->base_type_ids - 1;
-           |  %Ns%%RogueInt%  count = type->base_type_count;
+           |  %Ns%RogueInt* base_ids = type->base_type_ids - 1;
+           |  %Ns%RogueInt  count = type->base_type_count;
            |  while (--count >= 0)
            |  {
            |    if (*(++base_ids) == recast_type_id) return obj;
@@ -535,14 +535,14 @@ class CWriter : BufferedPrintWriter
            |  return 0;
            |}
            |
-           |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%%RogueInt% ancestor_id )
+           |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%RogueInt ancestor_id )
            |{
            |  if ( !obj ) return 0;
            |  %Ns%RogueRuntimeType* type = ((%Ns%RogueObject*)obj)->__type;
            |  if (type->id == ancestor_id) return 1;
            |
-           |  %Ns%%RogueInt%* base_ids = type->base_type_ids - 1;
-           |  %Ns%%RogueInt%  count = type->base_type_count;
+           |  %Ns%RogueInt* base_ids = type->base_type_ids - 1;
+           |  %Ns%RogueInt  count = type->base_type_count;
            |  while (--count >= 0)
            |  {
            |    if (*(++base_ids) == ancestor_id) return 1;
@@ -570,10 +570,6 @@ class CWriter : BufferedPrintWriter
       text .= replacing( "%ns%", Program.namespace_lc )
       text .= replacing( "%Ns%", Program.namespace_capitalized )
       text .= replacing( "%NS%", Program.namespace_uc )
-      if (Program.int_bits == 64) text .= replacing( "%RogueInt%", "RogueInt64" )
-      else                        text .= replacing( "%RogueInt%", "RogueInt32" )
-      if (Program.int_bits == 64) text .= replacing( "%RogueInt%", "RogueInt64" )
-      else                        text .= replacing( "%RogueInt%", "RogueInt32" )
       prior.print( text )
 
     method println( text:String ) [override]

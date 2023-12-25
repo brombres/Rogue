@@ -7,7 +7,7 @@ augment String[]
         case 1: return this[0]
         case 2: return "$ and $"(this[0],this[1])
         others
-          local len = 0L
+          local len = 0
           len += (forEach in this).count
           len += (count -  2) * 2      # ", "
           len += conjunction.count + 3 # ", and "
@@ -29,7 +29,7 @@ augment String[]
       # A better version of join() for String lists
       if (count == 1) return this[0]
 
-      local total_count = 0L
+      local total_count = 0
       forEach (element in this) total_count += element.count
       if (this.count) total_count += separator.count * (this.count-1)
 

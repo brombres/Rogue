@@ -3,7 +3,7 @@ class String : Poolable PrintWriter
     count           : Int  # in whole characters
     cursor_offset   : Int  # in bytes
     cursor_index    : Int  # in characters
-    hash_code       = -1L
+    hash_code       = -1
     indent          : Int
     at_newline      = true
     is_immutable    : Logical
@@ -412,7 +412,7 @@ class String : Poolable PrintWriter
       return @count
 
     method count( look_for:Character )->Int
-      local result = 0L
+      local result = 0
       if (look_for < 128)
         native @|RogueInt n = $this->data->count;
                 |char* src = $this->data->as_utf8 + n;
@@ -432,7 +432,7 @@ class String : Poolable PrintWriter
       return result
 
     method count( look_for:String )->Int
-      local result = 0L
+      local result = 0
       local n = look_for.count
       local pos = locate( look_for )
       while (pos.exists)
@@ -471,7 +471,7 @@ class String : Poolable PrintWriter
 
     method extract_indentation->String
       # Returns a string consisting of this string's leading spaces and tabs.
-      local n = 0L
+      local n = 0
       forEach (ch in this)
         if (ch == ' ' or ch == '\t') ++n
         else                         escapeForEach
@@ -531,7 +531,7 @@ class String : Poolable PrintWriter
 
       # Extracted strings were added to 'results' in reverse order. Reverse the order of
       # all strings added after the original contents.
-      local i2 = results.count - 1L
+      local i2 = results.count - 1
       while (i1 < i2)
         results.swap( i1, i2 )
         ++i1
@@ -677,7 +677,7 @@ class String : Poolable PrintWriter
     method is_real->Logical
       if (count == 0) return false
 
-      local period_count = 0L
+      local period_count = 0
       forEach (ch at index in this)
         if (ch == '-')
           if (index > 0) return false
@@ -723,7 +723,7 @@ class String : Poolable PrintWriter
       return max
 
     method locate( ch:Character, optional_i1=null:Int?, &ignore_case )->Int?
-      local i = 0L
+      local i = 0
       local limit = count
       if (optional_i1.exists) i = optional_i1.value
 
@@ -918,7 +918,7 @@ class String : Poolable PrintWriter
           if (quantity == 1) return st
 
           # plural
-          local index = 0L
+          local index = 0
           local i = st.count
           while (i > 0)
             --i
@@ -1017,7 +1017,7 @@ class String : Poolable PrintWriter
 
       # Display power of 10 exponent for numbers >= 1e16 or <= 1e-4
       if (value >= 1000000000000000.0)
-        local pow10 = 0L
+        local pow10 = 0
         while (value >= 10.0)
           value /= 10.0
           ++pow10
@@ -1028,7 +1028,7 @@ class String : Poolable PrintWriter
       endIf
 
       if (value < 0.00001)
-        local pow10 = 0L
+        local pow10 = 0
         while (value < 0.1)
           value *= 10.0
           --pow10
@@ -1267,7 +1267,7 @@ class String : Poolable PrintWriter
       local i1 = this.locate(look_for,&=ignore_case)
       if (not i1.exists) return this
 
-      local i0 = 0L
+      local i0 = 0
 
       local result = String( Int(count*1.1) )
       while (i1.exists)
@@ -1341,7 +1341,7 @@ class String : Poolable PrintWriter
 
         local result = String( count )
         local scanner = Scanner( replacement_pattern )
-        local i = 0L
+        local i = 0
         while (scanner.has_another)
           if (scanner.consume('\\'))
             if (scanner.has_another) result.print( scanner.read )
@@ -1350,7 +1350,7 @@ class String : Poolable PrintWriter
               if (scanner.consume(close_paren))
                 result.print( parts[i] ); i = (i + 1) % parts.count
               else
-                local n = 0L
+                local n = 0
                 while (scanner.has_another and not scanner.consume(close_paren))
                   n = n * 10 + scanner.read.to_number
                 endWhile
@@ -1455,7 +1455,7 @@ class String : Poolable PrintWriter
     method split( separator:Character, &ignore_case )->String[]
       local result = String[]
 
-      local i1 = 0L
+      local i1 = 0
       local i2 = locate( separator, i1, &=ignore_case )
       while (i2.exists)
         result.add( from(i1,i2.value-1) )
@@ -1471,7 +1471,7 @@ class String : Poolable PrintWriter
       local result = String[]
       local separator_count = separator.count
 
-      local i1 = 0L
+      local i1 = 0
       local i2 = locate( separator, i1, &=ignore_case )
       while (i2.exists)
         result.add( from(i1,i2.value-1) )
@@ -1494,7 +1494,7 @@ class String : Poolable PrintWriter
       #     # 0000 0000 0000 0000 0000 0111 1101 0000
       if (group_size == 0) return [this]
 
-      local n = 0L
+      local n = 0
       if (group_size < 0)
         group_size .= abs
       else
@@ -1521,8 +1521,8 @@ class String : Poolable PrintWriter
     method split->String[]
       # Splits the string on whitespace
       local result = String[]
-      local start = -1L
-      local current = 0L
+      local start = -1
+      local current = 0
       forEach (ch in this)
         which (ch)
           case ' ', '\t', '\n':
@@ -1724,8 +1724,8 @@ class String : Poolable PrintWriter
 
     method trimmed->String
       # Trim white spaces on both ends
-      local i1 = 0L
-      local i2 = count - 1L
+      local i1 = 0
+      local i2 = count - 1
 
       while (i1 <= i2)
         if     (this[i1] <= ' ') ++i1
@@ -1779,7 +1779,7 @@ class String : Poolable PrintWriter
               case '0': ch = '\0'
 
               case 'x'
-                local value = 0L
+                local value = 0
                 loop 2
                   if local hex_ch = iterator.read_another
                     if (hex_ch.is_number(16)) value = (value * 16) + hex_ch.to_number(16)
@@ -1788,7 +1788,7 @@ class String : Poolable PrintWriter
                 ch = Character( value )
 
               case 'u'
-                local value = 0L
+                local value = 0
                 loop 4
                   if local hex_ch = iterator.read_another
                     if (hex_ch.is_number(16)) value = (value * 16) + hex_ch.to_number(16)
@@ -1797,7 +1797,7 @@ class String : Poolable PrintWriter
                 ch = Character( value )
 
               case '['
-                local value = 0L
+                local value = 0
                 block
                   loop 8
                     if local hex_ch = iterator.read_another
@@ -1927,7 +1927,7 @@ class String : Poolable PrintWriter
       endIf
 
       local w = width
-      local initial_indent = 0L
+      local initial_indent = 0
       forEach (ch in this)
         if (ch != ' ') escapeForEach
         ++initial_indent
@@ -2041,7 +2041,7 @@ class String : Poolable PrintWriter
 
           case ' ':
             # Match 1 or more spaces or tabs
-            local n = 0L
+            local n = 0
             while (n < remaining_count)
               local ch = this[i0+n]
               if (ch != ' ' and ch != '\t') escapeWhile
@@ -2157,7 +2157,7 @@ class String : Poolable PrintWriter
           # Extra spaces and tabs okay as long as they're not between alphanumeric values or at the beginning
           # Count how many spaces and tabs in a row
           if (f0 > 0)
-            local n = 1L
+            local n = 1
             while (n < remaining_count)
               ch = this[i0+n]
               if (ch != ' ' and ch != '\t') escapeWhile
@@ -2209,7 +2209,7 @@ class String : Poolable PrintWriter
           case '*':
             if (fcount == 1)
               # Last pattern symbol - greedily match any number of characters
-              local result = -1L
+              local result = -1
               forEach (n in 0..remaining_count)
                 local count = _pattern_match_count( i0+n, remaining_count-n, format, f0+1, fcount-1, &=ignore_case )
                 if (count == -1) return result
@@ -2227,7 +2227,7 @@ class String : Poolable PrintWriter
 
           case ' ':
             # Match 1 or more spaces or tabs
-            local n = 0L
+            local n = 0
             while (n < remaining_count)
               local ch = this[i0+n]
               if (ch != ' ' and ch != '\t') escapeWhile
@@ -2293,7 +2293,7 @@ class String : Poolable PrintWriter
 
             if (fcount == 1)
               # Last pattern symbol - greedy match
-              local result = -1L
+              local result = -1
               forEach (len in 0..remaining_count)
                 local n = _pattern_match_count( i0+len, remaining_count-len, format, f0+1, fcount-1, &=ignore_case )
                 if (n == -1) return result
@@ -2341,7 +2341,7 @@ class String : Poolable PrintWriter
           # Extra spaces and tabs okay as long as they're not between alphanumeric values or at the beginning
           # Count how many spaces and tabs in a row
           if (f0 > 0)
-            local n = 1L
+            local n = 1
             while (n < remaining_count)
               ch = this[i0+n]
               if (ch != ' ' and ch != '\t') escapeWhile

@@ -102,7 +102,7 @@ class Color( argb:Int32 ) [compound]
 
 endClass
 
-augment Rogue::Real64
+augment Rogue::Real
   METHODS
     method lerp( a:Graphics::Color, b:Graphics::Color )->Graphics::Color
       return Graphics::Color( this.lerp(a.red,b.red), this.lerp(a.green,b.green), this.lerp(a.blue,b.blue), this.lerp(a.alpha,b.alpha) )
@@ -113,7 +113,7 @@ augment Rogue::Random
     method color->Graphics::Color
       # Returns a color with randomized (r,g,b) values and an
       # alpha of 1.0.
-      return Graphics::Color.create(real64,real64,real64)
+      return Graphics::Color.create(real,real,real)
 endAugment
 
 augment Rogue::ConsoleStyle

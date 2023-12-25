@@ -96,7 +96,7 @@ class UITableLayout : UILayout
       return j*columns.count + i
 
     method measure_content_height( subcomponents:UIComponent[] )->Int?
-      local total_h = 0L
+      local total_h = 0
       forEach (j of rows)
         local h = _row_height( subcomponents, j )
         if (not h) return null
@@ -105,7 +105,7 @@ class UITableLayout : UILayout
       return total_h
 
     method measure_content_width( subcomponents:UIComponent[] )->Int?
-      local total_w = 0L
+      local total_w = 0
       forEach (i of columns)
         local w = _column_width( subcomponents, i )
         if (not w) return null
@@ -119,7 +119,7 @@ class UITableLayout : UILayout
       if (not ((forEach in rows).fixed_height))
         return prior.measure_height( container_height )
       endIf
-      local h = 0L
+      local h = 0
       h += (forEach in rows).fixed_height.value
       return h
 
@@ -130,7 +130,7 @@ class UITableLayout : UILayout
         return prior.measure_width( container_width )
       endIf
 
-      local w = 0L
+      local w = 0
       w += (forEach in columns).fixed_width.value
       return w
 
@@ -225,8 +225,8 @@ class UITableLayout : UILayout
       return cell_span[index.value]
 
     method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int )
-      local total_h = 0L
-      local undefined_count = 0L
+      local total_h = 0
+      local undefined_count = 0
       local undefined_weight = 0.0
 
       use row_heights = WorkList<<Int?>>
@@ -276,8 +276,8 @@ class UITableLayout : UILayout
       endUse
 
     method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int )
-      local total_w = 0L
-      local undefined_count = 0L
+      local total_w = 0
+      local undefined_count = 0
       local undefined_weight = 0.0
 
       use column_widths = WorkList<<Int?>>
@@ -401,7 +401,7 @@ class UITableLayout : UILayout
 
     method _spanned_height( i:Int, j:Int )->Int
       local spanned_rows = cell_span[ j*columns.count+i ].y
-      local result = 0L
+      local result = 0
       forEach (y in 0..<spanned_rows)
         result += rows[j+y].height
       endForEach
@@ -409,7 +409,7 @@ class UITableLayout : UILayout
 
     method _spanned_width( i:Int, j:Int )->Int
       local spanned_columns = cell_span[ j*columns.count+i ].x
-      local result = 0L
+      local result = 0
       forEach (x in 0..<spanned_columns)
         result += columns[i+x].width
       endForEach

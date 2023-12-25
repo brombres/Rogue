@@ -77,12 +77,6 @@ class Random [singleton]
       local u2 = 1.0 - real
       return (-2.0 * u1.log).sqrt * (pi * 2 * u2).sin
 
-    method int64->Int64
-      # Returns a normalized, evenly distributed random integer in
-      # the range [0,2^63-1] inclusive.
-      local n = (next32->Int64 :<<: 16) & 0x7FFF_FFFF_0000_0000
-      return (n | (next32->Int64 & 0x0FFFF_FFFF))
-
     method int32->Int32
       # Returns a normalized, evenly distributed random integer in
       # the range [0,2^31-1] inclusive.
@@ -116,6 +110,12 @@ class Random [singleton]
     method int32( low:Int32, high:Int32 )->Int32
       # Returns a random integer between low and high, inclusive.
       return int32( (high-low)+1 ) + low
+
+    method int64->Int64
+      # Returns a normalized, evenly distributed random integer in
+      # the range [0,2^63-1] inclusive.
+      local n = (next32->Int64 :<<: 16) & 0x7FFF_FFFF_0000_0000
+      return (n | (next32->Int64 & 0x0FFFF_FFFF))
 
     method logical->Logical
       # Returns either "true" or "false" with equal likelihood.

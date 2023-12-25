@@ -54,7 +54,7 @@ class File( filepath:String ) [compound]
               |  char c_filepath[ PATH_MAX ];
                  localize is_folder
       native @|
-              |  %Ns%%RogueInt% len = $filepath->data->count;
+              |  %Ns%RogueInt len = $filepath->data->count;
               |  if (len >= PATH_MAX) len = PATH_MAX - 1;
               |  memcpy( c_filepath, (char*)$filepath->data->as_utf8, len );
               |  c_filepath[len] = 0;
@@ -157,7 +157,7 @@ class File( filepath:String ) [compound]
           destination.create_folder
         endIf
 
-        local result = 0L
+        local result = 0
         forEach (filepath in listing(&=ignore_hidden))
           local file = File( filepath )
           local dest = destination
@@ -262,7 +262,7 @@ class File( filepath:String ) [compound]
       while (reader.has_another)
         reader.read( file_buffer.[clear], 1024 )
         native @|%Ns%RogueByte* byte_ptr = $file_buffer->as_bytes - 1;
-                |for (%Ns%%RogueInt% i=$file_buffer->count+1; --i; )
+                |for (%Ns%RogueInt i=$file_buffer->count+1; --i; )
                 |{
                 |  result = %Ns%Rogue_crc32_table[ (result ^ *(++byte_ptr)) & 0xFF ] ^ (result >> 8);
                 |}

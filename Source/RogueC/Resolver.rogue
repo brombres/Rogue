@@ -2695,14 +2695,14 @@ class Resolver : Poolable, Visitor
             if (Candidates.found_match) return Candidates.match
             Candidates.refine
           else
-            # Allow negative gaps (narrowing coercion)
+            # Only negative gaps exist; use the lowest absolute value
             forEach (gap in gaps)
-              if (gap) smallest_gap.consider( gap.value )
+              if (gap) smallest_gap.consider( gap.value.abs )
             endForEach
             if (smallest_gap.exists)
               forEach (m at i in Candidates)
                 local gap = gaps[i]
-                if (gap and gap.value == smallest_gap.value)
+                if (gap and gap.value.abs == smallest_gap.value)
                   Candidates.keep( m )
                 endIf
               endForEach

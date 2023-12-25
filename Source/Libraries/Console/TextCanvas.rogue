@@ -19,17 +19,14 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
   METHODS
     method init( width, height, fill=' ':Character )
-Epilog.println( "CanvasData() 1 $x$"(width,height) )
       init( width, height, StyledCharacter(fill,style.current) )
 
     method init( width, height, fill:StyledCharacter )
-Epilog.println( "CanvasData() 2 $x$"(width,height) )
       buffer = StyledCharacter[]( width * height )
       loop (width*height) buffer.add( fill )
       invalidate
 
     method init( width, height, content:String )
-Epilog.println( "CanvasData() 3" )
       init( width, height, ' ' )
       if (content.contains('\n'))
         local y = 0
@@ -45,16 +42,13 @@ Epilog.println( "CanvasData() 3" )
       endIf
 
     method init( width, height, buffer )
-Epilog.println( "CanvasData() 4" )
       invalidate
 
     method init( content:String, width:Int )
-      Epilog.println( "CanvasData() 5 [$]x$"(content,width) )
       init( width, content.count/width )
       draw( content, width )
 
     method init( lines:String[] )
-Epilog.println( "CanvasData() 6" )
       local max_w = 0
       max_w .= or_larger( (forEach in lines).count )
       lines = lines.map<<String>>( (line) with (max_w) => line.justified(-max_w) )
