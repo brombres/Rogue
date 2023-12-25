@@ -136,7 +136,7 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
 
     method atan2( x:Real )->Real
       # Equivalent to atan2(this,x)
-      return this->REAL_TYPE.atans( x )
+      return this->REAL_TYPE.atan2( x )
 
     method asin->Real
       return this->REAL_TYPE.asin
@@ -720,13 +720,13 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
 
     method rol( nbits:Int32 )->Int32
       if (nbits <= 0) return this
-      nbits &= 31
-      return (this :<<: nbits) | (this :>>: (32-nbits))
+      nbits &= 31i
+      return (this :<<: nbits) | (this :>>: (32i-nbits))
 
     method ror( nbits:Int32 )->Int32
       if (nbits <= 0) return this
-      nbits &= 31
-      return (this :>>: nbits) | (this :<<: (32-nbits))
+      nbits &= 31i
+      return (this :>>: nbits) | (this :<<: (32i-nbits))
 
     method sqrt->Int32
       return this->Real.sqrt->Int32

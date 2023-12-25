@@ -388,7 +388,7 @@ class Program [singleton]
 
     method print_warning( t:Token, message:String )
       local warning_line = ''          "$"''(t.filepath)
-      if (t.line) warning_line += "line $"(t.line)
+      if (t.line) warning_line += " line $"(t.line)
 
       local combined_warning = message + warning_line
       if (prior_warnings.contains(combined_warning)) return
