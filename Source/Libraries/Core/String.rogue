@@ -1544,6 +1544,78 @@ class String : Poolable PrintWriter
 
       return result
 
+    method split_identifiers( result=null:String[] )->String[]
+      ensure<<result>>
+      local buffer : String
+
+      local state = 0
+      # 0: look for ID start
+      # 1: scanning ID, last character lowercase
+      # 2: scanning ID, single leading uppercase
+      # 3: scanning ID, multiple leading uppercase
+      forEach (ch in this)
+        which (state)
+          case 0  # looking for ID start
+            if (ch.is_letter or ch.is_number)
+              if (buffer) result.add( buffer )
+              buffer = String()
+              buffer.print( ch )
+              state = which{ ch.is_uppercase:2 || 1 }
+            endIf
+
+          case 1  # scanning ID, last character lowercase
+            if (ch.is_letter or ch.is_number)
+              if (ch.is_uppercase)
+                result.add( buffer )
+                buffer = String()
+                state = 2
+              else
+                state = 1
+              endIf
+              buffer.print( ch )
+            else
+              result.add( buffer )
+              buffer = null
+              state = 0
+            endIf
+
+          case 2  # scanning ID, single leading uppercase
+            if (ch.is_letter or ch.is_number)
+              buffer.print( ch )
+              state = which{ ch.is_uppercase:3 || 1 }
+            else
+              result.add( buffer )
+              buffer = String()
+              state = 0
+            endIf
+
+          case 3  # scanning ID, multiple leading uppercase
+            if (ch.is_letter)
+              if (ch.is_uppercase)
+                buffer.print( ch )
+                state = which{ ch.is_uppercase:3 || 1 }
+              else
+                # Lowercase
+                # e.g. "HTMLDocument" -> ["HTMLD","ocument"] -> ["HTML","Document"]
+                local prev_ch = buffer.remove_last
+                result.add( buffer )
+                buffer = String()
+                buffer.[ print(prev_ch), print(ch) ]
+                state = 2
+              endIf
+            elseIf (ch.is_number)
+              buffer.print( ch )
+            else
+              result.add( buffer )
+              buffer = null
+              state = 0
+            endIf
+        endWhich
+      endForEach
+
+      if (buffer.count) result.add( buffer )
+      return result
+
     method substring( i1:Int )->String
       return from( i1 )
 
@@ -1638,6 +1710,24 @@ class String : Poolable PrintWriter
     method to->String
       return this
 
+    method to_camel_case->String
+      # Returns this string converted into "camelCase". Useful for converting programming
+      # identifiers from other formats into camelCase format.
+      local result = this.to_pascal_case
+      return result[0].to_lowercase + result.from( 1 )
+
+    method to_definition_case->String
+      # Returns this string converted into "DEFINITION_CASE". Useful for converting programming
+      # identifiers from other formats into DEFINITION_CASE format.
+      return to_serpent_case.to_uppercase
+
+    method to_escaped_ascii( additional_characters_to_escape="":String )->String
+      use builder = StringPool
+        (forEach in this).print_escaped_ascii( additional_characters_to_escape, builder )
+        if (builder == this) return this  # no escapes
+        else                 return builder.cloned
+      endUse
+
     method to_lowercase->String
       local has_uc = false
       forEach (ch in this)
@@ -1653,11 +1743,16 @@ class String : Poolable PrintWriter
       endForEach
       return result
 
-    method to_escaped_ascii( additional_characters_to_escape="":String )->String
-      use builder = StringPool
-        (forEach in this).print_escaped_ascii( additional_characters_to_escape, builder )
-        if (builder == this) return this  # no escapes
-        else                 return builder.cloned
+    method to_pascal_case->String
+      # Returns this string converted into "PascalCase". Useful for converting programming
+      # identifiers from other formats into PascalCase format.
+      use parts = WorkList<<String>>
+        split_identifiers( parts )
+        if (this == this.to_uppercase)
+          return parts.map<<String>>( $.to_lowercase.capitalized ).join( "" )
+        else
+          return parts.map<<String>>( $.capitalized ).join( "" )
+        endIf
       endUse
 
     method to_plain_ascii->String
@@ -1703,6 +1798,26 @@ class String : Poolable PrintWriter
         endIf
       endForEach
       return result
+
+    method to_serpent_case->String
+      # Returns this string converted into "serpent_case". Useful for converting programming
+      # identifiers from other formats into serpent_case format.
+      use parts = WorkList<<String>>
+        split_identifiers( parts )
+        return parts.map<<String>>( $.to_lowercase ).join( '_' )
+      endUse
+
+    method to_title_case->String
+      # Returns this string converted into "Title Case". Useful for converting programming
+      # identifiers from other formats into Title Case format.
+      use parts = WorkList<<String>>
+        split_identifiers( parts )
+        if (this == this.to_uppercase)
+          return parts.map<<String>>( $.to_lowercase.capitalized ).join( ' ' )
+        else
+          return parts.map<<String>>( $.capitalized ).join( ' ' )
+        endIf
+      endUse
 
     method to_uppercase->String
       local has_lc = false
