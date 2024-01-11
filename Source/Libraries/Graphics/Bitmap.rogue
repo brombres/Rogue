@@ -870,7 +870,7 @@ class Bitmap
     method resize_write_row( dest_bitmap:Bitmap, dest_i:Int, new_width:Int, resize_row_buffer:Real[] )
       local row_buffer = resize_row_buffer
       native @|%Ns%RogueByte*   dest = (%Ns%RogueByte*)($dest_bitmap->pixels->as_int32s + $dest_i);
-              |%Ns%RogueNewReal*   buffer = $row_buffer->as_real64s;
+              |%Ns%RogueNewReal*   buffer = $row_buffer->as_reals;
               |%Ns%RogueNewReal    divisor;
 
       forEach (1..new_width)

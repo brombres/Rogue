@@ -17,8 +17,10 @@ class List<<$DataType>> : Poolable ListType
             |  %Ns%RogueObject**   as_objects;
             |  %Ns%RogueString**   as_strings;
             |  %Ns%RogueReal64*    as_real64s;
+            |  %Ns%RogueReal*      as_reals;
             |  %Ns%RogueReal32*    as_real32s;
             |  %Ns%RogueInt64*     as_int64s;
+            |  %Ns%RogueInt64*     as_ints;
             |  %Ns%RogueInt32*     as_int32s;
             |  %Ns%RogueCharacter* as_characters;
             |  %Ns%RogueWord*      as_words;
