@@ -387,7 +387,7 @@ class Program [singleton]
       endIf
 
     method print_warning( t:Token, message:String )
-      local warning_line = ''          "$"''(t.filepath)
+      local warning_line = ''          $''(t.filepath)
       if (t.line) warning_line += " line $"(t.line)
 
       local combined_warning = message + warning_line

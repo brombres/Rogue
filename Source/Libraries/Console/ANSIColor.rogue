@@ -74,6 +74,9 @@ class ANSIColorLookup : Byte[] [singleton]
     GRAY_24   = 2
     GRAY_4    = 3
 
+  PROPERTIES
+    color_mode = -1
+
   METHODS
     method init
       init( COLOR_240 )
@@ -83,12 +86,18 @@ class ANSIColorLookup : Byte[] [singleton]
       #   COLOR_240, COLOR_16, GRAY_24, or GRAY_4
       #   Windows is limited to COLOR_16 and GRAY_4
       prior.init( 16*16*16 )
+      configure( color_mode )
+
+    method configure( color_mode:Int )
+      if (this.color_mode == color_mode) return
+      this.color_mode = color_mode
+
       count = 16*16*16
 
-      local target_colors = Int[](256)
+      local target_colors = Int32[](256)
       target_colors.add( (forEach in ANSIColors).color.argb )
 
-      local palette = Int[](240)  # indices into target_colors[]
+      local palette = Int32[](240)  # indices into target_colors[]
       which (color_mode)
         case GRAY_4
           palette.[ add(0), add(7), add(8), add(15) ]
