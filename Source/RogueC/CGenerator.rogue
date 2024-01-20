@@ -1025,6 +1025,7 @@ class CGenerator : Visitor
       writer.print '('
       writer.print cmd.info.c_name
       writer.print '='
+      print_cast( cmd.info.type )
       visit( cmd.value )
       writer.print ')'
 
