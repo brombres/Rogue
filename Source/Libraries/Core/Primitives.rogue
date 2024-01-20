@@ -152,7 +152,7 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
 
       use builder = StringPool
         forEach (n in 1..4)
-          if (this.is_string_accurate_at(n,builder)) escapeForEach
+          if (value.is_string_accurate_at(n,builder)) escapeForEach
         endForEach
 
         buffer.print builder
