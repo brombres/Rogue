@@ -108,6 +108,99 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
       local q = this / other
       return this - q.floor * other
 
+    method print_to( buffer:PrintWriter )
+      local value = this
+
+      if (value == 0)
+        buffer.print( "0.0" )
+        return
+      elseIf (value.is_infinite)
+        if (value < 0) buffer.print( "-infinity" )
+        else           buffer.print( "infinity" )
+        return
+      elseIf (value.is_NaN)
+        buffer.print( "NaN" )
+        return
+      endIf
+
+      if (value < 0)
+        buffer.print( '-' )
+        value = -value
+      endIf
+
+      # Display power of 10 exponent for numbers >= 1e16 or <= 1e-4
+      if (value >= 1000000000000000.0)
+        local pow10 = 0
+        while (value >= 10.0)
+          value /= 10.0
+          ++pow10
+        endWhile
+
+        buffer.[ print(value), print('e'), print(pow10->Int) ]
+        return
+      endIf
+
+      if (value < 0.00001)
+        local pow10 = 0
+        while (value < 0.1)
+          value *= 10.0
+          --pow10
+        endWhile
+
+        buffer.[ print(value), print('e'), print(pow10->Int) ]
+      endIf
+
+      use builder = StringPool
+        forEach (n in 1..4)
+          if (this.is_string_accurate_at(n,builder)) escapeForEach
+        endForEach
+
+        buffer.print builder
+      endUse
+
+    method print_to( buffer:PrintWriter, decimal_places:Int32 )
+      local value = this
+
+      if (value.is_infinite)
+        if (value < 0) buffer.print( "-infinity" )
+        else           buffer.print( "infinity" )
+        return
+      elseIf (value.is_NaN)
+        buffer.print( "NaN" )
+        return
+      endIf
+
+      use builder = StringPool
+        local is_negative = (value < 0)
+        if (is_negative) value = -value
+
+        local whole = value.floor
+        value -= whole
+        while (whole >= 10)
+          builder.print( ('0' + ((whole%10)->Int))->Character )
+          whole /= 10
+        endWhile
+        builder.print( ('0' + ((whole%10)->Int))->Character )
+
+        if (is_negative) builder.print( '-' )
+        builder.reverse
+
+        if (decimal_places != 0)
+          builder.print( '.' )
+          loop (decimal_places)
+            value *= 10
+            local digit = value.floor->Int
+            value -= digit
+            builder.print( ('0' + digit)->Character )
+          endLoop
+        endIf
+        if (value >= 0.5)
+          builder.print( '5' )
+          builder._round_off
+        endIf
+        buffer.print( builder )
+      endUse
+
     method sin->Real64
       return native("sin($this)")->Real64
 
@@ -206,6 +299,12 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
     method operator%( other:Real )->Real
       local q = this / other
       return this - q.floor * other
+
+    method print_to( buffer:PrintWriter )
+      this->Real64.print_to( buffer )
+
+    method print_to( buffer:PrintWriter, decimal_places:Int32 )
+      this->Real64.print_to( buffer, decimal_places )
 
     method sin->Real
       return this->REAL_TYPE.sin
@@ -334,6 +433,12 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
     method operator%( other:Real32 )->Real32
       local q = this / other
       return this - q.floor * other
+
+    method print_to( buffer:PrintWriter )
+      this->Real64.print_to( buffer )
+
+    method print_to( buffer:PrintWriter, decimal_places:Int32 )
+      this->Real64.print_to( buffer, decimal_places )
 
     method sin->Real32
       return native("sinf($this)")->Real32
@@ -493,6 +598,19 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
       buffer.print( (this & (base-1))->Int.to_digit )
       return buffer
 
+    method print_to( buffer:PrintWriter )
+      if (native("$this == LLONG_MIN")->Logical)
+        buffer.print( "-9223372036854775808" )
+      elseIf (this < 0)
+        buffer.print( '-' )
+        buffer.print( -this )
+      elseIf (this >= 10)
+        buffer.print( this / 10 )
+        buffer.print( ('0'+(this%10))->Character )
+      else
+        buffer.print( ('0'+this)->Character )
+      endIf
+
     method progress( a:Int64, b:Int64 )->Real
       # Returns the progress of this number along the interval from a to b.
       # Examples:
@@ -611,6 +729,9 @@ class Int : CommonPrimitiveMethods<<Int>> [primitive]
     method print_power_of_2( base:Int, digits:Int, buffer:PrintWriter )->PrintWriter
       return this->INT_TYPE.print_power_of_2( base, digits, buffer )
 
+    method print_to( buffer:PrintWriter )
+      this->INT_TYPE.print_to( buffer )
+
     method progress( a:Int, b:Int )->Real
       return this->INT_TYPE.progress( a, b )
 
@@ -706,6 +827,19 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
       if (digits > 1 or remaining) remaining.print_power_of_2( base, digits-1, buffer )
       buffer.print( (this & (base-1)).to_digit )
       return buffer
+
+    method print_to( buffer:PrintWriter )
+      if (native("$this == -2147483648")->Logical)
+        buffer.print( "-2147483648" )
+      elseIf (this < 0)
+        buffer.print( '-' )
+        buffer.print( -this )
+      elseIf (this >= 10)
+        buffer.print( this / 10 )
+        buffer.print( ('0'+(this%10))->Character )
+      else
+        buffer.print( ('0'+this)->Character )
+      endIf
 
     method progress( a:Int, b:Int )->Real
       # Returns the progress of this number along the interval from a to b.
@@ -890,6 +1024,9 @@ class Character [primitive]
           endIf
       endWhich
 
+    method print_to( buffer:PrintWriter )
+      buffer.print( this )
+
     method to->String
       which (this)
         case   0: return "\0"
@@ -1051,6 +1188,9 @@ class Byte : CommonPrimitiveMethods<<Byte>> [primitive]
     method operator:>>:( bits:Int32 )->Byte
       return (this->Int32 :>>: bits)->Byte
 
+    method print_to( buffer:PrintWriter )
+      this->Int32.print_to( buffer )
+
     method signed->Int
       if (this <= 127) return this
       return (this - 256)
@@ -1073,6 +1213,9 @@ class Logical [primitive]
     method hash_code->Int
       if (this) return 1
       else      return 0
+
+    method print_to( buffer:PrintWriter )
+      buffer.print( which{ this:"true" || "false" } )
 
     method to->Object
       return Boxed<<Logical>>(this)

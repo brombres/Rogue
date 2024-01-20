@@ -1216,7 +1216,9 @@ class Type : Cmd
       endIf
 
       # Compounds get:
-      # - to->String and description->String. description() calls to->String by default.
+      # - to->String
+      # - description->String (calls to->String by default)
+      # - print_to(String)->String (prints to->String by default)
       # - operator==
       if (is_compound)
         block m = methods["description()"]
@@ -1224,6 +1226,16 @@ class Type : Cmd
             m = Method( t, this, "description" )
             m.return_type = Program.type_String
             m.statements.add( Return(t,Access(t,"to<<Rogue::String>>")) )
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
+
+        block m = methods["print_to(Rogue::PrintWriter)"]
+          if (not m)
+            m = Method( t, this, "print_to" )
+            m.parameters.add( Local(t,"buffer",Type(t,"Rogue::PrintWriter")) )
+            m.statements.add( ContextAccess(t, Access(t,"buffer"), "print", Args(t,Access(t,"to<<Rogue::String>>"))) )
             m.organize
             methods[ m.signature ] = m
           endIf

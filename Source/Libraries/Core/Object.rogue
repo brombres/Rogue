@@ -21,7 +21,11 @@ class Object
     method operator==( other:Object )->Logical
       return this is other
 
+    method print_to( buffer:PrintWriter )
+      buffer.print( this->String )
+
     method to->String
       return type_name
+
 endClass
 
