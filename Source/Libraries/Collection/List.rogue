@@ -479,6 +479,14 @@ class List<<$DataType>> : Poolable ListType
 
       return c
 
+    method print_to( buffer:PrintWriter )
+      buffer.print '['
+      forEach (value at i in this)
+        if (i > 0) buffer.print ','
+        buffer.print( value )
+      endForEach
+      buffer.print ']'
+
     method random( generator=Random:Random )->$DataType
       # Returns an element at random
       if (not count)

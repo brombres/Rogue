@@ -199,6 +199,17 @@ class IntBox( position:IntXY, size:IntXY ) [essential compound]
     method positioned_within( enclosing:IntBox, anchor=Anchor.CENTER:Anchor )->IntBox
       return IntBox( enclosing.position + anchor * (enclosing.size-size), size )
 
+    method print_to( buffer:PrintWriter )
+      buffer.print '['
+      position.x.print_to( buffer )
+      buffer.print ','
+      position.y.print_to( buffer )
+      buffer.print ' '
+      size.x.print_to( buffer )
+      buffer.print 'x'
+      size.y.print_to( buffer )
+      buffer.print ']'
+
     method relative_to( anchor:Anchor )->IntBox
       # Returns box of this.size that is positioned relative to its original position
       # as an origin.

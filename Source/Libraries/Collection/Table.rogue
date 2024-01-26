@@ -182,7 +182,7 @@ class Table<<$KeyType,$ValueType>> : TableType
 
       return true
 
-    method print_to( buffer:String )->String
+    method print_to( buffer:PrintWriter )
       buffer.print( '{' )
       local cur = first_entry
       local i = 0
@@ -195,7 +195,6 @@ class Table<<$KeyType,$ValueType>> : TableType
         ++i
       endWhile
       buffer.print( '}' )
-      return buffer
 
     method random->TableEntry<<$KeyType,$ValueType>>
       if (count == 0) return null
@@ -310,7 +309,9 @@ class Table<<$KeyType,$ValueType>> : TableType
       return cloned.[ sort(compare_fn) ]
 
     method to->String
-      return print_to( String() )
+      local result = String()
+      print_to( String() )
+      return result
 
     method to_list->$ValueType[]
       return values.to_list

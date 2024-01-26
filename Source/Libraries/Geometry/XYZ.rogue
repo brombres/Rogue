@@ -90,6 +90,15 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
     method operator^( value:Real )->XYZ
       return XYZ( x^value, y^value, z^value )
 
+    method print_to( buffer:PrintWriter )
+      buffer.print '('
+      x.print_to( buffer )
+      buffer.print ','
+      y.print_to( buffer )
+      buffer.print ','
+      z.print_to( buffer )
+      buffer.print ')'
+
     method to->XY [essential]
       return XY(x,y)
 

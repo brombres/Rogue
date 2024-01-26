@@ -698,6 +698,31 @@ class Variant [compound]
         return undefined
       endIf
 
+    method print_to( buffer:PrintWriter )
+      trace buffer is Global.output
+      which (type)
+        case TYPE_UNDEFINED: return
+        case TYPE_NULL:      buffer.print( "null" )
+        case TYPE_LOGICAL:   buffer.print( which{logical:"true" || "false"} )
+        case TYPE_BYTE:      byte.print_to( buffer )
+        case TYPE_CHARACTER: character.print_to( buffer )
+        case TYPE_INT32:     int32.print_to( buffer )
+        case TYPE_INT:       integer.print_to( buffer )
+        case TYPE_INT64:     int64.print_to( buffer )
+        case TYPE_REAL32:    real32.print_to( buffer )
+        case TYPE_REAL:      real.print_to( buffer )
+        case TYPE_REAL64:    real64.print_to( buffer )
+        case TYPE_INTXY:     intxy.print_to( buffer )
+        case TYPE_XY:        xy.print_to( buffer )
+        case TYPE_XYZ:       xyz.print_to( buffer )
+        case TYPE_BOX:       box.print_to( buffer )
+        case TYPE_OBJECT:    object.print_to( buffer )
+        case TYPE_STRING:    buffer.print( object->(as String) )
+        case TYPE_LIST:      object->(as Variant[]).print_to( buffer )
+        case TYPE_TABLE:     object->(as [String:Variant]).print_to( buffer )
+        others:              buffer.print( "[Variant.print_to() - undefined type $"(type) )
+      endWhich
+
     method remove( value:Variant )->Variant
       which (type)
         case TYPE_LIST
