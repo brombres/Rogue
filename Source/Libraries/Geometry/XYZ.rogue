@@ -28,6 +28,9 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
     method dot( other:XYZ )->Real
       return x*other.x + y*other.y + z*other.z
 
+    method hash_code->Int
+      return x.hash_code ~ y.hash_code ~ z.hash_code
+
     method magnitude->Real
       return ( x*x + y*y + z*z ).sqrt
 

@@ -118,6 +118,9 @@ class Box( position:XY, size:XY ) [essential compound]
     method expanded( left:Real, top:Real, right:Real, bottom:Real )->Box
       return cropped( -left, -top, -right, -bottom )
 
+    method hash_code->Int
+      return position.hash_code ~ size.hash_code
+
     method height->Real
       return this.size.y
 

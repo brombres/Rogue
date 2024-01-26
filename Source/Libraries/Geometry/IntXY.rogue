@@ -115,6 +115,9 @@ class IntXY( x:Int, y:Int ) [essential compound]
     method dot( other:IntXY )->Int
       return x * other.x + y * other.y
 
+    method hash_code->Int
+      return x.hash_code ~ y.hash_code
+
     method is_zero->Logical
       return x == 0 and y == 0
 

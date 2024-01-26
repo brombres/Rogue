@@ -310,7 +310,7 @@ class Table<<$KeyType,$ValueType>> : TableType
 
     method to->String
       local result = String()
-      print_to( String() )
+      print_to( result )
       return result
 
     method to_list->$ValueType[]

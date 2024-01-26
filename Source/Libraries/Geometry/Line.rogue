@@ -12,6 +12,9 @@ class Line( a:XY, b:XY ) [compound]
     method direction->XY
       return (b - a)
 
+    method hash_code->Int
+      return a.hash_code ~ b.hash_code
+
     method intersection( circle:Circle )->Line?
       # https://math.stackexchange.com/questions/311921/get-location-of-vector-circle-intersection
       if (circle.contains(a))

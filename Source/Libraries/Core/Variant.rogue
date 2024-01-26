@@ -142,7 +142,7 @@ class Variant [compound]
       if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_LIST, (%Ns%RogueObject*)$value }" )->Variant
       else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Variant  # null value
 
-    method create( value:[String:Variant] )->Variant
+    method create( value:[Variant:Variant] )->Variant
       if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_TABLE, (%Ns%RogueObject*)$value }" )->Variant
       else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Variant  # null value
 
@@ -153,7 +153,7 @@ class Variant [compound]
 
     method create_table->Variant
       # Convenience syntax: @{} is equivalent to Variant.create_table()
-      local data = [String:Variant]
+      local data = [Variant:Variant]
       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_TABLE, (%Ns%RogueObject*)$data }" )->Variant
 
   METHODS
@@ -189,17 +189,39 @@ class Variant [compound]
       if (type != TYPE_STRING) return null
       return object->(as String)
 
-    method as_table->[String:Variant]
-      # If this value .is_table, returns the backing [String:Variant] table; otherwise returns null.
+    method as_table->[Variant:Variant]
+      # If this value .is_table, returns the backing [Variant:Variant] table; otherwise returns null.
       if (type != TYPE_TABLE) return null
-      return object->(as [String:Variant])
+      return object->(as [Variant:Variant])
+
+    method at( index:Int )->Variant
+      which (type)
+        case TYPE_LIST
+          local list = object->(as Variant[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+
+        case TYPE_STRING
+          local st = object->(as String)
+          if (index < 0 or index >= st.count) return undefined
+          return st[index]
+
+        case TYPE_TABLE
+          local table = object->(as [Variant:Variant])
+          if (index < 0 or index >= table.count) return undefined
+          return table.at(index)
+
+        others
+          if (index == 0) return this
+          return undefined
+      endWhich
 
     method clear
       which (type)
         case TYPE_LIST
           object->(as Variant[]).clear
         case TYPE_TABLE
-          object->(as [String:Variant]).clear
+          object->(as [Variant:Variant]).clear
       endWhich
 
     method contains( value:Variant )->Logical
@@ -213,7 +235,7 @@ class Variant [compound]
         case TYPE_LIST
           return object->(as Variant[]).contains( value )
         case TYPE_TABLE
-          return object->(as [String:Variant]).contains( value->String )
+          return object->(as [Variant:Variant]).contains( value->String )
         others
           return false
       endWhich
@@ -225,7 +247,7 @@ class Variant [compound]
         case TYPE_LIST
           return object->(as Variant[]).count
         case TYPE_TABLE
-          return object->(as [String:Variant]).count
+          return object->(as [Variant:Variant]).count
         case TYPE_UNDEFINED
           return 0
         others
@@ -234,7 +256,7 @@ class Variant [compound]
 
     method entries->TableEntriesIterator<<String,Variant>>
       if (type != TYPE_TABLE) return TableEntriesIterator<<String,Variant>>( null )
-      return object->(as [String:Variant]).entries
+      return object->(as [Variant:Variant]).entries
 
     method ensure_list( name:String )->Variant
       if (not is_table) return @[]
@@ -269,7 +291,7 @@ class Variant [compound]
           return st[0]
 
         case TYPE_TABLE
-          local table = object->(as [String:Variant])
+          local table = object->(as [Variant:Variant])
           if (table.count == 0) return undefined
           return table.at(0)
 
@@ -284,33 +306,48 @@ class Variant [compound]
       return undefined
 
     method get( index:Int )->Variant
-      which (type)
-        case TYPE_LIST
-          local list = object->(as Variant[])
-          if (index < 0 or index >= list.count) return undefined
-          return list[index]
-
-        case TYPE_STRING
-          local st = object->(as String)
-          if (index < 0 or index >= st.count) return undefined
-          return st[index]
-
-        case TYPE_TABLE
-          local table = object->(as [String:Variant])
-          if (index < 0 or index >= table.count) return undefined
-          return table.at(index)
-
-        others
-          if (index == 0) return this
-          return undefined
-      endWhich
+      return get( Variant(index) )
 
     method get( key:String )->Variant
+      return get( Variant(key) )
+
+    method get( key:Variant )->Variant [preferred]
       which (type)
         case TYPE_TABLE
-          return object->(as [String:Variant])[ key ]
+          local table = object->(as [Variant:Variant])
+          local entry = table[ key ]
+          if (entry) return entry.value
+          else       return undefined
+
         others
-          return undefined
+          if (key.is_integer) return at( key->Int )
+          else                return undefined
+      endWhich
+
+    method hash_code->Int
+      which (type)
+        case TYPE_UNDEFINED: return 0
+        case TYPE_NULL:      return 0
+        case TYPE_LOGICAL:   return which{ logical:1 || 0 }
+        case TYPE_BYTE:      return byte.hash_code
+        case TYPE_CHARACTER: return character.hash_code
+        case TYPE_INT32:     return int32.hash_code
+        case TYPE_INT:       return integer.hash_code
+        case TYPE_INT64:     return int64.hash_code
+        case TYPE_REAL32:    return real32.hash_code
+        case TYPE_REAL:      return real.hash_code
+        case TYPE_REAL64:    return real64.hash_code
+        case TYPE_INTXY:     return intxy.hash_code
+        case TYPE_XY:        return xy.hash_code
+        case TYPE_XYZ:       return xyz.hash_code
+        case TYPE_BOX:       return box.hash_code
+        case TYPE_OBJECT:    return object.hash_code
+        case TYPE_STRING:    return object->(as String).hash_code
+        case TYPE_LIST:      return object->(as Variant[]).hash_code
+        case TYPE_TABLE:     return object->(as [Variant:Variant]).hash_code
+        others:
+          Global.error.print( "[Variant.hash_code()] Undefined type $"(type) )
+          return 0
       endWhich
 
     method insert( value:Variant, before_index=0:Int )
@@ -395,7 +432,7 @@ class Variant [compound]
 
     method keys->TableKeysIterator<<String,Variant>>
       if (type != TYPE_TABLE) return TableKeysIterator<<String,Variant>>( null )
-      return object->(as [String:Variant]).keys
+      return object->(as [Variant:Variant]).keys
 
     method last->Variant
       which (type)
@@ -410,7 +447,7 @@ class Variant [compound]
           return st[st.count-1]
 
         case TYPE_TABLE
-          local table = object->(as [String:Variant])
+          local table = object->(as [Variant:Variant])
           if (table.count == 0) return undefined
           return table.at( table.count-1 )
 
@@ -494,7 +531,7 @@ class Variant [compound]
           if (object->(as Variant[]) == other.object->(as Variant[])) return 0
           return object.object_id <> other.object.object_id
         case TYPE_TABLE
-          if (object->(as [String:Variant]) == other.object->(as [String:Variant])) return 0
+          if (object->(as [Variant:Variant]) == other.object->(as [Variant:Variant])) return 0
           return object.object_id <> other.object.object_id
         others
           return type <> other.type
@@ -699,7 +736,6 @@ class Variant [compound]
       endIf
 
     method print_to( buffer:PrintWriter )
-      trace buffer is Global.output
       which (type)
         case TYPE_UNDEFINED: return
         case TYPE_NULL:      buffer.print( "null" )
@@ -719,8 +755,10 @@ class Variant [compound]
         case TYPE_OBJECT:    object.print_to( buffer )
         case TYPE_STRING:    buffer.print( object->(as String) )
         case TYPE_LIST:      object->(as Variant[]).print_to( buffer )
-        case TYPE_TABLE:     object->(as [String:Variant]).print_to( buffer )
-        others:              buffer.print( "[Variant.print_to() - undefined type $"(type) )
+        case TYPE_TABLE:     object->(as [Variant:Variant]).print_to( buffer )
+        others
+          Global.error.print( "[Variant.print_to()] Undefined type $"(type) )
+          buffer.print "undefined"
       endWhich
 
     method remove( value:Variant )->Variant
@@ -728,7 +766,7 @@ class Variant [compound]
         case TYPE_LIST
           return object->(as Variant[]).remove( value )
         case TYPE_TABLE
-          return object->(as [String:Variant]).remove( value )
+          return object->(as [Variant:Variant]).remove( value )
         others
           return undefined
       endWhich
@@ -738,7 +776,7 @@ class Variant [compound]
         case TYPE_LIST
           return object->(as Variant[]).remove_at( index )
         case TYPE_TABLE
-          return object->(as [String:Variant]).remove_at( index )
+          return object->(as [Variant:Variant]).remove_at( index )
         others
           return undefined
       endWhich
@@ -749,7 +787,7 @@ class Variant [compound]
         case TYPE_LIST
           return object->(as Variant[]).remove_at( 0 )
         case TYPE_TABLE
-          return object->(as [String:Variant]).remove_at( 0 )
+          return object->(as [Variant:Variant]).remove_at( 0 )
         others
           return undefined
       endWhich
@@ -761,7 +799,7 @@ class Variant [compound]
         case TYPE_LIST
           return object->(as Variant[]).remove_at( n-1 )
         case TYPE_TABLE
-          return object->(as [String:Variant]).remove_at( n-1 )
+          return object->(as [Variant:Variant]).remove_at( n-1 )
         others
           return undefined
       endWhich
@@ -772,17 +810,22 @@ class Variant [compound]
           local list = object->(as Variant[])
           if (index < 0 or index >= list.count) return
           list[index] = value
+        case TYPE_TABLE
+          set( Variant(index), value )
       endWhich
 
     method set( key:String, value:Variant ) [preferred]
-      which (type)
-        case TYPE_TABLE
-          object->(as [String:Variant])[ key ] = value
-      endWhich
+      set( Variant(key), value )
 
     method set( key:Variant, value:Variant )
-      if (key.is_number) set( key->Int32, value )
-      else               set( key->String, value )
+      if (key.is_number)
+        set( key->Int32, value )
+      else
+        which (type)
+          case TYPE_TABLE
+            object->(as [Variant:Variant])[ key ] = value
+        endWhich
+      endIf
 
     method sort( compare_fn:(Function(Variant,Variant)->Logical) )
       # 'compare_fn' should return true if the first parameter should be positioned before the second parameter.
@@ -792,7 +835,7 @@ class Variant [compound]
           local list = object->(as Variant[])
           list.sort( compare_fn )
         case TYPE_TABLE
-          local table = object->(as [String:Variant])
+          local table = object->(as [Variant:Variant])
           table.sort( (a,b) => compare_fn(a.key,b.key) )
       endWhich
 
@@ -924,28 +967,9 @@ class Variant [compound]
       endWhich
 
     method to->String
-      which (type)
-        case TYPE_UNDEFINED: return ""
-        case TYPE_NULL:      return "null"
-        case TYPE_LOGICAL:   return logical->String
-        case TYPE_BYTE:      return byte->String
-        case TYPE_CHARACTER: return character->String
-        case TYPE_INT32:     return int32->String
-        case TYPE_INT:       return integer->String
-        case TYPE_INT64:     return int64->String
-        case TYPE_REAL32:    return real32->String
-        case TYPE_REAL:      return real->String
-        case TYPE_REAL64:    return real64->String
-        case TYPE_INTXY:     return intxy->String
-        case TYPE_XY:        return xy->String
-        case TYPE_XYZ:       return xyz->String
-        case TYPE_BOX:       return box->String
-        case TYPE_OBJECT:    return object->String
-        case TYPE_STRING:    return object->(as String)
-        case TYPE_LIST:      return object->(as Variant[])->String
-        case TYPE_TABLE:     return object->(as [String:Variant])->String
-        others:              return null
-      endWhich
+      local result = String()
+      print_to( result )
+      return result
 
     method to->IntXY
       which (type)
@@ -1031,7 +1055,7 @@ class Variant [compound]
 
     method values->TableValuesIterator<<String,Variant>>
       if (type != TYPE_TABLE) return TableValuesIterator<<String,Variant>>( null )
-      return object->(as [String:Variant]).values
+      return object->(as [Variant:Variant]).values
 
     method write_json( builder:String, &formatted, &omit_commas )
       which (type)
@@ -1094,7 +1118,7 @@ class Variant [compound]
           if (count)
             builder.print '{'
             if (formatted) builder.indent+=2; builder.println
-            forEach (entry at i in object->(as [String:Variant]).entries)
+            forEach (entry at i in object->(as [Variant:Variant]).entries)
               if (i)
                 if (omit_commas) builder.print ' '
                 else             builder.print ','

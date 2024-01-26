@@ -36,6 +36,9 @@ endClass
 
 augment Rogue::Random
   METHODS
+    method hash_code->Int
+      return x.hash_code ~ y.hash_code ~ z.hash_code ~ w.hash_code
+
     method xyzw->XYZW:
       # Creates a XYZW compound with randomized (x,y,z,w) values,
       # each in the range (0.0,1.0) exclusive.
