@@ -117,6 +117,9 @@ class IntBox( position:IntXY, size:IntXY ) [essential compound]
     method expanded( left:Int, top:Int, right:Int, bottom:Int )->IntBox
       return cropped( -left, -top, -right, -bottom )
 
+    method hash_code->Int
+      return position.hash_code ~ size.hash_code
+
     method height->Int
       return this.size.y
 

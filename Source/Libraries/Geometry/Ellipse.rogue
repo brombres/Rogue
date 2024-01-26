@@ -2,6 +2,9 @@ module Geometry
 
 class Ellipse( position:XY, size:XY ) [compound]
   METHODS
+    method hash_code->Int
+      return position.hash_code ~ size.hash_code
+
     method to->String
       return "(@$, $x$)" (position,size.x,size.y)
 endClass
