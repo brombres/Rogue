@@ -23,7 +23,7 @@ class Set<<$DataType>> : [$DataType:$DataType]
     method operator-( other:Set<<$DataType>> )->Set<<$DataType>>
       return cloned.[ difference(other) ]
 
-    method print_to( buffer:String )->String
+    method print_to( buffer:PrintWriter )
       buffer.print( '{' )
       local cur = first_entry
       local i = 0
@@ -34,7 +34,6 @@ class Set<<$DataType>> : [$DataType:$DataType]
         ++i
       endWhile
       buffer.print( '}' )
-      return buffer
 
     method union( other:Set<<$DataType>> )
       add( forEach in other.values )

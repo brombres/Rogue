@@ -1218,7 +1218,7 @@ class Type : Cmd
       # Compounds get:
       # - to->String
       # - description->String (calls to->String by default)
-      # - print_to(String)->String (prints to->String by default)
+      # - print_to(PrintWriter) (prints this->String by default)
       # - operator==
       if (is_compound)
         block m = methods["description()"]

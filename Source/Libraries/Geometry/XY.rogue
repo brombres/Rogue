@@ -231,6 +231,13 @@ class XY( x:Real, y:Real ) [compound]
       # Returns the smaller X and the smaller Y between this value and the other value.
       return XY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
 
+    method print_to( buffer:PrintWriter )
+      buffer.print '('
+      x.print_to( buffer )
+      buffer.print ','
+      y.print_to( buffer )
+      buffer.print ')'
+
     method product->Real
       return x * y
 
