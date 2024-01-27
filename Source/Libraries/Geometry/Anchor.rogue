@@ -43,6 +43,22 @@ class Anchor( position:XY ) [compound]
     method operator==( other:Anchor )->Logical
       return position == other.position
 
+    method print_to( buffer:PrintWriter )
+      which (position)
+        case TOP_LEFT.position:     buffer.print( "TOP_LEFT" )
+        case TOP.position:          buffer.print( "TOP" )
+        case TOP_RIGHT.position:    buffer.print( "TOP_RIGHT" )
+        case LEFT.position:         buffer.print( "LEFT" )
+        case CENTER.position:       buffer.print( "CENTER" )
+        case RIGHT.position:        buffer.print( "RIGHT" )
+        case BOTTOM_LEFT.position:  buffer.print( "BOTTOM_LEFT" )
+        case BOTTOM.position:       buffer.print( "BOTTOM" )
+        case BOTTOM_RIGHT.position: buffer.print( "BOTTOM_RIGHT" )
+        others:            buffer.print( position )
+      endWhich
+
     method to->String
-      return position->String
+      local result = String()
+      print_to( result )
+      return result
 endClass
