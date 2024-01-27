@@ -3164,7 +3164,7 @@ parser
 - create_InvokeContext
   produce InvokeContext( context, args )
 
-- value_expression
+- variant_expression
   on '{' variant_table: return
   on '[' variant_list:  return
   on "[]" -> EmptyVariantList
@@ -3176,11 +3176,11 @@ parser
   if (consume(']')) produce EmptyVariantList
 
   beginList
-    value_expression
+    variant_expression
     consume_eols
     while (consume(',') or not nextIs(']'))
       consume_eols
-      value_expression
+      variant_expression
       consume_eols
     endWhile
     mustConsume ']'
@@ -3194,17 +3194,17 @@ parser
   if (consume('}')) produce EmptyVariantTable
 
   beginList
-    key_value_pair
+    variant_key_value_pair
     consume_eols
     while (consume(',') or not nextIs('}'))
-      key_value_pair
+      variant_key_value_pair
     endWhile
     mustConsume '}'
   createList KeyValuePairList
 
   produce VariantTable(args:KeyValuePairList)
 
-- key_value_pair
+- variant_key_value_pair
   consume_eols
 
   if (consume(':'))
@@ -3223,17 +3223,15 @@ parser
     # { "string":value }, { id:value } -> { "id":value }
     on IDENTIFIER
       create LiteralString(name=content)
-    elseOn STRING
-      create LiteralString(name=content)
     elseOnOthers
-      syntaxError "Identifier or literal string expected."
+      variant_expression
     endOn
     consume_eols
 
     mustConsume ':'
     consume_eols
 
-    value_expression
+    variant_expression
   endIf
 
   create KeyValuePair(key,value)
