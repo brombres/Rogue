@@ -3220,8 +3220,8 @@ parser
       syntaxError "Identifier or literal string expected."
     endOn
   else
-    # { "string":value }, { id:value } -> { "id":value }
     on IDENTIFIER
+      # { id:value } -> { "id":value }
       create LiteralString(name=content)
     elseOnOthers
       variant_expression
