@@ -254,8 +254,8 @@ class Variant [compound]
           return 1
       endWhich
 
-    method entries->TableEntriesIterator<<String,Variant>>
-      if (type != TYPE_TABLE) return TableEntriesIterator<<String,Variant>>( null )
+    method entries->TableEntriesIterator<<Variant,Variant>>
+      if (type != TYPE_TABLE) return TableEntriesIterator<<Variant,Variant>>( null )
       return object->(as [Variant:Variant]).entries
 
     method ensure_list( name:String )->Variant
@@ -315,7 +315,7 @@ class Variant [compound]
       which (type)
         case TYPE_TABLE
           local table = object->(as [Variant:Variant])
-          local entry = table[ key ]
+          local entry = table.find( key )
           if (entry) return entry.value
           else       return undefined
 
@@ -430,8 +430,8 @@ class Variant [compound]
     method is_xyz->Logical
       return (type == TYPE_XYZ)
 
-    method keys->TableKeysIterator<<String,Variant>>
-      if (type != TYPE_TABLE) return TableKeysIterator<<String,Variant>>( null )
+    method keys->TableKeysIterator<<Variant,Variant>>
+      if (type != TYPE_TABLE) return TableKeysIterator<<Variant,Variant>>( null )
       return object->(as [Variant:Variant]).keys
 
     method last->Variant
@@ -1053,8 +1053,8 @@ class Variant [compound]
       endForEach
       return result
 
-    method values->TableValuesIterator<<String,Variant>>
-      if (type != TYPE_TABLE) return TableValuesIterator<<String,Variant>>( null )
+    method values->TableValuesIterator<<Variant,Variant>>
+      if (type != TYPE_TABLE) return TableValuesIterator<<Variant,Variant>>( null )
       return object->(as [Variant:Variant]).values
 
     method write_json( builder:String, &formatted, &omit_commas )

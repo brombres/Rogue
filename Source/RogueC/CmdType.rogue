@@ -663,10 +663,10 @@ augment
     method EmptyCompound.type->Type
       return of_type
 
-    method EmptyValueList.type->Type
+    method EmptyVariantList.type->Type
       return Program.type_Variant
 
-    method EmptyValueTable.type->Type
+    method EmptyVariantTable.type->Type
       return Program.type_Variant
 
     method ExplicitCast.type->Type
@@ -864,10 +864,10 @@ augment
     method Unary.type->Type
       return operand.type
 
-    method ValueList.type->Type
+    method VariantList.type->Type
       return Program.type_Variant
 
-    method ValueTable.type->Type
+    method VariantTable.type->Type
       return Program.type_Variant
 
     method WideningCast.type->Type

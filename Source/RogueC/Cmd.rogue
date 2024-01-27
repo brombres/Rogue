@@ -4803,16 +4803,16 @@ class LiteralUndefined : Cmd
       return "LiteralUndefined"
 endClass
 
-class EmptyValueList : Cmd
+class EmptyVariantList : Cmd
   METHODS
     method description->String
-      return "EmptyValueList"
+      return "EmptyVariantList"
 endClass
 
-class EmptyValueTable : Cmd
+class EmptyVariantTable : Cmd
   METHODS
     method description->String
-      return "EmptyValueTable"
+      return "EmptyVariantTable"
 endClass
 
 class GetTypeInfo : Cmd
@@ -4887,35 +4887,35 @@ class IfConditionalContext : Cmd
 
 endClass
 
-class ValueList : Cmd
+class VariantList : Cmd
   PROPERTIES
     args : Cmd
 
   METHODS
     method init( t, args )
 
-    method init( existing:ValueList )
+    method init( existing:VariantList )
       prior.init( existing )
       if (existing.args) args = existing.args.cloned
 
     method description->String
-      return "ValueList($)" (%args)
+      return "VariantList($)" (%args)
 
 endClass
 
-class ValueTable : Cmd
+class VariantTable : Cmd
   PROPERTIES
     args : KeyValuePairList
 
   METHODS
     method init( t, args )
 
-    method init( existing:ValueTable )
+    method init( existing:VariantTable )
       prior.init( existing )
       if (existing.args) args = existing.args.cloned
 
     method description->String
-      return "ValueTable($)" (%args)
+      return "VariantTable($)" (%args)
 
 endClass
 
