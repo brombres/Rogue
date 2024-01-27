@@ -172,8 +172,8 @@ SYMBOL_DOTDOTGT              ..>
 SYMBOL_DOT_OPEN_SQUARE       .[
 SYMBOL_DOUBLE_VERTICAL_BAR   ||  [structural]
 SYMBOL_EMPTY_SQUARE_BRACKETS []
-SYMBOL_VALUE_LIST            @[
-SYMBOL_VALUE_TABLE           @{
+SYMBOL_VARIANT_LIST            @[
+SYMBOL_VARIANT_TABLE           @{
 SYMBOL_EQ                    ==
 SYMBOL_EQUALS                =
 SYMBOL_FAT_ARROW             =>
@@ -3093,12 +3093,12 @@ parser
   endOn
 
   on "@["
-    value_list
+    variant_list
     return
   endOn
 
   on "@{"
-    value_table
+    variant_table
     return
   endOn
 
@@ -3165,15 +3165,15 @@ parser
   produce InvokeContext( context, args )
 
 - value_expression
-  on '{' value_table: return
-  on '[' value_list:  return
-  on "[]" -> EmptyValueList
+  on '{' variant_table: return
+  on '[' variant_list:  return
+  on "[]" -> EmptyVariantList
   expression
 
-- value_list
+- variant_list
   call use_Variant
   consume_eols
-  if (consume(']')) produce EmptyValueList
+  if (consume(']')) produce EmptyVariantList
 
   beginList
     value_expression
@@ -3186,12 +3186,12 @@ parser
     mustConsume ']'
   createList Args
 
-  produce ValueList(args)
+  produce VariantList(args)
 
-- value_table
+- variant_table
   call use_Variant
   consume_eols
-  if (consume('}')) produce EmptyValueTable
+  if (consume('}')) produce EmptyVariantTable
 
   beginList
     key_value_pair
@@ -3202,7 +3202,7 @@ parser
     mustConsume '}'
   createList KeyValuePairList
 
-  produce ValueTable(args:KeyValuePairList)
+  produce VariantTable(args:KeyValuePairList)
 
 - key_value_pair
   consume_eols

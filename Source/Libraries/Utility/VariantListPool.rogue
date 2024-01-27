@@ -1,12 +1,12 @@
-class ValueListPool : ObjectPool<<Variant>> [singleton]
+class VariantListPool : ObjectPool<<Variant>> [singleton]
   # USAGE
   #   # High GC impact if called frequently
   #   obj.call( @[1,2] )
   #
   #   # Low/No GC impact if called frequently
-  #   uses Utility/ValueListPool
+  #   uses Utility/VariantListPool
   #   ...
-  #   use args = ValueListPool
+  #   use args = VariantListPool
   #     args.add( 1 )
   #     args.add( 2 )
   #     obj.call( args )

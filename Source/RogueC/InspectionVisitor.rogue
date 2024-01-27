@@ -1052,12 +1052,12 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.statements)
       return result
 
-    method on_visit_children( cmd:ValueList )->$ReturnType
+    method on_visit_children( cmd:VariantList )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.args)
       return result
 
-    method on_visit_children( cmd:ValueTable )->$ReturnType
+    method on_visit_children( cmd:VariantTable )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.args)
       return result
