@@ -27,11 +27,59 @@ class XYZW( x:Real, y:Real, z:Real, w=1:Real ) [compound]
     method operator==( other:XYZW )->Logical
       return (x == other.x) and (y == other.y) and (z == other.z) and (w == other.w)
 
+    method operator<>( other:XYZ )->Int
+      local result = x <> other.x
+      if (result) return result
+      result = y <> other.y
+      if (result) return result
+      result = z <> other.z
+      if (result) return result
+      return w <> other.w
+
+    method operator+( other:XYZW )->XYZW
+      return XYZW( x+other.x, y+other.y, z+other.z, w+other.w )
+
+    method operator+( value:Real )->XYZW
+      return XYZW( x+value, y+value, z+value, w+value )
+
+    method operator-()->XYZW
+      return XYZW( -x, -y, -z, -w )
+
+    method operator-( other:XYZW )->XYZW
+      return XYZW( x-other.x, y-other.y, z-other.z, w-other.w )
+
+    method operator-( value:Real )->XYZW
+      return XYZW( x-value, y-value, z-value, w-value )
+
+    method operator*( other:XYZW )->XYZW
+      return XYZW( x*other.x, y*other.y, z*other.z, w*other.w )
+
+    method operator*( value:Real )->XYZW
+      return XYZW( x*value, y*value, z*value, w*value )
+
+    method operator/( other:XYZW )->XYZW
+      return XYZW( x/other.x, y/other.y, z/other.z, w/other.w )
+
+    method operator/( value:Real )->XYZW
+      return XYZW( x/value, y/value, z/value, w/value )
+
+    method operator%( other:XYZW )->XYZW
+      return XYZW( x%other.x, y%other.y, z%other.z, w%other.w )
+
+    method operator%( value:Real )->XYZW
+      return XYZW( x%value, y%value, z%value, w%value )
+
+    method operator^( other:XYZW )->XYZW
+      return XYZW( x^other.x, y^other.y, z^other.z, w^other.w )
+
+    method operator^( value:Real )->XYZW
+      return XYZW( x^value, y^value, z^value, w^value )
+
     method to->String
       return "[$,$,$,$]" (x,y,z,w)
 
     method to->XY
-      return XY(x.floor,y.floor)
+      return XY(x,y)
 
     method to->XYZ
       return XYZ(x,y,z)

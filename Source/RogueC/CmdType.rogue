@@ -220,7 +220,7 @@ augment
       if (target_type.attributes.is_optional)
         return resolver.validate( LiteralNullOptional(t,target_type) )
       elseIf (target_type is Program.@type_Variant)
-        return NativeExpression( t, "(RogueVariant) { ROGUE_VALUE_TYPE_NULL }", Program.type_Variant )
+        return NativeExpression( t, "(RogueVariant) { ROGUE_VARIANT_TYPE_NULL }", Program.type_Variant )
       elseIf (target_type.is_reference)
         of_type = target_type
         return this
