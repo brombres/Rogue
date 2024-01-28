@@ -30,25 +30,25 @@ class Variant [compound]
 
   NATIVE
     nativeHeader
-      @|#define %NS%ROGUE_VALUE_TYPE_UNDEFINED  0
-       |#define %NS%ROGUE_VALUE_TYPE_BYTE       1
-       |#define %NS%ROGUE_VALUE_TYPE_CHARACTER  2
-       |#define %NS%ROGUE_VALUE_TYPE_INT32      3
-       |#define %NS%ROGUE_VALUE_TYPE_INT        4
-       |#define %NS%ROGUE_VALUE_TYPE_INT64      5
-       |#define %NS%ROGUE_VALUE_TYPE_REAL32     6
-       |#define %NS%ROGUE_VALUE_TYPE_REAL       7
-       |#define %NS%ROGUE_VALUE_TYPE_REAL64     8
-       |#define %NS%ROGUE_VALUE_TYPE_LOGICAL    9
-       |#define %NS%ROGUE_VALUE_TYPE_NULL      10
-       |#define %NS%ROGUE_VALUE_TYPE_INTXY     11
-       |#define %NS%ROGUE_VALUE_TYPE_XY        12
-       |#define %NS%ROGUE_VALUE_TYPE_XYZ       13
-       |#define %NS%ROGUE_VALUE_TYPE_BOX       14
-       |#define %NS%ROGUE_VALUE_TYPE_OBJECT    15
-       |#define %NS%ROGUE_VALUE_TYPE_STRING    16
-       |#define %NS%ROGUE_VALUE_TYPE_LIST      17
-       |#define %NS%ROGUE_VALUE_TYPE_TABLE     18
+      @|#define %NS%ROGUE_VARIANT_TYPE_UNDEFINED  0
+       |#define %NS%ROGUE_VARIANT_TYPE_BYTE       1
+       |#define %NS%ROGUE_VARIANT_TYPE_CHARACTER  2
+       |#define %NS%ROGUE_VARIANT_TYPE_INT32      3
+       |#define %NS%ROGUE_VARIANT_TYPE_INT        4
+       |#define %NS%ROGUE_VARIANT_TYPE_INT64      5
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL32     6
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL       7
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL64     8
+       |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL    9
+       |#define %NS%ROGUE_VARIANT_TYPE_NULL      10
+       |#define %NS%ROGUE_VARIANT_TYPE_INTXY     11
+       |#define %NS%ROGUE_VARIANT_TYPE_XY        12
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       13
+       |#define %NS%ROGUE_VARIANT_TYPE_BOX       14
+       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    15
+       |#define %NS%ROGUE_VARIANT_TYPE_STRING    16
+       |#define %NS%ROGUE_VARIANT_TYPE_LIST      17
+       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     18
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -65,7 +65,7 @@ class Variant [compound]
     logical   : Logical   [faux]
     real32    : Real32    [faux]
     real      : Real      [faux]
-    real64    : Real32    [faux]
+    real64    : Real64    [faux]
     intxy     : IntXY        [faux]
     xy        : XY    [faux]
     xyz       : XYZ       [faux]
@@ -89,72 +89,72 @@ class Variant [compound]
 
   GLOBAL METHODS
     method create->Variant
-      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_UNDEFINED }" )->Variant  # undefined
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_UNDEFINED }" )->Variant  # undefined
 
     method create( value:Logical )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_LOGICAL, 0, {.logical=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_LOGICAL, 0, {.logical=$value} }" )->Variant
 
     method create( value:Byte )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_BYTE, 0, {.byte=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_BYTE, 0, {.byte=$value} }" )->Variant
 
     method create( value:Character )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_CHARACTER, 0, {.character=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_CHARACTER, 0, {.character=$value} }" )->Variant
 
     method create( value:Int32 )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_INT32, 0, {.int32=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_INT32, 0, {.int32=$value} }" )->Variant
 
     method create( value:Int )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_INT, 0, {.integer=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_INT, 0, {.integer=$value} }" )->Variant
 
     method create( value:Int64 )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_INT64, 0, {.int64=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_INT64, 0, {.int64=$value} }" )->Variant
 
     method create( value:Real32 )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_REAL32, 0, {.real32=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_REAL32, 0, {.real32=$value} }" )->Variant
 
     method create( value:Real )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_REAL, 0, {.real=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_REAL, 0, {.real=$value} }" )->Variant
 
     method create( value:Real64 )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_REAL64, 0, {.real64=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_REAL64, 0, {.real64=$value} }" )->Variant
 
     method create( value:IntXY )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_INTXY, 0, {.intxy=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_INTXY, 0, {.intxy=$value} }" )->Variant
 
     method create( value:XY )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_XY, 0, {.xy=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_XY, 0, {.xy=$value} }" )->Variant
 
     method create( value:XYZ )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VALUE_TYPE_XYZ, 0, {.xyz=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_XYZ, 0, {.xyz=$value} }" )->Variant
 
     method create( value:Box )->Variant
-      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_BOX, 0, {.box=$value} }" )->Variant
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_BOX, 0, {.box=$value} }" )->Variant
 
     method create( value:Object )->Variant [preferred]
-      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_OBJECT, $value }" )->Variant
-      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Variant  # null value
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_OBJECT, $value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
 
     method create( value:String )->Variant
-      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_STRING, (%Ns%RogueObject*)$value }" )->Variant
-      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Variant  # null value
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_STRING, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
 
     method create( value:Variant[] )->Variant
-      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_LIST, (%Ns%RogueObject*)$value }" )->Variant
-      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Variant  # null value
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
 
     method create( value:[Variant:Variant] )->Variant
-      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_TABLE, (%Ns%RogueObject*)$value }" )->Variant
-      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Variant  # null value
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_TABLE, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
 
     method create_list->Variant
       # Convenience syntax: @[] is equivalent to Variant.create_list()
       local data = Variant[]
-      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_LIST, (%Ns%RogueObject*)$data }" )->Variant
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_LIST, (%Ns%RogueObject*)$data }" )->Variant
 
     method create_table->Variant
       # Convenience syntax: @{} is equivalent to Variant.create_table()
       local data = [Variant:Variant]
-      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VALUE_TYPE_TABLE, (%Ns%RogueObject*)$data }" )->Variant
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_TABLE, (%Ns%RogueObject*)$data }" )->Variant
 
   METHODS
     method add( value:Variant )
@@ -502,6 +502,7 @@ class Variant [compound]
       if (type <= TYPE_REAL64 and other.type <= TYPE_REAL64)
         # Both are primitives
         if (type == TYPE_REAL64 or other.type == TYPE_REAL64) return (real64 <> other.real64).sign
+        if (type == TYPE_REAL   or other.type == TYPE_REAL)   return (real   <> other.real  ).sign
         if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (real32 <> other.real32).sign
         return (int64 <> other.int64).sign
       endIf
@@ -604,8 +605,8 @@ class Variant [compound]
       endWhich
 
     method operator*( other:Variant )->Variant
-      if (this.type == TYPE_STRING and other.is_number) return Variant( this->String * other->Int32 )
-      if (this.is_number and other.type == TYPE_STRING) return Variant( other->String * this->Int32 )
+      if (this.type == TYPE_STRING and other.is_number) return Variant( this->String * other->Int )
+      if (this.is_number and other.type == TYPE_STRING) return Variant( other->String * this->Int )
 
       local (a,b) = to_compatible_values( other )
       which (a.type)
@@ -819,7 +820,7 @@ class Variant [compound]
 
     method set( key:Variant, value:Variant )
       if (key.is_number)
-        set( key->Int32, value )
+        set( key->Int, value )
       else
         which (type)
           case TYPE_TABLE
@@ -841,9 +842,10 @@ class Variant [compound]
 
     method to->Box
       which (type)
-        case TYPE_BOX:       return box
-        case TYPE_INTXY:     return Box(intxy)
-        others:              return $defaultValue<<Box>>
+        case TYPE_BOX:   return box
+        case TYPE_INTXY: return IntBox(intxy)
+        case TYPE_XY:    return Box(xy)
+        others:          return $defaultValue<<Box>>
       endWhich
 
     method to->Byte
@@ -856,8 +858,8 @@ class Variant [compound]
         case TYPE_REAL32:    return real32->Byte
         case TYPE_REAL:      return real->Byte
         case TYPE_REAL64:    return real64->Byte
-        case TYPE_OBJECT:    return (object->String->Int32)?
-        case TYPE_STRING:    return (object->String->Int32)?
+        case TYPE_OBJECT:    return (object->String->Int)?
+        case TYPE_STRING:    return (object->String->Int)?
         others:              return 0
       endWhich
 
