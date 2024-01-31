@@ -718,9 +718,11 @@ class File( filepath:String ) [compound]
         Process.run( "ln -s $ $" (target.esc,file.esc) )
       endIf
 
+    method timestamp->Timestamp
+      return Timestamp( timestamp_ms / 1000.0 )
+
     method timestamp_ms->Int64
       # Returns the last modified time.
-
       local ms : Int64
       local filepath = resolved.filepath
 
