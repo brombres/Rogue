@@ -38,6 +38,14 @@ class Circle( position:XY, radius:Real ) [compound]
     method intersects( triangle:Triangle )->Logical
       return triangle.intersects( this )
 
+    method operator==( other:Circle )->Logical
+      return position == other.position and radius == other.radius
+
+    method operator<>( other:Circle )->Logical
+      local result = position <> other.position
+      if (result) return result
+      return radius <> other.radius
+
     method operator+( delta:XY )->Circle
       return Circle( position+delta, radius )
 
