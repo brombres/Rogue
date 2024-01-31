@@ -133,13 +133,18 @@ class Type : Cmd
       if (name.ends_with("[][][][][][][][][]"))
         throw t.error( "Rogue does not support list types with more than 8 dimensions. Possible infinite template generation. For example, if type $DataType[] directly or indirectly uses type $DataType[][], then type Int32[][] will use type Int32[][][] and so on." )
       endIf
-      local type = Program.current_module.find_type( t, name, &extended_search )
+
+      local type = element_type.module_context.find_type( t, name )
       if (type) return type
 
       local type_args = TemplateArgs(t).[ add(TokenList(t,element_type.name_tokens)) ]
       local template = Program.default_module.must_find_template( t, "List<<1>>", name )
-      local result = Type( t, template, element_type.module_context, name, type_args )
-      return result
+
+      type = Type( t, element_type.module_context, name, 0 )
+      type.type_template = template
+      type.type_args     = type_args
+      if (template.attributes.is_essential or Program.generate_doc) type.ensure_definition
+      return type
 
     method create( t:Token, key_type:Type, value_type:Type )->Type
       # Creates type [KeyType:ValueType] AKA Table<<KeyType,ValueType>>

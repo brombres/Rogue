@@ -146,7 +146,7 @@ class Module
           template_name.print isolated_type_name
           template_name.print "<<0>>"
           local template = mod.templates[ template_name ]
-          if (template) return Type( t, template, isolated_type_name )
+          if (template) return Type( t, template, mod, isolated_type_name )
         endUse
       endIf
 
