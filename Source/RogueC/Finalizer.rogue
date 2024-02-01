@@ -64,9 +64,6 @@ class Finalizer : Visitor
 
       (forEach in Program.dynamic_methods).mark_uncollected # reset flags for any future needs
 
-      # Turn dynamic dispatch calls into static and virtual dispatch calls where possible
-      Program.apply( ConvertDynamicCallsToStaticAndVirtualCalls )
-
       # Collect a list of all types in dependency order.
       local types = Type[]
       forEach (m in Program.modules)
@@ -92,6 +89,9 @@ class Finalizer : Visitor
       endForEach
 
       ExceptionAnalyzer().apply()
+
+      # Turn dynamic dispatch calls into static and virtual dispatch calls where possible
+      Program.apply( ConvertDynamicCallsToStaticAndVirtualCalls )
 
       if (Program.cmd_call_global_cases)
         # Reorder introspection call dispatcher to use sequential case numbers
