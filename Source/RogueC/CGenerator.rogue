@@ -51,6 +51,7 @@ class CGenerator : Visitor
     method dispatch_exception( t:Token, &indeterminate )
       forEach (control in control_stack step -1)
         if (control.catches_exception or control.requires_cleanup)
+          if (not control.catches_exception) control.exception_passthrough = true
           if (indeterminate) writer.print( "if (%Ns%Rogue_exception)" )
           writer.print " goto "
           writer.print control.c_escape_label(this)
@@ -2791,7 +2792,7 @@ augment
       noAction
 
     method ControlStructure.on_end_scope( cgen:CGenerator )
-      if (catches_escape)
+      if (catches_escape or exception_passthrough)
         cgen.writer.print   c_escape_label(cgen)
         cgen.writer.println ":;"
       endIf
@@ -2803,7 +2804,7 @@ augment
     method CleanupBlock.on_end_scope( cgen:CGenerator )
       local writer = cgen.writer
 
-      if (catches_escape)
+      if (catches_escape or exception_passthrough)
         writer.print   c_escape_label(cgen)
         writer.println ":;"
       endIf
