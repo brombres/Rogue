@@ -178,7 +178,7 @@ SYMBOL_EQ                    ==
 SYMBOL_EQUALS                =
 SYMBOL_FAT_ARROW             =>
 SYMBOL_GE                    >=
-SYMBOL_GT                    >   [structural]
+SYMBOL_GT                    >
 SYMBOL_GTGT                  >>  [structural]
 SYMBOL_LE                    <=
 SYMBOL_LEFT_SHIFT            :<<:
