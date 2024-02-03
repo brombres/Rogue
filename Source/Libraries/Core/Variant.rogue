@@ -19,14 +19,16 @@ class Variant [compound]
     TYPE_REAL64    =  8
     TYPE_LOGICAL   =  9
     TYPE_NULL      = 10
-    TYPE_INTXY     = 11
-    TYPE_XY        = 12
-    TYPE_XYZ       = 13
-    TYPE_BOX       = 14
-    TYPE_OBJECT    = 15
-    TYPE_STRING    = 16
-    TYPE_LIST      = 17
-    TYPE_TABLE     = 18
+    TYPE_ANCHOR    = 11
+    TYPE_BOX       = 12
+    TYPE_CIRCLE    = 13
+    TYPE_XY        = 14
+    TYPE_XYZ       = 15
+    TYPE_XYZW      = 16
+    TYPE_OBJECT    = 17
+    TYPE_STRING    = 18
+    TYPE_LIST      = 19
+    TYPE_TABLE     = 20
 
   NATIVE
     nativeHeader
@@ -41,24 +43,27 @@ class Variant [compound]
        |#define %NS%ROGUE_VARIANT_TYPE_REAL64     8
        |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL    9
        |#define %NS%ROGUE_VARIANT_TYPE_NULL      10
-       |#define %NS%ROGUE_VARIANT_TYPE_INTXY     11
-       |#define %NS%ROGUE_VARIANT_TYPE_XY        12
-       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       13
-       |#define %NS%ROGUE_VARIANT_TYPE_BOX       14
-       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    15
-       |#define %NS%ROGUE_VARIANT_TYPE_STRING    16
-       |#define %NS%ROGUE_VARIANT_TYPE_LIST      17
-       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     18
+       |#define %NS%ROGUE_VARIANT_TYPE_ANCHOR    11
+       |#define %NS%ROGUE_VARIANT_TYPE_BOX       12
+       |#define %NS%ROGUE_VARIANT_TYPE_CIRCLE    13
+       |#define %NS%ROGUE_VARIANT_TYPE_XY        14
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       15
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZW      16
+       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    17
+       |#define %NS%ROGUE_VARIANT_TYPE_STRING    18
+       |#define %NS%ROGUE_VARIANT_TYPE_LIST      19
+       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     20
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
     # tricky - .type must be checked to know which property is valid.
-    type      : Int32
+    type      : Int
     object    : Object # Can't be mixed into the union due to GC constraints
 
     box       : Box       [faux]
     byte      : Byte      [faux]
     character : Character [faux]
+    circle    : Circle    [faux]
     int32     : Int32     [faux]
     integer   : Int       [faux]
     int64     : Int64     [faux]
@@ -66,15 +71,16 @@ class Variant [compound]
     real32    : Real32    [faux]
     real      : Real      [faux]
     real64    : Real64    [faux]
-    intxy     : IntXY        [faux]
-    xy        : XY    [faux]
+    xy        : XY        [faux]
     xyz       : XYZ       [faux]
+    xyzw      : XYZW      [faux]
 
     native @|union
             |{
             |  %Ns%GeometryBox    box;
             |  %Ns%RogueByte      byte;
             |  %Ns%RogueCharacter character;
+            |  %Ns%GeometryCircle circle;
             |  %Ns%RogueInt32     int32;
             |  %Ns%RogueInt       integer;
             |  %Ns%RogueInt64     int64;
@@ -82,9 +88,9 @@ class Variant [compound]
             |  %Ns%RogueReal32    real32;
             |  %Ns%RogueReal      real;
             |  %Ns%RogueReal64    real64;
-            |  %Ns%GeometryIntXY  intxy;
             |  %Ns%GeometryXY     xy;
             |  %Ns%GeometryXYZ    xyz;
+            |  %Ns%GeometryXYZW   xyzw;
             |};
 
   GLOBAL METHODS
@@ -118,17 +124,23 @@ class Variant [compound]
     method create( value:Real64 )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_REAL64, 0, {.real64=$value} }" )->Variant
 
-    method create( value:IntXY )->Variant
-      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_INTXY, 0, {.intxy=$value} }" )->Variant
-
     method create( value:XY )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_XY, 0, {.xy=$value} }" )->Variant
 
     method create( value:XYZ )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_XYZ, 0, {.xyz=$value} }" )->Variant
 
+    method create( value:XYZW )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_XYZW, 0, {.xyzw=$value} }" )->Variant
+
+    method create( value:Anchor )->Variant
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_ANCHOR, 0, {.xy=$value.position} }" )->Variant
+
     method create( value:Box )->Variant
       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_BOX, 0, {.box=$value} }" )->Variant
+
+    method create( value:Circle )->Variant
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_CIRCLE, 0, {.circle=$value} }" )->Variant
 
     method create( value:Object )->Variant [preferred]
       if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_OBJECT, $value }" )->Variant
@@ -337,10 +349,12 @@ class Variant [compound]
         case TYPE_REAL32:    return real32.hash_code
         case TYPE_REAL:      return real.hash_code
         case TYPE_REAL64:    return real64.hash_code
-        case TYPE_INTXY:     return intxy.hash_code
         case TYPE_XY:        return xy.hash_code
         case TYPE_XYZ:       return xyz.hash_code
+        case TYPE_XYZW:      return xyzw.hash_code
+        case TYPE_ANCHOR:    return xy.hash_code
         case TYPE_BOX:       return box.hash_code
+        case TYPE_CIRCLE:    return circle.hash_code
         case TYPE_OBJECT:    return object.hash_code
         case TYPE_STRING:    return object->(as String).hash_code
         case TYPE_LIST:      return object->(as Variant[]).hash_code
@@ -364,6 +378,9 @@ class Variant [compound]
           return false
       endWhich
 
+    method is_anchor->Logical
+      return (type == TYPE_ANCHOR)
+
     method is_box->Logical
       return (type == TYPE_BOX)
 
@@ -373,11 +390,14 @@ class Variant [compound]
     method is_character->Logical
       return (type == TYPE_CHARACTER)
 
+    method is_circle->Logical
+      return (type == TYPE_CIRCLE)
+
     method is_empty->Logical
       return (count == 0)
 
-    method is_intxy->Logical
-      return (type == TYPE_INTXY)
+    method is_geometry->Logical
+      return (type >= TYPE_ANCHOR and type <= TYPE_XYZW)
 
     method is_int32->Logical
       return (type == TYPE_INT32)
@@ -429,6 +449,9 @@ class Variant [compound]
 
     method is_xyz->Logical
       return (type == TYPE_XYZ)
+
+    method is_xyzw->Logical
+      return (type == TYPE_XYZW)
 
     method keys->TableKeysIterator<<Variant,Variant>>
       if (type != TYPE_TABLE) return TableKeysIterator<<Variant,Variant>>( null )
@@ -514,15 +537,17 @@ class Variant [compound]
           return logical <> other.logical
         case TYPE_NULL
           return 0  # equal
-        case TYPE_INTXY:
-          return intxy <> other.intxy
-        case TYPE_XY
+        case TYPE_XY, TYPE_ANCHOR
           return xy <> other.xy
         case TYPE_XYZ
           return xyz <> other.xyz
+        case TYPE_XYZW
+          return xyzw <> other.xyzw
         case TYPE_BOX
           if (box.size == other.box.size) return box.position <> other.box.position
           else                            return box.size <> other.box.size
+        case TYPE_CIRCLE
+          return circle <> other.circle
         case TYPE_OBJECT
           if (object == other.object) return 0
           return object.object_id <> other.object.object_id
@@ -541,27 +566,19 @@ class Variant [compound]
     method operator-()->Variant
       which (type)
         case TYPE_BYTE:      return Variant( -byte )
-        case TYPE_INT32:     return Variant( -int32 )
         case TYPE_INT:       return Variant( -integer )
-        case TYPE_INT64:     return Variant( -int64 )
-        case TYPE_REAL32:    return Variant( -real32 )
         case TYPE_REAL:      return Variant( -real )
-        case TYPE_REAL64:    return Variant( -real64 )
         case TYPE_LOGICAL:   return Variant( -logical )
-        case TYPE_INTXY:     return Variant( -intxy )
         case TYPE_XY:        return Variant( -xy )
         case TYPE_XYZ:       return Variant( -xyz )
+        case TYPE_XYZW:      return Variant( -xyzw )
         others
           return undefined
       endWhich
 
     method operator!()->Variant
       if (this.is_number)
-        which (type)
-          case TYPE_INT32: return Variant( !int32 )
-          case TYPE_INT64: return Variant( !int64 )
-          others:          return Variant( !(this->Int) )
-        endWhich
+        return Variant( !(this->Int) )
       else
         return undefined
       endIf
@@ -578,9 +595,9 @@ class Variant [compound]
         case TYPE_REAL:      return Variant( a.real      + b.real )
         case TYPE_REAL64:    return Variant( a.real64    + b.real64 )
         case TYPE_LOGICAL:   return Variant( a.logical or b.logical )
-        case TYPE_INTXY:     return Variant( a.intxy     + b.intxy )
         case TYPE_XY:        return Variant( a.xy        + b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       + b.xyz )
+        case TYPE_XYZW:      return Variant( a.xyzw      + b.xyzw )
         case TYPE_STRING:    return Variant( a->String   + b->String )
         others
           return undefined
@@ -597,9 +614,9 @@ class Variant [compound]
         case TYPE_REAL32:    return Variant( a.real32    - b.real32 )
         case TYPE_REAL:      return Variant( a.real      - b.real )
         case TYPE_REAL64:    return Variant( a.real64    - b.real64 )
-        case TYPE_INTXY:     return Variant( a.intxy     - b.intxy )
         case TYPE_XY:        return Variant( a.xy        - b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       - b.xyz )
+        case TYPE_XYZW:      return Variant( a.xyzw      - b.xyzw )
         others
           return undefined
       endWhich
@@ -619,9 +636,9 @@ class Variant [compound]
         case TYPE_REAL:      return Variant( a.real      * b.real )
         case TYPE_REAL64:    return Variant( a.real64    * b.real64 )
         case TYPE_LOGICAL:   return Variant( a.logical and b.logical )
-        case TYPE_INTXY:     return Variant( a.intxy     * b.intxy )
         case TYPE_XY:        return Variant( a.xy        * b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       * b.xyz )
+        case TYPE_XYZW:      return Variant( a.xyzw      * b.xyzw )
         others
           return undefined
       endWhich
@@ -639,9 +656,9 @@ class Variant [compound]
         case TYPE_REAL32:    return Variant( a.real32    / b.real32 )
         case TYPE_REAL:      return Variant( a.real      / b.real )
         case TYPE_REAL64:    return Variant( a.real64    / b.real64 )
-        case TYPE_INTXY:     return Variant( a.intxy     / b.intxy )
         case TYPE_XY:        return Variant( a.xy        / b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       / b.xyz )
+        case TYPE_XYZW:      return Variant( a.xyzw      / b.xyzw )
         others
           return undefined
       endWhich
@@ -657,9 +674,9 @@ class Variant [compound]
         case TYPE_REAL32:    return Variant( a.real32    % b.real32 )
         case TYPE_REAL:      return Variant( a.real      % b.real )
         case TYPE_REAL64:    return Variant( a.real64    % b.real64 )
-        case TYPE_INTXY:     return Variant( a.intxy     % b.intxy )
         case TYPE_XY:        return Variant( a.xy        % b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       % b.xyz )
+        case TYPE_XYZW:      return Variant( a.xyzw      % b.xyzw )
         others
           return undefined
       endWhich
@@ -675,9 +692,9 @@ class Variant [compound]
         case TYPE_REAL32:    return Variant( a.real32    ^ b.real32 )
         case TYPE_REAL:      return Variant( a.real      ^ b.real )
         case TYPE_REAL64:    return Variant( a.real64    ^ b.real64 )
-        case TYPE_INTXY:     return Variant( a.intxy     ^ b.intxy )
         case TYPE_XY:        return Variant( a.xy        ^ b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       ^ b.xyz )
+        case TYPE_XYZW:      return Variant( a.xyzw      ^ b.xyzw )
         others
           return undefined
       endWhich
@@ -749,10 +766,12 @@ class Variant [compound]
         case TYPE_REAL32:    real32.print_to( buffer )
         case TYPE_REAL:      real.print_to( buffer )
         case TYPE_REAL64:    real64.print_to( buffer )
-        case TYPE_INTXY:     intxy.print_to( buffer )
         case TYPE_XY:        xy.print_to( buffer )
         case TYPE_XYZ:       xyz.print_to( buffer )
+        case TYPE_XYZW:      xyzw.print_to( buffer )
+        case TYPE_ANCHOR:    Anchor(xy).print_to( buffer )
         case TYPE_BOX:       box.print_to( buffer )
+        case TYPE_CIRCLE:    circle.print_to( buffer )
         case TYPE_OBJECT:    object.print_to( buffer )
         case TYPE_STRING:    buffer.print( object->(as String) )
         case TYPE_LIST:      object->(as Variant[]).print_to( buffer )
@@ -840,12 +859,18 @@ class Variant [compound]
           table.sort( (a,b) => compare_fn(a.key,b.key) )
       endWhich
 
+    method to->Anchor
+      which (type)
+        case TYPE_ANCHOR, TYPE_XY: return Anchor( xy )
+        others:                    return Anchor( this->XY )
+      endWhich
+
     method to->Box
       which (type)
-        case TYPE_BOX:   return box
-        case TYPE_INTXY: return IntBox(intxy)
-        case TYPE_XY:    return Box(xy)
-        others:          return $defaultValue<<Box>>
+        case TYPE_BOX:    return box
+        case TYPE_CIRCLE: return Box( box.position-box.radius, Vector2(box.radius*2) )
+        case TYPE_XY:     return Box(xy)
+        others:           return $defaultValue<<Box>>
       endWhich
 
     method to->Byte
@@ -878,6 +903,13 @@ class Variant [compound]
           if (st and st.count) return st[0]
           else                 return 0
         others:              return 0
+      endWhich
+
+    method to->Circle
+      which (type)
+        case TYPE_BOX:    return Circle( box.position + box.size/2, box.size/2 )
+        case TYPE_CIRCLE: return circle
+        others:           return $defaultValue<<Circle>>
       endWhich
 
     method to->Int32
@@ -921,10 +953,11 @@ class Variant [compound]
         case TYPE_REAL32:    return real32?
         case TYPE_REAL:      return real?
         case TYPE_REAL64:    return real64?
-        case TYPE_INTXY:     return intxy.x? or intxy.y?
-        case TYPE_XY:        return xy.x? or xy.y?
+        case TYPE_XY, TYPE_ANCHOR: return xy.x? or xy.y?
         case TYPE_XYZ:       return xyz.x? or xyz.y? or xyz.z?
+        case TYPE_XYZW:      return xyzw.x? or xyzw.y? or xyzw.z? or xyzw.w?
         case TYPE_BOX:       return box.size.x? or box.size.y?
+        case TYPE_CIRCLE:    return circle.radius?
         case TYPE_OBJECT:    return true
         case TYPE_STRING:    return true
         case TYPE_LIST:      return true
@@ -973,28 +1006,46 @@ class Variant [compound]
       print_to( result )
       return result
 
-    method to->IntXY
-      which (type)
-        case TYPE_INTXY:     return intxy
-        case TYPE_XY:        return xy->IntXY
-        case TYPE_XYZ:       return xyz->IntXY
-        others:              return $defaultValue<<IntXY>>
-      endWhich
-
     method to->XY
       which (type)
-        case TYPE_INTXY:     return intxy->XY
-        case TYPE_XY:        return xy
-        case TYPE_XYZ:       return xyz->XY
-        others:              return $defaultValue<<XY>>
+        case TYPE_XY, TYPE_ANCHOR: return xy
+        case TYPE_XYZ:             return xyz->XY
+        case TYPE_XYZW:            return xyzw->XY
+        case TYPE_INT32:           return XY(int32,int32)
+        case TYPE_INT:             return XY(integer,integer)
+        case TYPE_INT64:           return XY(int64,int64)
+        case TYPE_REAL32:          return XY(real32,real32)
+        case TYPE_REAL:            return XY(real,real)
+        case TYPE_REAL64:          return XY(real64,real64)
+        others:                    return $defaultValue<<XY>>
       endWhich
 
     method to->XYZ
       which (type)
-        case TYPE_INTXY:     return XYZ(intxy)
-        case TYPE_XY:        return XYZ(xy)
-        case TYPE_XYZ:       return xyz
-        others:              return $defaultValue<<XYZ>>
+        case TYPE_XY:              return XYZ(xy)
+        case TYPE_XYZ:             return xyz
+        case TYPE_XYZW:            return xyzw->XYZ
+        case TYPE_INT32:           return XYZ(int32,int32,int32)
+        case TYPE_INT:             return XYZ(integer,integer,integer)
+        case TYPE_INT64:           return XYZ(int64,int64,int64)
+        case TYPE_REAL32:          return XYZ(real32,real32,real32)
+        case TYPE_REAL:            return XYZ(real,real,real)
+        case TYPE_REAL64:          return XYZ(real64,real64,real64)
+        others:                    return $defaultValue<<XYZ>>
+      endWhich
+
+    method to->XYZW
+      which (type)
+        case TYPE_XY:              return XYZW(xy)
+        case TYPE_XYZ:             return XYZW(xyz)
+        case TYPE_XYZW:            return xyzw
+        case TYPE_INT32:           return XYZW(int32,int32,int32)
+        case TYPE_INT:             return XYZW(integer,integer,integer)
+        case TYPE_INT64:           return XYZW(int64,int64,int64)
+        case TYPE_REAL32:          return XYZW(real32,real32,real32)
+        case TYPE_REAL:            return XYZW(real,real,real)
+        case TYPE_REAL64:          return XYZW(real64,real64,real64)
+        others:                    return $defaultValue<<XYZW>>
       endWhich
 
     method to<<$Type>>->$Type
@@ -1041,6 +1092,13 @@ class Variant [compound]
         return (Variant(this->Byte),Variant(other->Byte))
       endIf
 
+      if (type >= TYPE_XY and type <= TYPE_XYZW and other.type >= TYPE_XY and other.type <= TYPE_XYZW)
+        if (type == TYPE_XYZW or other.type == TYPE_XYZW) return (this->XYZW,other->XYZW)
+        if (type == TYPE_XYZ  or other.type == TYPE_XYZ)  return (this->XYZ, other->XYZ)
+        return (this->XY, other->XY)
+      endIf
+
+
       return (undefined,undefined)
 
     method to_json( &formatted, &omit_commas )->String
@@ -1086,15 +1144,21 @@ class Variant [compound]
           builder.print( logical )
         case TYPE_NULL
           builder.print( "null" )
-        case TYPE_INTXY:
-          builder.[ print('['), print(intxy.x), print(','), print(intxy.y), print(']') ]
         case TYPE_XY:
           builder.[ print('['), print(xy.x), print(','), print(xy.y), print(']') ]
         case TYPE_XYZ
           builder.[ print('['), print(xyz.x), print(','), print(xyz.y), print(','), print(xyz.z), print(']') ]
+        case TYPE_XYZW
+          builder.[ print('['), print(xyzw.x), print(','), print(xyzw.y), print(','), print(xyzw.z) ]
+          builder.[ print(','), print(xyzw.w), print(']') ]
+        case TYPE_ANCHOR
+          write_json_string( Anchor(xy).name, builder )
         case TYPE_BOX
           builder.[ print('['), print(box.position.x), print(','), print(box.position.y) ]
           builder.[ print(','), print(box.size.x),     print(','), print(box.size.y), print(']') ]
+        case TYPE_CIRCLE
+          builder.[ print("[["), print(circle.position.x), print(','), print(circle.position.y) ]
+          builder.[ print("],"), print(circle.radius), print("]") ]
         case TYPE_OBJECT
           object.write_json( builder, &=formatted, &=omit_commas )
         case TYPE_STRING

@@ -27,7 +27,7 @@ class XYZW( x:Real, y:Real, z:Real, w=1:Real ) [compound]
     method operator==( other:XYZW )->Logical
       return (x == other.x) and (y == other.y) and (z == other.z) and (w == other.w)
 
-    method operator<>( other:XYZ )->Int
+    method operator<>( other:XYZW )->Int
       local result = x <> other.x
       if (result) return result
       result = y <> other.y
