@@ -55,7 +55,7 @@ class Program [singleton]
     type_Math            : Type
     type_Object          : Type
     type_String          : Type
-    type_Variant           : Type
+    type_Variant         : Type
     type_Exception       : Type
     type_TableType       : Type
     type_TypeInfo        : Type

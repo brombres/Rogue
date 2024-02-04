@@ -2825,11 +2825,16 @@ augment
           writer.println '{'
           writer.indent += 2
 
+          local caught_base_exception = false
           forEach (catch_block at i in catches)
             if (i > 0) writer.print "else "
-            writer.print   "if (%Ns%Rogue_instance_of(%Ns%Rogue_exception, "
-            writer.print   catch_block.exception_type.id
-            writer.println "))"
+            if (catch_block.exception_type is Program.type_Exception)
+              caught_base_exception = true
+            else
+              writer.print   "if (%Ns%Rogue_instance_of(%Ns%Rogue_exception, "
+              writer.print   catch_block.exception_type.id
+              writer.println "))"
+            endIf
             writer.println '{'
             writer.indent += 2
 
@@ -2854,7 +2859,7 @@ augment
             writer.println '}'
           endForEach
 
-          if (not cgen.is_end_of_procedure(this))
+          if (not caught_base_exception and not cgen.is_end_of_procedure(this))
             writer.println "else"
             writer.println '{'
             writer.indent += 2
