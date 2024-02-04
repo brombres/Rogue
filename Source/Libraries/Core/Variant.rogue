@@ -868,7 +868,7 @@ class Variant [compound]
     method to->Box
       which (type)
         case TYPE_BOX:    return box
-        case TYPE_CIRCLE: return Box( box.position-box.radius, Vector2(box.radius*2) )
+        case TYPE_CIRCLE: return Box( circle.position-circle.radius, XY(circle.radius*2) )
         case TYPE_XY:     return Box(xy)
         others:           return $defaultValue<<Box>>
       endWhich
@@ -907,7 +907,7 @@ class Variant [compound]
 
     method to->Circle
       which (type)
-        case TYPE_BOX:    return Circle( box.position + box.size/2, box.size/2 )
+        case TYPE_BOX:    return Circle( box.position + box.size/2, box.size.max/2 )
         case TYPE_CIRCLE: return circle
         others:           return $defaultValue<<Circle>>
       endWhich
