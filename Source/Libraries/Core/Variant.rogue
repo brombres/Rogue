@@ -868,7 +868,7 @@ class Variant [compound]
     method to->Box
       which (type)
         case TYPE_BOX:    return box
-        case TYPE_CIRCLE: return Box( box.position-box.radius, Vector2(box.radius*2) )
+        case TYPE_CIRCLE: return Box( circle.position-circle.radius, XY(circle.radius*2) )
         case TYPE_XY:     return Box(xy)
         others:           return $defaultValue<<Box>>
       endWhich
@@ -907,7 +907,7 @@ class Variant [compound]
 
     method to->Circle
       which (type)
-        case TYPE_BOX:    return Circle( box.position + box.size/2, box.size/2 )
+        case TYPE_BOX:    return Circle( box.position + box.size/2, box.size.max/2 )
         case TYPE_CIRCLE: return circle
         others:           return $defaultValue<<Circle>>
       endWhich
@@ -924,6 +924,21 @@ class Variant [compound]
         case TYPE_REAL64:    return real64->Int32
         case TYPE_OBJECT:    return object->String->Int32
         case TYPE_STRING:    return object->String->Int32
+        others:              return 0
+      endWhich
+
+    method to->Int
+      which (type)
+        case TYPE_BYTE:      return byte->Int
+        case TYPE_CHARACTER: return character->Int
+        case TYPE_INT32:     return int32->Int
+        case TYPE_INT:       return integer->Int
+        case TYPE_INT64:     return int64->Int
+        case TYPE_REAL32:    return real32->Int
+        case TYPE_REAL:      return real->Int
+        case TYPE_REAL64:    return real64->Int
+        case TYPE_OBJECT:    return object->String->Int
+        case TYPE_STRING:    return object->String->Int
         others:              return 0
       endWhich
 
@@ -983,6 +998,21 @@ class Variant [compound]
         case TYPE_REAL64:    return real64->Real32
         case TYPE_OBJECT:    return object->String->Real32
         case TYPE_STRING:    return object->String->Real32
+        others:              return 0
+      endWhich
+
+    method to->Real
+      which (type)
+        case TYPE_BYTE:      return byte->Real
+        case TYPE_CHARACTER: return character->Real
+        case TYPE_INT32:     return int32->Real
+        case TYPE_INT:       return integer->Real
+        case TYPE_INT64:     return int64->Real
+        case TYPE_REAL32:    return real32->Real
+        case TYPE_REAL:      return real->Real
+        case TYPE_REAL64:    return real64->Real
+        case TYPE_OBJECT:    return object->String->Real
+        case TYPE_STRING:    return object->String->Real
         others:              return 0
       endWhich
 
