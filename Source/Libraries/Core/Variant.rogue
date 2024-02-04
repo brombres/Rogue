@@ -927,6 +927,21 @@ class Variant [compound]
         others:              return 0
       endWhich
 
+    method to->Int
+      which (type)
+        case TYPE_BYTE:      return byte->Int
+        case TYPE_CHARACTER: return character->Int
+        case TYPE_INT32:     return int32->Int
+        case TYPE_INT:       return integer->Int
+        case TYPE_INT64:     return int64->Int
+        case TYPE_REAL32:    return real32->Int
+        case TYPE_REAL:      return real->Int
+        case TYPE_REAL64:    return real64->Int
+        case TYPE_OBJECT:    return object->String->Int
+        case TYPE_STRING:    return object->String->Int
+        others:              return 0
+      endWhich
+
     method to->Int64
       which (type)
         case TYPE_BYTE:      return byte->Int64
@@ -983,6 +998,21 @@ class Variant [compound]
         case TYPE_REAL64:    return real64->Real32
         case TYPE_OBJECT:    return object->String->Real32
         case TYPE_STRING:    return object->String->Real32
+        others:              return 0
+      endWhich
+
+    method to->Real
+      which (type)
+        case TYPE_BYTE:      return byte->Real
+        case TYPE_CHARACTER: return character->Real
+        case TYPE_INT32:     return int32->Real
+        case TYPE_INT:       return integer->Real
+        case TYPE_INT64:     return int64->Real
+        case TYPE_REAL32:    return real32->Real
+        case TYPE_REAL:      return real->Real
+        case TYPE_REAL64:    return real64->Real
+        case TYPE_OBJECT:    return object->String->Real
+        case TYPE_STRING:    return object->String->Real
         others:              return 0
       endWhich
 
