@@ -315,7 +315,7 @@ class Program [singleton]
       if (is_organizing) return
       is_organizing = true
 
-      local i1 = 0L
+      local i1 = 0
       while (i1 < unorganized_types.count)
         local i = i1
         while (i < unorganized_types.count)
