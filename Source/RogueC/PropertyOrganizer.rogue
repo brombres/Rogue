@@ -113,7 +113,41 @@ class PropertyOrganizer : Visitor
       endIf
 
     method on( cmd:GlobalPropertyDeclarations )->Cmd
-      return cmd
+      forEach (decl in cmd.declarations)
+        if local p = decl->(as Property)
+          p.doc = cmd.doc
+        elseIf local p = decl->(as NativeProperty)
+          p.doc = cmd.doc
+        endIf
+      endForEach
+
+      local type = cmd.type
+      if (type)
+        forEach (decl in cmd.declarations)
+          local p = decl->(as Property)
+          if (p)
+            p.type = type
+            p.attributes.flags |= cmd.attributes.flags
+            collect_global( decl.t, p )
+          else
+            throw decl.t.error( "Global properties cannot be native." )
+          endIf
+        endForEach
+      else
+        forEach (decl in cmd.declarations)
+          local p = decl->(as Property)
+          if (p)
+            p.attributes.flags |= cmd.attributes.flags
+            collect_global( p.t, p )
+          else
+            local native_property = decl->(as NativeProperty)
+            if (native_property)
+              throw native_property.t.error( "Global properties cannot be native." )
+            endIf
+          endIf
+        endForEach
+      endIf
+      return null
 
     method on( cmd:PropertyDeclarations )->Cmd
       forEach (decl in cmd.declarations)
@@ -193,11 +227,7 @@ class PropertyOrganizer : Visitor
         endIf
       endIf
 
-      p.type.[ ensure_definition, organize_properties ]
-
-      if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
-        p.type.attributes.contains_reference = true
-      endIf
+      p.type.[ ensure_definition, organize_type ]
 
       local existing_p = this_type.global_properties[p.name]
       if (existing_p and existing_p.type_context is this_type)
