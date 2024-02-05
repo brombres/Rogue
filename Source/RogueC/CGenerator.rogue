@@ -2690,7 +2690,7 @@ augment
             writer.print   "%Ns%RogueInt n = ((%Ns%RogueInt)(("
             writer.print   c_name
             writer.println "*)THISOBJ)->capacity);"
-            writer.println @|while (--n >=0)
+            writer.println @|while (--n >= 0)
                             |{
                             |  if ((ref = *(++cursor)) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
                             |}
@@ -2708,11 +2708,11 @@ augment
             writer.print   c_name
             writer.println "*)THISOBJ)->capacity);"
 
-            # while (--n >=0)
+            # while (--n >= 0)
             # {
             #   if ((ref = (%Ns%RogueObject*)((*(++cursor)).object)) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
             # }
-            writer.println "while (--n >=0)"
+            writer.println "while (--n >= 0)"
             writer.println "{"
             use path = WorkList<<String>>
               path.add( "  if ((ref = (%Ns%RogueObject*)((*cursor)" )
