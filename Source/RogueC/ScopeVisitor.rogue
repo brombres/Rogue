@@ -1,6 +1,6 @@
 module RogueC
 
-class ScopeVisitor : Visitor
+class ScopeVisitor : RebuildVisitor
   PROPERTIES
     visible_locals     = String[]
     visible_locals_fp  = Int32[]
@@ -12,7 +12,7 @@ class ScopeVisitor : Visitor
       endForEach
       return null
 
-    method on( cmd:Block )->Cmd
+    method on_visit( cmd:Block )->Cmd
       on_enter( cmd )
 
       if (cmd.assignments)
@@ -27,13 +27,13 @@ class ScopeVisitor : Visitor
         endForEach
       endIf
 
-      visit_content( cmd )
+      visit_node( cmd )
 
       on_leave( cmd )
 
       return cmd
 
-    method on( cmd:Procedure )->Cmd
+    method on_visit( cmd:Procedure )->Cmd
       this_procedure = cmd
 
       visible_locals_fp.add( visible_locals.count )
@@ -41,12 +41,12 @@ class ScopeVisitor : Visitor
         visible_locals.add( p->(as Local) )
       endForEach
 
-      visit_content( cmd )
+      visit_node( cmd )
 
       visible_locals.discard_from( visible_locals_fp.remove_last )
       return cmd
 
-    method on_visit( cmd:Contingent )
+    method on_visit_node( cmd:Contingent )
       on_enter( cmd )
       visit( cmd.statements )
       visit( cmd.satisfied_scope )
@@ -65,25 +65,25 @@ class ScopeVisitor : Visitor
     method on_leave_procedure( body:ControlStructure )
       pop_scope
 
-    method on_visit( cmd:ControlStructure )
+    method on_visit_node( cmd:ControlStructure )
       on_enter( cmd )
       visit( cmd.statements )
       on_leave( cmd )
 
-    method on_visit( cmd:GlobalMethod )
+    method on_visit_node( cmd:GlobalMethod )
       if (cmd.type_context is not this_type) return
       on_enter_procedure( cmd.body )
       visit( cmd.statements )
       on_leave_procedure( cmd.body )
 
-    method on_visit( cmd:If )
+    method on_visit_node( cmd:If )
       on_enter( cmd )
       if (cmd.condition) visit( cmd.condition )
       visit( cmd.statements )
       if (cmd.cmd_else) visit( cmd.cmd_else )
       on_leave( cmd )
 
-    method on_visit( cmd:Iterator )
+    method on_visit_node( cmd:Iterator )
       on_enter( cmd )
       visit( cmd.statements )
       visit( cmd.upkeep )
@@ -91,16 +91,16 @@ class ScopeVisitor : Visitor
       visit( cmd.condition )
       on_leave( cmd )
 
-    method on_visit( cmd:Local )
+    method on_visit_node( cmd:Local )
       visible_locals.add( cmd.name )
 
-    method on_visit( cmd:Method )
+    method on_visit_node( cmd:Method )
       if (cmd.type_context is not this_type or cmd.attributes.is_abstract) return
       on_enter_procedure( cmd.body )
       visit( cmd.statements )
       on_leave_procedure( cmd.body )
 
-    method on_visit( cmd:Switch )
+    method on_visit_node( cmd:Switch )
       on_enter( cmd )
       visit( cmd.condition )
       forEach (cmd_case in cmd.cases)
@@ -112,7 +112,7 @@ class ScopeVisitor : Visitor
       if (cmd.statements) visit( cmd.statements )
       on_leave( cmd )
 
-    method on_visit( cmd:Try )
+    method on_visit_node( cmd:Try )
       on_enter( cmd )
       visit( cmd.statements )
       on_leave( cmd )

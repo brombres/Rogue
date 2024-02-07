@@ -7,7 +7,7 @@ $localMacro FOLD_CONSTANTS<<$m,$Type,$op>>
     return $m<<$op>>( cmd )
 $endLocalMacro
 
-class Resolver : Poolable, Visitor
+class Resolver : Poolable, RebuildVisitor
   GLOBAL PROPERTIES
     index_getters = String[][
       "at(Rogue::Int)", "get(Rogue::Int)",
@@ -124,11 +124,11 @@ class Resolver : Poolable, Visitor
       endForEach
       return null
 
-    method on( cmd:Access )->Cmd
+    method on_visit( cmd:Access )->Cmd
       local args = visit( cmd.args )
       return resolve_access( cmd.t, null, cmd.name, args )
 
-    method on( cmd:AnonymousTuple )->Cmd
+    method on_visit( cmd:AnonymousTuple )->Cmd
       # Determine Tuple type
       visit_children( cmd )
       local type_elements = NamedTupleTypeElements( cmd.t )
@@ -144,7 +144,7 @@ class Resolver : Poolable, Visitor
       local tuple_type = Type( cmd.t, type_elements )
       return validate( CreateCompound(cmd.t, tuple_type, args) )
 
-    method on( cmd:As )->Cmd
+    method on_visit( cmd:As )->Cmd
       cmd.operand = visit( cmd.operand )
       local type = cmd.operand.require_type
       type.organize
@@ -156,7 +156,7 @@ class Resolver : Poolable, Visitor
       endIf
       return cmd
 
-    method on( cmd:Assert )->Cmd
+    method on_visit( cmd:Assert )->Cmd
       if (not Program.debug_mode) return null
       local t = cmd.expression.t
       local builder = String()
@@ -171,7 +171,7 @@ class Resolver : Poolable, Visitor
         )
       )
 
-    method on( cmd:AccessAndAssign )->Cmd
+    method on_visit( cmd:AccessAndAssign )->Cmd
       local context = AccessAndAssignPatcher.find_context(cmd)
 
       local resolved_context = visit( context )
@@ -250,11 +250,11 @@ class Resolver : Poolable, Visitor
       endIf
       return cmd
 
-    method on( cmd:Assign )->Cmd
+    method on_visit( cmd:Assign )->Cmd
       local new_value = visit( cmd.new_value ).require_value
       return cmd.target.resolve_assignment( cmd.t, new_value, this )
 
-    method on_visit( cmd:Binary )
+    method on_visit_node( cmd:Binary )
       visit_children( cmd )
       cmd.left.require_type
       cmd.right.require_type
@@ -263,7 +263,7 @@ class Resolver : Poolable, Visitor
       local result = cmd.left.require_type.resolve_binary_op(cmd,this)
       return result.dispatch<<on_fold_constants,ThisType,Cmd>>( this )
 
-    method on( cmd:Block )->Cmd
+    method on_visit( cmd:Block )->Cmd
       local cmd_control_structure = ControlStructure( cmd.t, cmd.statements, ControlType.BLOCK )
 
       if (cmd.assignments)
@@ -297,10 +297,10 @@ class Resolver : Poolable, Visitor
 
       return visit( cmd_control_structure )
 
-    method on( cmd:BriefTrace )->Cmd
+    method on_visit( cmd:BriefTrace )->Cmd
       return resolve_trace( cmd.t, cmd.expressions )
 
-    method on( cmd:VerboseTrace )->Cmd
+    method on_visit( cmd:VerboseTrace )->Cmd
       return resolve_trace( cmd.t, cmd.expressions, &verbose )
 
     method resolve_trace( t:Token, expressions:TracedExpressions, &verbose )->Cmd
@@ -345,7 +345,7 @@ class Resolver : Poolable, Visitor
         return visit( ContextAccess( t, context, "println", Args(t,LiteralString(t,format)) ) )
       endIf
 
-    method on_visit( cmd:CallMethodPointer )
+    method on_visit_node( cmd:CallMethodPointer )
       visit_children( cmd )
       forEach (arg at i in cmd.args)
         local param_type = cmd.param_types[i]
@@ -353,7 +353,7 @@ class Resolver : Poolable, Visitor
         cmd.args[i] = arg.resolve_conversion_to( param_type, this, &coerce )
       endForEach
 
-    method on( cmd:CallPriorMethod )->Cmd
+    method on_visit( cmd:CallPriorMethod )->Cmd
       if (not this_type.base_class)
         throw cmd.t.error( "Invalid prior call - $ is not an extended class."(this_type) )
       endIf
@@ -390,7 +390,7 @@ class Resolver : Poolable, Visitor
 
       return validate( CallThisStaticMethod(cmd.t, prior_m, args) )
 
-    method on( cmd:CallPriorTemplatedMethod )->Cmd
+    method on_visit( cmd:CallPriorTemplatedMethod )->Cmd
       if (not this_type.base_class)
         throw cmd.t.error( "Invalid prior call - $ is not an extended class."(this_type) )
       endIf
@@ -415,13 +415,13 @@ class Resolver : Poolable, Visitor
 
       return validate( CallThisStaticMethod(cmd.t, prior_m, args) )
 
-    method on_visit( cmd:Catch )
+    method on_visit_node( cmd:Catch )
       if (not cmd.v_catch and cmd.var_name)
         cmd.v_catch = add_local( Local(cmd.t, cmd.var_name, cmd.exception_type) )
       endIf
       visit_children( cmd )
 
-    method on( cmd:CommandExists )->Cmd
+    method on_visit( cmd:CommandExists )->Cmd
       local access = cmd.command->(as Access)
       if (access)
         local args = visit( access.args )
@@ -492,15 +492,15 @@ class Resolver : Poolable, Visitor
       if (result) return result
       return cmd  # resolved primitive comparison
 
-    method on( cmd:ConditionalContext )->Cmd
+    method on_visit( cmd:ConditionalContext )->Cmd
       return visit( cmd.context )
 
-    method on( cmd:ContextAccess )->Cmd
+    method on_visit( cmd:ContextAccess )->Cmd
       visit( cmd.args )
       local result = resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
       return result
 
-    method on( cmd:ContextBlock )->Cmd
+    method on_visit( cmd:ContextBlock )->Cmd
       local context = visit( cmd.context )
       local v = add_local( cmd.t, "context_block", context.require_type, DummyInitialValue )
       insert( SetLocal( v.t, v, context, &initial_assignment ) )
@@ -510,10 +510,10 @@ class Resolver : Poolable, Visitor
       endForEach
       return GetLocal( v.t, v )
 
-    method on( cmd:ContextDirectAccess )->Cmd
+    method on_visit( cmd:ContextDirectAccess )->Cmd
       return resolve_direct_access( cmd.t, cmd.context, cmd.name )
 
-    method on( cmd:Contingent )->Cmd
+    method on_visit( cmd:Contingent )->Cmd
       if (cmd.is_resolved) return cmd
 
       local outer_scope = Block( cmd.t, Statements(cmd.t,cmd), ControlType.CONTINGENT )
@@ -550,20 +550,20 @@ class Resolver : Poolable, Visitor
 
       return outer_scope
 
-    method on( cmd:ControlStructure )->Cmd
+    method on_visit( cmd:ControlStructure )->Cmd
       push_scope( cmd )
-      visit_content( cmd )
+      visit_node( cmd )
       pop_scope
       return cmd
 
-    method on_visit( cmd:Convert )
+    method on_visit_node( cmd:Convert )
       visit_children( cmd )
 
-    method on( cmd:ConvertToType )->Cmd
+    method on_visit( cmd:ConvertToType )->Cmd
       cmd.operand = visit( cmd.operand )
       return cmd.operand.resolve_conversion_to( cmd.to_type, this, &coerce )
 
-    method on( cmd:ConvertToTypeWithArgs )->Cmd
+    method on_visit( cmd:ConvertToTypeWithArgs )->Cmd
       local type_arg = TemplateArgs( cmd.t, cmd.to_type )
       local m_name = type_arg->String("to")
       return visit( ContextAccess(cmd.t, cmd.operand, m_name, cmd.args) )
@@ -574,7 +574,7 @@ class Resolver : Poolable, Visitor
       endIf
       return cmd
 
-    method on( cmd:CreateRange )->Cmd
+    method on_visit( cmd:CreateRange )->Cmd
       visit_children( cmd )
       local t = cmd.t
       local common_type = Cmd.common_type( t, cmd.start.require_type, cmd.limit.require_type )
@@ -594,11 +594,11 @@ class Resolver : Poolable, Visitor
       local range_type = Type( t, cmd.name, common_type )
       return validate( CreateCompound(t, range_type, Args(cmd.t,start,limit,step_size)) )
 
-    method on( cmd:DefaultValue )->Cmd
+    method on_visit( cmd:DefaultValue )->Cmd
       cmd.of_type.organize
       return visit( cmd.of_type.cmd_default_value(cmd.t) )
 
-    method on( cmd:Describe )->Cmd
+    method on_visit( cmd:Describe )->Cmd
       local operand = visit( cmd.operand )
       if (operand.require_type.is_reference)
         return visit( Access(cmd.t, "describe", Args(cmd.t,operand)) )
@@ -606,16 +606,16 @@ class Resolver : Poolable, Visitor
         return visit( ContextAccess(cmd.t, operand, "description") )
       endIf
 
-    method on( cmd:DirectAccess )->Cmd
+    method on_visit( cmd:DirectAccess )->Cmd
       return resolve_direct_access( cmd.t, null, cmd.name )
 
-    method on( cmd:EmptyVariantList )->Cmd
+    method on_visit( cmd:EmptyVariantList )->Cmd
       return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Variant), "create_list" ) )
 
-    method on( cmd:EmptyVariantTable )->Cmd
+    method on_visit( cmd:EmptyVariantTable )->Cmd
       return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Variant), "create_table" ) )
 
-    method on( cmd:Ensure )->Cmd
+    method on_visit( cmd:Ensure )->Cmd
       local t = cmd.expression.t
       return visit(
         If( t, LogicalNot(t,cmd.expression.cloned),
@@ -624,12 +624,12 @@ class Resolver : Poolable, Visitor
         )
       )
 
-    method on( cmd:EnumValue )->Cmd
+    method on_visit( cmd:EnumValue )->Cmd
       local def = visit(cmd.of_type.definitions[cmd.name])->(as CreateCompound)
       assert def and def.args and def.args.count
       return def.args.first  # Integer value
 
-    method on_visit( cmd:Escape )
+    method on_visit_node( cmd:Escape )
       contingent
         forEach (scope in control_stack step -1)
           sufficient (scope.catches_escape(cmd.control_type))
@@ -637,11 +637,11 @@ class Resolver : Poolable, Visitor
         throw cmd.t.error( "No enclosing '$' to escape from."(cmd.control_type.control_type_name) )
       endContingent
 
-    method on( cmd:ForEach )->Cmd
+    method on_visit( cmd:ForEach )->Cmd
       local iterator = cmd.control.convert_foreach( cmd, this )
       return visit( iterator )
 
-    method on( cmd:FormattedString )->Cmd
+    method on_visit( cmd:FormattedString )->Cmd
       local marker_count = cmd.format.count('$')
       if (marker_count != cmd.args.count)
         if (marker_count < cmd.args.count)
@@ -672,7 +672,7 @@ class Resolver : Poolable, Visitor
       local result = visit( ContextBlock(t, TypeAccess(t,Program.type_String,Args(t)), build_list) )
       return result
 
-    method on( cmd:FunctionDefinition )->Cmd
+    method on_visit( cmd:FunctionDefinition )->Cmd
       local type = cmd.resolve_type
 
       local var_collector = ImplicitWithVarCollector()
@@ -725,19 +725,19 @@ class Resolver : Poolable, Visitor
         return validate( GetSingleton(cmd.t,type) )
       endIf
 
-    method on( cmd:GenericFunctionDefinition )->Cmd
+    method on_visit( cmd:GenericFunctionDefinition )->Cmd
       return cmd
 
-    method on( cmd:GetTypeInfo )->Cmd
+    method on_visit( cmd:GetTypeInfo )->Cmd
       cmd.of_type.organize
       return visit( IndexedAccess( cmd.t, TypeAccess(cmd.t,Program.type_TypeInfo), TypeIndex(cmd.t,cmd.of_type) ) )
 
-    method on_visit( cmd:GlobalMethod )
+    method on_visit_node( cmd:GlobalMethod )
       temporarily this_type = cmd.type_context
-        on_visit( cmd->(as Procedure) )
+        on_visit_node( cmd->(as Procedure) )
       endTemporarily
 
-    method on( cmd:IndexedAccess )->Cmd
+    method on_visit( cmd:IndexedAccess )->Cmd
       local context = visit( cmd.context )
       local context_type = context.require_type
 
@@ -754,7 +754,7 @@ class Resolver : Poolable, Visitor
       throw cmd.t.error( "Type $ has no indexed access method get($|Int32)."...
         (context_type,index_type) )
 
-    method on( cmd:If )->Cmd
+    method on_visit( cmd:If )->Cmd
       push_scope( cmd )
       if (cmd.condition) cmd.condition .= logicalized( this )
 
@@ -776,7 +776,7 @@ class Resolver : Poolable, Visitor
 
       return cmd
 
-    method on( cmd:IfConditionalContext )->Cmd
+    method on_visit( cmd:IfConditionalContext )->Cmd
       local cmd_if = If( cmd.t, null, cmd.statements, null )
       local context = visit( cmd.conditional_context.context )
       local context_type = context.require_type
@@ -790,7 +790,7 @@ class Resolver : Poolable, Visitor
       endIf
       return visit( cmd_if )
 
-    method on( cmd:IfLocal )->Cmd
+    method on_visit( cmd:IfLocal )->Cmd
       local expression = visit( cmd.expression )
       local expression_type = expression.require_type
 
@@ -847,7 +847,7 @@ class Resolver : Poolable, Visitor
         return visit( cmd_block )
       endIf
 
-    method on( cmd:InlineWhich )->Cmd
+    method on_visit( cmd:InlineWhich )->Cmd
       visit_children( cmd )
 
       local last_case = cmd.cases.last->(as InlineWhichCase)
@@ -933,7 +933,7 @@ class Resolver : Poolable, Visitor
 
       return cmd_if
 
-    method on( cmd:InvokeContext )->Cmd
+    method on_visit( cmd:InvokeContext )->Cmd
       local context = visit( cmd.context )
       if (context instanceOf TypeContext)
         return visit( cmd_create_object(cmd.t, context.type, cmd.args) )
@@ -941,7 +941,7 @@ class Resolver : Poolable, Visitor
         return visit( ContextAccess(cmd.t, context, "call", cmd.args) )
       endIf
 
-    method on( cmd:Is )->Cmd
+    method on_visit( cmd:Is )->Cmd
       cmd.left = visit( cmd.left )
       cmd.right = visit( cmd.right )
       local left_type = cmd.left.require_type
@@ -951,7 +951,7 @@ class Resolver : Poolable, Visitor
       endIf
       return cmd
 
-    method on( cmd:IsNot )->Cmd
+    method on_visit( cmd:IsNot )->Cmd
       cmd.left = visit( cmd.left )
       cmd.right = visit( cmd.right )
       local left_type = cmd.left.require_type
@@ -961,7 +961,7 @@ class Resolver : Poolable, Visitor
       endIf
       return cmd
 
-    method on( cmd:InstanceOf )->Cmd
+    method on_visit( cmd:InstanceOf )->Cmd
       cmd.operand = visit( cmd.operand )
       local operand_type = cmd.operand.require_type
       operand_type.resolve
@@ -979,23 +979,23 @@ class Resolver : Poolable, Visitor
         return LiteralLogical( cmd.t, false )
       endIf
 
-    method on( cmd:IsCompound )->Cmd
+    method on_visit( cmd:IsCompound )->Cmd
       local operand = visit( cmd.operand )
       return LiteralLogical( cmd.t, operand.require_type.is_compound )
 
-    method on( cmd:IsEnum )->Cmd
+    method on_visit( cmd:IsEnum )->Cmd
       local operand = visit( cmd.operand )
       return LiteralLogical( cmd.t, operand.require_type.is_enum )
 
-    method on( cmd:IsPrimitive )->Cmd
+    method on_visit( cmd:IsPrimitive )->Cmd
       local operand = visit( cmd.operand )
       return LiteralLogical( cmd.t, operand.require_type.is_primitive )
 
-    method on( cmd:IsReference )->Cmd
+    method on_visit( cmd:IsReference )->Cmd
       local operand = visit( cmd.operand )
       return LiteralLogical( cmd.t, operand.require_type.is_reference )
 
-    method on( cmd:IsType )->Cmd
+    method on_visit( cmd:IsType )->Cmd
       cmd.operand = visit( cmd.operand )
       local operand_type = cmd.operand.require_type
       if (cmd.operand.is_type_context)
@@ -1011,7 +1011,7 @@ class Resolver : Poolable, Visitor
         return LiteralLogical( cmd.t, false )  # no way
       endIf
 
-    method on( cmd:Iterator )->Cmd
+    method on_visit( cmd:Iterator )->Cmd
       if (not cmd.@upkeep_label) cmd.upkeep_label = autoname("upkeep")
       push_scope( cmd )
       cmd.condition = visit( cmd.condition )
@@ -1021,7 +1021,7 @@ class Resolver : Poolable, Visitor
       pop_scope
       return cmd
 
-    method on( cmd:ListIndexedAccess )->Cmd
+    method on_visit( cmd:ListIndexedAccess )->Cmd
       local context = visit( cmd.context )
       local context_type = context.require_type
       if (context.is_type_context and context_type.is_enum)
@@ -1046,7 +1046,7 @@ class Resolver : Poolable, Visitor
         throw cmd.t.error( "Identifier expected." )
       endIf
 
-    method on( cmd:LiteralList )->Cmd
+    method on_visit( cmd:LiteralList )->Cmd
       if (cmd.count == 0)
         throw cmd.t.error( "Cannot determine type of empty literal list. Write e.g. 'Int32[]' "...
                            "for an empty Int32 list or '@[]' for an empty Variant list." )
@@ -1070,7 +1070,7 @@ class Resolver : Poolable, Visitor
 
       return visit( ContextBlock(t, TypeAccess(t,list_type,Args(t,LiteralInt(t,cmd.count))), build_list) )
 
-    method on( cmd:KeyValuePairList )->Cmd
+    method on_visit( cmd:KeyValuePairList )->Cmd
       if (cmd.count == 0)
         throw cmd.t.error( "Cannot determine type of empty literal table. Write e.g. '[String:Int32]' "...
                            "for an empty table of String-to-Int32 mappings or '@{}' for an empty Variant table." )
@@ -1097,7 +1097,7 @@ class Resolver : Poolable, Visitor
 
       return visit( ContextBlock(t, TypeAccess(t,table_type,Args(t)), build_list) )
 
-    method on( cmd:LocalDeclarations )->Cmd
+    method on_visit( cmd:LocalDeclarations )->Cmd
       if (cmd.@type)
         # local a, b=x, c : Type
         #   ->
@@ -1153,7 +1153,7 @@ class Resolver : Poolable, Visitor
       # Overriding to prevent visiting initial_value; not necessary
       cmd.type = visit(cmd.type)->(as Type)
 
-    method on( cmd:LogicalAnd )->Cmd
+    method on_visit( cmd:LogicalAnd )->Cmd
       cmd.left  = visit( cmd.left ).logicalized( this )
       cmd.right = visit( cmd.right ).logicalized( this )
       if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
@@ -1180,7 +1180,7 @@ class Resolver : Poolable, Visitor
       endIf
       return cmd
 
-    method on( cmd:LogicalOr )->Cmd
+    method on_visit( cmd:LogicalOr )->Cmd
       cmd.left  = visit( cmd.left ).logicalized( this )
       cmd.right = visit( cmd.right ).logicalized( this )
       if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
@@ -1188,7 +1188,7 @@ class Resolver : Poolable, Visitor
       endIf
       return cmd
 
-    method on( cmd:LogicalXor )->Cmd
+    method on_visit( cmd:LogicalXor )->Cmd
       cmd.left  = visit( cmd.left ).logicalized( this )
       cmd.right = visit( cmd.right ).logicalized( this )
       if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
@@ -1196,13 +1196,13 @@ class Resolver : Poolable, Visitor
       endIf
       return cmd
 
-    method on( cmd:Logicalize )->Cmd
+    method on_visit( cmd:Logicalize )->Cmd
       return cmd.operand.logicalized( this )
 
-    method on( cmd:Logicalized )->Cmd
+    method on_visit( cmd:Logicalized )->Cmd
       return cmd  # good to go
 
-    method on( cmd:Loop )->Cmd
+    method on_visit( cmd:Loop )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.LOOP )
       if (cmd.loop_count)
         local v = add_local( cmd.loop_count.t, "i", Program.type_Int, DummyInitialValue )
@@ -1221,12 +1221,12 @@ class Resolver : Poolable, Visitor
         return visit( iterator )
       endIf
 
-    method on_visit( cmd:Method )
+    method on_visit_node( cmd:Method )
       temporarily this_type = cmd.type_context
-        on_visit( cmd->(as Procedure) )
+        on_visit_node( cmd->(as Procedure) )
       endTemporarily
 
-    method on( cmd:CallbackFunction )->Cmd
+    method on_visit( cmd:CallbackFunction )->Cmd
       local context = visit( cmd.context )
       local context_type = context.require_type
       local name = cmd.name
@@ -1292,7 +1292,7 @@ class Resolver : Poolable, Visitor
         return visit( fn_def )
       endUse
 
-    method on( cmd:NamedArg )->Cmd
+    method on_visit( cmd:NamedArg )->Cmd
       if (cmd.value)
         cmd.value = visit( cmd.value )
       elseIf (cmd.is_forward)
@@ -1301,7 +1301,7 @@ class Resolver : Poolable, Visitor
       endIf
       return cmd
 
-    method on( cmd:NamedTuple )->Cmd
+    method on_visit( cmd:NamedTuple )->Cmd
       # Determine Tuple type
       visit_children( cmd )
       local type_elements = NamedTupleTypeElements( cmd.t )
@@ -1318,23 +1318,23 @@ class Resolver : Poolable, Visitor
       tuple_type.organize
       return validate( CreateCompound(cmd.t, tuple_type, args) )
 
-    method on( cmd:NativeHeader )->Cmd
+    method on_visit( cmd:NativeHeader )->Cmd
       this_module.native_headers.add( cmd )
       return null
 
-    method on( cmd:NativeCode )->Cmd
+    method on_visit( cmd:NativeCode )->Cmd
       this_module.native_code.add( cmd )
       return null
 
-    method on_visit( cmd:NativeExpression )
+    method on_visit_node( cmd:NativeExpression )
       this_procedure.attributes.has_native_code = true
       visit_children( cmd )
 
-    method on_visit( cmd:NativeStatement )
+    method on_visit_node( cmd:NativeStatement )
       this_procedure.attributes.has_native_code = true
       visit_children( cmd )
 
-    method on_visit( cmd:Necessary )
+    method on_visit_node( cmd:Necessary )
       visit_children( cmd )
       cmd.condition .= logicalized( this )
 
@@ -1345,7 +1345,7 @@ class Resolver : Poolable, Visitor
         throw cmd.t.error( "No enclosing 'contingent' to escape from." )
       endContingent
 
-    method on( cmd:Negate )->Cmd
+    method on_visit( cmd:Negate )->Cmd
       visit_children( cmd )
       local operand = cmd.operand
       if (operand.is_literal)
@@ -1360,11 +1360,11 @@ class Resolver : Poolable, Visitor
       endIf
       return validate(cmd)
 
-    method on( cmd:New )->Cmd
+    method on_visit( cmd:New )->Cmd
       local context = visit( cmd.type_expression )
       return visit( TypeAccess(cmd.t, context.require_type, cmd.args) )
 
-    method on( cmd:NextIteration )->Cmd
+    method on_visit( cmd:NextIteration )->Cmd
       forEach (control_structure in control_stack step -1)
         local iterator = control_structure->(as Iterator)
         if (iterator)
@@ -1374,13 +1374,13 @@ class Resolver : Poolable, Visitor
       endForEach
       throw cmd.t.error( "No enclosing loop for nextIteration." )
 
-    method on( cmd:NotInstanceOf )->Cmd
+    method on_visit( cmd:NotInstanceOf )->Cmd
       return visit( LogicalNot(cmd.t, InstanceOf(cmd.t,cmd.operand,cmd.compare_type)) )
 
-    method on( cmd:NotIsType )->Cmd
+    method on_visit( cmd:NotIsType )->Cmd
       return visit( LogicalNot(cmd.t, IsType(cmd.t,cmd.operand,cmd.compare_type)) )
 
-    method on( cmd:OpAndAssign )->Cmd
+    method on_visit( cmd:OpAndAssign )->Cmd
       local target = visit( cmd.target )  # don't alter cmd.target
       cmd.operand = visit( cmd.operand )
 
@@ -1403,7 +1403,7 @@ class Resolver : Poolable, Visitor
       # No op-and-assign operator method available
       return cmd.dispatch_resolve_op_and_assign( cmd, this )
 
-    method on_visit( cmd:Procedure )
+    method on_visit_node( cmd:Procedure )
       cmd.is_resolved = true
       autoname_index = 0
 
@@ -1469,7 +1469,7 @@ class Resolver : Poolable, Visitor
       cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
       return cmd
 
-    method on( cmd:FunctionReturnValue )->Cmd
+    method on_visit( cmd:FunctionReturnValue )->Cmd
       local operand = visit(cmd.operand)
       if (operand.type)
         return Return(operand.t,operand)
@@ -1477,7 +1477,7 @@ class Resolver : Poolable, Visitor
         return operand
       endIf
 
-    method on_visit( cmd:Statements )
+    method on_visit_node( cmd:Statements )
       temporarily current_statements = cmd.list.rewriter
         forEach (statement in current_statements)
           statement = visit( statement )
@@ -1488,10 +1488,10 @@ class Resolver : Poolable, Visitor
         endForEach
       endTemporarily
 
-    method on( cmd:Stepper )->Cmd
+    method on_visit( cmd:Stepper )->Cmd
       return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
 
-    method on_visit( cmd:Sufficient )
+    method on_visit_node( cmd:Sufficient )
       visit_children( cmd )
       cmd.condition .= logicalized( this )
 
@@ -1502,7 +1502,7 @@ class Resolver : Poolable, Visitor
         throw cmd.t.error( "No enclosing 'contingent' to escape from." )
       endContingent
 
-    method on( cmd:SwapValues )->Cmd
+    method on_visit( cmd:SwapValues )->Cmd
       local a = visit( cmd.a )
       local b = visit( cmd.b )
       local a_type = a.require_type
@@ -1521,7 +1521,7 @@ class Resolver : Poolable, Visitor
 
       return visit( scope )
 
-    method on( cmd:TemplatedAccess )->Cmd
+    method on_visit( cmd:TemplatedAccess )->Cmd
       local type_template_name = "$<<$>>"(cmd.name,cmd.type_args.count)
       local type_template = cmd.module_context.find_template( cmd.t, type_template_name, cmd.name, &extended_search )
       if (type_template)
@@ -1570,7 +1570,7 @@ class Resolver : Poolable, Visitor
       endIf
       return t_name
 
-    method on( cmd:TemplatedMethodContextAccess )->Cmd
+    method on_visit( cmd:TemplatedMethodContextAccess )->Cmd
       local context = visit( cmd.context )
       local type_context = context.require_type
 
@@ -1606,7 +1606,7 @@ class Resolver : Poolable, Visitor
         endUse
       endIf
 
-    method on( cmd:Temporarily )->Cmd
+    method on_visit( cmd:Temporarily )->Cmd
       if (cmd.assignments.count > 1)
         local assignment = cmd.assignments.remove_first->(as TemporaryAssignment)
         local nested_temporarily = Temporarily( cmd.t, cmd.assignments, cmd.statements )
@@ -1636,7 +1636,7 @@ class Resolver : Poolable, Visitor
 
       return result
 
-    method on_visit( cmd:This )
+    method on_visit_node( cmd:This )
       if (this_procedure.is_global)
         throw cmd.t.error( "Illegal use of 'this' in a global context. 'this' can only be used in the context of an instance object." )
       endIf
@@ -1647,27 +1647,27 @@ class Resolver : Poolable, Visitor
       endIf
       return cmd
 
-    method on( cmd:Try )->Cmd
+    method on_visit( cmd:Try )->Cmd
       push_scope( cmd )
       visit( cmd.statements )
       pop_scope
       visit( cmd.catches )
       return cmd
 
-    method on( cmd:TypeAccess )->Cmd
+    method on_visit( cmd:TypeAccess )->Cmd
       cmd.of_type.organize
       cmd.args = visit( cmd.args )
       return resolve_type_access( cmd.t, cmd.of_type, cmd.args )
 
-    method on( cmd:TypeContext )->Cmd
+    method on_visit( cmd:TypeContext )->Cmd
       cmd.@type.organize
       return validate( cmd )
 
-    method on( cmd:TypeOf )->Cmd
+    method on_visit( cmd:TypeOf )->Cmd
       local expr = visit( cmd.expression )
       return visit( TypeAccess(expr.t,expr.require_type,cmd.args) )
 
-    method on( cmd:TypedDestructuringLocalDeclarations )->Cmd
+    method on_visit( cmd:TypedDestructuringLocalDeclarations )->Cmd
       local tuple = visit( cmd.tuple )
       local tuple_type = tuple.require_type
       if (not tuple_type.is_compound)
@@ -1696,7 +1696,7 @@ class Resolver : Poolable, Visitor
       result = visit( result )
       return result
 
-    method on( cmd:TypedLiteralList )->Cmd
+    method on_visit( cmd:TypedLiteralList )->Cmd
       local t = cmd.list.t
 
       local build_list = CmdList( t )
@@ -1706,7 +1706,7 @@ class Resolver : Poolable, Visitor
 
       return visit( ContextBlock(t, TypeAccess(t,cmd.of_type,Args(t,LiteralInt(t,cmd.list.count))), build_list) )
 
-    method on( cmd:TypedLiteralTable )->Cmd
+    method on_visit( cmd:TypedLiteralTable )->Cmd
       local t = cmd.table.t
 
       local build_list = CmdList( t )
@@ -1719,10 +1719,10 @@ class Resolver : Poolable, Visitor
     method on_validate( cmd:Unary )->Cmd
       return cmd.operand.require_type.resolve_unary_op( cmd, this )
 
-    method on( cmd:LiteralUndefined )->Cmd
+    method on_visit( cmd:LiteralUndefined )->Cmd
       return visit( TypeAccess(cmd.t,Program.type_Variant,Args(cmd.t)) )
 
-    method on( cmd:Use )->Cmd
+    method on_visit( cmd:Use )->Cmd
       if (cmd.resources.count > 1)
         local res = cmd.resources.remove_first->(as UsedResource)
         local nested_use = Use( cmd.t, cmd.resources, cmd.statements )
@@ -1757,7 +1757,7 @@ class Resolver : Poolable, Visitor
 
       return result
 
-    method on( cmd:UntypedDestructuringLocalDeclarations )->Cmd
+    method on_visit( cmd:UntypedDestructuringLocalDeclarations )->Cmd
       local tuple = visit( cmd.tuple )
       local tuple_type = tuple.require_type
       if (not tuple_type.is_compound)
@@ -1785,7 +1785,7 @@ class Resolver : Poolable, Visitor
       result = visit( result )
       return result
 
-    method on( cmd:VariantList )->Cmd
+    method on_visit( cmd:VariantList )->Cmd
       local t = cmd.t
       local cmd_list = ContextAccess( t, TypeContext(t,Program.type_Variant), "create_list" )
 
@@ -1796,7 +1796,7 @@ class Resolver : Poolable, Visitor
 
       return visit( ContextBlock(t, cmd_list, build_list) )
 
-    method on( cmd:VariantTable )->Cmd
+    method on_visit( cmd:VariantTable )->Cmd
       local t = cmd.t
       local cmd_table = ContextAccess( t, TypeContext(t,Program.type_Variant), "create_table" )
 
@@ -1807,7 +1807,7 @@ class Resolver : Poolable, Visitor
 
       return visit( ContextBlock(t, cmd_table, build_list) )
 
-    method on( cmd:Which )->Cmd
+    method on_visit( cmd:Which )->Cmd
       if (cmd.is_resolved) return cmd
       cmd.is_resolved = true
 
@@ -1896,7 +1896,7 @@ class Resolver : Poolable, Visitor
       endForEach
       return If( cmd_case.t, condition, cmd_case.statements, null, ControlType.WHICH )
 
-    method on( cmd:While )->Cmd
+    method on_visit( cmd:While )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.WHILE )
 
       push_scope( iterator )

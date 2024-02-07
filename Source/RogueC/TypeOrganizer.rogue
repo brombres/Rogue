@@ -1,6 +1,6 @@
 module RogueC
 
-class TypeOrganizer : Visitor
+class TypeOrganizer : RebuildVisitor
   METHODS
     method init( this_module )
 
@@ -8,7 +8,7 @@ class TypeOrganizer : Visitor
       # Called when instantiating a template
       visit( class_def )
 
-    method on_visit( cmd:Category )
+    method on_visit_node( cmd:Category )
       if (not this_type.is_enum)
         throw cmd.t.error( "Only enums can have a CATEGORIES section." )
       endIf
@@ -16,7 +16,7 @@ class TypeOrganizer : Visitor
       ensure<<this_type.categories>>
       this_type.categories.add( cmd )
 
-    method on_visit( cmd:Class )
+    method on_visit_node( cmd:Class )
       cmd.attributes.flags |= this_type.attributes.flags
       this_type.attributes = cmd.attributes
       if (not this_type.is_primitive and not this_type.is_compound and not this_type.is_aspect)
@@ -55,7 +55,7 @@ class TypeOrganizer : Visitor
 
       visit_children( cmd )
 
-    method on( cmd:Access )->Cmd
+    method on_visit( cmd:Access )->Cmd
       visit_children( cmd )
 
       # Convert to TypeAccess if possible.
@@ -66,7 +66,7 @@ class TypeOrganizer : Visitor
       if (type) return TypeAccess( cmd.t, type, cmd.args )
       return cmd
 
-    method on( cmd:Definition )->Cmd
+    method on_visit( cmd:Definition )->Cmd
       assert this_type
       if (this_type.definitions.contains(cmd.name))
         throw cmd.t.error( "'$.$' is already defined."(this_type,cmd.name) )
@@ -74,15 +74,15 @@ class TypeOrganizer : Visitor
       this_type.definitions[ cmd.name ] = cmd.value
       return null
 
-    method on( cmd:NativeCode )->Cmd
+    method on_visit( cmd:NativeCode )->Cmd
       this_type.native_code.add( cmd )
       return null
 
-    method on( cmd:NativeHeader )->Cmd
+    method on_visit( cmd:NativeHeader )->Cmd
       this_type.native_header.add( cmd )
       return null
 
-    method on( cmd:StateDef )->Cmd
+    method on_visit( cmd:StateDef )->Cmd
       if (this_type.definitions.contains(cmd.name))
         throw cmd.t.error( "Multiple definitions of '$' in type $."(cmd.name,this_type) )
       endIf
@@ -90,7 +90,7 @@ class TypeOrganizer : Visitor
       this_type.states.add( cmd )
       return null
 
-    method on_visit( cmd:TemplatedAccess )
+    method on_visit_node( cmd:TemplatedAccess )
       assert this_module
       cmd.module_context = this_module
       cmd.type_context = this_type

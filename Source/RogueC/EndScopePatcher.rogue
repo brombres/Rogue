@@ -1,6 +1,6 @@
 module RogueC
 
-class EndScopePatcher : Visitor [singleton]
+class EndScopePatcher : RebuildVisitor [singleton]
   PROPERTIES
     resolver      : Resolver
     insert_cmd    : Cmd
@@ -11,17 +11,17 @@ class EndScopePatcher : Visitor [singleton]
       assert control_stack.is_empty
       return visit( cmd )
 
-    method on( cmd:ControlStructure )->Cmd
+    method on_visit( cmd:ControlStructure )->Cmd
       control_stack.add( cmd )
-      visit_content( cmd )
+      visit_node( cmd )
       control_stack.remove_last
       return cmd
 
-    #method on( cmd:Escape )->Cmd
+    #method on_visit( cmd:Escape )->Cmd
       #if ((forEach in control_stack).catches(cmd)) return cmd
       #return patched_statements( cmd )
 
-    method on( cmd:Return )->Cmd
+    method on_visit( cmd:Return )->Cmd
       if (cmd.result)
         # return expression
         # ->
@@ -46,7 +46,7 @@ class EndScopePatcher : Visitor [singleton]
         return patched_statements( cmd )
       endIf
 
-    method on_visit( cmd:Statements )
+    method on_visit_node( cmd:Statements )
       temporarily resolver.current_statements = cmd.list.rewriter
         forEach (statement in resolver.current_statements)
           statement = visit( statement )
@@ -57,7 +57,7 @@ class EndScopePatcher : Visitor [singleton]
         endForEach
       endTemporarily
 
-    method on( cmd:Throw )->Cmd
+    method on_visit( cmd:Throw )->Cmd
       return patched_statements( cmd )
 
     method patched_statements( cmd:Cmd )->Cmd

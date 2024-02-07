@@ -2,7 +2,7 @@ module RogueC
 
 uses Utility/WorkList
 
-class CGenerator : Visitor
+class CGenerator : RebuildVisitor
   PROPERTIES
     writer             : CWriter
     autoname_index     = 0
@@ -161,33 +161,33 @@ class CGenerator : Visitor
         writer.print ")"
       endIf
 
-    method on_visit( cmd:Cmd )
-      throw cmd.t.error("Unsupported operation CGenerator.on_visit($) [$]"(cmd.type_name,cmd))
+    method on_visit_node( cmd:Cmd )
+      throw cmd.t.error("Unsupported operation CGenerator.on_visit_node($) [$]"(cmd.type_name,cmd))
 
-    method on_visit( cmd:Access )
+    method on_visit_node( cmd:Access )
       #println StackTrace()
       throw cmd.t.error("[INTERNAL] CGenerator: unresolved Access '$'."(cmd.name))
 
-    method on_visit( cmd:Add )
+    method on_visit_node( cmd:Add )
       writer.print '('
       print_parenthesized( cmd.left )
       writer.print " + "
       print_parenthesized( cmd.right )
       writer.print ')'
 
-    method on_visit( cmd:AddAndAssignLocal )
+    method on_visit_node( cmd:AddAndAssignLocal )
       writer.print '('
       writer.print cmd.info.c_name
       writer.print " += "
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:AddAndAssignGlobalProperty )
+    method on_visit_node( cmd:AddAndAssignGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " += " )
       visit( cmd.operand )
 
-    method on_visit( cmd:AddAndAssignProperty )
+    method on_visit_node( cmd:AddAndAssignProperty )
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
@@ -195,7 +195,7 @@ class CGenerator : Visitor
       writer.print " += "
       visit( cmd.operand )
 
-    method on_visit( cmd:AddAndAssignThisProperty )
+    method on_visit_node( cmd:AddAndAssignThisProperty )
       writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -203,7 +203,7 @@ class CGenerator : Visitor
       writer.print " += "
       visit( cmd.operand )
 
-    method on_visit( cmd:As )
+    method on_visit_node( cmd:As )
       if (cmd.operand.type.instance_of(cmd.as_type))
         print_with_cast( cmd.operand, cmd.as_type )
       else
@@ -216,19 +216,19 @@ class CGenerator : Visitor
         writer.print ")"
       endIf
 
-    method on_visit( cmd:BitwiseAndAndAssignLocal )
+    method on_visit_node( cmd:BitwiseAndAndAssignLocal )
       writer.print '('
       writer.print cmd.info.c_name
       writer.print " &= "
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:BitwiseAndAndAssignGlobalProperty )
+    method on_visit_node( cmd:BitwiseAndAndAssignGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " &= " )
       visit( cmd.operand )
 
-    method on_visit( cmd:BitwiseAndAndAssignProperty )
+    method on_visit_node( cmd:BitwiseAndAndAssignProperty )
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
@@ -236,7 +236,7 @@ class CGenerator : Visitor
       writer.print " &= "
       visit( cmd.operand )
 
-    method on_visit( cmd:BitwiseAndAndAssignThisProperty )
+    method on_visit_node( cmd:BitwiseAndAndAssignThisProperty )
       writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -244,19 +244,19 @@ class CGenerator : Visitor
       writer.print " &= "
       visit( cmd.operand )
 
-    method on_visit( cmd:BitwiseOrAndAssignLocal )
+    method on_visit_node( cmd:BitwiseOrAndAssignLocal )
       writer.print '('
       writer.print cmd.info.c_name
       writer.print " |= "
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:BitwiseOrAndAssignGlobalProperty )
+    method on_visit_node( cmd:BitwiseOrAndAssignGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " |= " )
       visit( cmd.operand )
 
-    method on_visit( cmd:BitwiseOrAndAssignProperty )
+    method on_visit_node( cmd:BitwiseOrAndAssignProperty )
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
@@ -264,7 +264,7 @@ class CGenerator : Visitor
       writer.print " |= "
       visit( cmd.operand )
 
-    method on_visit( cmd:BitwiseOrAndAssignThisProperty )
+    method on_visit_node( cmd:BitwiseOrAndAssignThisProperty )
       writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -272,19 +272,19 @@ class CGenerator : Visitor
       writer.print " |= "
       visit( cmd.operand )
 
-    method on_visit( cmd:BitwiseXorAndAssignLocal )
+    method on_visit_node( cmd:BitwiseXorAndAssignLocal )
       writer.print '('
       writer.print cmd.info.c_name
       writer.print " ^= "
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:BitwiseXorAndAssignGlobalProperty )
+    method on_visit_node( cmd:BitwiseXorAndAssignGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " ^= " )
       visit( cmd.operand )
 
-    method on_visit( cmd:BitwiseXorAndAssignProperty )
+    method on_visit_node( cmd:BitwiseXorAndAssignProperty )
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
@@ -292,7 +292,7 @@ class CGenerator : Visitor
       writer.print " ^= "
       visit( cmd.operand )
 
-    method on_visit( cmd:BitwiseXorAndAssignThisProperty )
+    method on_visit_node( cmd:BitwiseXorAndAssignThisProperty )
       writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -300,19 +300,19 @@ class CGenerator : Visitor
       writer.print " ^= "
       visit( cmd.operand )
 
-    method on_visit( cmd:BitShiftLeftAndAssignLocal )
+    method on_visit_node( cmd:BitShiftLeftAndAssignLocal )
       writer.print '('
       writer.print cmd.info.c_name
       writer.print " <<= "
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:BitShiftLeftAndAssignGlobalProperty )
+    method on_visit_node( cmd:BitShiftLeftAndAssignGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " <<= " )
       visit( cmd.operand )
 
-    method on_visit( cmd:BitShiftLeftAndAssignProperty )
+    method on_visit_node( cmd:BitShiftLeftAndAssignProperty )
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
@@ -320,7 +320,7 @@ class CGenerator : Visitor
       writer.print " <<= "
       visit( cmd.operand )
 
-    method on_visit( cmd:BitShiftLeftAndAssignThisProperty )
+    method on_visit_node( cmd:BitShiftLeftAndAssignThisProperty )
       writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -328,19 +328,19 @@ class CGenerator : Visitor
       writer.print " <<= "
       visit( cmd.operand )
 
-    method on_visit( cmd:BitShiftRightXAndAssignLocal )
+    method on_visit_node( cmd:BitShiftRightXAndAssignLocal )
       writer.print '('
       writer.print cmd.info.c_name
       writer.print " >>= "
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:BitShiftRightXAndAssignGlobalProperty )
+    method on_visit_node( cmd:BitShiftRightXAndAssignGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " >>= " )
       visit( cmd.operand )
 
-    method on_visit( cmd:BitShiftRightXAndAssignProperty )
+    method on_visit_node( cmd:BitShiftRightXAndAssignProperty )
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
@@ -348,7 +348,7 @@ class CGenerator : Visitor
       writer.print " >>= "
       visit( cmd.operand )
 
-    method on_visit( cmd:BitShiftRightXAndAssignThisProperty )
+    method on_visit_node( cmd:BitShiftRightXAndAssignThisProperty )
       writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -356,7 +356,7 @@ class CGenerator : Visitor
       writer.print " >>= "
       visit( cmd.operand )
 
-    method on_visit( cmd:CmdList )
+    method on_visit_node( cmd:CmdList )
       visit_children( cmd )
 
     method print_parenthesized( cmd:Cmd )
@@ -368,41 +368,41 @@ class CGenerator : Visitor
         visit( cmd )
       endIf
 
-    method on_visit( cmd:CompareOp )
+    method on_visit_node( cmd:CompareOp )
       print_parenthesized( cmd.left )
       writer.print " - "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:BitShiftLeft )
+    method on_visit_node( cmd:BitShiftLeft )
       print_parenthesized( cmd.left )
       writer.print " << "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:BitShiftRightX )
+    method on_visit_node( cmd:BitShiftRightX )
       print_parenthesized( cmd.left )
       writer.print " >> "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:BitwiseAnd )
+    method on_visit_node( cmd:BitwiseAnd )
       print_parenthesized( cmd.left )
       writer.print " & "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:BitwiseNot )
+    method on_visit_node( cmd:BitwiseNot )
       writer.print "~"
       print_parenthesized( cmd.operand )
 
-    method on_visit( cmd:BitwiseOr )
+    method on_visit_node( cmd:BitwiseOr )
       print_parenthesized( cmd.left )
       writer.print " | "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:BitwiseXor )
+    method on_visit_node( cmd:BitwiseXor )
       print_parenthesized( cmd.left )
       writer.print " ^ "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:CallGlobalMethod )
+    method on_visit_node( cmd:CallGlobalMethod )
       writer.print( cmd.info.c_name )
       if (cmd.args.count)
         writer.print "( "
@@ -416,7 +416,7 @@ class CGenerator : Visitor
         writer.print "()"
       endIf
 
-    method on_visit( cmd:CallDynamicMethod )
+    method on_visit_node( cmd:CallDynamicMethod )
       local info = cmd.info
 
       #print_cast( info.return_type )
@@ -456,7 +456,7 @@ class CGenerator : Visitor
         writer.print " )"
       endIf
 
-    method on_visit( cmd:CallMethodPointer )
+    method on_visit_node( cmd:CallMethodPointer )
       writer.print "(("
       writer.print cmd.info.c_call_signature
       writer.print ")(void*)"
@@ -475,7 +475,7 @@ class CGenerator : Visitor
       endForEach
       writer.print ')'
 
-    method on_visit( cmd:CallStaticMethod )
+    method on_visit_node( cmd:CallStaticMethod )
       local call_is_mutating = cmd.info.attributes.is_mutating
       writer.print( cmd.info.c_name )
 
@@ -495,7 +495,7 @@ class CGenerator : Visitor
         writer.print " )"
       endIf
 
-    method on_visit( cmd:CallThisDynamicMethod )
+    method on_visit_node( cmd:CallThisDynamicMethod )
       local info = cmd.info
 
       #print_cast( info.return_type )
@@ -539,7 +539,7 @@ class CGenerator : Visitor
         writer.print " )"
       endIf
 
-    method on_visit( cmd:CallThisStaticMethod )
+    method on_visit_node( cmd:CallThisStaticMethod )
       local context_is_mutating = this_procedure.attributes.is_mutating
       local call_is_mutating = cmd.info.attributes.is_mutating
 
@@ -561,7 +561,7 @@ class CGenerator : Visitor
         writer.print " )"
       endIf
 
-    method on_visit( cmd:CallThisVirtualMethod )
+    method on_visit_node( cmd:CallThisVirtualMethod )
       local info = cmd.info
       writer.print "(("
       if (info.return_type) writer.print info.return_type.c_ref_name
@@ -582,7 +582,7 @@ class CGenerator : Visitor
       endForEach
       writer.print ")"
 
-    method on_visit( cmd:CallVirtualMethod )
+    method on_visit_node( cmd:CallVirtualMethod )
       local info = cmd.info
       local n = cmd.vcall_index
       assert cmd.vcall_index >= 0
@@ -615,81 +615,81 @@ class CGenerator : Visitor
       endForEach
       writer.print "))"
 
-    method on_visit( cmd:ConvertToByte )
+    method on_visit_node( cmd:ConvertToByte )
       writer.print "((%Ns%RogueByte)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:ConvertToCharacter )
+    method on_visit_node( cmd:ConvertToCharacter )
       writer.print "((%Ns%RogueCharacter)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:ConvertToInt32 )
+    method on_visit_node( cmd:ConvertToInt32 )
       writer.print "((%Ns%RogueInt32)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:ConvertToInt )
+    method on_visit_node( cmd:ConvertToInt )
       writer.print "((%Ns%RogueInt)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:ConvertToInt64 )
+    method on_visit_node( cmd:ConvertToInt64 )
       writer.print "((%Ns%RogueInt64)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:ConvertToLogical )
+    method on_visit_node( cmd:ConvertToLogical )
       writer.print "!!"
       print_parenthesized( cmd.operand )
 
-    method on_visit( cmd:ConvertToReal32 )
+    method on_visit_node( cmd:ConvertToReal32 )
       writer.print "((%Ns%RogueReal32)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:ConvertToReal )
+    method on_visit_node( cmd:ConvertToReal )
       writer.print "((%Ns%RogueReal)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:ConvertToReal64 )
+    method on_visit_node( cmd:ConvertToReal64 )
       writer.print "((%Ns%RogueReal64)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:CompareEQ )
+    method on_visit_node( cmd:CompareEQ )
       print_parenthesized( cmd.left )
       writer.print " == "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:CompareNE )
+    method on_visit_node( cmd:CompareNE )
       print_parenthesized( cmd.left )
       writer.print " != "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:CompareLT )
+    method on_visit_node( cmd:CompareLT )
       print_parenthesized( cmd.left )
       writer.print " < "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:CompareGT )
+    method on_visit_node( cmd:CompareGT )
       print_parenthesized( cmd.left )
       writer.print " > "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:CompareLE )
+    method on_visit_node( cmd:CompareLE )
       print_parenthesized( cmd.left )
       writer.print " <= "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:CompareGE )
+    method on_visit_node( cmd:CompareGE )
       print_parenthesized( cmd.left )
       writer.print " >= "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:Contingent )
+    method on_visit_node( cmd:Contingent )
       on_enter( cmd )
       visit( cmd.statements )
       if (cmd.catches_sufficient)
@@ -827,12 +827,12 @@ class CGenerator : Visitor
       writer.indent -= 2
       writer.println( "}" )
 
-    method on_visit( cmd:ControlStructure )
+    method on_visit_node( cmd:ControlStructure )
       on_enter( cmd )
       visit( cmd.statements )
       on_leave( cmd )
 
-    method on_visit( cmd:CreateCompound )
+    method on_visit_node( cmd:CreateCompound )
       if (Program.targets_cpp and Program.targets_windows)
         writer.print(cmd.of_type.c_name)
       else
@@ -855,34 +855,34 @@ class CGenerator : Visitor
       endIf
       writer.print "}"
 
-    method on_visit( cmd:CreateObject )
+    method on_visit_node( cmd:CreateObject )
       writer.print "%NS%ROGUE_CREATE_OBJECT( "
       writer.print cmd.of_type.c_name
       writer.print " )"
 
-    method on_visit( cmd:CreateObjectAndSetLocal )
+    method on_visit_node( cmd:CreateObjectAndSetLocal )
       writer.print cmd.info.c_name
       writer.print " = "
       writer.print "%NS%ROGUE_CREATE_OBJECT( "
       writer.print cmd.of_type.c_name
       writer.print " )"
 
-    method on_visit( cmd:DecrementGlobalProperty )
+    method on_visit_node( cmd:DecrementGlobalProperty )
       writer.print "--"
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:DecrementLocal )
+    method on_visit_node( cmd:DecrementLocal )
       writer.print "--"
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:DecrementProperty )
+    method on_visit_node( cmd:DecrementProperty )
       writer.print "--"
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:DecrementThisProperty )
+    method on_visit_node( cmd:DecrementThisProperty )
       writer.print "--"
       writer.print "THISOBJ"
       assert this_type
@@ -890,26 +890,26 @@ class CGenerator : Visitor
       else                        writer.print "."
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:Divide )
+    method on_visit_node( cmd:Divide )
       writer.print '('
       print_parenthesized( cmd.left )
       writer.print " / "
       print_parenthesized( cmd.right )
       writer.print ')'
 
-    method on_visit( cmd:DivideAndAssignLocal )
+    method on_visit_node( cmd:DivideAndAssignLocal )
       writer.print '('
       writer.print cmd.info.c_name
       writer.print " /= "
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:DivideAndAssignGlobalProperty )
+    method on_visit_node( cmd:DivideAndAssignGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " /= " )
       visit( cmd.operand )
 
-    method on_visit( cmd:DivideAndAssignProperty )
+    method on_visit_node( cmd:DivideAndAssignProperty )
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
@@ -917,7 +917,7 @@ class CGenerator : Visitor
       writer.print " /= "
       visit( cmd.operand )
 
-    method on_visit( cmd:DivideAndAssignThisProperty )
+    method on_visit_node( cmd:DivideAndAssignThisProperty )
       writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -925,44 +925,44 @@ class CGenerator : Visitor
       writer.print " /= "
       visit( cmd.operand )
 
-    method on_visit( cmd:EmptyCompound )
+    method on_visit_node( cmd:EmptyCompound )
       writer.write_default_value( cmd.of_type )
 
-    method on_visit( cmd:Escape )
+    method on_visit_node( cmd:Escape )
       writer.print "goto "
       writer.print escape_label(cmd.control_type)
 
-    method on_visit( cmd:ExplicitCast )
+    method on_visit_node( cmd:ExplicitCast )
       writer.print '('
       writer.print cmd.to_type.c_ref_name
       writer.print ')'
       visit( cmd.operand )
 
-    method on_visit( cmd:GetLocal )
+    method on_visit_node( cmd:GetLocal )
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:GetGlobalProperty )
+    method on_visit_node( cmd:GetGlobalProperty )
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:GetProperty )
+    method on_visit_node( cmd:GetProperty )
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:GetSingleton )
+    method on_visit_node( cmd:GetSingleton )
       writer.print "%NS%ROGUE_SINGLETON("
       writer.print cmd.type.c_name
       writer.print ")"
 
-    method on_visit( cmd:GetThisProperty )
+    method on_visit_node( cmd:GetThisProperty )
       writer.print "THISOBJ"
       assert this_type
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:GlobalMethod )
+    method on_visit_node( cmd:GlobalMethod )
       if (cmd.type_context is not this_type) return
 
       this_type.write_c_global_method_header( cmd, writer )
@@ -974,7 +974,7 @@ class CGenerator : Visitor
 
       writer.println
 
-    method on_visit( cmd:If )
+    method on_visit_node( cmd:If )
       on_enter( cmd )
       if (cmd.condition)
         writer.print   "if ("
@@ -999,22 +999,22 @@ class CGenerator : Visitor
 
       on_leave( cmd )
 
-    method on_visit( cmd:IncrementGlobalProperty )
+    method on_visit_node( cmd:IncrementGlobalProperty )
       writer.print "++"
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:IncrementLocal )
+    method on_visit_node( cmd:IncrementLocal )
       writer.print "++"
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:IncrementProperty )
+    method on_visit_node( cmd:IncrementProperty )
       writer.print "++"
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:IncrementThisProperty )
+    method on_visit_node( cmd:IncrementThisProperty )
       writer.print "++"
       writer.print "THISOBJ"
       assert this_type
@@ -1022,7 +1022,7 @@ class CGenerator : Visitor
       else                        writer.print "."
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:InlineAssignment )
+    method on_visit_node( cmd:InlineAssignment )
       writer.print '('
       writer.print cmd.info.c_name
       writer.print '='
@@ -1030,7 +1030,7 @@ class CGenerator : Visitor
       visit( cmd.value )
       writer.print ')'
 
-    method on_visit( cmd:InlineWhich )
+    method on_visit_node( cmd:InlineWhich )
       # a:x || b:y || c
       # ->
       # (a) ? (x) : ((b) ? (y) : (c))
@@ -1057,12 +1057,12 @@ class CGenerator : Visitor
         print_parenthesized( cur_case.value )
       endIf
 
-    method on_visit( cmd:InstanceOf )
+    method on_visit_node( cmd:InstanceOf )
       writer.print( "%Ns%Rogue_instance_of(" )
       visit( cmd.operand )
       writer.[ print(", "), print(cmd.compare_type.id), print(')') ]
 
-    method on_visit( cmd:Is )
+    method on_visit_node( cmd:Is )
       if (cmd.left.type is not cmd.right.type)
         writer.print "(void*)"
         print_parenthesized( cmd.left )
@@ -1075,7 +1075,7 @@ class CGenerator : Visitor
         print_parenthesized( cmd.right )
       endIf
 
-    method on_visit( cmd:IsNot )
+    method on_visit_node( cmd:IsNot )
       if (cmd.left.type is not cmd.right.type)
         writer.print "(void*)"
         print_parenthesized( cmd.left )
@@ -1088,13 +1088,13 @@ class CGenerator : Visitor
         print_parenthesized( cmd.right )
       endIf
 
-    method on_visit( cmd:IsType )
+    method on_visit_node( cmd:IsType )
       writer.print "%Ns%Rogue_is_type("
       visit( cmd.operand )
       writer.print ", &Type"
       writer.[ print(cmd.compare_type.c_name), print(')') ]
 
-    method on_visit( cmd:Iterator )
+    method on_visit_node( cmd:Iterator )
       on_enter( cmd )
       local control_label = autoname("loop_condition")
       writer.print   "goto "
@@ -1114,7 +1114,7 @@ class CGenerator : Visitor
       writer.println ");"
       on_leave( cmd )
 
-    method on_visit( cmd:LiteralCharacter )
+    method on_visit_node( cmd:LiteralCharacter )
       if (cmd.value >= 32 and cmd.value <= 126)
         writer.print '\''
         which (cmd.value)
@@ -1129,10 +1129,10 @@ class CGenerator : Visitor
         writer.print ")"
       endIf
 
-    method on_visit( cmd:LiteralInt32 )
+    method on_visit_node( cmd:LiteralInt32 )
       writer.print( cmd.value )
 
-    method on_visit( cmd:LiteralInt64 )
+    method on_visit_node( cmd:LiteralInt64 )
       if (cmd.value == native("LLONG_MIN")->Int64)
         writer.print( "LLONG_MIN" )
       else
@@ -1140,7 +1140,7 @@ class CGenerator : Visitor
         writer.print "LL"
       endIf
 
-    method on_visit( cmd:LiteralInt )
+    method on_visit_node( cmd:LiteralInt )
       if (Program.int_bits == 64)
         if (cmd.value == native("LLONG_MIN")->Int64)
           writer.print( "LLONG_MIN" )
@@ -1152,31 +1152,31 @@ class CGenerator : Visitor
         writer.print cmd.value
       endIf
 
-    method on_visit( cmd:LiteralLogical )
+    method on_visit_node( cmd:LiteralLogical )
       writer.print which{ cmd.value:1 || 0 }
 
-    method on_visit( cmd:LiteralNull )
+    method on_visit_node( cmd:LiteralNull )
       writer.print 0
 
-    method on_visit( cmd:LiteralNullOptional )
+    method on_visit_node( cmd:LiteralNullOptional )
       writer.write_default_value( cmd.optional_type )
 
-    method on_visit( cmd:LiteralPi )
+    method on_visit_node( cmd:LiteralPi )
       writer.print pi
       if (Program.real_bits == 32) writer.print 'f'
 
-    method on_visit( cmd:LiteralReal )
+    method on_visit_node( cmd:LiteralReal )
       writer.print cmd.value
       if (Program.real_bits == 32) writer.print 'f'
 
-    method on_visit( cmd:LiteralReal32 )
+    method on_visit_node( cmd:LiteralReal32 )
       writer.print cmd.value
       writer.print 'f'
 
-    method on_visit( cmd:LiteralReal64 )
+    method on_visit_node( cmd:LiteralReal64 )
       writer.print cmd.value
 
-    method on_visit( cmd:LiteralString )
+    method on_visit_node( cmd:LiteralString )
       local c_id = Program.unique_strings[cmd.value]
       if (not c_id) trace cmd.value
       assert c_id
@@ -1186,7 +1186,7 @@ class CGenerator : Visitor
       # Overriding to prevent visiting initial_value
       cmd.type = visit(cmd.type)->(as Type)
 
-    method on_visit( cmd:LocalDeclaration )
+    method on_visit_node( cmd:LocalDeclaration )
       local needs_semicolon = false
 
       local v = cmd.info
@@ -1229,30 +1229,30 @@ class CGenerator : Visitor
         endIf
       endIf
 
-    method on_visit( cmd:LogicalAnd )
+    method on_visit_node( cmd:LogicalAnd )
       print_parenthesized( cmd.left )
       writer.print " && "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:LogicalNot )
+    method on_visit_node( cmd:LogicalNot )
       writer.print "!"
       print_parenthesized( cmd.operand )
 
-    method on_visit( cmd:LogicalOr )
+    method on_visit_node( cmd:LogicalOr )
       print_parenthesized( cmd.left )
       writer.print " || "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:LogicalXor )
+    method on_visit_node( cmd:LogicalXor )
       print_parenthesized( cmd.left )
       writer.print " ^ "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:Logicalized )
+    method on_visit_node( cmd:Logicalized )
       writer.print "!!"
       print_parenthesized( cmd.operand )
 
-    method on_visit( cmd:Method )
+    method on_visit_node( cmd:Method )
       if (cmd.type_context is not this_type or cmd.attributes.is_abstract) return
 
       this_type.write_c_method_header( cmd, writer )
@@ -1264,24 +1264,24 @@ class CGenerator : Visitor
 
       writer.println
 
-    method on_visit( cmd:Multiply )
+    method on_visit_node( cmd:Multiply )
       print_parenthesized( cmd.left )
       writer.print " * "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:MultiplyAndAssignLocal )
+    method on_visit_node( cmd:MultiplyAndAssignLocal )
       writer.print '('
       writer.print cmd.info.c_name
       writer.print " *= "
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:MultiplyAndAssignGlobalProperty )
+    method on_visit_node( cmd:MultiplyAndAssignGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " *= " )
       visit( cmd.operand )
 
-    method on_visit( cmd:MultiplyAndAssignProperty )
+    method on_visit_node( cmd:MultiplyAndAssignProperty )
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
@@ -1289,7 +1289,7 @@ class CGenerator : Visitor
       writer.print " *= "
       visit( cmd.operand )
 
-    method on_visit( cmd:MultiplyAndAssignThisProperty )
+    method on_visit_node( cmd:MultiplyAndAssignThisProperty )
       writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -1297,24 +1297,24 @@ class CGenerator : Visitor
       writer.print " *= "
       visit( cmd.operand )
 
-    method on_visit( cmd:NativeExpression )
+    method on_visit_node( cmd:NativeExpression )
       print_native_code( cmd.t, cmd.content )
 
-    method on_visit( cmd:NativeStatement )
+    method on_visit_node( cmd:NativeStatement )
       print_native_code( cmd.t, cmd.content )
       writer.println
 
-    method on_visit( cmd:Necessary )
+    method on_visit_node( cmd:Necessary )
       writer.print "if (!("
       visit( cmd.condition )
       writer.print ")) goto "
       writer.print escape_label(cmd.control_type)
 
-    method on_visit( cmd:Negate )
+    method on_visit_node( cmd:Negate )
       writer.print '-'
       print_parenthesized( cmd.operand )
 
-    method on_visit( cmd:NextIteration )
+    method on_visit_node( cmd:NextIteration )
       forEach (control_structure in control_stack step -1)
         if (control_structure instanceOf Iterator)
           writer.print "goto "
@@ -1324,7 +1324,7 @@ class CGenerator : Visitor
       endForEach
       throw cmd.t.error( "[INTERNAL] No enclosing loop for nextIteration." )
 
-    method on_visit( cmd:Power )
+    method on_visit_node( cmd:Power )
       local type = cmd.left.type
       writer.print '('
       writer.print type.c_name
@@ -1338,12 +1338,12 @@ class CGenerator : Visitor
       visit( cmd.right )
       writer.print ')'
 
-    method on_visit( cmd:PreDecrementLocal )
+    method on_visit_node( cmd:PreDecrementLocal )
       writer.print "--"
       writer.print( cmd.info.c_name )
 
 
-    method on( cmd:Procedure )->Cmd
+    method on_visit( cmd:Procedure )->Cmd
       this_procedure = cmd
       autoname_index = 0
 
@@ -1352,15 +1352,15 @@ class CGenerator : Visitor
         visible_locals.add( p->(as Local) )
       endForEach
 
-      visit_content( cmd )
+      visit_node( cmd )
 
       visible_locals.discard_from( visible_locals_fp.remove_last )
       return cmd
 
-    method on_visit( cmd:PushStackTraceCutoff )
+    method on_visit_node( cmd:PushStackTraceCutoff )
       writer.println ''%Ns%Rogue_call_stack_push( "", "", -1 );''   # create dummy frame for stack trace cutoff
 
-    method on_visit( cmd:Return )
+    method on_visit_node( cmd:Return )
       if (cmd.result and cmd.result.can_trigger_gc)
         local result_name = autoname("result")
         writer.print cmd.result.type.c_ref_name
@@ -1387,20 +1387,20 @@ class CGenerator : Visitor
         writer.println ';'
       endIf
 
-    method on_visit( cmd:ReturnOnException )
+    method on_visit_node( cmd:ReturnOnException )
       dispatch_exception( cmd.t, &indeterminate )
 
-    method on_visit( cmd:SetGlobalProperty )
+    method on_visit_node( cmd:SetGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " = " )
       print_with_cast( cmd.new_value, cmd.info.type )
 
-    method on_visit( cmd:SetLocal )
+    method on_visit_node( cmd:SetLocal )
       writer.print( cmd.info.c_name )
       writer.print( " = " )
       print_with_cast( cmd.new_value, cmd.info.type )
 
-    method on_visit( cmd:SetProperty )
+    method on_visit_node( cmd:SetProperty )
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
@@ -1408,14 +1408,14 @@ class CGenerator : Visitor
       writer.print( " = " )
       print_with_cast( cmd.new_value, cmd.info.type )
 
-    method on_visit( cmd:SetSingleton )
+    method on_visit_node( cmd:SetSingleton )
       writer.print "%NS%ROGUE_SET_SINGLETON("
       writer.print cmd.of_type.c_name
       writer.print ','
       visit( cmd.new_value )
       writer.print ")"
 
-    method on_visit( cmd:SetThisProperty )
+    method on_visit_node( cmd:SetThisProperty )
       writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -1423,7 +1423,7 @@ class CGenerator : Visitor
       writer.print( " = " )
       print_with_cast( cmd.new_value, cmd.info.type )
 
-    method on_visit( cmd:Statements )
+    method on_visit_node( cmd:Statements )
       temporarily current_statements = cmd
         if (cmd.count) writer.println_indent( '{', 2 )
         forEach (statement in cmd)
@@ -1441,24 +1441,24 @@ class CGenerator : Visitor
         if (cmd.count) writer.println_indent( '}', -2 )
       endTemporarily
 
-    method on_visit( cmd:Subtract )
+    method on_visit_node( cmd:Subtract )
       print_parenthesized( cmd.left )
       writer.print " - "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:SubtractAndAssignLocal )
+    method on_visit_node( cmd:SubtractAndAssignLocal )
       writer.print '('
       writer.print cmd.info.c_name
       writer.print " -= "
       print_parenthesized( cmd.operand )
       writer.print ')'
 
-    method on_visit( cmd:SubtractAndAssignGlobalProperty )
+    method on_visit_node( cmd:SubtractAndAssignGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " -= " )
       visit( cmd.operand )
 
-    method on_visit( cmd:SubtractAndAssignProperty )
+    method on_visit_node( cmd:SubtractAndAssignProperty )
       visit( cmd.context )
       if (cmd.context.type.is_reference) writer.print "->"
       else                               writer.print "."
@@ -1466,7 +1466,7 @@ class CGenerator : Visitor
       writer.print " -= "
       visit( cmd.operand )
 
-    method on_visit( cmd:SubtractAndAssignThisProperty )
+    method on_visit_node( cmd:SubtractAndAssignThisProperty )
       writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -1474,13 +1474,13 @@ class CGenerator : Visitor
       writer.print " -= "
       visit( cmd.operand )
 
-    method on_visit( cmd:Sufficient )
+    method on_visit_node( cmd:Sufficient )
       writer.print "if ("
       visit( cmd.condition )
       writer.print ") goto "
       writer.print escape_label(cmd.control_type)
 
-    method on_visit( cmd:Switch )
+    method on_visit_node( cmd:Switch )
       on_enter( cmd )
 
       writer.print "switch ("
@@ -1516,27 +1516,27 @@ class CGenerator : Visitor
 
       on_leave( cmd )
 
-    method on_visit( cmd:This )
+    method on_visit_node( cmd:This )
       if (this_procedure.attributes.is_mutating) writer.print '*'
       writer.print "THISOBJ"
 
-    method on_visit( cmd:Throw )
+    method on_visit_node( cmd:Throw )
       writer.print   "%Ns%Rogue_exception = (%Ns%RogueObject*)"
       visit( cmd.exception )
       writer.println ';'
       writer.println "%Ns%Rogue_call_stack_pop();"  # remove the call stack cutoff marker added with PushStackTraceCutoff
       dispatch_exception( cmd.t )
 
-    method on_visit( cmd:Try )
+    method on_visit_node( cmd:Try )
       on_enter( cmd )
       visit( cmd.statements )
       on_leave( cmd )
       # .catches are handled in on_end_scope
 
-    method on_visit( cmd:TypeIndex )
+    method on_visit_node( cmd:TypeIndex )
       writer.print( cmd.of_type.index )
 
-    method on_visit( cmd:WideningCast )
+    method on_visit_node( cmd:WideningCast )
       print_with_cast( cmd.operand, cmd.to_type )
 
     method pop_scope

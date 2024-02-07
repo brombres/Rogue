@@ -58,35 +58,35 @@ class ExceptionAnalyzer : InspectionVisitor
         endForEach
       endForEach
 
-    method on_visit( cmd:CallProcedure )
+    method on_visit_node( cmd:CallProcedure )
       if (cmd.info.throws)
         if (cmd.exception_analyzed) return
         cmd.exception_analyzed = true
         back_propagate_thrown_exception( cmd.info.throws )
       endIf
 
-    method on_visit( cmd:CallDynamicMethod )
+    method on_visit_node( cmd:CallDynamicMethod )
       propagate_exceptions_among_dynamic_methods( cmd.info )
-      on_visit( cmd->(as CallProcedure) )
+      on_visit_node( cmd->(as CallProcedure) )
 
-    method on( cmd:CleanupBlock )->Logical
+    method on_visit( cmd:CleanupBlock )->Logical
       control_stack.add( cmd )
       visit( cmd.statements )
       control_stack.remove_last
       visit( cmd.cleanup )
       return false
 
-    method on( cmd:ControlStructure )->Logical
+    method on_visit( cmd:ControlStructure )->Logical
       control_stack.add( cmd )
       visit_children( cmd )
       control_stack.remove_last
       return false
 
-    method on_visit( cmd:CallThisDynamicMethod )
+    method on_visit_node( cmd:CallThisDynamicMethod )
       propagate_exceptions_among_dynamic_methods( cmd.info )
-      on_visit( cmd->(as CallProcedure) )
+      on_visit_node( cmd->(as CallProcedure) )
 
-    method on_visit( cmd:CreateObject )
+    method on_visit_node( cmd:CreateObject )
       if (cmd.m_init and cmd.m_init.throws)
         if (cmd.exception_analyzed) return
         cmd.exception_analyzed = true
@@ -94,12 +94,12 @@ class ExceptionAnalyzer : InspectionVisitor
         back_propagate_thrown_exception( cmd.m_init.throws )
       endIf
 
-    method on_visit( cmd:Throw )
+    method on_visit_node( cmd:Throw )
       if (cmd.is_analyzed) return
       cmd.is_analyzed = true
       back_propagate_thrown_exception( cmd.exception.type )
 
-    method on( cmd:Try )->Cmd
+    method on_visit( cmd:Try )->Cmd
       control_stack.add( cmd )
       visit( cmd.statements )
       control_stack.remove_last

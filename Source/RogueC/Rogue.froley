@@ -1765,7 +1765,7 @@ parser
       is_method_template = false
       --disable_output
       createTokenList  # effective discardPosition
-      produce MethodTemplate(name:String,placeholders,_tokens:TokenList)
+      produce MethodTemplate(name:String,placeholders,token_list:TokenList)
     else
       savePosition
 

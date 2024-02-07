@@ -1,6 +1,6 @@
 module RogueC
 
-class Finalizer : Visitor
+class Finalizer : RebuildVisitor
   METHODS
     method apply
       # Remove special aspects that implement augments
@@ -104,11 +104,11 @@ class Finalizer : Visitor
                    b->(as WhichCase).args[0]->(as LiteralInt32).value )
       endIf
 
-    method on_visit( cmd:CallDynamicMethod )
+    method on_visit_node( cmd:CallDynamicMethod )
       ensure_dynamic_dispatch( cmd.info->(as Method) )
       visit_children( cmd )
 
-    method on_visit( cmd:CallThisDynamicMethod )
+    method on_visit_node( cmd:CallThisDynamicMethod )
       ensure_dynamic_dispatch( cmd.info->(as Method) )
       visit_children( cmd )
 
@@ -123,7 +123,7 @@ class Finalizer : Visitor
         m.attributes.dynamic_dispatch = true
       endIf
 
-    method on( cmd:GetProperty )->Cmd
+    method on_visit( cmd:GetProperty )->Cmd
       if (cmd.info.type_context.is_enum)
         if (cmd.info.name == "value")
           local create_compound = cmd.context->(as CreateCompound)
@@ -134,7 +134,7 @@ class Finalizer : Visitor
       endIf
       return cmd
 
-    method on_visit( cmd:GenericFunctionDefinition )
+    method on_visit_node( cmd:GenericFunctionDefinition )
       throw cmd.t.error( "Generic functions must be passed as an argument or assigned to a variable with specialized Function type." )
 
     method on_visit_type( type:Type )
@@ -145,7 +145,7 @@ class Finalizer : Visitor
 
       prior.on_visit_type( type )
 
-    method on_visit( m:Method )
+    method on_visit_node( m:Method )
       if (this_type.is_reference)
         if (this_type.base_class)
           local base_m = this_type.base_class.methods[ m.signature ]
@@ -154,10 +154,10 @@ class Finalizer : Visitor
       endIf
       visit_children( m )
 
-    method on_visit( p:Property )
+    method on_visit_node( p:Property )
       p.initial_value = null
 
-    method on_visit( cmd:TypeContext )
+    method on_visit_node( cmd:TypeContext )
       throw cmd.t.error( "Unused type context." )
 
 endClass

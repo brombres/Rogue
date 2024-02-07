@@ -8,7 +8,7 @@ class BranchAnalyzer : InspectionVisitor<<Logical>> [singleton]
     method all_paths_return( cmd:Cmd )->Logical
       return visit( cmd )
 
-    method on( cmd:Contingent )->Logical
+    method on_visit( cmd:Contingent )->Logical
       if (cmd.catches_escape) return false
 
       if (cmd.catches_sufficient)
@@ -23,7 +23,7 @@ class BranchAnalyzer : InspectionVisitor<<Logical>> [singleton]
         return visit( cmd.statements )
       endIf
 
-    method on( cmd:ControlStructure )->Logical
+    method on_visit( cmd:ControlStructure )->Logical
       if (cmd.catches_escape) return false
 
       control_stack.add( cmd )
@@ -33,7 +33,7 @@ class BranchAnalyzer : InspectionVisitor<<Logical>> [singleton]
       control_stack.remove_last
       return result
 
-    method on( cmd:If )->Logical
+    method on_visit( cmd:If )->Logical
       if (cmd.condition and not cmd.cmd_else) return false
 
       control_stack.add( cmd )
@@ -44,21 +44,21 @@ class BranchAnalyzer : InspectionVisitor<<Logical>> [singleton]
       control_stack.remove_last
       return result
 
-    method on( cmd:Return )->Logical
+    method on_visit( cmd:Return )->Logical
       return true
 
-    method on( cmd:Switch )->Logical
+    method on_visit( cmd:Switch )->Logical
       if (not cmd.statements) return false
       if (not visit(cmd.statements)) return false
       if (not visit(forEach in cmd.cases)) return false
       return true
 
-    method on( cmd:Throw )->Logical
+    method on_visit( cmd:Throw )->Logical
       local thrown_type = which{ cmd.exception.type || Program.type_Exception }
       if ((forEach in control_stack).catches_exception(thrown_type)) return false
       return true
 
-    method on( cmd:Try )->Logical
+    method on_visit( cmd:Try )->Logical
       control_stack.add( cmd )
       if (not visit(cmd.statements)) return false
       control_stack.remove_last
@@ -68,7 +68,7 @@ class BranchAnalyzer : InspectionVisitor<<Logical>> [singleton]
       endForEach
       return true
 
-    method on( cmd:Which )->Logical
+    method on_visit( cmd:Which )->Logical
       if (not cmd.statements) return false
       if (not visit(cmd.statements)) return false
       if (not visit(forEach in cmd.cases)) return false
