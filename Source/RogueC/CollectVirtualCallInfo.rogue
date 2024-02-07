@@ -5,7 +5,7 @@ class CollectVirtualCallInfo : InspectionVisitor
     method init
       Program.apply( this )
 
-    method on_visit( cmd:CallVirtualMethod )
+    method on_visit_node( cmd:CallVirtualMethod )
       if (cmd.vcall_index == -1)
         cmd.vcall_index = this_procedure.vcall_count
         ++this_procedure.vcall_count

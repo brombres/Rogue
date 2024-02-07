@@ -21,9 +21,9 @@ class AspectMethodPatcher : InspectionVisitor [singleton]
       visit( m )
       m.add_to_call_signature_group
 
-    method on_visit( cmd:TemplatedAccess )
+    method on_visit_node( cmd:TemplatedAccess )
       cmd.module_context = this_type.module_context
 
-    method on_visit( cmd:This )
+    method on_visit_node( cmd:This )
       cmd.this_type = this_type
 endClass

@@ -183,7 +183,7 @@ class ResolveUsedElements : InspectionVisitor
         endIf
       endWhile
 
-    method on_visit( mod:Module ) [override]
+    method on_visit_node( mod:Module ) [override]
       assert( mod.m_on_launch )
       if (mod.m_on_launch.statements.count)
         visit( mod.m_on_launch.type_context )
@@ -272,13 +272,13 @@ class ResolveUsedElements : InspectionVisitor
         endForEach
       endTemporarily
 
-    method on_visit( cmd:CallProcedure )
+    method on_visit_node( cmd:CallProcedure )
       visit( cmd.info )
 
-    method on_visit( cmd:CallDynamicMethod )
+    method on_visit_node( cmd:CallDynamicMethod )
       visit_dynamic_call( cmd.info )
 
-    method on_visit( cmd:CallThisDynamicMethod )
+    method on_visit_node( cmd:CallThisDynamicMethod )
       visit_dynamic_call( cmd.info )
 
     method visit_dynamic_call( info:Procedure )
@@ -297,17 +297,17 @@ class ResolveUsedElements : InspectionVisitor
         endContingent
       endForEach
 
-    method on_visit( cmd:CreateObject )
+    method on_visit_node( cmd:CreateObject )
       visit( cmd.m_init )
 
-    method on_visit( cmd:CreateObjectAndSetLocal )
+    method on_visit_node( cmd:CreateObjectAndSetLocal )
       visit( cmd.of_type )
 
-    method on_visit( cmd:GetGlobalProperty )
+    method on_visit_node( cmd:GetGlobalProperty )
       visit( cmd.info.type_context )
       visit( cmd.info )
 
-    method on( m:Procedure )->Logical
+    method on_visit( m:Procedure )->Logical
       if (m.attributes.is_visiting or m.attributes.is_abstract) return false
       m.attributes.is_visiting = true
 
@@ -502,7 +502,7 @@ class ResolveUsedElements : InspectionVisitor
       if (m.is_global) cmd_call_global_cases.add( cmd_case )
       else             cmd_call_object_cases.add( cmd_case )
 
-    method on_visit( cmd:Type )
+    method on_visit_node( cmd:Type )
       visit_type( cmd )
 
 endClass

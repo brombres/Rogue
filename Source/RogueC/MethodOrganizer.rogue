@@ -1,6 +1,6 @@
 module RogueC
 
-class MethodOrganizer : Visitor, Poolable
+class MethodOrganizer : RebuildVisitor, Poolable
   PROPERTIES
     catches = Catch[]
 
@@ -15,20 +15,20 @@ class MethodOrganizer : Visitor, Poolable
       # Called when instantiating a template
       visit( class_def )
 
-    method on( cmd:Try )->Cmd
+    method on_visit( cmd:Try )->Cmd
       catches.add( forEach in cmd.catches )
-      visit_content( cmd )
+      visit_node( cmd )
       local result = validate( cmd )
       catches.discard_from( catches.count - cmd.catches.count )
       return result
 
-    method on_visit( cmd:Class )
+    method on_visit_node( cmd:Class )
       if (cmd.constructor_properties and not this_type.is_enum)
         if (this_type.is_object)
           # Generate an init() method off the constructor properties.
           local m_init = Method( cmd.t, "init" )
           m_init.parameters.add( forEach in cmd.constructor_properties )
-          on( m_init )
+          on_visit( m_init )
 
         elseIf (this_type.is_compound)
           # Generate a create() global method as the "primary constructor".
@@ -37,18 +37,18 @@ class MethodOrganizer : Visitor, Poolable
           m_create.parameters.add( forEach in cmd.constructor_properties )
           m_create.statements.add( Return(cmd.t, CreateCompound(cmd.t,this_type)) )
           this_type.m_primary_constructor = m_create
-          on( m_create )
+          on_visit( m_create )
         endIf
       endIf
 
       visit_children( cmd )
 
-    method on_visit( cmd:GlobalMethod )
+    method on_visit_node( cmd:GlobalMethod )
       cmd.module_context = this_module
       cmd.type_context = this_type
       cmd.organize
 
-    method on_visit( cmd:GlobalMethodTemplate )
+    method on_visit_node( cmd:GlobalMethodTemplate )
       local name = "$<<$>>"(cmd.name,cmd.placeholders.count)
       cmd.omit_doc = this_type.attributes.omit_doc
       this_type.global_method_templates.add( name, cmd )
@@ -57,7 +57,7 @@ class MethodOrganizer : Visitor, Poolable
       prior.on_visit_children( cmd )
       cmd.initial_value = visit( cmd.initial_value )
 
-    method on_visit( cmd:Method )
+    method on_visit_node( cmd:Method )
       cmd.module_context = this_module
       cmd.type_context = this_type
       cmd.generate_body
@@ -69,7 +69,7 @@ class MethodOrganizer : Visitor, Poolable
         )
       endIf
 
-    method on_visit( cmd:MethodTemplate )
+    method on_visit_node( cmd:MethodTemplate )
       local name = "$<<$>>"(cmd.name,cmd.placeholders.count)
       cmd.type_context = this_type
       cmd.omit_doc = this_type.attributes.omit_doc
@@ -87,13 +87,13 @@ class MethodOrganizer : Visitor, Poolable
         endIf
       endForEach
 
-    method on_visit( cmd:TemplatedAccess )
+    method on_visit_node( cmd:TemplatedAccess )
       assert this_module
       cmd.module_context = this_module
       cmd.type_context = this_type
       visit_children( cmd )
 
-    method on_visit( cmd:This )
+    method on_visit_node( cmd:This )
       assert this_procedure
       if (not this_procedure.is_method)
         throw cmd.t.error( "'this' can only be referenced in an object method." )

@@ -5,6 +5,6 @@ class ClearDynamicDispatchFlags : InspectionVisitor
     method init
       Program.apply( this )
 
-    method on_visit( m:Method )
+    method on_visit_node( m:Method )
       m.attributes.dynamic_dispatch = false
 endClass
