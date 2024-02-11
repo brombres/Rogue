@@ -5,13 +5,19 @@ class Exception [essential]
 
   METHODS
     method init_object
-      if (DEBUG) stack_trace = StackTrace()
+      if (DEBUG) save_stack_trace
 
     method init( message )
 
     method display
-      if (DEBUG) stack_trace.display
+      if (DEBUG and stack_trace) stack_trace.display
       Console.error.println this
+
+    method save_stack_trace
+      if (DEBUG)
+        stack_trace = StackTrace()
+        stack_trace.discard_exception_frames( this.type_name )
+      endIf
 
     method to->String
       local result = String()

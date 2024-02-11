@@ -18,8 +18,15 @@ class StackTrace
         endForEach
 
         if (frames.last.procedure == "StackTrace.init()") frames.remove_last
-        # Happens with 'print StackTrace()' versus an exception being thrown.
+        while (frames.count and frames.last.procedure.contains(".save_stack_trace()")) frames.remove_last
       endIf
+
+    method discard_exception_frames( exception_type_name:String )
+      local procedure_name = "$.init_object()"(exception_type_name)
+      while (frames.count and frames.last.procedure.contains(".init_object()"))
+        local frame = frames.remove_last
+        if (frame.procedure == procedure_name) escapeWhile
+      endWhile
 
     method display
       println this->String
@@ -44,6 +51,7 @@ class StackTrace
         left_w .= or_larger( frame.procedure.count )
         right_w .= or_larger( frame.filename.count + frame.line.digit_count )
       endForEach
+
       local max_w = Console.width.or_larger(80)
       if (left_w + right_w + 5 > max_w)
         left_w = (max_w - (right_w + 5)).clamped_low(20)
