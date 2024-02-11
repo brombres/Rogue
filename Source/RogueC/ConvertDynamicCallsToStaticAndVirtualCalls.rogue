@@ -31,7 +31,7 @@ class ConvertDynamicCallsToStaticAndVirtualCalls : RebuildVisitor [singleton]
         if (VCALLS and not context_type.is_aspect)
           # V-table eligible
           context_type.method_vtable[ info.signature ] = info->(as Method)
-          return visit( CallVirtualMethod(cmd.t,cmd.context,info,cmd.args) )
+          return visit( CallVirtualMethod(cmd.t,cmd.context,info,cmd.args).[result_discarded=cmd.result_discarded] )
         endIf
 
         local group = Program.dynamic_methods[info.dynamic_signature]
@@ -70,7 +70,7 @@ class ConvertDynamicCallsToStaticAndVirtualCalls : RebuildVisitor [singleton]
         if (VCALLS and this_type.is_aspect)
           # V-table eligible
           this_type.method_vtable[ info.signature ] = info->(as Method)
-          return visit( CallThisVirtualMethod(cmd.t,info,cmd.args) )
+          return visit( CallThisVirtualMethod(cmd.t,info,cmd.args).[result_discarded=cmd.result_discarded] )
         endIf
 
         local group = Program.dynamic_methods[info.dynamic_signature]

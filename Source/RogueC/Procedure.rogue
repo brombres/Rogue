@@ -26,8 +26,8 @@ class Procedure : Cmd
 
     locals            = Local[]
 
-    throws            : Type
-    # Most general type of exception that this procedure throws (or null)
+    throws            : ExceptionTypes
+    # Types of exceptions that this procedure can throw
 
     overridden_method : Procedure
 

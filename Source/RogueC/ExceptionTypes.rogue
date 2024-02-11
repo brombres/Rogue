@@ -1,0 +1,56 @@
+module RogueC
+
+class ExceptionTypes( flags_1=0:Int64, flags_2=0:Int64 ) [compound]
+  GLOBAL PROPERTIES
+    types = Type[]
+
+  GLOBAL METHODS
+    method create( type:Type )->ExceptionTypes
+      assert type.exception_type
+      local bitpos = type.exception_type.index - 1
+      if (bitpos < 64) return ExceptionTypes( 1:<<:bitpos, 0 )
+      else             return ExceptionTypes( 0, 1:<<:(bitpos-64) )
+
+    method register( type:Type )->ExceptionType
+      types.add( type )
+      if (types.count > 128)
+        trace
+        throw type.t.error( "[INTERNAL] Too many extended Exception types - RogueC only supports 128 types of exceptions." )
+      endIf
+      return ExceptionType( types.count )  # 1-128
+
+  METHODS
+    method collect_types( list:Type[] )
+      forEach (type in types)
+        if (this.contains(type)) list.add( type )
+      endForEach
+
+    method contains( type:Type )->Logical
+      return (this & ExceptionTypes(type))?
+
+    method description->String
+      use list = WorkList<<Type>>
+        collect_types( list )
+        return list->String
+      endUse
+
+    method operator==( other:ExceptionTypes )->Logical
+      return flags_1 == other.flags_1 and flags_2 == other.flags_2
+
+    method operator?()->Logical
+      return flags_1 or flags_2
+
+    method operator|( type:Type )->ExceptionTypes
+      return this | ExceptionTypes(type)
+
+    method operator|( other:ExceptionTypes )->ExceptionTypes
+      return ExceptionTypes( flags_1 | other.flags_1, flags_2 | other.flags_2 )
+
+    method operator&( other:ExceptionTypes )->ExceptionTypes
+      return ExceptionTypes( flags_1 & other.flags_1, flags_2 & other.flags_2 )
+
+    method operator&( type:Type )->ExceptionTypes
+      return this & ExceptionTypes(type)
+
+
+endClass

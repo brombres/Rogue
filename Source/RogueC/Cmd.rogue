@@ -1303,7 +1303,6 @@ class CallProcedure : Cmd
     info : Procedure
     args : Cmd
     result_discarded   : Logical
-    exception_analyzed : Logical
 
   METHODS
     method init( t, args )
@@ -1507,7 +1506,6 @@ class CreateObject : Cmd
     of_type : Type
     m_init  : Method
     args    : Cmd
-    exception_analyzed : Logical
 
   METHODS
     method init( t, of_type, m_init, args )
