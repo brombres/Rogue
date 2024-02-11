@@ -1,0 +1,7 @@
+module RogueC
+
+class ExceptionType( index:Int ) [compound]
+  METHODS
+    method operator?()->Logical
+      return index?
+endClass

@@ -125,7 +125,7 @@ class CSpecializer : RebuildVisitor
       if (cmd.info.throws?)
         # Decompose call
         if (cmd.info.return_type? and not cmd.result_discarded)
-          local v = add_local( cmd.t, "call", cmd.info.return_type, DummyInitialValue )
+          local v = add_local( cmd.t, "call_result", cmd.info.return_type, DummyInitialValue )
           insert( SetLocal(cmd.t,v,cmd,&initial_assignment) )
           insert( ReturnOnException(cmd.t) )
           return GetLocal( cmd.t, v )

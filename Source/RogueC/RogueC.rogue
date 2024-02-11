@@ -24,7 +24,6 @@ $include CollectVirtualCallInfo
 $include Collector
 $include ConvertDynamicCallsToStaticAndVirtualCalls
 $include CullUnusedElements
-$include TypeOrganizer
 $include ContextBlockPatcher
 $include ControlType
 $include CmdType
@@ -33,6 +32,8 @@ $include CSpecializer
 $include CWriter
 $include DynamicMethodGroup
 $include ExceptionAnalyzer
+$include ExceptionType
+$include ExceptionTypes
 $include Finalizer
 $include ImplicitFunctionGenerator
 $include ImplicitWithVarCollector
@@ -53,6 +54,7 @@ $include ScopeVisitor
 $include Template
 $include Transformer
 $include Type
+$include TypeOrganizer
 $include EndScopePatcher
 
 uses Console/CommandLineParser

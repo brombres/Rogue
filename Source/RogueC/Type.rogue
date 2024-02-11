@@ -48,6 +48,7 @@ class Type : Cmd
     id    : Int       # used for dynamic dispatch tables; introspection data may not exist for all type ids
     index = -1L       # index of type in lookup table; used for introspection
     class_data_index : Int
+    exception_type   : ExceptionType
 
     m_init_class          : GlobalMethod
     m_on_singleton_change : GlobalMethod
@@ -986,6 +987,9 @@ class Type : Cmd
         endIf
       endIf
 
+      if (this.instance_of(Program.type_Exception))
+        exception_type = ExceptionTypes.register( this )
+      endIf
 
     method organize_methods
       if (methods_organizing) return
