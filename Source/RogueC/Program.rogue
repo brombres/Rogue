@@ -162,7 +162,7 @@ class Program [singleton]
         endForEach
       endWhile
 
-    method apply( visitor:RebuildVisitor )
+    method apply( visitor:Visitor )
       is_modified = true
 
       while (is_modified)

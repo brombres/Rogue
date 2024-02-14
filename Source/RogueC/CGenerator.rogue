@@ -2,7 +2,7 @@ module RogueC
 
 uses Utility/WorkList
 
-class CGenerator : RebuildVisitor
+class CGenerator : Visitor
   PROPERTIES
     writer             : CWriter
     autoname_index     = 0

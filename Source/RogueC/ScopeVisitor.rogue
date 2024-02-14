@@ -1,6 +1,6 @@
 module RogueC
 
-class ScopeVisitor : RebuildVisitor
+class ScopeVisitor : Visitor
   PROPERTIES
     visible_locals     = String[]
     visible_locals_fp  = Int32[]

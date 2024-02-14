@@ -1,6 +1,6 @@
 module RogueC
 
-class EndScopePatcher : RebuildVisitor [singleton]
+class EndScopePatcher : Visitor [singleton]
   PROPERTIES
     resolver      : Resolver
     insert_cmd    : Cmd

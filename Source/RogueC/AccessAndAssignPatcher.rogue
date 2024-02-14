@@ -1,6 +1,6 @@
 module RogueC
 
-class AccessAndAssignPatcher : RebuildVisitor [singleton]
+class AccessAndAssignPatcher : Visitor [singleton]
   PROPERTIES
     context : Cmd
 

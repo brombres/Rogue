@@ -1,6 +1,6 @@
 module RogueC
 
-class ConvertDynamicCallsToStaticAndVirtualCalls : RebuildVisitor [singleton]
+class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor [singleton]
   METHODS
     method on_visit( cmd:CallDynamicMethod )->Cmd
       if (cmd.context instanceOf This)

@@ -1,6 +1,6 @@
 module RogueC
 
-class ImplicitFunctionGenerator : RebuildVisitor [singleton]
+class ImplicitFunctionGenerator : Visitor [singleton]
   METHODS
     method apply( cmd:Cmd, arg_count:Int32 )->Cmd
       local params = IDList(cmd.t)

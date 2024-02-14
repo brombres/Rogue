@@ -1,6 +1,6 @@
 module RogueC
 
-class Transformer : RebuildVisitor
+class Transformer : Visitor
   PROPERTIES
     inline_stack = Cmd[]
     autoname_index = 0
