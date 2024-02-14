@@ -1,6 +1,6 @@
 module RogueC
 
-class CSpecializer : RebuildVisitor
+class CSpecializer : Visitor
   PROPERTIES
     writer         : CWriter
     autoname_index = 0

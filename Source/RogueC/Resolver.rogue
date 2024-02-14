@@ -7,7 +7,7 @@ $localMacro FOLD_CONSTANTS<<$m,$Type,$op>>
     return $m<<$op>>( cmd )
 $endLocalMacro
 
-class Resolver : Poolable, RebuildVisitor
+class Resolver : Poolable, Visitor
   GLOBAL PROPERTIES
     index_getters = String[][
       "at(Rogue::Int)", "get(Rogue::Int)",

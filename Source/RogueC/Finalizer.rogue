@@ -1,6 +1,6 @@
 module RogueC
 
-class Finalizer : RebuildVisitor
+class Finalizer : Visitor
   METHODS
     method apply
       # Remove special aspects that implement augments

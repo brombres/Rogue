@@ -1,7 +1,7 @@
 # Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
 module RogueC
 
-class RebuildVisitor
+class Visitor
   # Tree-rebuilding visitor.
   #
   # Default per-node call sequence:

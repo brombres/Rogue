@@ -1,6 +1,6 @@
 module RogueC
 
-class Collector : RebuildVisitor
+class Collector : Visitor
   PROPERTIES
     autoname_index = 0
 

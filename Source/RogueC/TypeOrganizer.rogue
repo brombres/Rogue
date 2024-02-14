@@ -1,6 +1,6 @@
 module RogueC
 
-class TypeOrganizer : RebuildVisitor
+class TypeOrganizer : Visitor
   METHODS
     method init( this_module )
 

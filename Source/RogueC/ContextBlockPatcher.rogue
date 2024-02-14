@@ -1,6 +1,6 @@
 module RogueC
 
-class ContextBlockPatcher : RebuildVisitor [singleton]
+class ContextBlockPatcher : Visitor [singleton]
   PROPERTIES
     v : Local
 

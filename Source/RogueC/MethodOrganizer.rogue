@@ -1,6 +1,6 @@
 module RogueC
 
-class MethodOrganizer : RebuildVisitor, Poolable
+class MethodOrganizer : Visitor, Poolable
   PROPERTIES
     catches = Catch[]
 
