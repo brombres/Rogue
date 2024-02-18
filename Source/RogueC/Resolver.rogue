@@ -1930,16 +1930,16 @@ class Resolver : Poolable, Visitor
           endIf
 
         else
-          is_global = this_procedure.is_global
-          local type = this_module.find_type( t, name, &extended_search )
-          if (type) return resolve_type_access( t, type, args, &=suppress_error )
-
           type_context = this_type  # may be null
           local v = find_local( name )
           if (v)
             if (args) return resolve_access( t, GetLocal(t,v), "call", args, &=suppress_error )
             else      return validate( GetLocal(t,v) )
           endIf
+
+          is_global = this_procedure.is_global
+          local type = this_module.find_type( t, name, &extended_search )
+          if (type) return resolve_type_access( t, type, args, &=suppress_error )
         endIf
 
         block
