@@ -844,7 +844,9 @@ class Parser : ParserCore, Poolable
       m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, attributes )
 
     method parse_doc_comment
-      if (disable_output or not has_another)
+      if (disable_output) return
+
+      if (not has_another)
         _push( null, 0 )
         return
       endIf
