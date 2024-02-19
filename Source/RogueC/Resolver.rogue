@@ -1472,7 +1472,7 @@ class Resolver : Poolable, Visitor
     method on_visit( cmd:FunctionReturnValue )->Cmd
       local operand = visit(cmd.operand)
       if (operand.type)
-        return Return(operand.t,operand)
+        return visit( Return(operand.t,operand) )
       else
         return operand
       endIf
