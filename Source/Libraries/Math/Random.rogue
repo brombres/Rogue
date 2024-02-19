@@ -118,7 +118,7 @@ class Random [singleton]
     method int64->Int64
       # Returns a normalized, evenly distributed random integer in
       # the range [0,2^63-1] inclusive.
-      local n = (next32->Int64 :<<: 16) & 0x7FFF_FFFF_0000_0000
+      local n = (next32->Int64 :<<: 32) & 0x7FFF_FFFF_0000_0000
       return (n | (next32->Int64 & 0x0FFFF_FFFF))
 
     method logical->Logical
