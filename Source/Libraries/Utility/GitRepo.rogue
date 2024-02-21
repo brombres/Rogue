@@ -117,6 +117,10 @@ class GitRepo( url:String, folder:File ) [compound]
       local cmd = "cd $ && git fetch --all && git status"(folder.esc)
       return Process.run( cmd, &env )->String.contains("can be fast-forwarded")
 
+    method head( &short )->String
+      if (short) return Process.run( "cd $ && git rev-parse --short HEAD"(folder.esc) )->String.trimmed
+      else       return Process.run( "cd $ && git rev-parse HEAD"(folder.esc) )->String.trimmed
+
     method local_branch_exists( branch_name:String )->Logical
       local process_result = Process.run( "cd $ && git branch -a"(folder.esc), &env )
       if (not process_result.success) return false
@@ -146,6 +150,9 @@ class GitRepo( url:String, folder:File ) [compound]
 
     method set_origin( url:String, &verbose )->Logical
       return _execute( "cd $ && git remote set-url origin $"(url), &=verbose )
+
+    method tag->String
+      return Process.run( "cd $ && git describe --tag"(folder.esc) )->String.trimmed
 
     method to->String
       return folder.filename
