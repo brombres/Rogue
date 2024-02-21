@@ -20,32 +20,34 @@ class Procedure : Cmd
     is_organized      = false
     is_resolved       = false
 
-    min_args          : Int32
+    min_args          : Int
     index             = -1
-    call_index        = -1    # call signature index
+    call_index        = -1   # call signature index
 
     locals            = Local[]
 
-    throws            : Type
-    # Most general type of exception that this procedure throws (or null)
+    throws            : ExceptionTypes
+    # Types of exceptions that this procedure can throw
 
     overridden_method : Procedure
 
     method_template   : MethodTemplate # only for method template instances
     template_args     : TemplateArgs   # only for method template instances
 
-    vtable_index      = -1    # only for vtable methods
-    vcall_count       : Int32 # number of virtual call temp variables required by the current statement
-    vcall_max         : Int32 # total virtual call temp variables required by this procedure
+    vtable_index      = -1  # only for vtable methods
+    vcall_count       : Int # number of virtual call temp variables required by the current statement
+    vcall_max         : Int # total virtual call temp variables required by this procedure
     vcall_slot        = -1  # index of temp variable used during dispatch
+
+    doc               : String
 
   METHODS
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
-        attributes=null:Attributes, body=null:LocalScope )
-      init( t, null, name, parameters, return_type, attributes, body )
+        attributes=null:Attributes, doc=null:String, body=null:LocalScope )
+      init( t, null, name, parameters, return_type, attributes, doc, body )
 
     method init( t, module_context, name, parameters=null, return_type=null,
-        attributes=null, body=null )
+      attributes=null, doc=null, body=null )
       if (not parameters) parameters = Parameters(t)
       if (not attributes) attributes = Attributes( t )
       if (not body)       body = LocalScope(t)
@@ -85,7 +87,7 @@ class Procedure : Cmd
       attributes.is_used      = false
       attributes.is_collected = false
 
-    method accepts_arg_count( n:Int32 )->Logical
+    method accepts_arg_count( n:Int )->Logical
       return n >= min_args and n <= parameters.count
 
     method arrange_args( args:Cmd, resolver:Resolver )->Logical
@@ -246,7 +248,7 @@ class Procedure : Cmd
     method is_method->Logical
       return this instanceOf Method
 
-    method locate_parameter( name:String )->Int32?
+    method locate_parameter( name:String )->Int?
       forEach (param at i in parameters)
         if (param.original_name == name) return i
       endForEach
@@ -276,8 +278,10 @@ class Procedure : Cmd
         throw t.error( "Only compound methods can have the [mutating] attribute." )
       endIf
 
+      local is_template = false
       if (name == "to" and return_type)
         # to->String -> to<<String>>()->String etc.
+        is_template = true
         local type_arg = TemplateArgs( t, return_type )
         name = type_arg->String("to")
       endIf
@@ -294,7 +298,10 @@ class Procedure : Cmd
               if (p.attributes.is_default_parameter)
                 if (p.initial_value) p.type = p.initial_value.type
                 if (not p.type) p.type = Program.type_Logical
-                if (not p.initial_value) p.initial_value = p.type.cmd_default_value(p.t)
+                if (not p.initial_value)
+                  p.initial_value = p.type.cmd_default_value(p.t)
+                  p.initial_value_tokens = TokenList( p.initial_value.t, [p.initial_value.t] )
+                endIf
               elseIf (this.is_method)
                 local prop = type_context.properties[p.name]
                 if (prop)
@@ -334,6 +341,11 @@ class Procedure : Cmd
           endBlock
         endForEach
 
+      endIf
+
+      if (is_template)
+        if (is_global) type_context.global_method_template_instances.add( name )
+        else           type_context.method_template_instances.add( name )
       endIf
 
       use organizer = ObjectPool<<MethodOrganizer>>

@@ -20,4 +20,23 @@ class Token( type:TokenType, filepath=null:String, source=null:String,
       if (type == TokenType.EOL) return "EOL"
       if (content) return content
       return type.symbol.to_escaped_ascii
+
+    method to_source_string->String
+      which (type)
+        case TokenType.EOL
+          return "\n"
+        case TokenType.CHARACTER
+          return ("'$'"(content[0].to_escaped_ascii("'")))
+        case TokenType.STRING
+          return (''"$"''(content.to_escaped_ascii(''"'')))
+        case TokenType.BINARY_INTEGER
+          return "0b" + content
+        case TokenType.OCTAL_INTEGER
+          return "0c" + content
+        case TokenType.HEX_INTEGER
+          return "0x" + content
+        others
+          if (content) return content
+          return type.symbol.to_escaped_ascii
+      endWhich
 endClass

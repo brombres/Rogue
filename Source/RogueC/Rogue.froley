@@ -132,6 +132,7 @@ META_FILE_BYTES       $fileBytes      [meta]
 META_FILE_STRING      $fileString     [meta]
 META_IF               $if             [meta]
 META_INCLUDE          $include        [meta]
+META_INCLUDE_FOLDER   $includeFolder  [meta]
 META_IS_COMPOUND      $isCompound     [meta]
 META_IS_DEFINED       $isDefined      [meta]
 META_IS_ENUM          $isEnum         [meta]
@@ -172,13 +173,13 @@ SYMBOL_DOTDOTGT              ..>
 SYMBOL_DOT_OPEN_SQUARE       .[
 SYMBOL_DOUBLE_VERTICAL_BAR   ||  [structural]
 SYMBOL_EMPTY_SQUARE_BRACKETS []
-SYMBOL_VALUE_LIST            @[
-SYMBOL_VALUE_TABLE           @{
+SYMBOL_VARIANT_LIST            @[
+SYMBOL_VARIANT_TABLE           @{
 SYMBOL_EQ                    ==
 SYMBOL_EQUALS                =
 SYMBOL_FAT_ARROW             =>
 SYMBOL_GE                    >=
-SYMBOL_GT                    >   [structural]
+SYMBOL_GT                    >
 SYMBOL_GTGT                  >>  [structural]
 SYMBOL_LE                    <=
 SYMBOL_LEFT_SHIFT            :<<:
@@ -325,7 +326,7 @@ scanner
   match buffer
     case "Date": call use_DateTime; produce IDENTIFIER
     case "File": call use_File; produce IDENTIFIER
-    case "JSON": call use_Value; produce IDENTIFIER
+    case "JSON": call use_Variant; produce IDENTIFIER
     case "Process": call use_Process; produce IDENTIFIER
     case "Promise": call use_Promise; produce IDENTIFIER
     case "Scanner": call use_Scanner; produce IDENTIFIER
@@ -334,6 +335,7 @@ scanner
     case "TimeInterval": call use_DateTime; produce IDENTIFIER
     case "Timestamp": call use_DateTime; produce IDENTIFIER
     case "Value": call use_Value; produce IDENTIFIER
+    case "Variant": call use_Variant; produce IDENTIFIER
     produceAny Keywords
     case "GLOBAL"
       # "GLOBAL PROPERTIES" / "GLOBAL METHODS"
@@ -359,14 +361,17 @@ scanner
     case "0b"
       base = 2
       scan_binary_integer
+      scan({[iIlL]})
       produce BINARY_INTEGER
     case "0c"
       base = 8
       scan_octal_integer
+      scan({[iIlL]})
       produce OCTAL_INTEGER
     case "0x"
       base = 16
       scan_hex_integer
+      scan({[iIlL]})
       produce HEX_INTEGER
     others
       scan_integer
@@ -374,12 +379,15 @@ scanner
         ch = peek(1)
         if (ch >= 'a' and ch <= 'z' or ch >= 'A' and ch <= 'Z' or ch == '_' or ch == '.') produce INTEGER
       endIf
+      if (scan({[iIlL]})) produce INTEGER
+      if (scan({[fFrR]})) produce REAL_NUMBER
       if (not scan('.')) produce INTEGER
       scan_integer
-      if (scan([eE]))
+      if (scan({[eE]}))
         scan [+-]
         if (not scan([0-9]+)) syntaxError "Integer exponent expected."
       endIf
+      scan( {[fFrR]} )
       produce REAL_NUMBER
   endMatch
 
@@ -535,7 +543,7 @@ scanner
     scan [^\n]*
     savePosition
       consume '\n'
-      consume [ ]*
+      consume [ \t]*
       if (not consume('|'))
         restorePosition
         return
@@ -569,7 +577,7 @@ parser
   if (not hasAnother) return
 
   if (nextIs("class"))
-    savePosition     # Pass 1: position to scan template tokens from (node output already disabled)
+    savePosition     # Pass 1: save position to scan template tokens from (node output already disabled)
     ++disable_output # Pass 2: also disable output; just parse to get past
 
     consume("class")
@@ -585,7 +593,7 @@ parser
   endIf
 
   if (nextIs("enum"))
-    savePosition     # Pass 1: position to scan template tokens from (node output already disabled)
+    savePosition     # Pass 1: save position to scan template tokens from (node output already disabled)
     ++disable_output # Pass 2: also disable output; just parse to get past
 
     consume("enum")
@@ -619,6 +627,7 @@ parser
       discardPosition
 
       savePosition  # collect tokens
+      if (nextIs(':')) base_types
       must_consume_eols
       class_sections
       mustConsume "endAugment"
@@ -748,7 +757,8 @@ parser
   on @"override"   -> AttributeOverride
   on @"preferred"  -> AttributePreferred
   on @"propagated" -> AttributePropagated
-  syntaxError "Illegal procedure attribute. Expected one or more of [abstract api append essential fallback insert mutating override preferred propagated]."
+  on @"replace"    -> AttributeReplace
+  syntaxError "Illegal procedure attribute. Expected one or more of [abstract api append essential fallback insert mutating override preferred propagated replace]."
 
 - procedure_body
   multi_line_statements
@@ -804,25 +814,36 @@ parser
 
 - procedure_parameter
   consume_eols
-  on '&' identifier optional_initial_value optional_type -> Local(name:String,initial_value,type:Type,attribute="default":String)
+  on '&' identifier optional_parameter_initial_value optional_type -> Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type,attribute="default":String)
   on '@'
     identifier
-    optional_initial_value
+    optional_parameter_initial_value
     if (nextIs(':')) syntaxError "Direct @property-set parameter cannot specify a type."
     createNull # type
-    produce Local(name:String,initial_value,type:Type,attribute="direct-auto-store":String)
+    produce Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type,attribute="direct-auto-store":String)
   endOn
   onPeek IDENTIFIER
     identifier
-    optional_initial_value
+    optional_parameter_initial_value
     optional_type
-    produce Local(name:String,initial_value,type:Type)
+    produce Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type)
   endOn
   identifier  # error
 
 - optional_initial_value
   if (consume('=')) consume_eols; expression
   else              createNull
+
+- optional_parameter_initial_value
+  if (consume('='))
+    consume_eols
+    savePosition
+    expression
+    createTokenListPreservingStack
+  else
+    createNull  # Cmd
+    createNull  # TokenList
+  endIf
 
 - procedure_return_type
   if (not consume('->')) produceNull
@@ -925,7 +946,7 @@ parser
     endOn
 
   elseOn '['
-    # [Key:Value] -> Table<<Key,Value>>
+    # [Key:Variant] -> Table<<Key,Variant>>
     type
     mustConsume ':'
     type
@@ -1163,13 +1184,14 @@ parser
   constructor_properties
   base_types
   class_attributes
+  call parse_doc_comment
   if (consume(';'))
     createNull
   else
     class_sections
     mustConsume "endClass"
   endIf
-  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, sections )
+  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, doc:String, sections )
 
 - enum_attributes
   beginList
@@ -1190,13 +1212,14 @@ parser
   constructor_properties
   base_types
   enum_attributes
+  call parse_doc_comment
   if (consume(';'))
     createNull
   else
     enum_sections
     mustConsume "endEnum"
   endIf
-  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, sections )
+  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, doc:String, sections )
 
 - placeholder
   on PLACEHOLDER -> Placeholder(name=content)
@@ -1349,7 +1372,8 @@ parser
     elseOnOthers
       createNull
     endOn
-    produce Category(name:String,args,value)
+    call parse_doc_comment
+    produce Category(name:String,args,value,doc:String)
   endOn
   identifier  # syntax error
 
@@ -1518,6 +1542,8 @@ parser
     endIf
 
     expression
+    consume @"then"  # optional aesthetic syntax
+
     if (consume(EOL))
       # Multi-line 'if'
       scoped_multi_line_statements
@@ -1578,6 +1604,7 @@ parser
   savePosition
   on "elseIf"
     expression
+    consume @"then"  # optional aesthetic syntax
     if (consume(EOL))
       # This elseIf is multi-line; good to keep going
       discardPosition
@@ -1613,6 +1640,7 @@ parser
   savePosition
   on "elseIf"
     expression
+    consume @"then"  # optional aesthetic syntax
     if (consume(EOL))
       # This elseIf is multi-line and outside our scope
       restorePosition
@@ -1724,6 +1752,7 @@ parser
 
     procedure_attributes
     consume(':')
+    call parse_doc_comment
 
     if (is_batch_augment)
       multi_line_statements
@@ -1739,7 +1768,7 @@ parser
       is_method_template = false
       --disable_output
       createTokenList  # effective discardPosition
-      produce MethodTemplate(name:String,placeholders,_tokens:TokenList)
+      produce MethodTemplate(name:String,placeholders,token_list:TokenList)
     else
       savePosition
 
@@ -1750,7 +1779,7 @@ parser
 
       createNull
       create LocalScope(statements):ControlStructure
-      create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,source_tokens:TokenList,body:LocalScope):Procedure
+      create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,source_tokens:TokenList,body:LocalScope):Procedure
       return
     endIf
   endOn
@@ -1768,11 +1797,13 @@ parser
   procedure_return_type
   procedure_attributes
   consume(':')
+  call parse_doc_comment
+
   savePosition
 
   scoped_multi_line_statements
 
-  create GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+  create GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,body:LocalScope):Procedure
   return
 
 - method_template_instance
@@ -1780,6 +1811,8 @@ parser
   procedure_return_type
   procedure_attributes
   consume(':')
+  call parse_doc_comment
+
   savePosition
 
   ++disable_output
@@ -1789,7 +1822,7 @@ parser
 
   createNull
   create LocalScope(statements):ControlStructure
-  create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,source_tokens:TokenList,body:LocalScope):Procedure
+  create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,source_tokens:TokenList,body:LocalScope):Procedure
   return
 
 - global_method
@@ -1827,8 +1860,9 @@ parser
     procedure_return_type
     procedure_attributes
     consume(':')
+    call parse_doc_comment
     scoped_multi_line_statements
-    produce GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+    produce GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,body:LocalScope):Procedure
   endOn
 
 - global_properties
@@ -1842,7 +1876,8 @@ parser
   createList
   optional_type
   global_property_attributes
-  produce GlobalPropertyDeclarations( declarations, type:Type, attributes:Attributes )
+  call parse_doc_comment
+  produce GlobalPropertyDeclarations( declarations, type:Type, attributes:Attributes, doc:String )
 
 - properties
   beginList
@@ -1855,7 +1890,8 @@ parser
   createList
   optional_type
   property_attributes
-  produce PropertyDeclarations( declarations, type:Type, attributes:Attributes )
+  call parse_doc_comment
+  produce PropertyDeclarations( declarations, type:Type, attributes:Attributes, doc:String )
 
 - property_declaration
   on IDENTIFIER
@@ -1868,8 +1904,15 @@ parser
     createNull
     produce Property( name=content, initial_value, type:Type )
   elseOn "native"
-    string
-    produce NativeCProperty( expression:String ):NativeProperty
+    on "<<"
+      identifier
+      mustConsume ">>"
+      string
+      produce NativeProperty( target:String, expression:String )
+    elseOnOthers
+      string
+      produce NativeProperty( target="C":String, expression:String )
+    endOn
   endOn
   mustConsume IDENTIFIER  # throws error
 
@@ -2126,7 +2169,7 @@ parser
   on "assert"
     savePosition
     expression
-    createTokenList
+    createTokenListPreservingStack
     produce Assert(expression,token_list:TokenList)
   endOn
   on "ensure" "<<" expression ">>" args -> Ensure(expression,args:Args)
@@ -2222,7 +2265,7 @@ parser
     while (not nextIs(EOL))
       savePosition
       expression
-      createTokenList
+      createTokenListPreservingStack
       create TracedExpression(expression,token_list:TokenList)
       consume ','
     endWhile
@@ -2236,7 +2279,7 @@ parser
     while (not nextIs(EOL))
       savePosition
       expression
-      createTokenList
+      createTokenListPreservingStack
       create TracedExpression(expression,token_list:TokenList)
       consume ','
     endWhile
@@ -2260,29 +2303,40 @@ parser
 
 - local_declaration
   on IDENTIFIER
-    optional_initial_value
+    optional_parameter_initial_value
     createNull
-    produce Local( name=content, initial_value, type:Type )
+    produce Local( name=content, initial_value, initial_value_tokens:TokenList, type:Type )
   endOn
   mustConsume IDENTIFIER  # throws error
 
 - localize
   on "localize"
     beginList
-      identifier
-
-      call clone
-      createNull
-      create Access(name:String,args)
-      subclass
-
-      createNull
-      create Local(name:String,initial_value,type:Type)
+      localize_declaration
+      while (consume(','))
+        localize_declaration
+      endWhile
     createList
 
     createNull
     produce LocalDeclarations( declarations, type:Type )
   endOn
+
+- localize_declaration
+  savePosition
+  identifier
+  createTokenListPreservingStack
+  pop initial_value_tokens
+
+  call clone
+  createNull
+  create Access(name:String,args)
+  subclass
+
+  push initial_value_tokens
+
+  createNull
+  create Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type)
 
 - destructuring_local_declarations
   on '('
@@ -2596,13 +2650,19 @@ parser
   on "instanceOf"
     type
     produce InstanceOf(operand,compare_type:Type)
-  elseOn "not"
-    mustConsume "instanceOf"
-    type
-    produce NotInstanceOf(operand,compare_type:Type)
   elseOn "isType"
     type
     produce IsType(operand,compare_type:Type)
+  elseOn "not"
+    if (consume("instanceOf"))
+      type
+      produce NotInstanceOf(operand,compare_type:Type)
+    elseIf (consume("isType"))
+      type
+      produce NotIsType(operand,compare_type:Type)
+    else
+      syntaxError "'instanceOf' or 'isType' expected."
+    endIf
   endOn
 
 - range
@@ -2712,10 +2772,26 @@ parser
     access_inner
   elseOn '['
     consume_eols
+    savePosition
     expression
     consume_eols
-    mustConsume(']')
-    create IndexedAccess(context,index)
+    if (consume(']'))
+      discardPosition
+      create IndexedAccess(context,index)
+    else
+      restorePosition
+      beginList
+      expression
+      consume_eols
+      while (not consume(']'))
+        consume(',')
+        consume_eols
+        expression
+        consume_eols
+      endWhile
+      createList
+      create ListIndexedAccess(context,args)
+    endIf
     access_inner
   elseOn "//"
     consume_eols
@@ -2806,7 +2882,7 @@ parser
   on HEX_INTEGER    -> LiteralInteger(content=content:String,base="16":Integer):LiteralPrimitive
   on BINARY_INTEGER -> LiteralInteger(content=content:String,base="2":Integer):LiteralPrimitive
   on OCTAL_INTEGER  -> LiteralInteger(content=content:String,base="8":Integer):LiteralPrimitive
-  on REAL_NUMBER    -> LiteralReal(value=content:Real):LiteralPrimitive
+  on REAL_NUMBER    -> LiteralRealNumber(value=content:String):LiteralPrimitive
   on CHARACTER      -> LiteralCharacter(value=content:Character):LiteralPrimitive
   on '@'
     pathed_name
@@ -2834,7 +2910,7 @@ parser
           createNull
           create Type(name:String,type_args:TemplateArgs)
           create Type(core_type:Type,optional="true":Logical)
-          remaining_type
+          list_or_optional_type
           type_access_or_typed_literal_list
           return
         else
@@ -2969,7 +3045,7 @@ parser
     expression
     if (nextIs(':'))
       restorePosition
-      type  # [Key:Value] table
+      type  # [Key:Variant] table
       call use_Table
       if (nextIs('{'))
         literal_table
@@ -3001,7 +3077,10 @@ parser
     return
   endOn
 
-  on "undefined" -> LiteralUndefined
+  on "undefined"
+    call use_Variant
+    produce LiteralUndefined
+  endOn
 
   onPeek "function" function_definition: return
 
@@ -3019,12 +3098,12 @@ parser
   endOn
 
   on "@["
-    value_list
+    variant_list
     return
   endOn
 
   on "@{"
-    value_table
+    variant_table
     return
   endOn
 
@@ -3058,10 +3137,10 @@ parser
 
   on "new" "<<" expression ">>" args -> New(type_expression,args:Args)
 
-  on "$isCompound"  "<<" expression ">>" -> IsCompound(operand)
-  on "$isEnum"      "<<" expression ">>" -> IsEnum(operand)
-  on "$isPrimitive" "<<" expression ">>" -> IsPrimitive(operand)
-  on "$isReference" "<<" expression ">>" -> IsReference(operand)
+  on "$isCompound"  "<<" type ">>" -> IsCompound(operand)
+  on "$isEnum"      "<<" type ">>" -> IsEnum(operand)
+  on "$isPrimitive" "<<" type ">>" -> IsPrimitive(operand)
+  on "$isReference" "<<" type ">>" -> IsReference(operand)
 
   on "$fileBytes"
     mustConsume '('
@@ -3090,47 +3169,47 @@ parser
 - create_InvokeContext
   produce InvokeContext( context, args )
 
-- value_expression
-  on '{' value_table: return
-  on '[' value_list:  return
-  on "[]" -> EmptyValueList
+- variant_expression
+  on '{' variant_table: return
+  on '[' variant_list:  return
+  on "[]" -> EmptyVariantList
   expression
 
-- value_list
-  call use_Value
+- variant_list
+  call use_Variant
   consume_eols
-  if (consume(']')) produce EmptyValueList
+  if (consume(']')) produce EmptyVariantList
 
   beginList
-    value_expression
+    variant_expression
     consume_eols
     while (consume(',') or not nextIs(']'))
       consume_eols
-      value_expression
+      variant_expression
       consume_eols
     endWhile
     mustConsume ']'
   createList Args
 
-  produce ValueList(args)
+  produce VariantList(args)
 
-- value_table
-  call use_Value
+- variant_table
+  call use_Variant
   consume_eols
-  if (consume('}')) produce EmptyValueTable
+  if (consume('}')) produce EmptyVariantTable
 
   beginList
-    key_value_pair
+    variant_key_value_pair
     consume_eols
     while (consume(',') or not nextIs('}'))
-      key_value_pair
+      variant_key_value_pair
     endWhile
     mustConsume '}'
   createList KeyValuePairList
 
-  produce ValueTable(args:KeyValuePairList)
+  produce VariantTable(args:KeyValuePairList)
 
-- key_value_pair
+- variant_key_value_pair
   consume_eols
 
   if (consume(':'))
@@ -3146,20 +3225,18 @@ parser
       syntaxError "Identifier or literal string expected."
     endOn
   else
-    # { "string":value }, { id:value } -> { "id":value }
     on IDENTIFIER
-      create LiteralString(name=content)
-    elseOn STRING
+      # { id:value } -> { "id":value }
       create LiteralString(name=content)
     elseOnOthers
-      syntaxError "Identifier or literal string expected."
+      variant_expression
     endOn
     consume_eols
 
     mustConsume ':'
     consume_eols
 
-    value_expression
+    variant_expression
   endIf
 
   create KeyValuePair(key,value)
@@ -3251,11 +3328,16 @@ parser
     string
     mustConsume ")"
   else
+    consume_eols
     string
   endIf
   if consume("->")
-    type
-    produce NativeExpression(content:String,result_type:Type)
+    if consume @"LiteralInt32"
+      produce NativeLiteralInt32(content:String):NativeExpression
+    else
+      type
+      produce NativeExpression(content:String,result_type:Type)
+    endIf
   else
     produce NativeStatement(content:String)
   endIf
@@ -3349,6 +3431,17 @@ parser
 
   elseOn "$include"
     collect_meta_filepath
+    include_attribute_api      = false
+    include_attribute_folder   = false
+    include_attribute_optional = false
+    include_attributes
+    call include_filepath
+    return
+
+  elseOn "$includeFolder"
+    collect_meta_filepath
+    include_attribute_api      = false
+    include_attribute_folder   = true
     include_attribute_optional = false
     include_attributes
     call include_filepath
@@ -3517,13 +3610,12 @@ parser
     return
 
   elseOn "uses"
-    # Call: $include XYZ
     call rewrite_cur_token
     collect_meta_filepath
     savePosition
     uses_attributes
     restorePosition
-    call uses_filepath
+    call uses_filepath # uses XYZ -> $include XYZ/XYZ.rogue
     return
 
   elseOn IDENTIFIER
@@ -3543,11 +3635,19 @@ parser
   endOn
 
 - include_attribute
+  on @"api"
+    include_attribute_api = true
+    return
+  endOn
+  on @"folder"
+    include_attribute_folder = true
+    return
+  endOn
   on @"optional"
     include_attribute_optional = true
     return
   endOn
-  syntaxError "Illegal $include attribute. Expected [optional]."
+  syntaxError "Illegal $include attribute. Expected one or more of [api folder optional]."
 
 #{
 - meta_if
@@ -3647,15 +3747,18 @@ parser
   create ConvertToByte(operand):Convert
   create ConvertToCharacter(operand):Convert
   create ConvertToInt32(operand):Convert
+  create ConvertToInt(operand):Convert
   create ConvertToInt64(operand):Convert
   create ConvertToLogical(operand):Convert
   create ConvertToReal32(operand):Convert
+  create ConvertToReal(operand):Convert
   create ConvertToReal64(operand):Convert
   create CreateObject(of_type:Type,args)
   create CreateObject(of_type:Type,info:Local)
   create CreateCompound(of_type:Type,args:Args)
   create DefaultArg(operand):Unary
   create DummyInitialValue
+  create ExplicitCast(operand,to_type:Type)
   create EnumValue(of_type:Type,name:String)
   create EnumValueDef(value)
   create EmptyCompound(of_type:Type)
@@ -3674,16 +3777,17 @@ parser
   create Literal
   create LiteralNullOptional(optional_type:Type):Literal
   create LiteralPrimitive:Literal
+  create LiteralInt(value:Integer):LiteralInteger
   create LiteralInt32(value:Integer):LiteralInteger
   create LiteralInt64(value:Integer):LiteralInteger
+  create LiteralReal(value:Real):LiteralPrimitive
   create LiteralReal32(value:Real):LiteralPrimitive
   create LiteralReal64(value:Real):LiteralPrimitive
   create LocalDeclaration(info:Local)
   create Logicalized(operand):Unary
-  create NativeProperty( expression:String )
   create OpAndAssign(target,operand)
   create PreDecrementLocal(info:Local)  # Internal use
-  create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope)
+  create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc=`null`,body:LocalScope)
   create PushStackTraceCutoff
   create CreateRange(start,limit,step_size)
   create ReturnOnException

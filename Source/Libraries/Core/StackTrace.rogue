@@ -4,10 +4,10 @@ class StackTrace
 
   METHODS
     method init
-      local n = native("Rogue_call_stack_count")->Int32
+      local n = native("%Ns%Rogue_call_stack_count")->Int
       if (n)
         # Stow the current line number
-        native @|Rogue_call_stack[Rogue_call_stack_count-1].line = Rogue_call_stack_line;
+        native @|%Ns%Rogue_call_stack[%Ns%Rogue_call_stack_count-1].line = %Ns%Rogue_call_stack_line;
 
         frames = StackTraceFrame[]( n )
 
@@ -18,22 +18,29 @@ class StackTrace
         endForEach
 
         if (frames.last.procedure == "StackTrace.init()") frames.remove_last
-        # Happens with 'print StackTrace()' versus an exception being thrown.
+        while (frames.count and frames.last.procedure.contains(".save_stack_trace()")) frames.remove_last
       endIf
+
+    method discard_exception_frames( exception_type_name:String )
+      local procedure_name = "$.init_object()"(exception_type_name)
+      while (frames.count and frames.last.procedure.contains(".init_object()"))
+        local frame = frames.remove_last
+        if (frame.procedure == procedure_name) escapeWhile
+      endWhile
 
     method display
       println this->String
 
-    method filename( index:Int32 )->String
-      if (native("!Rogue_call_stack[$index].filename")->Logical) return "INTERNAL"
-      return native("RogueString_create( Rogue_call_stack[$index].filename )")->String
+    method filename( index:Int )->String
+      if (native("!%Ns%Rogue_call_stack[$index].filename")->Logical) return "INTERNAL"
+      return native("%Ns%RogueString_create( %Ns%Rogue_call_stack[$index].filename )")->String
 
-    method line( index:Int32 )->Int32
-      return native("Rogue_call_stack[$index].line")->Int32
+    method line( index:Int )->Int
+      return native("%Ns%Rogue_call_stack[$index].line")->Int
 
-    method procedure( index:Int32 )->String
-      if (native("!Rogue_call_stack[$index].procedure")->Logical) return "Unknown Procedure"
-      return native("RogueString_create( Rogue_call_stack[$index].procedure )")->String
+    method procedure( index:Int )->String
+      if (native("!%Ns%Rogue_call_stack[$index].procedure")->Logical) return "Unknown Procedure"
+      return native("%Ns%RogueString_create( %Ns%Rogue_call_stack[$index].procedure )")->String
 
     method to->String
       if (not frames) return "(Call history unavailable - compile with '--debug')"
@@ -44,7 +51,8 @@ class StackTrace
         left_w .= or_larger( frame.procedure.count )
         right_w .= or_larger( frame.filename.count + frame.line.digit_count )
       endForEach
-      local max_w = Console.width.or_larger(40)
+
+      local max_w = Console.width.or_larger(80)
       if (left_w + right_w + 5 > max_w)
         left_w = (max_w - (right_w + 5)).clamped_low(20)
         right_w = (max_w - (left_w + 5))
@@ -57,12 +65,12 @@ class StackTrace
       return result
 endClass
 
-class StackTraceFrame( procedure:String, filename:String, line:Int32 ) [compound]
+class StackTraceFrame( procedure:String, filename:String, line:Int ) [compound]
   METHODS
     method to->String
       return "[$  $:$]" (procedure, filename, line )
 
-    method to->String( left_w:Int32, right_w:Int32 )
+    method to->String( left_w:Int, right_w:Int )
       local builder = String()
       builder.print '['
       if (procedure.count > left_w) builder.print( procedure.leftmost(left_w-3) + "..." )

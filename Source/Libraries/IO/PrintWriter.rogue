@@ -9,7 +9,7 @@ class PrintWriter [abstract aspect]
 
     method flush                                         [abstract]
 
-    method indent->Int32                                 [abstract]
+    method indent->Int                                   [abstract]
     method print( value:Byte )                           [abstract]
     method print( value:Character )                      [abstract]
     method print( value:Int32 )                          [abstract]
@@ -18,7 +18,6 @@ class PrintWriter [abstract aspect]
     method print( value:Object )                         [abstract]
     method print( value:Real64 )                         [abstract]
     method print( value:Real64, decimal_places:Int32 )   [abstract]
-    method print( value:Real32 )                         [abstract]
     method print( value:String )                         [abstract]
     method println                                       [abstract]
     method println( value:Byte )                         [abstract]
@@ -28,10 +27,9 @@ class PrintWriter [abstract aspect]
     method println( value:Int64 )                        [abstract]
     method println( value:Real64 )                       [abstract]
     method println( value:Real64, decimal_places:Int32 ) [abstract]
-    method println( value:Real32 )                       [abstract]
     method println( value:Object )                       [abstract]
     method println( value:String )                       [abstract]
-    method set_indent( new_indent:Int32 )                [abstract]
+    method set_indent( new_indent:Int )                  [abstract]
 
 endClass
 
@@ -48,7 +46,7 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [abstract aspect]
 
     method flush( buffer:String ) [abstract]
 
-    method indent->Int32
+    method indent->Int
       return $buffer.indent
 
     method print( value:Byte )
@@ -75,9 +73,6 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [abstract aspect]
 
     method print( value:Real64 )
       $buffer.print( value )
-
-    method print( value:Real32 )
-      $buffer.print( value->Real64 )
 
     method print( value:String )
       $buffer.print( value )
@@ -115,10 +110,6 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [abstract aspect]
       print( value, decimal_places )
       println
 
-    method println( value:Real32 )
-      print( value )
-      println
-
     method println( value:Object )
       print( value )
       println
@@ -127,7 +118,7 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [abstract aspect]
       print( value )
       println
 
-    method set_indent( new_indent:Int32 )
+    method set_indent( new_indent:Int )
       $buffer.indent = new_indent
 endClass
 

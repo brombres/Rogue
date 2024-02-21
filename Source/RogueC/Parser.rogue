@@ -10,8 +10,8 @@ class Parser : ParserCore, Poolable
     marked_token          : Token
     token_buffer          = Token[]
     inserted_tokens       = Token[]
-    id_start_stack        = Int32[]
-    string_start_stack    = Int32[]
+    id_start_stack        = Int[]
+    string_start_stack    = Int[]
     collecting_templates  = false
     _attribute_no_include = false
     _attribute_essential  = false
@@ -20,8 +20,8 @@ class Parser : ParserCore, Poolable
     augment_t             : Token
     augment_context_name  : String
 
-    generic_fn_args_depth : Int32
-    generic_fn_args_used  : Int32
+    generic_fn_args_depth : Int
+    generic_fn_args_used  : Int
 
     local_definitions     : [String:Token[]]
     local_macros          : [String:Macro[]]
@@ -100,7 +100,7 @@ class Parser : ParserCore, Poolable
 
       local builder = String()
       local depth = 0
-      forEach (t at i in _tokens.from(i1,i2))
+      forEach (t in _tokens.from(i1,i2))
         which (t.type)
           case TokenType.EOL
             if (depth > 0) throw t.error( "Expected '>>', found end of line." )
@@ -147,16 +147,17 @@ class Parser : ParserCore, Poolable
       #       method <tokens>
       #   endClass
       tokens.insert( tokens.last.cloned(TokenType.KEYWORD_METHOD,null) )
-      tokens.insert( tokens.last.cloned(TokenType.EOL,null) )
+      tokens.insert( tokens.last.cloned(TokenType.EOL,"") )
       tokens.insert( tokens.last.cloned(TokenType.KEYWORD_METHODS,null) )
-      tokens.insert( tokens.last.cloned(TokenType.EOL,null) )
-      tokens.add( tokens.last.cloned(TokenType.EOL,null) )
+      tokens.insert( tokens.last.cloned(TokenType.EOL,"") )
+      tokens.add( tokens.last.cloned(TokenType.EOL,"") )
       tokens.add( tokens.last.cloned(TokenType.KEYWORD_END_CLASS,null) )
-      tokens.add( tokens.last.cloned(TokenType.EOL,null) )
+      tokens.add( tokens.last.cloned(TokenType.EOL,"") )
 
       local attributes = Attribute.ASPECT | Attribute.AUGMENT
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
-      mod.templates[aspect_name] = Template( augment_t, mod, aspect_name, Token[], tokens, attributes )
+      local template = Template( augment_t, mod, aspect_name, Token[], tokens, attributes )
+      mod.templates[aspect_name] = template
 
     method begin_join_ids
       id_start_stack.add( processed_tokens.count )
@@ -322,20 +323,20 @@ class Parser : ParserCore, Poolable
 
       local tokens = Token[]
 
-      tokens.add( t.cloned(TokenType.EOL) )
+      tokens.add( t.cloned(TokenType.EOL,"") )
 
       # PROPERTIES
       tokens.add( t.cloned(TokenType.KEYWORD_PROPERTIES) )
-      tokens.add( t.cloned(TokenType.EOL) )
+      tokens.add( t.cloned(TokenType.EOL,"") )
 
       # native "char* value;"
       tokens.add( t.cloned(TokenType.KEYWORD_NATIVE) )
       tokens.add( t.cloned(TokenType.STRING,"$ value;"(c_type)) )
-      tokens.add( t.cloned(TokenType.EOL) )
+      tokens.add( t.cloned(TokenType.EOL,"") )
 
       # endClass
       tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )
-      tokens.add( t.cloned(TokenType.EOL) )
+      tokens.add( t.cloned(TokenType.EOL,"") )
 
       local template = Template( t, mod, type_name, Token[], tokens, Attribute.COMPOUND|Attribute.NATIVE_TYPE )
       mod.templates[extended_name] = template
@@ -374,7 +375,6 @@ class Parser : ParserCore, Poolable
         detect_definition_cycle( history, def_name, token_buffer )
       endUse
       token_buffer = Token[]
-
 
     method collect_next_token
       token_buffer.add( _read )
@@ -520,7 +520,8 @@ class Parser : ParserCore, Poolable
       return _position < _limit or inserted_tokens.count
 
     method include_filepath
-      Program.include( marked_token, buffer.cloned, &is_optional=include_attribute_optional )
+      Program.include( marked_token, buffer.cloned, &api=include_attribute_api,
+                       &is_optional=include_attribute_optional, &include_folder=include_attribute_folder )
 
     method join_identifiers
       if (not disable_output and _cmd_stack.count >= 2)
@@ -555,12 +556,21 @@ class Parser : ParserCore, Poolable
       _attribute_no_include = true
 
     method uses_filepath
-      # First pass $include's the given file
+      # The first pass $include's the given file
       local filepath = buffer.cloned
       if (filepath == "") throw marked_token.error( "Module path expected." )
+
       processed_tokens.add( marked_token.cloned(TokenType.STRING,filepath) )
+
       if (not _attribute_no_include)
-        Program.include( marked_token, filepath, &is_optional )
+        if (not filepath.contains('/'))
+          # XYZ -> XYZ/XYZ.rogue
+          local qualified_filepath = filepath / filepath
+          if (not qualified_filepath.ends_with(".rogue")) qualified_filepath += ".rogue"
+          filepath = qualified_filepath
+        endIf
+
+        Program.include( marked_token, filepath, &is_optional, &library )
       endIf
 
     method evaluate_meta_expression
@@ -586,7 +596,7 @@ class Parser : ParserCore, Poolable
       if (_cur_t.type == TokenType.SYMBOL_DOLLAR)
         generic_fn_args_used |= 1
       else
-        local n = _cur_t.content.rightmost(-1)->Int32
+        local n = _cur_t.content.rightmost(-1)->Int
         if (n == 0 or n > 5) throw _cur_t.error( "Only $1..$5 can be used as implicit function arguments." )
         generic_fn_args_used |= (1:<<:n)
       endIf
@@ -729,7 +739,7 @@ class Parser : ParserCore, Poolable
         local tokens = _tokens.from( i1+1, i2 ).to_list
         tokens.add( tokens.remove_last.cloned(TokenType.KEYWORD_END_CLASS) ) # 'endSubclass' -> 'endClass'
 
-        local attributes = 0
+        local attributes = Attribute.OMIT_DOC
         if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
         local result = Template( class_t, m, name, Token[], tokens, attributes )
         m.templates["$<<0>>"(name)] = result
@@ -739,7 +749,7 @@ class Parser : ParserCore, Poolable
         local template = m.templates["$<<0>>"(name)]
         local tokens = template.tokens
 
-        tokens.insert( class_t.cloned(TokenType.EOL) )
+        tokens.insert( class_t.cloned(TokenType.EOL,"") )
 
         # Patch name and insert base class
         assert _cmd_stack.count >= 1
@@ -813,10 +823,10 @@ class Parser : ParserCore, Poolable
       def_t .= cloned( TokenType.KEYWORD_METHOD )
       tokens[0] = def_t
 
-      tokens.insert( def_t.cloned(TokenType.EOL) )
+      tokens.insert( def_t.cloned(TokenType.EOL,"") )
       tokens.insert( def_t.cloned(TokenType.KEYWORD_GLOBAL_METHODS) )
-      tokens.insert( def_t.cloned(TokenType.EOL) )
-      tokens.add( tokens.last.cloned(TokenType.EOL,null) )
+      tokens.insert( def_t.cloned(TokenType.EOL,"") )
+      tokens.add( tokens.last.cloned(TokenType.EOL,"") )
       tokens.add( tokens.last.cloned(TokenType.KEYWORD_END_CLASS) )
 
       local m = Program.current_module
@@ -832,6 +842,50 @@ class Parser : ParserCore, Poolable
       attributes |= Attribute.ASPECT | Attribute.AUGMENT
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
       m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, attributes )
+
+    method parse_doc_comment
+      if (disable_output) return
+
+      if (not has_another)
+        _push( null, 0 )
+        return
+      endIf
+
+      _save_position
+
+      block
+        while (has_another and _peek.type != TokenType.EOL) _read
+
+        if (not has_another or _peek.type != TokenType.EOL)
+          _restore_position
+          _push( null, 0 )
+          return
+        endIf
+      endBlock
+
+      local t = _read
+      local doc_t = t
+
+      # Allow EOL without content.
+      if (not String.exists(t.content))
+        t = _read
+        if (t.type != TokenType.EOL or not String.exists(t.content))
+          _restore_position
+          _push( null, 0 )
+          return
+        endIf
+      endIf
+
+      local doc = String()
+      doc.println( t.content )
+      t = _read
+      while (t.type == TokenType.EOL and String.exists(t.content))
+        doc.println( t.content )
+        t = _read
+      endWhile
+
+      _restore_position
+      _push( LiteralString(doc_t,doc), 0 )
 
     method parse_module_id
       # Doing this natively because we need to also switch context to the parsed module
@@ -862,6 +916,11 @@ class Parser : ParserCore, Poolable
     method _peek->Token
       if (inserted_tokens.count) return inserted_tokens.last
       return prior._peek
+
+    method print_next_tokens
+      _save_position
+      loop (10) println _read
+      _restore_position
 
     method print_peek
       println "PEEK [$:$.$] $"(_next_t.filepath,_next_t.line,_next_t.column,_next_t)
@@ -963,7 +1022,16 @@ class Parser : ParserCore, Poolable
       Scanner.uses_autoinclude = true
 
     method use_Value
-      Scanner.uses_Value = true
+      use_Variant
+      if (not _filepath.contains("StandardMacros.rogue"))
+        Program.print_warning(
+          _cur_t.cloned(TokenType.IDENTIFIER).[ line=0 ],
+          "Type name 'Value' is deprecated and will be removed in the future. Use 'Variant' instead."
+        )
+      endIf
+
+    method use_Variant
+      Scanner.uses_Variant = true
       Scanner.uses_autoinclude = true
 
     method write_this_module_id

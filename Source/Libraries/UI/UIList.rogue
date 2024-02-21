@@ -5,7 +5,7 @@ class UIList : UILayout
     method init_object
       shrink_to_fit_height
 
-    method measure_content_height( subcomponents:UIComponent[] )->Int32?
+    method measure_content_height( subcomponents:UIComponent[] )->Int?
       local total_w = 0
       forEach (component in subcomponents)
         local h = component.measure_height( null )
@@ -14,16 +14,16 @@ class UIList : UILayout
       endForEach
       return total_w
 
-    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int32 )
+    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int )
       forEach (component in subcomponents)
         component.update_layout_height( component.measure_height(container_height).value )
       endForEach
 
-    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:IntBox ) [override]
       local cursor = container.position
       local w      = size.x
       forEach (component in subcomponents)
-        component.update_layout_placement( Box(cursor,w,component.size.y) )
-        cursor += XY(0,component.size.y)
+        component.update_layout_placement( IntBox(cursor,w,component.size.y) )
+        cursor += IntXY(0,component.size.y)
       endForEach
 endClass

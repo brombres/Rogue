@@ -2,6 +2,9 @@ module Geometry
 
 class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
   GLOBAL METHODS
+    method create->Quad
+      return Quad( XY(0,0), XY(0,0), XY(0,0), XY(0,0) )
+
     method create( bounds:Box )->Quad
       return Quad( bounds.top_left, bounds.top_right, bounds.bottom_right, bounds.bottom_left )
 
@@ -9,7 +12,6 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
     method bounds->Box
       return this->Box
 
-      #{
     method centroid->XY
       return (a + b + c + d) / 4
 
@@ -21,6 +23,9 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
       if (point.x >= bottom_right.x or point.y >= bottom_right.y) return false
 
       return (Triangle(a,b,c).contains(point) or Triangle(a,c,d).contains(point))
+
+    method hash_code->Int
+      return a.hash_code ~ b.hash_code ~ c.hash_code ~ d.hash_code
 
     method intersects( line:Line )->Logical
       # Returns true if this Quad quad and `line` intersect.
@@ -90,10 +95,10 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
     method operator-( position:XY )->Quad
       return Quad( a-position, b-position, c-position, d-position )
 
-    method operator*( scale:Real64 )->Quad
+    method operator*( scale:Real )->Quad
       return Quad( a*scale, b*scale, c*scale, d*scale )
 
-    method operator/( scale:Real64 )->Quad
+    method operator/( scale:Real )->Quad
       return Quad( a/scale, b/scale, c/scale, d/scale )
 
     method operator*( scale:XY )->Quad
@@ -102,12 +107,11 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
     method operator/( scale:XY )->Quad
       return Quad( a/scale, b/scale, c/scale, d/scale )
 
-    method rotated( angle:Degrees )->Quad [macro]
+    method rotated( angle:Degrees )->Quad
       return this.rotated( angle->Radians )
 
     method rotated( angle:Radians )->Quad
       return Quad( a.rotated(angle), b.rotated(angle), c.rotated(angle), d.rotated(angle) )
-      }#
 
     method to->Box
       local top_left  = a.or_smaller(b).or_smaller(c).or_smaller(d)
@@ -120,7 +124,7 @@ endClass
 
 class Quad<<$DataType>>( a:$DataType, b:$DataType, c:$DataType, d:$DataType ) [compound]
   METHODS
-    method description->String
+    method to->String
       return "[$ $ $ $]" (a,b,c,d)
 endClass
 

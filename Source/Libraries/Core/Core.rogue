@@ -3,6 +3,7 @@ $include Core/Dim
 $include Core/Exception
 $include Core/Generator
 $include Core/Global
+$include Core/MacOS
 $include Core/Object
 $include Core/ObjectPool
 $include Core/Optional
@@ -15,4 +16,5 @@ $include Core/String
 $include Core/StringEncoding
 $include Core/StringPool
 $include Core/System
+$include Core/Windows
 $include Core/WorkList

@@ -1,10 +1,30 @@
-$macro NATIVE_POINTER_TYPE<<$Name,$NativeType>>
+$macro ROGUE_NATIVE_POINTER_TYPE<<$NativeType,$Name>>
   nativeType<<$NativeType>>  $Name
 
-  augment $Name
+  augment Rogue::$Name
+    GLOBAL METHODS
+      method operator?( obj:$Name )->Logical
+        return obj.exists
+
     METHODS
       method exists->Logical
         return native("!!$this.value")->Logical
   endAugment
 $endMacro
 
+# Deprecated
+$macro NATIVE_POINTER_TYPE<<$Name,$NativeType>>
+  nativeType<<$NativeType>>  $Name
+
+  augment Rogue::$Name
+    GLOBAL METHODS
+      method operator?( obj:$Name )->Logical
+        return obj.exists
+
+    METHODS
+      method exists->Logical
+        return native("!!$this.value")->Logical
+  endAugment
+$endMacro
+
+$define Value Variant

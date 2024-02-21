@@ -15,23 +15,23 @@ class UILabel : UIComponent
       this.alignment = alignment
 
       #{
-    method _extended_description( table:Value )
+    method _extended_description( table:Variant )
       prior._extended_description( table )
       table//text = text
       }#
 
-    method measure_height( container_height:Int32? )->Int32?
+    method measure_height( container_height:Int? )->Int?
       if (is_shrink_to_fit_height)
         if local font = font
-          return font.measure( text ).y->Int32
+          return font.measure( text ).y->Int
         endIf
       endIf
       return prior.measure_height( container_height )
 
-    method measure_width( container_width:Int32? )->Int32?
+    method measure_width( container_width:Int? )->Int?
       if (is_shrink_to_fit_width)
         if local font = font
-          return font.measure( text ).x->Int32
+          return font.measure( text ).x->Int
         endIf
       endIf
       return prior.measure_width( container_width )

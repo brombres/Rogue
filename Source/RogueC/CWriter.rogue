@@ -2,270 +2,315 @@ module RogueC
 
 class CWriter : BufferedPrintWriter
   PROPERTIES
+    file      : File
     is_header : Logical
 
   METHODS
-    method init( file:File, &header )
+    method init( file, &header )
       prior.init( file.writer )
       is_header = header
 
       if (is_header)
-        println @|#ifndef TEST_H
-                 |#define TEST_H
-                 |
-        println "// $.h"(File(Program.output_filepath).filename)
+        localize underscore_filename
+        println "#ifndef $\n#define $\n\n"(underscore_filename,underscore_filename)
+        println "// $"(file.filename)
         println
+        println @|#if defined(__cplusplus)
+                 |  #define ROGUE_EXTERN_C extern "C"
+                 |  #define BEGIN_ROGUE_EXTERN_C extern "C" {
+                 |  #define END_ROGUE_EXTERN_C }
+                 |#else
+                 |  #define ROGUE_EXTERN_C
+                 |  #define BEGIN_ROGUE_EXTERN_C
+                 |  #define END_ROGUE_EXTERN_C
+                 |#endif
+                 |
+                 |#if defined(__cplusplus) && defined(_WIN32)
+                 |  #define ROGUE_COMPOUND(name) name
+                 |#else
+                 |  #define ROGUE_COMPOUND(name) (name)
+                 |#endif
+                 |
 
         if (Program.gc_auto)
-          println "#define ROGUE_GC_AUTO"
+          println "#define %NS%ROGUE_GC_AUTO"
           println
         endIf
 
         println ...
-          @|// Handle Apple's wonky defines which used to ALWAYS be defined as 0 or 1 and
-           |// are now only defined if the platform is active.
-           |#if defined(__APPLE__)
-           |  #if defined(TARGET_IPHONE_SIMULATOR)
-           |    #if TARGET_IPHONE_SIMULATOR
-           |      #define ROGUE_PLATFORM_IOS 1
-           |    #endif
-           |  #endif
-           |
-           |  #if !defined(ROGUE_PLATFORM_IOS)
-           |    #if defined(TARGET_OS_IPHONE)
-           |      #if TARGET_OS_IPHONE
-           |        #define ROGUE_PLATFORM_IOS 1
-           |      #endif
-           |    #endif
-           |  #endif
-           |
-           |  #if !defined(ROGUE_PLATFORM_IOS)
-           |    #define ROGUE_PLATFORM_MACOS 1
-           |    #define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-           |  #endif
-           |#endif
-           |
-           |#if !defined(ROGUE_PLATFORM_IOS) && !defined(ROGUE_PLATFORM_MACOS) && !defined(ROGUE_PLATFORM_PLAYDATE)
-           |  #if defined(_WIN32)
-           |  #  define ROGUE_PLATFORM_WINDOWS 1
-           |  #elif defined(__ANDROID__)
-           |  #  define ROGUE_PLATFORM_ANDROID 1
-           |  #elif defined(__linux__)
-           |  #  define ROGUE_PLATFORM_LINUX 1
-           |  #  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-           |  #elif defined(__CYGWIN__)
-           |  #  define ROGUE_PLATFORM_LINUX  1
-           |  #  define ROGUE_PLATFORM_CYGWIN 1
-           |  #  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-           |  #elif defined(EMSCRIPTEN)
-           |  #  define ROGUE_PLATFORM_WEB 1
-           |  #else
-           |  #  define ROGUE_PLATFORM_GENERIC 1
-           |  #endif
-           |#endif
-           |
-           |#if defined(ROGUE_PLATFORM_WINDOWS)
-           |  #define NOGDI
-           |  #pragma warning(disable: 4297) /* unexpected throw warnings */
-           |  #if !defined(UNICODE)
-           |    #define UNICODE
-           |  #endif
-           |  #include <windows.h>
-           |  #include <signal.h>
-           |#else
-           |  #include <stdint.h>
-           |#endif
-           |
-           |#include <math.h>
-           |#include <stdlib.h>
-           |#include <string.h>
-           |
-           |//------------------------------------------------------------------------------
-           |// Logging
-           |//------------------------------------------------------------------------------
-           |#ifdef __ANDROID__
-           |  #include <android/log.h>
-           |  #define ROGUE_LOG(...)       __android_log_print( ANDROID_LOG_INFO,  "Rogue", __VA_ARGS__ )
-           |  #define ROGUE_LOG_ERROR(...) __android_log_print( ANDROID_LOG_ERROR, "Rogue", __VA_ARGS__ )
-           |#else
-           |  #define ROGUE_LOG(...)       printf( __VA_ARGS__ )
-           |  #define ROGUE_LOG_ERROR(...) printf( __VA_ARGS__ )
-           |#endif
-           |
-           |//------------------------------------------------------------------------------
-           |// Primitive Types
-           |//------------------------------------------------------------------------------
-           |#if defined(ROGUE_PLATFORM_WINDOWS)
-           |  typedef double           RogueReal64;
-           |  typedef float            RogueReal32;
-           |  typedef __int64          RogueInt64;
-           |  typedef __int32          RogueInt32;
-           |  typedef __int32          RogueCharacter;
-           |  typedef unsigned __int16 RogueWord;
-           |  typedef unsigned char    RogueByte;
-           |  typedef int              RogueLogical;
-           |  typedef unsigned __int64 RogueUInt64;
-           |  typedef unsigned __int32 RogueUInt32;
-           |#else
-           |  typedef double           RogueReal64;
-           |  typedef float            RogueReal32;
-           |  typedef int64_t          RogueInt64;
-           |  typedef int32_t          RogueInt32;
-           |  typedef int32_t          RogueCharacter;
-           |  typedef uint16_t         RogueWord;
-           |  typedef uint8_t          RogueByte;
-           |  typedef int              RogueLogical;
-           |  typedef uint64_t         RogueUInt64;
-           |  typedef uint32_t         RogueUInt32;
-           |#endif
-        if (Program.real_bits == 32) println "typedef RogueReal32 RogueReal;"
-        else                         println "typedef RogueReal64 RogueReal;"
+        @|// Set up C conditional compilation defines
+         |#if defined(__EMSCRIPTEN__)
+         |  #define %NS%ROGUE_PLATFORM_WEB 1
+         |  #define %NS%ROGUE_PLATFORM_DETERMINED 1
+         |#elif defined(%NS%ROGUE_PLATFORM_PLAYDATE)
+         |  #define %NS%ROGUE_PLATFORM_DETERMINED 1
+         |#endif
+         |
+         |#if !defined(%NS%ROGUE_PLATFORM_DETERMINED)
+         |  // Handle Apple's wonky defines which used to ALWAYS be defined as 0 or 1 and
+         |  // are now only defined if the platform is active.
+         |
+         |  #if defined(__APPLE__)
+         |    #if defined(TARGET_IPHONE_SIMULATOR)
+         |      #if TARGET_IPHONE_SIMULATOR
+         |        #define %NS%ROGUE_PLATFORM_IOS 1
+         |      #endif
+         |    #endif
+         |
+         |    #if !defined(%NS%ROGUE_PLATFORM_IOS)
+         |      #if defined(TARGET_OS_IPHONE)
+         |        #if TARGET_OS_IPHONE
+         |          #define %NS%ROGUE_PLATFORM_IOS 1
+         |        #endif
+         |      #endif
+         |    #endif
+         |
+         |    #if !defined(%NS%ROGUE_PLATFORM_IOS)
+         |      #define %NS%ROGUE_PLATFORM_MACOS 1
+         |    #endif
+         |
+         |    #define %NS%ROGUE_PLATFORM_DETERMINED 1
+         |  #endif
+         |#endif
+         |
+         |#if !defined(%NS%ROGUE_PLATFORM_DETERMINED)
+         |  #if defined(_WIN32)
+         |  #  define %NS%ROGUE_PLATFORM_WINDOWS 1
+         |  #elif defined(__ANDROID__)
+         |  #  define %NS%ROGUE_PLATFORM_ANDROID 1
+         |  #elif defined(__linux__)
+         |  #  define %NS%ROGUE_PLATFORM_LINUX 1
+         |  #elif defined(__CYGWIN__)
+         |  #  define %NS%ROGUE_PLATFORM_LINUX  1
+         |  #  define %NS%ROGUE_PLATFORM_CYGWIN 1
+         |  #else
+         |  #  define %NS%ROGUE_PLATFORM_GENERIC 1
+         |  #endif
+         |#endif
+         |
+         |#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+         |  #pragma warning(disable: 4297) /* unexpected throw warnings */
+         |  #if !defined(UNICODE)
+         |    #define UNICODE
+         |  #endif
+         |  #include <windows.h>
+         |  #include <signal.h>
+         |#else
+         |  #define %NS%ROGUE_PLATFORM_UNIX_COMPATIBLE 1
+         |  #include <limits.h>
+         |  #include <stdint.h>
+         |#endif
+         |
+         |#include <math.h>
+         |#include <stdlib.h>
+         |#include <string.h>
+         |
+         |//------------------------------------------------------------------------------
+         |// Logging
+         |//------------------------------------------------------------------------------
+         |#ifdef __ANDROID__
+         |  #include <android/log.h>
+         |  #define %NS%ROGUE_LOG(...)       __android_log_print( ANDROID_LOG_INFO,  "%Ns%Rogue", __VA_ARGS__ )
+         |  #define %NS%ROGUE_LOG_ERROR(...) __android_log_print( ANDROID_LOG_ERROR, "%Ns%Rogue", __VA_ARGS__ )
+         |#else
+         |  #define %NS%ROGUE_LOG(...)       printf( __VA_ARGS__ )
+         |  #define %NS%ROGUE_LOG_ERROR(...) printf( __VA_ARGS__ )
+         |#endif
+         |
+         |//------------------------------------------------------------------------------
+         |// Primitive Types
+         |//------------------------------------------------------------------------------
+         |#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+         |  typedef double           %Ns%RogueReal64;
+         |  typedef float            %Ns%RogueReal32;
+         |  typedef __int64          %Ns%RogueInt64;
+         |  typedef __int32          %Ns%RogueInt32;
+         |  typedef __int32          %Ns%RogueCharacter;
+         |  typedef unsigned __int16 %Ns%RogueWord;
+         |  typedef unsigned char    %Ns%RogueByte;
+         |  typedef int              %Ns%RogueLogical;
+         |  typedef unsigned __int64 %Ns%RogueUInt64;
+         |  typedef unsigned __int32 %Ns%RogueUInt32;
+         |#else
+         |  typedef double           %Ns%RogueReal64;
+         |  typedef float            %Ns%RogueReal32;
+         |  typedef int64_t          %Ns%RogueInt64;
+         |  typedef int32_t          %Ns%RogueInt32;
+         |  typedef int32_t          %Ns%RogueCharacter;
+         |  typedef uint16_t         %Ns%RogueWord;
+         |  typedef uint8_t          %Ns%RogueByte;
+         |  typedef int              %Ns%RogueLogical;
+         |  typedef uint64_t         %Ns%RogueUInt64;
+         |  typedef uint32_t         %Ns%RogueUInt32;
+         |#endif
 
-        println "#define ROGUE_TYPE_PRIMITIVE $" (Attribute.PRIMITIVE)
-        println "#define ROGUE_TYPE_COMPOUND  $" (Attribute.COMPOUND)
-        println "#define ROGUE_TYPE_ENUM      $" (Attribute.ENUM)
-        println "#define ROGUE_TYPE_OBJECT    $" (Attribute.OBJECT)
-        println "#define ROGUE_TYPE_ASPECT    $" (Attribute.ASPECT)
-        println "#define ROGUE_TYPE_MUTATING  $" (Attribute.MUTATING)
+       if (Program.int_bits == 32)  println "typedef %Ns%RogueInt32 %Ns%RogueInt;"
+       else                         println "typedef %Ns%RogueInt64 %Ns%RogueInt;"
+       if (Program.real_bits == 32) println "typedef %Ns%RogueReal32 %Ns%RogueNewReal;"
+       else                         println "typedef %Ns%RogueReal64 %Ns%RogueNewReal;"
+
+       if (Program.int_bits == 32)  println "typedef %Ns%RogueInt32  %Ns%RogueInt;"
+       else                         println "typedef %Ns%RogueInt64  %Ns%RogueInt;"
+       if (Program.real_bits == 32) println "typedef %Ns%RogueReal32 %Ns%RogueReal;"
+       else                         println "typedef %Ns%RogueReal64 %Ns%RogueReal;"
+
+        println "#define %NS%ROGUE_TYPE_PRIMITIVE $" (Attribute.PRIMITIVE)
+        println "#define %NS%ROGUE_TYPE_COMPOUND  $" (Attribute.COMPOUND)
+        println "#define %NS%ROGUE_TYPE_ENUM      $" (Attribute.ENUM)
+        println "#define %NS%ROGUE_TYPE_OBJECT    $" (Attribute.OBJECT)
+        println "#define %NS%ROGUE_TYPE_ASPECT    $" (Attribute.ASPECT)
+        println "#define %NS%ROGUE_TYPE_MUTATING  $" (Attribute.MUTATING)
 
         println ...
           @|
-           |#if !defined(ROGUE_MM_GC_THRESHOLD)
-           |  #define ROGUE_MM_GC_THRESHOLD (32 * 1024 * 1024)
+           |#if !defined(%NS%ROGUE_MM_GC_THRESHOLD)
+           |  #define %NS%ROGUE_MM_GC_THRESHOLD (32 * 1024 * 1024)
            |#endif
            |
            |//------------------------------------------------------------------------------
            |// Classes
            |//------------------------------------------------------------------------------
-           |#if !defined(ROGUE_MALLOC)
-           |  #define ROGUE_MALLOC malloc
+           |#if !defined(%NS%ROGUE_MALLOC)
+           |  #define %NS%ROGUE_MALLOC malloc
            |#endif
            |
-           |#if !defined(ROGUE_FREE)
-           |  #define ROGUE_FREE free
+           |#if !defined(%NS%ROGUE_FREE)
+           |  #define %NS%ROGUE_FREE free
            |#endif
            |
-           |#if !defined(ROGUE_CREATE_OBJECT)
-           |  #define ROGUE_CREATE_OBJECT( TypeName ) \
-           |      ((TypeName*)Rogue_create_object(&Type##TypeName))
+           |#if !defined(%NS%ROGUE_CREATE_OBJECT)
+           |  #define %NS%ROGUE_CREATE_OBJECT( TypeName ) \
+           |      ((TypeName*)%Ns%Rogue_create_object(&Type##TypeName))
            |#endif
            |
-           |#if !defined(ROGUE_NEW_OBJECT)
+           |#if !defined(%NS%ROGUE_NEW_OBJECT)
            |  // Creates an untracked Rogue object
-           |  #define ROGUE_NEW_OBJECT( TypeName ) \
-           |      ((TypeName*)Rogue_new_object(&Type##TypeName))
+           |  #define %NS%ROGUE_NEW_OBJECT( TypeName ) \
+           |      ((TypeName*)%Ns%Rogue_new_object(&Type##TypeName))
            |#endif
            |
-           |#if !defined(ROGUE_SINGLETON)
-           |  #define ROGUE_SINGLETON( TypeName ) \
-           |      ((TypeName*)Rogue_singleton(&Type##TypeName,&TypeName##_singleton))
+           |#if !defined(%NS%ROGUE_SINGLETON)
+           |  #define %NS%ROGUE_SINGLETON( TypeName ) \
+           |      ((TypeName*)%Ns%Rogue_singleton(&Type##TypeName,&TypeName##_singleton))
            |#endif
            |
-           |#if !defined(ROGUE_SET_SINGLETON)
-           |  #define ROGUE_SET_SINGLETON( TypeName, new_singleton ) \
-           |      Rogue_set_singleton(&Type##TypeName,&TypeName##_singleton,new_singleton)
+           |#if !defined(%NS%ROGUE_SET_SINGLETON)
+           |  #define %NS%ROGUE_SET_SINGLETON( TypeName, new_singleton ) \
+           |      %Ns%Rogue_set_singleton(&Type##TypeName,&TypeName##_singleton,new_singleton)
            |#endif
            |
-           |#if !defined(ROGUE_RELEASE)
+           |#if !defined(%NS%ROGUE_RELEASE)
            |  // Allow 'obj' to be GC'd if there are no other references to it.
-           |  #define ROGUE_RELEASE( obj )  Rogue_release( obj )
+           |  #define %NS%ROGUE_RELEASE( obj )  %Ns%Rogue_release( obj )
            |#endif
            |
-           |#if !defined(ROGUE_RETAIN)
+           |#if !defined(%NS%ROGUE_RETAIN)
            |  // Prevent 'obj' from being GC'd if there are no other references to it.
-           |  #define ROGUE_RETAIN( obj )   Rogue_retain( obj )
+           |  #define %NS%ROGUE_RETAIN( obj )   %Ns%Rogue_retain( obj )
            |#endif
            |
-           |typedef struct RogueRuntimeType RogueRuntimeType;
-           |typedef void (*RogueFn_Object)(void*);
-           |typedef void (*RogueFn_Object_Object)(void*,void*);
+
+        local source_type =  Program.source_type
+        which (source_type)
+          case "c", "m"
+            println @|BEGIN_ROGUE_EXTERN_C
+        endWhich
+
+        println ...
+          @|
+           |typedef struct %Ns%RogueRuntimeType %Ns%RogueRuntimeType;
+           |typedef void (*%Ns%RogueFn_Object)(void*);
+           |typedef void (*%Ns%RogueFn_Object_Object)(void*,void*);
            |
-           |typedef struct RogueObject RogueObject;
-           |typedef struct RogueString RogueString;
+           |typedef struct %Ns%RogueObject %Ns%RogueObject;
+           |typedef struct %Ns%RogueString %Ns%RogueString;
            |
-           |struct RogueRuntimeType
+           |struct %Ns%RogueRuntimeType
            |{
-           |  const char*    name;
-           |  RogueString*   name_object;
-           |  RogueInt32     index;
-           |  RogueInt32     id;
-           |  RogueInt32     module_name_index;
-           |  RogueInt32     class_data_index;
-           |  RogueInt64     attributes;
-           |  void**         vtable;
-           |  void**         local_pointer_stack; // Objects + compounds with embedded refs
-           |  RogueInt32     local_pointer_capacity;
-           |  RogueInt32     local_pointer_count;
-           |  RogueInt32     size;
-           |  RogueInt32*    base_type_ids;
-           |  RogueInt32     base_type_count;
-           |  RogueObject*   type_info;
-           |  RogueFn_Object fn_init_object;
-           |  RogueFn_Object fn_init;
-           |  RogueFn_Object fn_gc_trace;
-           |  RogueFn_Object fn_on_cleanup;
-           |  RogueFn_Object_Object fn_on_singleton_change;
+           |  const char*        name;
+           |  %Ns%RogueString*   name_object;
+           |  %Ns%RogueInt     index;
+           |  %Ns%RogueInt     id;
+           |  %Ns%RogueInt     module_name_index;
+           |  %Ns%RogueInt     class_data_index;
+           |  %Ns%RogueInt64     attributes;
+           |  void**             vtable;
+           |  void**             local_pointer_stack; // Objects + compounds with embedded refs
+           |  %Ns%RogueInt     local_pointer_capacity;
+           |  %Ns%RogueInt     local_pointer_count;
+           |  %Ns%RogueInt     size;
+           |  %Ns%RogueInt*    base_type_ids;
+           |  %Ns%RogueInt     base_type_count;
+           |  %Ns%RogueObject*   type_info;
+           |  %Ns%RogueFn_Object fn_init_object;
+           |  %Ns%RogueFn_Object fn_init;
+           |  %Ns%RogueFn_Object fn_gc_trace;
+           |  %Ns%RogueFn_Object fn_on_cleanup;
+           |  %Ns%RogueFn_Object_Object fn_on_singleton_change;
            |};
            |
-           |typedef struct RogueCallFrame
+           |typedef struct %Ns%RogueCallFrame
            |{
            |  const char* procedure;
            |  const char* filename;
-           |  RogueInt32 line;
-           |} RogueCallFrame;
+           |  %Ns%RogueInt line;
+           |} %Ns%RogueCallFrame;
            |
-           |typedef struct RogueObjectList
+           |typedef struct %Ns%RogueObjectList
            |{
-           |  RogueObject** data;
-           |  RogueInt32    count;
-           |  RogueInt32    capacity;
-           |} RogueObjectList;
+           |  %Ns%RogueObject** data;
+           |  %Ns%RogueInt    count;
+           |  %Ns%RogueInt    capacity;
+           |} %Ns%RogueObjectList;
            |
            |//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
-           |void  Rogue_configure( int argc, char** argv );
-           |int   Rogue_launch(void);
-           |void  Rogue_check_gc(void);
-           |void  Rogue_collect_garbage(void);
-           |void  Rogue_request_gc(void);
-           |int   Rogue_quit(void);
-           |void* Rogue_release( void* obj );
-           |void* Rogue_retain( void* obj );
+           |void  %Ns%Rogue_configure( int argc, char** argv );  // Call this first
+           |int   %Ns%Rogue_launch(void);                        // Call this second
+           |void  %Ns%Rogue_check_gc(void);        // Call this every frame or whenever (unless --gc=auto) to maybe GC
+           |void  %Ns%Rogue_collect_garbage(void); // Call this to force a GC
+           |void  %Ns%Rogue_exit( int exit_code ); // Internal use - call exit() directly instead
+           |void  %Ns%Rogue_request_gc(void);      // Ensures next call to Rogue_check_gc() will result in a GC
+           |int   %Ns%Rogue_quit(void);            // Call to shut down; prints any pending exception & calls Rogue on_exit functions
+           |void  %Ns%Rogue_clean_up(void);        // Calls clean_up() on every living object w/on_cleanup() then deletes all objects
            |
-           |void* Rogue_create_object( void* type );
-           |void  Rogue_destroy_object( void* obj );
-           |void* Rogue_new_object( void* type );
-           |void* Rogue_singleton( void* type, void* singleton_ref );
-           |void  Rogue_set_singleton( void* type, void* singleton_ref, void* new_singleton );
+           |void* %Ns%Rogue_release( void* obj );  // Increase the refcount of the given Rogue object, preventing it from being GC'd
+           |void* %Ns%Rogue_retain( void* obj );   // Decrease the refcount of the given object
            |
-           |void  Rogue_print_exception(void);
+           |void* %Ns%Rogue_create_object( void* type );
+           |void  %Ns%Rogue_destroy_object( void* obj );
+           |void* %Ns%Rogue_new_object( void* type );
+           |void* %Ns%Rogue_singleton( void* type, void* singleton_ref );
+           |void  %Ns%Rogue_set_singleton( void* type, void* singleton_ref, void* new_singleton );
            |
-           |void  Rogue_call_stack_push( const char* procedure, const char* filename, int line );
-           |void  Rogue_call_stack_pop(void);
-           |void  RogueRuntimeType_local_pointer_stack_add( RogueRuntimeType* type, void* local_pointer );
-           |void  RogueObjectList_add( RogueObjectList* list, void* obj );
+           |void  %Ns%Rogue_print_exception(void);
            |
-           |struct RogueObject;
+           |void  %Ns%Rogue_call_stack_push( const char* procedure, const char* filename, %Ns%RogueInt line );
+           |void  %Ns%Rogue_call_stack_pop(void);
+           |void  %Ns%RogueRuntimeType_local_pointer_stack_add( %Ns%RogueRuntimeType* type, void* local_pointer );
+           |void  %Ns%RogueObjectList_add( %Ns%RogueObjectList* list, void* obj );
            |
-           |extern struct RogueObject* Rogue_exception;  // if non-null then an exception is being thrown
-           |extern RogueCallFrame*     Rogue_call_stack;
-           |extern int                 Rogue_call_stack_count;
-           |extern int                 Rogue_call_stack_capacity;
-           |extern int                 Rogue_call_stack_line;
+           |struct %Ns%RogueObject;
            |
-           |extern int RogueMM_bytes_allocated_since_gc;
-           |extern int RogueMM_gc_request;  // 0:none, !0:requested
-           |extern RogueObjectList RogueMM_objects;
-           |extern RogueObjectList RogueMM_objects_requiring_cleanup;
+           |extern struct %Ns%RogueObject* %Ns%Rogue_exception;  // if non-null then an exception is being thrown
+           |extern %Ns%RogueCallFrame*     %Ns%Rogue_call_stack;
+           |extern %Ns%RogueInt                 %Ns%Rogue_call_stack_count;
+           |extern %Ns%RogueInt                 %Ns%Rogue_call_stack_capacity;
+           |extern %Ns%RogueInt                 %Ns%Rogue_call_stack_line;
            |
-           |void*        Rogue_as( void* obj, RogueInt32 recast_type_id );
-           |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id );
+           |extern %Ns%RogueInt %Ns%RogueMM_bytes_allocated_since_gc;
+           |extern %Ns%RogueInt %Ns%RogueMM_gc_request;  // 0:none, !0:requested
+           |extern %Ns%RogueObjectList %Ns%RogueMM_objects;
+           |extern %Ns%RogueObjectList %Ns%RogueMM_objects_requiring_cleanup;
+           |
+           |void*        %Ns%Rogue_as( void* obj, %Ns%RogueInt recast_type_id );
+           |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%RogueInt ancestor_id );
         println
 
       else
-        # Writing .c file
-        println  "// $.c"(File(Program.output_filepath).filename)
+        # Writing .c/.m file
+        println  "// $"(file.filename)
         println
         println ''#include "$.h"''(File(Program.output_filepath).filename)
         println  "#include <stdio.h>"
@@ -274,29 +319,29 @@ class CWriter : BufferedPrintWriter
           @|//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
-           |void  Rogue_configure( int argc, char** argv )
+           |void  %Ns%Rogue_configure( int argc, char** argv )
            |{
-           |  Rogue_argc = argc;
-           |  Rogue_argv = argv;
+           |  %Ns%Rogue_argc = argc;
+           |  %Ns%Rogue_argv = argv;
            |}
            |
-           |void* Rogue_create_object( void* _type )
+           |void* %Ns%Rogue_create_object( void* _type )
            |{
-           |  #ifdef ROGUE_GC_AUTO
-           |    if (RogueMM_bytes_allocated_since_gc >= ROGUE_MM_GC_THRESHOLD) Rogue_collect_garbage();
+           |  #if defined(%NS%ROGUE_GC_AUTO)
+           |    if (%Ns%RogueMM_bytes_allocated_since_gc >= %NS%ROGUE_MM_GC_THRESHOLD) %Ns%Rogue_collect_garbage();
            |  #endif
-           |  RogueRuntimeType*  type = (RogueRuntimeType*) _type;
-           |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
+           |  %Ns%RogueRuntimeType*  type = (%Ns%RogueRuntimeType*) _type;
+           |  %Ns%RogueObject* obj = (%Ns%RogueObject*) %NS%ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
            |  obj->__type = type;
            |
-           |  if (type->fn_on_cleanup) RogueObjectList_add( &RogueMM_objects_requiring_cleanup, obj );
-           |  else                     RogueObjectList_add( &RogueMM_objects, obj );
-           |  RogueMM_bytes_allocated_since_gc += type->size;
+           |  if (type->fn_on_cleanup) %Ns%RogueObjectList_add( &%Ns%RogueMM_objects_requiring_cleanup, obj );
+           |  else                     %Ns%RogueObjectList_add( &%Ns%RogueMM_objects, obj );
+           |  %Ns%RogueMM_bytes_allocated_since_gc += type->size;
            |
            |  if (type->fn_init_object)
            |  {
-           |    #ifdef ROGUE_GC_AUTO
+           |    #ifdef %NS%ROGUE_GC_AUTO
            |      obj->__refcount = 1; // keeps this object alive if init() triggers a GC
            |      type->fn_init_object( obj );
            |      --obj->__refcount;   // other code maybe retained this obj so don't just set back to 0.
@@ -308,17 +353,17 @@ class CWriter : BufferedPrintWriter
            |  return obj;
            |}
            |
-           |void Rogue_destroy_object( void* obj )
+           |void %Ns%Rogue_destroy_object( void* obj )
            |{
-           |  //printf( "Destroy object %s\n", ((RogueObject*)obj)->__type->name );
-           |  ROGUE_FREE( obj );
+           |  //printf( "Destroy object %s\n", ((%Ns%RogueObject*)obj)->__type->name );
+           |  %NS%ROGUE_FREE( obj );
            |}
            |
-           |void* Rogue_new_object( void* _type )
+           |void* %Ns%Rogue_new_object( void* _type )
            |{
            |  // Create a Rogue object that is not tracked by the GC.
-           |  RogueRuntimeType*  type = (RogueRuntimeType*) _type;
-           |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
+           |  %Ns%RogueRuntimeType*  type = (%Ns%RogueRuntimeType*) _type;
+           |  %Ns%RogueObject* obj = (%Ns%RogueObject*) %NS%ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
            |  obj->__type = type;
            |
@@ -330,116 +375,114 @@ class CWriter : BufferedPrintWriter
            |  return obj;
            |}
            |
-           |void* Rogue_singleton( void* _type, void* singleton_ref )
+           |void* %Ns%Rogue_singleton( void* _type, void* singleton_ref )
            |{
-           |  if (*((RogueObject**)singleton_ref)) return *((RogueObject**)singleton_ref);
-           |  RogueRuntimeType* type = (RogueRuntimeType*) _type;
-           |  RogueObject* obj = Rogue_create_object( type );
-           |  (*((RogueObject**)singleton_ref)) = obj;
+           |  if (*((%Ns%RogueObject**)singleton_ref)) return *((%Ns%RogueObject**)singleton_ref);
+           |  %Ns%RogueRuntimeType* type = (%Ns%RogueRuntimeType*) _type;
+           |  %Ns%RogueObject* obj = (%Ns%RogueObject*)%Ns%Rogue_create_object( type );
+           |  (*((%Ns%RogueObject**)singleton_ref)) = obj;
            |  if (type->fn_init) type->fn_init(obj);  // call init() if it exists
            |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( 0, obj );
            |  return obj;
            |}
            |
-           |void Rogue_set_singleton( void* _type, void* singleton_ref, void* new_singleton )
+           |void %Ns%Rogue_set_singleton( void* _type, void* singleton_ref, void* new_singleton )
            |{
-           |  RogueObject** ref = (RogueObject**)singleton_ref;
-           |  RogueRuntimeType* type = (RogueRuntimeType*) _type;
+           |  %Ns%RogueObject** ref = (%Ns%RogueObject**)singleton_ref;
+           |  %Ns%RogueRuntimeType* type = (%Ns%RogueRuntimeType*) _type;
            |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( *ref, new_singleton );
-           |  *ref = new_singleton;
+           |  *ref = (%Ns%RogueObject*)new_singleton;
            |}
            |
-           |void* Rogue_release( void* obj )
+           |void* %Ns%Rogue_release( void* obj )
            |{
-           |  if (obj) --(((RogueObject*)obj)->__refcount);
+           |  if (obj) --(((%Ns%RogueObject*)obj)->__refcount);
            |  return 0;
            |}
            |
-           |void* Rogue_retain( void* obj )
+           |void* %Ns%Rogue_retain( void* obj )
            |{
-           |  if (obj) ++(((RogueObject*)obj)->__refcount);
+           |  if (obj) ++(((%Ns%RogueObject*)obj)->__refcount);
            |  return obj;
            |}
            |
-           |void Rogue_check_gc(void)
+           |void %Ns%Rogue_check_gc(void)
            |{
-           |  if (RogueMM_bytes_allocated_since_gc >= ROGUE_MM_GC_THRESHOLD || RogueMM_gc_request) Rogue_collect_garbage();
+           |  if (%Ns%RogueMM_bytes_allocated_since_gc >= %NS%ROGUE_MM_GC_THRESHOLD || %Ns%RogueMM_gc_request) %Ns%Rogue_collect_garbage();
            |}
            |
-           |void Rogue_request_gc(void)
+           |void %Ns%Rogue_request_gc(void)
            |{
-              if (Program.gc_auto) println @|  Rogue_collect_garbage();
-              else                 println @|  RogueMM_gc_request = 1;
+              if (Program.gc_auto) println @|  %Ns%Rogue_collect_garbage();
+              else                 println @|  %Ns%RogueMM_gc_request = 1;
         println ...
           @|}
            |
-           |int Rogue_quit(void)
+           |int %Ns%Rogue_quit(void)
            |{
-           |  int status = !!Rogue_exception;
-           |  Rogue_print_exception();  // Only has an effect if there is a pending exception
+           |  %Ns%RogueInt status = !!%Ns%Rogue_exception;
+           |  %Ns%Rogue_print_exception();  // Only has an effect if there is a pending exception
            |
-           |  RogueGlobal__call_exit_functions();
+           |  %Ns%RogueGlobal__call_exit_functions();
            |
-        if (Program.gc_auto)
-          println ...
-            @|  // Issue a few GC's to allow objects requiring clean-up to do so.
-             |  Rogue_collect_garbage();
-             |  Rogue_collect_garbage();
-             |  Rogue_collect_garbage();
-             |
-        endIf
-        println ...
-          @|  return status;
+           |  return status;
            |}
            |
-           |void Rogue_print_exception(void)
+           |void %Ns%Rogue_exit( int exit_code )
            |{
-           |  RogueException__display__RogueException( (RogueException*)Rogue_exception );
+           |  // Just calls exit(), but if we call exit() directly from Rogue code then the C compiler
+           |  // may give an unreachable code warning for the call stack cleanup that follows.
+           |  exit( exit_code );
            |}
            |
-           |void Rogue_call_stack_push( const char* procedure, const char* filename, int line )
+           |void %Ns%Rogue_print_exception(void)
            |{
-           |  if (Rogue_call_stack_count) Rogue_call_stack[ Rogue_call_stack_count-1 ].line = Rogue_call_stack_line;
-           |  Rogue_call_stack_line = line;
+           |  %Ns%RogueException__display__%Ns%RogueException( (%Ns%RogueException*)%Ns%Rogue_exception );
+           |}
            |
-           |  if (Rogue_call_stack_count == Rogue_call_stack_capacity)
+           |void %Ns%Rogue_call_stack_push( const char* procedure, const char* filename, %Ns%RogueInt line )
+           |{
+           |  if (%Ns%Rogue_call_stack_count) %Ns%Rogue_call_stack[ %Ns%Rogue_call_stack_count-1 ].line = %Ns%Rogue_call_stack_line;
+           |  %Ns%Rogue_call_stack_line = line;
+           |
+           |  if (%Ns%Rogue_call_stack_count == %Ns%Rogue_call_stack_capacity)
            |  {
-           |    int required_capacity = Rogue_call_stack_capacity << 1;
+           |    %Ns%RogueInt required_capacity = %Ns%Rogue_call_stack_capacity << 1;
            |    if (required_capacity < 32) required_capacity = 32;
            |
-           |    RogueCallFrame* new_data = (RogueCallFrame*) ROGUE_MALLOC( sizeof(RogueCallFrame) * required_capacity );
-           |    if (Rogue_call_stack)
+           |    %Ns%RogueCallFrame* new_data = (%Ns%RogueCallFrame*) %NS%ROGUE_MALLOC( sizeof(%Ns%RogueCallFrame) * required_capacity );
+           |    if (%Ns%Rogue_call_stack)
            |    {
-           |      memcpy( new_data, Rogue_call_stack, sizeof(RogueCallFrame)*Rogue_call_stack_count );
-           |      ROGUE_FREE( Rogue_call_stack );
+           |      memcpy( new_data, %Ns%Rogue_call_stack, sizeof(%Ns%RogueCallFrame)*%Ns%Rogue_call_stack_count );
+           |      %NS%ROGUE_FREE( %Ns%Rogue_call_stack );
            |    }
-           |    Rogue_call_stack = new_data;
-           |    Rogue_call_stack_capacity = required_capacity;
+           |    %Ns%Rogue_call_stack = new_data;
+           |    %Ns%Rogue_call_stack_capacity = required_capacity;
            |  }
            |
-           |  Rogue_call_stack[ Rogue_call_stack_count++ ] = (RogueCallFrame){ procedure, filename, line };
+           |  %Ns%Rogue_call_stack[ %Ns%Rogue_call_stack_count++ ] = ROGUE_COMPOUND(%Ns%RogueCallFrame){ procedure, filename, line };
            |}
            |
-           |void Rogue_call_stack_pop(void)
+           |void %Ns%Rogue_call_stack_pop(void)
            |{
-           |  if (--Rogue_call_stack_count)
+           |  if (--%Ns%Rogue_call_stack_count)
            |  {
-           |    Rogue_call_stack_line = Rogue_call_stack[ Rogue_call_stack_count-1 ].line;
+           |    %Ns%Rogue_call_stack_line = %Ns%Rogue_call_stack[ %Ns%Rogue_call_stack_count-1 ].line;
            |  }
            |}
            |
-           |void RogueRuntimeType_local_pointer_stack_add( RogueRuntimeType* type, void* local_pointer )
+           |void %Ns%RogueRuntimeType_local_pointer_stack_add( %Ns%RogueRuntimeType* type, void* local_pointer )
            |{
            |  if (type->local_pointer_count == type->local_pointer_capacity)
            |  {
-           |    int required_capacity = type->local_pointer_capacity << 1;
+           |    %Ns%RogueInt required_capacity = type->local_pointer_capacity << 1;
            |    if (required_capacity < 32) required_capacity = 32;
            |
-           |    void** new_data = (void**) ROGUE_MALLOC( sizeof(void*) * required_capacity );
+           |    void** new_data = (void**) %NS%ROGUE_MALLOC( sizeof(void*) * required_capacity );
            |    if (type->local_pointer_stack)
            |    {
            |      memcpy( new_data, type->local_pointer_stack, sizeof(void*)*type->local_pointer_count );
-           |      ROGUE_FREE( type->local_pointer_stack );
+           |      %NS%ROGUE_FREE( type->local_pointer_stack );
            |    }
            |    type->local_pointer_stack = new_data;
            |    type->local_pointer_capacity = required_capacity;
@@ -447,45 +490,45 @@ class CWriter : BufferedPrintWriter
            |  type->local_pointer_stack[ type->local_pointer_count++ ] = local_pointer;
            |}
            |
-           |void RogueObjectList_add( RogueObjectList* list, void* obj )
+           |void %Ns%RogueObjectList_add( %Ns%RogueObjectList* list, void* obj )
            |{
            |  if (list->count == list->capacity)
            |  {
-           |    int required_capacity = list->capacity << 1;
+           |    %Ns%RogueInt required_capacity = list->capacity << 1;
            |    if (required_capacity < 1024) required_capacity = 1024;
            |
-           |    RogueObject** new_data = (RogueObject**) ROGUE_MALLOC( sizeof(RogueObject*) * required_capacity );
+           |    %Ns%RogueObject** new_data = (%Ns%RogueObject**) %NS%ROGUE_MALLOC( sizeof(%Ns%RogueObject*) * required_capacity );
            |    if (list->data)
            |    {
-           |      memcpy( new_data, list->data, sizeof(RogueObject*)*list->count );
-           |      ROGUE_FREE( list->data );
+           |      memcpy( new_data, list->data, sizeof(%Ns%RogueObject*)*list->count );
+           |      %NS%ROGUE_FREE( list->data );
            |    }
            |    list->data = new_data;
            |    list->capacity = required_capacity;
            |  }
            |
-           |  list->data[ list->count++ ] = (RogueObject*)obj;
+           |  list->data[ list->count++ ] = (%Ns%RogueObject*)obj;
            |}
            |
-           |RogueObject*     Rogue_exception  = 0;
-           |RogueCallFrame*  Rogue_call_stack = 0;
-           |int              Rogue_call_stack_count    = 0;
-           |int              Rogue_call_stack_capacity = 0;
-           |int              Rogue_call_stack_line     = 0;
+           |%Ns%RogueObject*     %Ns%Rogue_exception  = 0;
+           |%Ns%RogueCallFrame*  %Ns%Rogue_call_stack = 0;
+           |%Ns%RogueInt              %Ns%Rogue_call_stack_count    = 0;
+           |%Ns%RogueInt              %Ns%Rogue_call_stack_capacity = 0;
+           |%Ns%RogueInt              %Ns%Rogue_call_stack_line     = 0;
            |
-           |int              RogueMM_bytes_allocated_since_gc  = 0;
-           |int              RogueMM_gc_request                = 0;
-           |RogueObjectList  RogueMM_objects                   = {0};
-           |RogueObjectList  RogueMM_objects_requiring_cleanup = {0};
+           |%Ns%RogueInt              %Ns%RogueMM_bytes_allocated_since_gc  = 0;
+           |%Ns%RogueInt              %Ns%RogueMM_gc_request                = 0;
+           |%Ns%RogueObjectList  %Ns%RogueMM_objects                   = {0};
+           |%Ns%RogueObjectList  %Ns%RogueMM_objects_requiring_cleanup = {0};
            |
-           |void* Rogue_as( void* obj, RogueInt32 recast_type_id )
+           |void* %Ns%Rogue_as( void* obj, %Ns%RogueInt recast_type_id )
            |{
            |  if ( !obj ) return 0;
-           |  RogueRuntimeType* type = ((RogueObject*)obj)->__type;
+           |  %Ns%RogueRuntimeType* type = ((%Ns%RogueObject*)obj)->__type;
            |  if (type->id == recast_type_id) return obj;
            |
-           |  RogueInt32* base_ids = type->base_type_ids - 1;
-           |  RogueInt32  count = type->base_type_count;
+           |  %Ns%RogueInt* base_ids = type->base_type_ids - 1;
+           |  %Ns%RogueInt  count = type->base_type_count;
            |  while (--count >= 0)
            |  {
            |    if (*(++base_ids) == recast_type_id) return obj;
@@ -493,14 +536,14 @@ class CWriter : BufferedPrintWriter
            |  return 0;
            |}
            |
-           |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id )
+           |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%RogueInt ancestor_id )
            |{
            |  if ( !obj ) return 0;
-           |  RogueRuntimeType* type = ((RogueObject*)obj)->__type;
+           |  %Ns%RogueRuntimeType* type = ((%Ns%RogueObject*)obj)->__type;
            |  if (type->id == ancestor_id) return 1;
            |
-           |  RogueInt32* base_ids = type->base_type_ids - 1;
-           |  RogueInt32  count = type->base_type_count;
+           |  %Ns%RogueInt* base_ids = type->base_type_ids - 1;
+           |  %Ns%RogueInt  count = type->base_type_count;
            |  while (--count >= 0)
            |  {
            |    if (*(++base_ids) == ancestor_id) return 1;
@@ -508,18 +551,31 @@ class CWriter : BufferedPrintWriter
            |  return 0;
            |}
            |
-           |RogueLogical Rogue_is_type( void* obj, RogueRuntimeType* type )
+           |%Ns%RogueLogical %Ns%Rogue_is_type( void* obj, %Ns%RogueRuntimeType* type )
            |{
            |  if ( !obj ) return 0;
-           |  return ((RogueObject*)obj)->__type == type;
+           |  return ((%Ns%RogueObject*)obj)->__type == type;
            |}
            |
         println
 
       endIf
 
-    method close if (is_header) println @|#endif // TEST_H
+    method close
+      if (is_header)
+        println "#endif // $"(underscore_filename)
+      endIf
       prior.close
+
+    method print( text:String ) [override]
+      text .= replacing( "%ns%", Program.namespace_lc )
+      text .= replacing( "%Ns%", Program.namespace_capitalized )
+      text .= replacing( "%NS%", Program.namespace_uc )
+      prior.print( text )
+
+    method println( text:String ) [override]
+      print( text )
+      println
 
     method print_gc_checks( path:String[], type:Type )
       forEach (p2 in type.properties)
@@ -541,6 +597,15 @@ class CWriter : BufferedPrintWriter
       print "\\x"
       print ((value :>>>: 4).to_digit)
       print ((value & 15).to_digit)
+
+    method println_indent( ch:Character, add_indent:Int32 )
+      if (add_indent >= 0)
+        println ch
+        indent += add_indent
+      else
+        indent += add_indent
+        println ch
+      endIf
 
     method print_literal_c_character( ch:Character, in_string:Logical )
       if (ch >= 32 and ch <= 126)
@@ -622,6 +687,38 @@ class CWriter : BufferedPrintWriter
 
         if (not omit_quotes) print '"'
       endTemporarily
+
+    method write_default_value( type:Type, &omit_cast )
+      if (type.is_compound)
+        if (not omit_cast)
+          if (Program.targets_cpp and Program.targets_windows)
+            print type.c_name
+          else
+            print '('
+            print type.c_name
+            print ')'
+          endIf
+        endIf
+        print '{'
+        if (type.properties.count and type.properties.first.type.is_compound)
+          write_default_value( type.properties.first.type, &omit_cast )
+        elseIf (not Program.targets_cpp)
+          print '0'
+        endIf
+        print '}'
+      else
+        print "0"
+      endIf
+
+    method underscore_filename->String
+      local result = String()
+      result.print Program.namespace_uc
+      forEach (ch in file.filename)
+        ch .= to_uppercase
+        if (ch.is_letter) result.print ch
+        else              result.print '_'
+      endForEach
+      return result
 
 endClass
 

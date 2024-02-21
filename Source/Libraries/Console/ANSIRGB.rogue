@@ -1,5 +1,5 @@
 # An RGB color compound specialized for use with ANSIBitmap
-uses Bitmap
+uses Graphics
 
 class ANSIRGB( red:Real, green:Real, blue:Real ) [compound]
   GLOBAL METHODS
@@ -20,8 +20,8 @@ class ANSIRGB( red:Real, green:Real, blue:Real ) [compound]
       return ANSIRGB( red*value, green*value, blue*value )
 
     method to->ANSIColor
-      local r = Int32( red*255 ).clamped( 0, 255 )
-      local g = Int32( green*255 ).clamped( 0, 255 )
-      local b = Int32( blue*255 ).clamped( 0, 255 )
+      local r = Int( red*255 ).clamped( 0, 255 )
+      local g = Int( green*255 ).clamped( 0, 255 )
+      local b = Int( blue*255 ).clamped( 0, 255 )
       return ANSIColors[ ANSIColorLookup[ ((r & 0xF0):<<:4) | (g & 0xF0) | ((b & 0xF0):>>>:4) ] ]
 endClass

@@ -3,7 +3,7 @@ $include IO/DataIO
 class BitReader : DataReader
   PROPERTIES
     bit_buffer   : Int64
-    buffer_count : Int32
+    buffer_count : Int
 
   METHODS
     method flush
@@ -12,7 +12,7 @@ class BitReader : DataReader
     method has_another->Logical
       return buffer_count or input.has_another
 
-    method has_another( nbits:Int32 )->Logical
+    method has_another( nbits:Int )->Logical
       while (buffer_count < nbits and input.has_another)
         bit_buffer = (bit_buffer :<<: 8) | input.read
         buffer_count += 8
@@ -22,7 +22,7 @@ class BitReader : DataReader
     method peek->Byte
       return peek(8)->Byte
 
-    method peek( nbits:Int32 )->Int32
+    method peek( nbits:Int )->Int
       has_another( nbits )  # buffer enough bits
 
       if (buffer_count <= nbits)
@@ -34,7 +34,7 @@ class BitReader : DataReader
     method read->Byte
       return read( 8 )->Byte
 
-    method read( nbits:Int32 )->Int32
+    method read( nbits:Int )->Int
       has_another( nbits )  # buffer enough bits
 
       if (buffer_count <= nbits)
@@ -51,7 +51,7 @@ endClass
 class BitWriter : DataWriter
   PROPERTIES
     bit_buffer   : Int64
-    buffer_count : Int32
+    buffer_count : Int
 
   METHODS
     method flush
@@ -61,7 +61,7 @@ class BitWriter : DataWriter
     method write( value:Byte )
       write( value, 8 )
 
-    method write( value:Int32, nbits:Int32 )
+    method write( value:Int, nbits:Int )
       bit_buffer = (bit_buffer :<<: nbits) | (value & ((Int64(1):<<:nbits)-1))
       buffer_count += nbits
       while (buffer_count >= 8)

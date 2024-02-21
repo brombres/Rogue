@@ -1,8 +1,11 @@
+$include UI/Keyboard
+uses UI
+
 class Event
   PROPERTIES
     is_consumed  : Logical
-    refcount     : Int32
-    timestamp    : Int32
+    refcount     : Int
+    timestamp    : Int
 
   METHODS
     method init( timestamp=System.execution_time_ms )
@@ -32,11 +35,11 @@ endClass
 
 class KeyEvent : Event
   PROPERTIES
-    keycode            : Int32   # if keycode == Keycode.UNICODE then 'syscode' contains unicode value
-    syscode            : Int32
+    keycode            : Int   # if keycode == Keycode.UNICODE then 'syscode' contains unicode value
+    syscode            : Int
     is_press           : Logical
     is_repeat          : Logical
-    modifier_key_state : Int32
+    modifier_key_state : Int
 
   METHODS
     method init( keycode, syscode, is_press=false, is_repeat=false, modifier_key_state=Keyboard.modifier_key_state )
@@ -53,16 +56,16 @@ class KeyEvent : Event
     method is_os_pressed->Logical
       return (modifier_key_state & Keyboard.OS_MODIFIER_FLAG)
 
-    method is_press( _keycode:Int32 )->Logical
+    method is_press( _keycode:Int )->Logical
       return keycode == _keycode and is_press
 
-    method is_repeat( _keycode:Int32 )->Logical
+    method is_repeat( _keycode:Int )->Logical
       return keycode == _keycode and is_repeat
 
     method is_release->Logical
       return not this.is_press
 
-    method is_release( _keycode:Int32 )->Logical
+    method is_release( _keycode:Int )->Logical
       return keycode == _keycode and not is_press
 
     method is_shift_pressed->Logical
@@ -82,7 +85,7 @@ class KeyEvent : Event
          case   32: buffer.print( "[Space] " )
          case  127: buffer.print( "[Delete] " )
          others
-           buffer.[ print("(Keycode "), print(Int32(keycode)), print(") ") ]
+           buffer.[ print("(Keycode "), print(Int(keycode)), print(") ") ]
        endWhich
 
        if (is_press)
@@ -118,7 +121,7 @@ class TextEvent : Event
       if (not @text) text = "" + character
       return @text
 
-    method count->Int32
+    method count->Int
       if (@text) return @text.count
       else       return 1
 
@@ -154,10 +157,10 @@ class PointerEvent : Event
     MIDDLE   = 2
 
   PROPERTIES
-    type      : Int32
-    position  : XY
-    delta     : XY
-    index     : Int32
+    type      : Int
+    position  : IntXY
+    delta     : IntXY
+    index     : Int
     cancelled : Logical
     # When a touch event in progress is interrupted then a RELEASE event is sent
     # with .cancelled==true.
@@ -190,7 +193,7 @@ class PointerEvent : Event
     method is_press->Logical
       return (this.type == PointerEvent.PRESS)
 
-    method is_press( button_index:Int32 )->Logical
+    method is_press( button_index:Int )->Logical
       return (this.type == PRESS and index == button_index)
 
     method is_press_left->Logical
@@ -205,7 +208,7 @@ class PointerEvent : Event
     method is_release->Logical
       return (this.type == PointerEvent.RELEASE)
 
-    method is_release( button_index:Int32 )->Logical
+    method is_release( button_index:Int )->Logical
       return (this.type == RELEASE and index == button_index)
 
     method is_release_left->Logical
@@ -217,10 +220,10 @@ class PointerEvent : Event
     method is_release_middle->Logical
       return is_release( 2 )
 
-    method operator+( offset:XY )->PointerEvent
+    method operator+( offset:IntXY )->PointerEvent
       return PointerEvent( type, position+offset, delta, index, cancelled )
 
-    method operator-( offset:XY )->PointerEvent
+    method operator-( offset:IntXY )->PointerEvent
       return this + (-offset)
 
     method to->String
@@ -243,8 +246,8 @@ endClass
 
 class ScrollEvent : Event
   PROPERTIES
-    delta         : XY
-    precise    : Logical
+    delta         : IntXY
+    precise       : Logical
       # True for Apple Magic Mouse and Trackpad, AKA supports gestures and momentum.
       # If this is true then is_progress and is_momentum are valid (and vice versa).
     in_progress   : Logical
@@ -252,7 +255,7 @@ class ScrollEvent : Event
       # or that a "momentum scroll" is active. Either way scroll events are guaranteed to continue
       # to be received until one where 'in_progress' is false.
     is_momentum   : Logical
-    density       : Int32
+    density       : Int
 
   METHODS
     method init( delta, precise=false, in_progress=false, is_momentum=false, density=1 )
@@ -277,8 +280,8 @@ class ScrollRate
   # Other OS or input device:
   # - Scales each scroll delta by 'base_scale' with no acceleration.
   PROPERTIES
-    base_scale     : Int32
-    delta          : XY
+    base_scale     : Int
+    delta          : IntXY
     history_x      = ScrollEvent[]
     history_y      = ScrollEvent[]
     acceleration_x = 1.0
@@ -287,13 +290,13 @@ class ScrollRate
   METHODS
     method init( base_scale=5 )
 
-    method add( e:ScrollEvent )->XY
+    method add( e:ScrollEvent )->IntXY
       # Returns the scaled or accelerated scroll-delta.
       contingent
         necessary (e.precise)
         necessary (not e.is_momentum)
 
-        delta = XY(
+        delta = IntXY(
           _process<<history_x,x,acceleration_x>>(e),
           _process<<history_y,y,acceleration_y>>(e)
         )
@@ -314,25 +317,25 @@ class ScrollRate
       if (v1 == 0 or v2 == 0) return true  # 0 matches either sign
       return not ((v1 > 0) xor (v2 > 0))
 
-    method _process<<$HISTORY,$XY,$ACCELERATION>>( e:ScrollEvent )->Real
-      while ($HISTORY.count and $HISTORY.first.timestamp < e.timestamp - 250) $HISTORY.remove_first
+    method _process<<$history,$xy,$acceleration>>( e:ScrollEvent )->Real
+      while ($history.count and $history.first.timestamp < e.timestamp - 250) $history.remove_first
 
       local result = 0.0
-      if ($HISTORY.count and _same_direction($HISTORY.first.delta.$XY,e.delta.$XY))
-        $HISTORY.add( e )
-        result += (forEach in $HISTORY).delta.$XY
-        result /= $HISTORY.count
-        if ($HISTORY.count == 1)
-          $ACCELERATION = 1.0
+      if ($history.count and _same_direction($history.first.delta.$xy,e.delta.$xy))
+        $history.add( e )
+        result += (forEach in $history).delta.$xy
+        result /= $history.count
+        if ($history.count == 1)
+          $acceleration = 1.0
         else
-          result *= $ACCELERATION
+          result *= $acceleration
         endIf
       else
-        $HISTORY.[ clear, add(e) ]
-        result = e.delta.$XY
-        $ACCELERATION = 1.0
+        $history.[ clear, add(e) ]
+        result = e.delta.$xy
+        $acceleration = 1.0
       endIf
 
-      $ACCELERATION = ($ACCELERATION * 1.25).clamped_high( base_scale*2 )
+      $acceleration = ($acceleration * 1.25).clamped_high( base_scale*2 )
       return result
 endClass

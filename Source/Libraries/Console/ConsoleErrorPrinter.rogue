@@ -5,10 +5,10 @@ class ConsoleErrorPrinter : BufferedPrintWriter<<output_buffer>>
       buffer.clear
 
     method write( value:String )
-      native @|#if defined(ROGUE_PLATFORM_ANDROID)
-              |  __android_log_print( ANDROID_LOG_ERROR, "Rogue", "%s", $value->data->as_utf8 );
+      native @|#if defined(%NS%ROGUE_PLATFORM_ANDROID)
+              |  __android_log_print( ANDROID_LOG_ERROR, "%Ns%Rogue", "%s", $value->data->as_utf8 );
               |#else
-              |  Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDERR_FILENO );
+              |  %Ns%Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDERR_FILENO );
               |#endif
 
 endClass

@@ -10,7 +10,7 @@ endEnum
 
 class FileListing
   NATIVE
-    nativeHeader @|#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
+    nativeHeader @|#if !defined(%NS%ROGUE_PLATFORM_WINDOWS) && !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
                   |  #include <dirent.h>
                   |#endif
 
@@ -195,7 +195,7 @@ class FileListing
 
   GLOBAL METHODS
     method _listing( folder:File, collector:Function(String) )
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |{
               |  WIN32_FIND_DATAW entry;
               |  HANDLE dir;
@@ -211,7 +211,7 @@ class FileListing
                      while (first or native("FindNextFileW(dir,&entry)")->Logical)
                        first = false
 
-                       filepath_utf16.init( native("(RogueWordPointer){entry.cFileName}")->RogueWordPointer )
+                       filepath_utf16.init( native("(%Ns%RogueWordPointer){entry.cFileName}")->RogueWordPointer )
                        local entry = filepath_utf16->String
                        if (entry != "." and entry != "..")
                          collector( entry )
@@ -250,7 +250,7 @@ class FileListing
               |      if (keep)
               |      {
                        block
-                         local entry = native("RogueString_create(entry->d_name)")->String
+                         local entry = native("%Ns%RogueString_create(entry->d_name)")->String
                          collector( entry )
                        endBlock
       native @|

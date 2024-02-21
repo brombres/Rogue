@@ -487,7 +487,7 @@ class HuffmanNode
         builder.print which{ (value >= 33 and value != 127):Character(value) || ' ' }
         builder.print ' '
         builder.print value.format("4")
-        builder.print " $ ($)\n" (pattern.to_binary_string.rightmost(bits),count)
+        builder.print " $ ($)\n" (pattern->String(&binary).rightmost(bits),count)
         return builder
       endIf
 

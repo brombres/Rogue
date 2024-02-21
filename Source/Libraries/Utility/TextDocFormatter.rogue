@@ -1,0 +1,75 @@
+class TextDocFormatter
+  # Word-wraps text while preserving indentation levels.
+  PROPERTIES
+    tab_width = 4
+    # Used for word wrap line length calculations. Leading tabs are preserved
+    # but internal tabs are converted to this many spaces.
+
+    max_width  : Int32
+    tab_spaces : String
+    cur_indent : String
+    cur_line   = String( 120 )
+    result     : String
+
+  METHODS
+    method format( text:String, max_width=80, &console_width_limited=true )->String
+      if (console_width_limited and Console.width > 0)
+        max_width .= clamped_high( Console.width )
+      endIf
+
+      tab_spaces = " " * tab_width
+      result = String( Int32(text.count*1.1) )
+
+      forEach (line in LineReader(text))
+        local indent = leading_indent( line )
+        line .= unleft( indent.count ).trimmed.replacing('\t',tab_spaces)
+
+        if (not line.count)
+          output_cur_line
+          cur_indent = null
+          result.println
+          nextIteration
+        endIf
+
+        if (cur_indent)
+          if (cur_indent == indent)
+            cur_line.print(' ')
+            cur_line.print( line )
+          else
+            output_cur_line
+            cur_indent = indent
+            cur_line.print( line )
+          endIf
+        else
+          cur_indent = indent
+          cur_line.print( line )
+        endIf
+      endForEach
+
+      output_cur_line
+
+      return result
+
+    method indent_length( text:String )->Int32
+      local result = 0
+      if ((forEach in text) == '\t') result += tab_spaces
+      else                           ++result
+      return result
+
+    method leading_indent( text:String )->String
+      forEach (ch at i in text)
+        if (ch != ' ' and ch != '\t') return text.substring(0,i)
+      endForEach
+      return text
+
+    method output_cur_line
+      if (not cur_line.count) return
+      local w = (max_width - indent_length(cur_indent)).clamped_low(1)
+      local wrapped_lines = cur_line.word_wrap( w )
+      forEach (wrapped_line in wrapped_lines)
+        result.print( cur_indent )
+        result.println( wrapped_line )
+      endForEach
+      cur_line.clear
+
+endClass

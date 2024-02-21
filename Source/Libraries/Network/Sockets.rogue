@@ -277,7 +277,7 @@ class BasicSocket : Socket
 
     method remote_ip->String
       if (@remote_ip) return @remote_ip
-      native @|$this->remote_ip = RogueString_create( $this->remote_ip_buffer );
+      native @|$this->remote_ip = %Ns%RogueString_create( $this->remote_ip_buffer );
       return @remote_ip
 
     method socket_id->Int32
@@ -339,7 +339,7 @@ class BasicServerSocket : ServerSocket
       local remote_socket_id : Int32
 
       native...
-       @|$remote_socket_id = (RogueInt32) accept($socket_id,(struct sockaddr*) &$this->address, &$this->address_size);
+       @|$remote_socket_id = (%Ns%RogueInt32) accept($socket_id,(struct sockaddr*) &$this->address, &$this->address_size);
         |if ($remote_socket_id < 0)
         |{
            return null
@@ -357,7 +357,7 @@ class BasicServerSocket : ServerSocket
        @|}
 
       local result = BasicSocket( remote_socket_id )
-      result.remote_ip = native( "RogueString_create( hbuf )" )->String
+      result.remote_ip = native( "%Ns%RogueString_create( hbuf )" )->String
       return result
 
     method close
@@ -386,7 +386,7 @@ class BasicSocketReader : Reader<<Byte>>
     socket       : BasicSocket
     buffer_pos   : Int32
     buffer_count : Int32
-    native "RogueByte read_buffer[1024];"
+    native "%Ns%RogueByte read_buffer[1024];"
 
   METHODS
     method init( socket )
@@ -418,7 +418,7 @@ class BasicSocketReader : Reader<<Byte>>
       if (not has_another) return 0
       return native( "$this->read_buffer[$this->buffer_pos]" )->Byte
 
-    method position->Int32 [fallback]
+    method position->Int [fallback]
       return @position
 
     method read->Byte

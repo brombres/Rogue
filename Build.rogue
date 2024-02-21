@@ -92,9 +92,9 @@ routine rogo_build
   if (source_files.any_newer_than(exe_file))
     local c_filepath = "Build/$-$.c" (Build.PROJECT,System.os)
     if (source_files.any_newer_than(c_filepath))
-      compile_rogue
+      rogo_compile_rogue
     endIf
-    compile_c
+    rogo_compile_c
   endIf
 endRoutine
 
@@ -120,8 +120,8 @@ endRoutine
 routine rogo_rebuild
   # Force-rebuilds project.
   rogo_froley
-  compile_rogue
-  compile_c
+  rogo_compile_rogue
+  rogo_compile_c
 endRoutine
 
 routine rogo_rebuild_debug
@@ -134,6 +134,20 @@ routine rogo_rebuild_release
   # Force-rebuilds in release mode.
   Build.BUILD_MODE = "release"
   rogo_rebuild
+endRoutine
+
+routine rogo_update_wiki
+  if (not File("Wiki").exists)
+    execute @|git clone git@github.com:brombres/Rogue.wiki.git Wiki
+  endIf
+
+  execute @|cd Wiki && git pull
+  execute @|roguec --doc --output=.rogo/API.json
+  execute @|roguedoc .rogo/API.json --output=Wiki --split
+
+  execute @|cd Wiki && git add . && git commit -am "[API]"
+  local branch = Process.run( "cd Wiki && git symbolic-ref --short HEAD", &env )->String.trimmed
+  execute "cd Wiki && git push origin $"(branch)
 endRoutine
 
 routine rogo_install
@@ -310,9 +324,11 @@ routine rogo_publish( new_version:String )
   if (not Console.input("Continue publishing release to GitHub? ").to_lowercase.begins_with('y')) return
 
   execute ''gh release create v$ --title "v$" --notes ""''(new_version,new_version)
+
+  rogo_update_wiki
 endRoutine
 
-routine compile_rogue
+routine rogo_compile_rogue
   rogo_libs
   local src_filepath = "Source/RogueC/$.rogue" (Build.PROJECT)
   local c_filepath = "Build/$-$" (Build.PROJECT,System.os)
@@ -321,16 +337,11 @@ routine compile_rogue
   local cmd = "roguec $ $ --target=Console,C,$ --output=$"...
               (File(src_filepath).esc,flags,System.os,File(c_filepath).esc)
   println "> " + cmd
-  local status = Process.run( cmd, &env )
-  local result = status->String
-  println result
-  if (not status.success) throw Error( "Build failed." )
-  if (result.contains("ROGO:"))
-    System.exit( execute("rogo".appending(System.command_line_arguments.join(' '))) )
-  endIf
+  local error = System.run( cmd )
+  if (error) throw Error( "Build failed." )
 endRoutine
 
-routine compile_c
+routine rogo_compile_c
   local c_filepath = File( "Build/$-$" (Build.PROJECT,System.os) ).esc
   local exe_filepath = exe_file.esc
   if (System.is_windows)
@@ -575,7 +586,7 @@ class Build [singleton]
         endForEach
       endIf
 
-    method _join( value:Value )->String
+    method _join( value:Variant )->String
       local args = String[]
       args.add( forEach in value )
       return args.join( "_" )

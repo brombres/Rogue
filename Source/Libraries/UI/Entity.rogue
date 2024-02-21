@@ -21,7 +21,7 @@ class Entity : Node<<Entity>>
 
   PROPERTIES
     name        : String
-    attributes  : Int32
+    attributes  : Int
     actions     : Action
     properties  : DynamicProperty
 
@@ -136,8 +136,8 @@ class Entity : Node<<Entity>>
       handle( e )
 
     method die
-      hide            # marks this entity as dirty so the last display bounds can be repaired
-      is_dead = true  # marks this entity as eligible for detaching once the display is repaired
+      hide         # marks this entity as dirty so the last display bounds can be repaired
+      dead = true  # marks this entity as eligible for detaching once the display is repaired
 
     method first_child<<$OfType>>->$OfType
       forEach (child in children)
@@ -289,7 +289,7 @@ class Entity : Node<<Entity>>
 
       after_update
 
-      if (actions) actions .= update
+      if (actions) actions .= updated
 
     method visible->Logical
       return not hidden

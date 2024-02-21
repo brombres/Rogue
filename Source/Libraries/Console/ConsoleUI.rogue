@@ -14,22 +14,24 @@ class ConsoleUI : UI
     underline_font : ConsoleUIFont
 
   PROPERTIES
-    fast_updates      : Logical  # set to true to always update at 1/60th second
+    last_update_ms       : Int
+    mouse_position       : IntXY?
+    button_pressed       = Dim<<Logical>>(2)
+    is_running           : Logical
 
-    last_update_ms    : Int32
-    mouse_position    : XY?
-    button_pressed    = Dim<<Logical>>(2)
-    is_running        : Logical
-    fast_update_ticks = 0
+    max_events_processed = 512
+    max_event_window_ms  = 8
+    update_timer         = Timer()
+    keep_active_timer    = Timer(1.0)
 
   METHODS
     method init
       prior.init( Console.size )
 
-    method init( size:XY )
+    method init( size:IntXY )
       prior.init( size )
 
-    method init( bounds:Box )
+    method init( bounds:IntBox )
       prior.init( bounds )
 
     method init_object
@@ -42,7 +44,7 @@ class ConsoleUI : UI
     method default_font->ConsoleUIFont
       return ConsoleUIFont
 
-    method drag_threshold->Int32
+    method drag_threshold->Int
       return 1
 
     method draw
@@ -51,29 +53,32 @@ class ConsoleUI : UI
       Console.set_cursor( 0, bounds.y2 )
 
     method handle( e:KeyEvent )
-      fast_update_ticks = 10
+      keep_active( 0.5 )
       prior.handle( e )
 
     method handle( e:PointerEvent )
       if (mouse_position.exists) e.delta = e.position - mouse_position.value
       mouse_position = e.position
-      fast_update_ticks = 10
+      keep_active( 0.5 )
       prior.handle( e )
 
     method handle( e:ScrollEvent )
-      fast_update_ticks = 10
+      keep_active( 0.5 )
       prior.handle( e )
 
     method handle( e:TextEvent )
-      fast_update_ticks = 10
+      keep_active( 0.5 )
       prior.handle( e )
 
-    method handle( type:Int32, index:Int32, e:ConsoleEvent )
+    method handle( type:Int, index:Int, e:ConsoleEvent )
       # Only called when e is a pointer or scroll event
-      local pos = XY( e.x, e.y )
+      local pos = IntXY( e.x, e.y )
       Pointer.position = pos
       Pointer.positions.[clear].add( pos )
-      handle( PointerEvent(type,pos,XY(0,0),index) )
+      handle( PointerEvent(type,pos,IntXY(0,0),index) )
+
+    method keep_active( seconds:Real )
+      keep_active_timer.init( seconds.or_larger(keep_active_timer.duration) )
 
     method on_draw [override]
       ConsoleUICanvas.resize( placement.size.x, placement.size.y )
@@ -85,52 +90,83 @@ class ConsoleUI : UI
       prior.on_resize
 
     method on_update
-      loop 512
-        if (Console.immediate_mode and Console.has_another_event)
-          local event = Console.read_event
-          which (event.type)
-            case ConsoleEventType.CHARACTER
-              local unicode = event.unicode
-              local (keycode,is_shifted) = Keycode.unicode_to_keycode( unicode )
-              local syscode            = which{ keycode==Keycode.UNICODE:unicode->Int32 || 0 }
-              local modifier_key_state = which{ is_shifted:Keyboard.SHIFT_MODIFIER_FLAG || 0 }
-              Keyboard.key_pressed[ keycode ] = true
-              Keyboard.key_pressed[ Keycode.LEFT_SHIFT ]  = is_shifted
-              Keyboard.key_pressed[ Keycode.RIGHT_SHIFT ] = is_shifted
-              handle( KeyEvent(keycode,syscode,&is_press,&!is_repeat,&=modifier_key_state) )
-              Keyboard.key_pressed[ keycode ] = false
-              Keyboard.key_pressed[ Keycode.LEFT_SHIFT ]  = false
-              Keyboard.key_pressed[ Keycode.RIGHT_SHIFT ] = false
-              handle( KeyEvent(keycode,syscode,&!is_press,&!is_repeat,&=modifier_key_state) )
-              handle( TextEvent(unicode,null) )
+      if (not Console.immediate_mode) return
 
-            case ConsoleEventType.POINTER_PRESS_LEFT
-              send_release_event( PointerEvent.RIGHT, event )
-              button_pressed[ PointerEvent.LEFT ] = true
-              handle( PointerEvent.PRESS, PointerEvent.LEFT, event )
+      if (keep_active_timer.is_expired)
+        Console.force_input_blocking = true
+        local has_event = Console.has_another_event  # blocks until input received
+        Console.force_input_blocking = false
+        if (not has_event) return
+      endIf
 
-            case ConsoleEventType.POINTER_PRESS_RIGHT
-              send_release_event( PointerEvent.LEFT, event )
-              button_pressed[ PointerEvent.RIGHT ] = true
-              handle( PointerEvent.PRESS, PointerEvent.RIGHT, event )
+      update_timer.init( max_event_window_ms / 1000.0 )
 
-            case ConsoleEventType.POINTER_RELEASE
-              send_release_event( PointerEvent.LEFT, event )
-              send_release_event( PointerEvent.RIGHT, event )
+      loop max_events_processed
 
-            case ConsoleEventType.POINTER_MOVE
-              handle( PointerEvent.MOVE, 0, event )
+        if (update_timer.is_expired) escapeLoop
 
-            case ConsoleEventType.SCROLL_UP
-              handle( ScrollEvent(XY(0,-1)) )
+        if (not Console.immediate_mode) escapeLoop
+        if (not Console.has_another_event) escapeLoop
 
-            case ConsoleEventType.SCROLL_DOWN
-              handle( ScrollEvent(XY(0, 1)) )
+        local event = Console.read_event
+        which (event.type)
+          case ConsoleEventType.CHARACTER
+            local unicode = event.unicode
+            local is_control = false
+            if (unicode <= 31)
+              # 0 (CTRL @) through 31 (CTRL -)
+              which (unicode)
+                case '\n', '\t', 8, 27
+                  noAction
+                others
+                  is_control = true
+                  unicode += 64
+              endWhich
+            endIf
+            local (keycode,is_shifted) = Keycode.unicode_to_keycode( unicode )
+            local syscode              = which{ keycode==Keycode.UNICODE:unicode->Int || 0 }
+            local modifier_key_state   = which{ is_shifted:Keyboard.SHIFT_MODIFIER_FLAG || 0 }
+            Keyboard.key_pressed[ keycode ] = true
+            Keyboard.key_pressed[ Keycode.LEFT_SHIFT ]  = is_shifted
+            Keyboard.key_pressed[ Keycode.RIGHT_SHIFT ] = is_shifted
+            if (is_control)
+              modifier_key_state |= Keyboard.CONTROL_MODIFIER_FLAG
+              Keyboard.key_pressed[ Keycode.LEFT_CONTROL ] = true
+              Keyboard.key_pressed[ Keycode.RIGHT_CONTROL ] = true
+            endIf
+            handle( KeyEvent(keycode,syscode,&is_press,&!is_repeat,&=modifier_key_state) )
+            Keyboard.key_pressed[ keycode ] = false
+            Keyboard.key_pressed[ Keycode.LEFT_SHIFT ]  = false
+            Keyboard.key_pressed[ Keycode.RIGHT_SHIFT ] = false
+            Keyboard.key_pressed[ Keycode.LEFT_CONTROL ] = false
+            Keyboard.key_pressed[ Keycode.RIGHT_CONTROL ] = false
+            handle( KeyEvent(keycode,syscode,&!is_press,&!is_repeat,&=modifier_key_state) )
+            handle( TextEvent(unicode,null) )
 
-          endWhich
-        else
-          escapeLoop
-        endIf
+          case ConsoleEventType.POINTER_PRESS_LEFT
+            send_release_event( PointerEvent.RIGHT, event )
+            button_pressed[ PointerEvent.LEFT ] = true
+            handle( PointerEvent.PRESS, PointerEvent.LEFT, event )
+
+          case ConsoleEventType.POINTER_PRESS_RIGHT
+            send_release_event( PointerEvent.LEFT, event )
+            button_pressed[ PointerEvent.RIGHT ] = true
+            handle( PointerEvent.PRESS, PointerEvent.RIGHT, event )
+
+          case ConsoleEventType.POINTER_RELEASE
+            send_release_event( PointerEvent.LEFT, event )
+            send_release_event( PointerEvent.RIGHT, event )
+
+          case ConsoleEventType.POINTER_MOVE
+            handle( PointerEvent.MOVE, 0, event )
+
+          case ConsoleEventType.SCROLL_UP
+            handle( ScrollEvent(IntXY(0, 1)) )
+
+          case ConsoleEventType.SCROLL_DOWN
+            handle( ScrollEvent(IntXY(0,-1)) )
+
+        endWhich
       endLoop
 
     method run
@@ -142,18 +178,12 @@ class ConsoleUI : UI
       try
         is_running = true
         while (is_running)
-          update( Box(Console.width,Console.height) )
+          update( IntBox(Console.width,Console.height) )
           draw
 
-          # If it needs a redraw right after drawing then we're animating
-          local needs_fast_update = fast_updates or needs_redraw
-          if (fast_update_ticks > 0)
-            needs_fast_update = true
-            --fast_update_ticks
-          endIf
+          if (needs_redraw) keep_active( 1.0 )
 
-          if (needs_fast_update) System.sleep( 1.0/60.0 )
-          else                   System.sleep( 0.1 )
+          System.sleep( 1.0/60.0 )
         endWhile
 
         Console.immediate_mode = false
@@ -166,7 +196,7 @@ class ConsoleUI : UI
         println error
       endTry
 
-    method send_release_event( index:Int32, event:ConsoleEvent )
+    method send_release_event( index:Int, event:ConsoleEvent )
       if (not button_pressed[index]) return
       button_pressed[index] = false
       handle( PointerEvent.RELEASE, index, event )

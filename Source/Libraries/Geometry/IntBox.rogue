@@ -1,0 +1,319 @@
+module Geometry
+
+class IntBox( position:IntXY, size:IntXY ) [essential compound]
+  GLOBAL METHODS
+    method create( corners:Corners )->IntBox
+      return corners->IntBox
+
+    method create( x:Int, y:Int, width:Int, height:Int )->IntBox
+      return IntBox( IntXY(x,y), IntXY(width,height) )
+
+    method create( width:Int, height:Int )->IntBox
+      return IntBox( IntXY(0,0), IntXY(width,height) )
+
+    method create( x:Int, y:Int, size:IntXY )->IntBox
+      return IntBox( IntXY(x,y), size )
+
+    method create( position:IntXY, width:Int, height:Int )->IntBox
+      return IntBox( position, IntXY(width,height) )
+
+    method create( size:IntXY )->IntBox
+      return IntBox( IntXY(0,0), size )
+
+    method create( existing:IntBox )->IntBox
+      # Copy constructor. Boxes are immutable so this just returns the same
+      # box, but provided to ensure that IntBox(B) == B.
+      return existing
+
+    method from_corners( top_left:IntXY, bottom_right:IntXY )->IntBox
+      local tl = top_left.or_smaller( bottom_right )
+      local br = top_left.or_larger( bottom_right )
+      return IntBox( tl, br - tl )
+
+  METHODS
+    method at( anchor:Anchor )->IntXY
+      return position + anchor * size
+
+    method at( proportional_position:XY )->IntXY
+      return position + IntXY( proportional_position * XY(size) )
+
+    method at( u:Real, v:Real )->IntXY
+      return position + IntXY(u*size.x,v*size.y)
+
+    method at_random( gen=Random:Random )->IntXY
+      return IntXY(gen.real64(position.x,size.x+position.x),gen.real64(position.y,size.y+position.y))
+
+    method bottom->Int
+      return this.position.y + this.size.y
+
+    method bottom_left->IntXY
+      return (position + IntXY(0,size.y))
+
+    method bottom_right->IntXY
+      return (position + size)
+
+    method bottommost( height:Int )->IntBox
+      if (height < 0) height = size.y + height
+      local h = height.or_smaller(size.y)
+      return IntBox( position+IntXY(0,size.y-h), size.x, h )
+
+    method cell( grid_index:IntXY, grid_size:IntXY )->IntBox
+      # Example:
+      #   at( IntXY(i,j), IntXY(3,3) ) returns the bounds of one of the following grid cells:
+      #
+      #   (0,0) | (1,0) | (2,0)
+      #   ------+-------+------
+      #   (0,1) | (1,1) | (2,1)
+      #   ------+-------+------
+      #   (0,2) | (1,2) | (2,2)
+      return from_corners(
+        position + (grid_index*size)/grid_size,
+        position + ((grid_index+IntXY(1,1))*size)/grid_size
+      )
+
+    method center->IntXY
+      return this.at(0.5,0.5)
+
+    method clamped( enclosing:IntBox, &shrink_to_fit )->IntBox
+      # Clamps this box to the enclosing box
+      local inner = this
+
+      if (shrink_to_fit)
+        local pos = inner.position - enclosing.position
+        local br = pos + inner.size
+        if (br.x > enclosing.size.x) pos += IntXY(enclosing.size.x-br.x,0)
+        if (br.y > enclosing.size.y) pos += IntXY(0,enclosing.size.y-br.y)
+        return IntBox( pos.max(IntXY(0,0)) + enclosing.position, inner.size.min(enclosing.size) )
+      else
+        inner -= IntXY( (inner.x2-enclosing.x2).clamped(0,(inner.x1-enclosing.x1).clamped_low(0)), 0 )
+        inner += IntXY( (enclosing.x1-inner.x1).clamped(0,(enclosing.x2-inner.x2).clamped_low(0)), 0 )
+        inner -= IntXY( 0, (inner.y2-enclosing.y2).clamped(0,(inner.y1-enclosing.y1).clamped_low(0)) )
+        inner += IntXY( 0, (enclosing.y1-inner.y1).clamped(0,(enclosing.y2-inner.y2).clamped_low(0)) )
+      endIf
+
+      return inner
+
+    method contains( other:IntBox )->Logical
+      local other_pos = other.position
+      local other_br = other.bottom_right
+      local this_br  = bottom_right
+      return ((other_pos.x >= position.x and other_pos.y >= position.y) and
+             (other_br.x <= this_br.x and other_br.y <= this_br.y))
+
+    method contains( pos:IntXY )->Logical
+      if (pos.x < position.x or pos.x >= position.x + size.x) return false
+      if (pos.y < position.y or pos.y >= position.y + size.y) return false
+      return true
+
+    method cropped( delta:Int )->IntBox
+      return IntBox( IntXY(x+delta,y+delta), IntXY(width-(delta+delta),height-(delta+delta)) )
+
+    method cropped( left:Int, top:Int, right:Int, bottom:Int )->IntBox
+      return IntBox( IntXY(x+left,y+top), IntXY(width-(left+right),height-(top+bottom)).or_larger(IntXY.zero) )
+
+    method expanded( delta:Int )->IntBox
+      return cropped( -delta )
+
+    method expanded( left:Int, top:Int, right:Int, bottom:Int )->IntBox
+      return cropped( -left, -top, -right, -bottom )
+
+    method hash_code->Int
+      return position.hash_code ~ size.hash_code
+
+    method height->Int
+      return this.size.y
+
+    method intersection( rhs:IntBox )->IntBox?
+      # Returns the intersection of this box with another box.
+      local a_x1 = position.x
+      local a_y1 = position.y
+      local a_x2 = a_x1 + size.x
+      local a_y2 = a_y1 + size.y
+
+      local b_x1 = rhs.position.x
+      local b_y1 = rhs.position.y
+      local b_x2 = b_x1 + rhs.size.x
+      local b_y2 = b_y1 + rhs.size.y
+
+      if (a_x1 < b_x1) a_x1 = b_x1
+      if (a_y1 < b_y1) a_y1 = b_y1
+      if (a_x2 > b_x2) a_x2 = b_x2
+      if (a_y2 > b_y2) a_y2 = b_y2
+
+      if (a_x1 >= a_x2 or a_y1 >= a_y2) return null
+
+      return IntBox( a_x1, a_y1, a_x2-a_x1, a_y2-a_y1 )
+
+    method intersects( other:IntBox )->Logical
+      return (this & other).exists
+
+    method intersects( circle:Circle )->Logical
+      return this->Quad.intersects( circle )
+
+    method intersects( quad:Quad )->Logical
+      return this->Quad.intersects( quad )
+
+    method intersects( line:Line )->Logical
+      return this->Quad.intersects( line )
+
+    method intersects( triangle:Triangle )->Logical
+      return this->Quad.intersects( triangle )
+
+    method left->Int
+      return this.position.x
+
+    method leftmost( width:Int )->IntBox
+      if (width < 0) width = size.x + width
+      return IntBox( position, width.or_smaller(size.x), size.y )
+
+    method operator==( other:IntBox )->Logical
+      return (position == other.position and size == other.size)
+
+    method operator+( offset:IntXY )->IntBox
+      return IntBox( position+offset, size )
+
+    method operator-( offset:IntXY )->IntBox
+      return IntBox( position-offset, size )
+
+    method operator*( scale:Real )->IntBox
+      return IntBox( position*scale, size*scale )
+
+    method operator*( scale:IntXY )->IntBox
+      return IntBox( position*scale, size*scale )
+
+    method operator/( scale:Real )->IntBox
+      return this * (1.0/scale)
+
+    method operator/( scale:IntXY )->IntBox
+      return IntBox( position/scale, size/scale )
+
+    method operator&( rhs:IntBox )->IntBox?
+      return intersection( rhs )
+
+    method operator|( rhs:IntBox )->IntBox
+      # Returns the union of this box with another box.
+      if (rhs.size.is_zero) return this
+
+      local tl = position.min( rhs.position )
+      local br = bottom_right.max( rhs.bottom_right )
+
+      return IntBox( tl, br-tl )
+
+    method positioned_within( enclosing:IntBox, anchor=Anchor.CENTER:Anchor )->IntBox
+      return IntBox( enclosing.position + anchor * (enclosing.size-size), size )
+
+    method print_to( buffer:PrintWriter )
+      buffer.print '['
+      position.x.print_to( buffer )
+      buffer.print ','
+      position.y.print_to( buffer )
+      buffer.print ' '
+      size.x.print_to( buffer )
+      buffer.print 'x'
+      size.y.print_to( buffer )
+      buffer.print ']'
+
+    method relative_to( anchor:Anchor )->IntBox
+      # Returns box of this.size that is positioned relative to its original position
+      # as an origin.
+      #
+      # For example, if IntXY(640,480) is the center of the screen, then:
+      # - IntBox(640,480,100,100) places the top-left corner of the box on (640,480)
+      # - IntBox(640,480,100,100).relative_to(Anchor.CENTER) places the center of the box on (640,480)
+      # - IntBox(640,480,100,100).relative_to(Anchor.BOTTOM_RIGHT) places the bottom-right corner of the box on (640,480)
+      return IntBox( position - anchor * size, size )
+
+    method right->Int
+      return this.position.x + this.size.x
+
+    method rightmost( width:Int )->IntBox
+      if (width < 0) width = size.x + width
+      local w = width.or_smaller(size.x)
+      return IntBox( position+IntXY(size.x-w,0), w, size.y )
+
+    method rotated( angle:Degrees )->Quad
+      return this.rotated( angle->Radians )
+
+    method rotated( angle:Radians )->Quad
+      return this->Quad.rotated( angle )
+
+    method subset( subset_size:IntXY, anchor=Anchor.CENTER:Anchor )->IntBox
+      return IntBox( position + anchor * (size-subset_size), subset_size )
+
+    method subset_x( new_width:Int, anchor=Anchor.CENTER:Anchor )->IntBox
+      return subset( IntXY(new_width,height), anchor )
+
+    method subset_y( new_height:Int, anchor=Anchor.CENTER:Anchor )->IntBox
+      return subset( IntXY(width,new_height), anchor )
+
+    method to->Box
+      return Box( position, size )
+
+    method to->Quad
+      return Quad( this->Box )
+
+    method to->String
+      return "[$,$ $x$]" (position.x,position.y,size.x,size.y)
+
+    method top->Int
+      return this.position.y
+
+    method top_left->IntXY
+      return position
+
+    method top_right->IntXY
+      return (position + IntXY(size.x,0))
+
+    method topmost( height:Int )->IntBox
+      if (height < 0) height = size.y + height
+      return IntBox( position, size.x, height.or_smaller(size.y) )
+
+    method with_height( new_height:Int )->IntBox
+      return IntBox( this.position, this.size.x, new_height )
+
+    method with_position( new_position:IntXY )->IntBox
+      return IntBox( new_position, this.size )
+
+    method with_size( new_size:IntXY )->IntBox
+      return IntBox( this.position, new_size )
+
+    method with_width( new_width:Int )->IntBox
+      return IntBox( this.position, new_width, this.size.y )
+
+    method width->Int
+      return this.size.x
+
+    method x->Int
+      return position.x
+
+    method y->Int
+      return position.y
+
+    method x1->Int
+      return position.x
+
+    method y1->Int
+      return position.y
+
+    method x2->Int
+      return position.x + this.size.x
+
+    method y2->Int
+      return position.y + this.size.y
+
+endClass
+
+augment IntBox?
+  GLOBAL METHODS
+    method operator&( lhs:IntBox?, rhs:IntBox? )->IntBox?
+      if (not lhs) return rhs
+      if (not rhs) return lhs
+      return lhs.value & rhs.value
+
+    method operator|( lhs:IntBox?, rhs:IntBox? )->IntBox?
+      # Returns the union of this box with another box.
+      if (not lhs or lhs.value.size.is_zero) return rhs
+      if (not rhs or rhs.value.size.is_zero) return lhs
+      return lhs.value | rhs
+endAugment
+

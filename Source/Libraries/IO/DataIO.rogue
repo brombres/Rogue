@@ -20,7 +20,7 @@ class DataReader : Reader<<Byte>>
     method has_another->Logical
       return input.has_another
 
-    method position->Int32
+    method position->Int
       return input.position
 
     method peek->Byte
@@ -43,36 +43,36 @@ class DataReader : Reader<<Byte>>
       loop (count) buffer.add( read_byte )
       return buffer
 
-    method read_int16->Int32
+    method read_int16->Int
       # Reads 2 bytes in high-low order, e.g. [99,AA] -> 99AA
-      local result = read->Int32 :<<: 8
+      local result = read->Int :<<: 8
       return result | read
 
-    method read_int16_low_high->Int32
+    method read_int16_low_high->Int
       # Reads 2 bytes in low-high order, e.g. [99,AA] -> AA99
-      local result = read->Int32
-      return result | (Int32(read) :<<: 8)
+      local result = read->Int
+      return result | (Int(read) :<<: 8)
 
-    method read_int32->Int32
+    method read_int32->Int
       # Reads 4 bytes in high-low order, e.g. [88,99,AA,BB] -> 8899AABB
-      local result = read->Int32 :<<: 24
-      result |= Int32(read) :<<: 16
-      result |= Int32(read) :<<: 8
-      return result | Int32(read)
+      local result = read->Int :<<: 24
+      result |= Int(read) :<<: 16
+      result |= Int(read) :<<: 8
+      return result | Int(read)
 
-    method read_int32_low_high->Int32
+    method read_int32_low_high->Int
       # Reads 4 bytes in low-high order, e.g. [88,99,AA,BB] -> BBAA9988
-      local result = read->Int32
-      result |= (Int32(read) :<<: 8)
-      result |= (Int32(read) :<<: 16)
-      return result | (Int32(read) :<<: 24)
+      local result = read->Int
+      result |= (Int(read) :<<: 8)
+      result |= (Int(read) :<<: 16)
+      return result | (Int(read) :<<: 24)
 
-    method read_int32x->Int32
-      return read_int64x->Int32
+    method read_int32x->Int
+      return read_int64x->Int
 
     method read_int64->Int64
       local result = read_int32 : Int64
-      return (result :<<: 32) | read_int32->Int64(&unsigned)
+      return (result :<<: 32) | read_int32->Int32->Int64(&unsigned)
 
     method read_int64x->Int64
       # Reads a variable-length encoded value that is stored in 1..10 bytes.
@@ -94,7 +94,7 @@ class DataReader : Reader<<Byte>>
       #     10xxxxxx 0yyyyyyy            (13-bit number xxxxxxyyyyyyy)
       #     10xxxxxx 1yyyyyyy 0zzzzzzz   (20-bit number xxxxxxyyyyyyyzzzzzzz)
       #     etc.
-      local b = read : Int32
+      local b = read : Int
       if ((b & 0xc0) != 0x80) return b->Byte.signed
 
       local result = (b & 0b0011_1111) : Int64   #  0..63  (unsigned)
@@ -130,10 +130,10 @@ class DataReader : Reader<<Byte>>
     method reset
       input.reset
 
-    method seek( pos:Int32 )
+    method seek( pos:Int )
       input.seek( pos )
 
-    method skip( n:Int32 )
+    method skip( n:Int )
       input.skip( n )
 
 endClass
@@ -171,7 +171,7 @@ class DataWriter : Writer<<Byte>>
       flush
       return @output_bytes
 
-    method position->Int32
+    method position->Int
       return output.position
 
     method reset
@@ -179,13 +179,13 @@ class DataWriter : Writer<<Byte>>
       output.reset
       if (output_bytes) output_bytes.clear
 
-    method seek( pos:Int32 )
+    method seek( pos:Int )
       output.seek( pos )
 
     method seek_end()
       output.seek_end
 
-    method skip( n:Int32 )
+    method skip( n:Int )
       output.skip( n )
 
     method write( value:Byte )
@@ -202,7 +202,7 @@ class DataWriter : Writer<<Byte>>
     method write_byte( value:Byte )
       this.write( value )
 
-    method write_bytes( data:Byte[], index=0:Int32, count=null:Int32? )
+    method write_bytes( data:Byte[], index=0:Int, count=null:Int? )
       if (index > data.count)
         write_int32x( 0 )
         return
@@ -218,31 +218,31 @@ class DataWriter : Writer<<Byte>>
       write_int32x( count.value )
       loop (count.value) write_byte( data[index] ); ++index
 
-    method write_int16( value:Int32 )
+    method write_int16( value:Int )
       # Write 2 bytes in high-low order, e.g. 0x1234 -> [12,34]
       write( value:>>>:8 )
       write( value )
 
-    method write_int16_low_high( value:Int32 )
+    method write_int16_low_high( value:Int )
       # Writes 2 bytes in low-high order, e.g. 0x1234 -> [34,12]
       write( value )
       write( value:>>>:8 )
 
-    method write_int32( value:Int32 )
+    method write_int32( value:Int )
       # Writes 4 bytes in high-low order, e.g. 0x12345678 -> [12,34,56,78]
       write( value:>>>:24 )
       write( value:>>>:16 )
       write( value:>>>:8 )
       write( value )
 
-    method write_int32_low_high( value:Int32 )
+    method write_int32_low_high( value:Int )
       # Writes 4 bytes in low-high order, e.g. 0x12345678 -> [78,56,34,12]
       write( value )
       write( value:>>>:8 )
       write( value:>>>:16 )
       write( value:>>>:24 )
 
-    method write_int32x( value:Int32 )
+    method write_int32x( value:Int )
       write_int64x( value->Int64 )
 
     method write_int64( value:Int64 )
@@ -293,7 +293,7 @@ class DataWriter : Writer<<Byte>>
       forEach (ch in value) write_int32x( ch )
 
   GLOBAL METHODS
-    method int64x_byte_count( value:Int64 )->Int32
+    method int64x_byte_count( value:Int64 )->Int
       # See read_int64x for format notes.
       if (value >= -64 and value < 128)
         return 1

@@ -13,7 +13,7 @@ class UIWidget : UIComponent
     method init
       prior.init
 
-    method init( size:XY )
+    method init( size:IntXY )
       prior.init( size )
 
     method init( component:UIComponent )

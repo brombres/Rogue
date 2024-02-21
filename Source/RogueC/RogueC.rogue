@@ -1,5 +1,5 @@
-$define VERSION "2.12"
-$define DATE    "February 11, 2023"
+$define VERSION "2.34"
+$define DATE    "November 9, 2023"
 
 module RogueC
 
@@ -25,7 +25,6 @@ $include Collector
 $include ConvertDynamicCallsToStaticAndVirtualCalls
 $include ConvertToGenerator
 $include CullUnusedElements
-$include TypeOrganizer
 $include ContextBlockPatcher
 $include ControlType
 $include CmdType
@@ -34,8 +33,11 @@ $include CSpecializer
 $include CWriter
 $include DynamicMethodGroup
 $include ExceptionAnalyzer
+$include ExceptionType
+$include ExceptionTypes
 $include Finalizer
 $include ImplicitFunctionGenerator
+$include ImplicitWithVarCollector
 $include InspectionVisitor
 $include Macro
 $include Meta
@@ -49,9 +51,11 @@ $include PropertyOrganizer
 $include Resolver
 $include ResolveUsedElements
 $include Scanner
+$include ScopeVisitor
 $include Template
 $include Transformer
 $include Type
+$include TypeOrganizer
 $include EndScopePatcher
 
 uses Console/CommandLineParser
@@ -70,7 +74,7 @@ endTry
 
 class RogueC
   PROPERTIES
-    command : Value
+    command : Variant
 
   METHODS
     method init( args:String[] )
@@ -78,6 +82,7 @@ class RogueC
 
       try
         command = parse_args( args )
+        Program.command = command
       catch (err:Error)
         Console.error.println "=" * 80.or_smaller(Console.width)
         Console.error.println err
@@ -93,60 +98,95 @@ class RogueC
         System.exit 0
       endIf
 
-      if (command//options//help or command//args.count == 0)
+      if (command//options//help or (command//args.is_empty and not command//options//doc))
         print_usage
         System.exit 0
       endIf
 
       if (command//options//libraries)
-        local paths = String[]
+        local paths = @[]
         forEach (lib in command//options//libraries)
           local path = lib->String.replacing(';',',')
           if (not System.is_windows) path .= replacing(':',',')
           paths.add( forEach in path->String.split(',') )
         endForEach
         command//options//libraries = paths
-        Program.add_include_search_path( forEach in paths )
+        Program.add_include_search_path( forEach in paths, &library )
+      endIf
+
+      if (command//options//int)
+        local int_bits = command//options//int->Int
+        if (int_bits != 32 and int_bits != 64)
+          throw Error( "--int can only be set to 32 or 64." )
+        endIf
+        Program.int_bits = int_bits
       endIf
 
       if (command//options//real)
-        local real_bits = command//options//real->Int32
+        local real_bits = command//options//real->Int
         if (real_bits != 32 and real_bits != 64)
           throw Error( "--real can only be set to 32 or 64." )
         endIf
         Program.real_bits = real_bits
       endIf
 
+      if (command//options//namespace)
+        local ns = command//options//namespace->String
+        Program.namespace_lc = ns
+        Program.namespace_capitalized = ns.capitalized
+        Program.namespace_uc = ns.to_uppercase
+        if (Program.namespace_uc.count) Program.namespace_uc .= with_suffix( '_' )
+      endIf
+
       local api_includes = command//options//api.contains(true)
 
-      local rogue_folder = File( File( System.executable_filepath ).folder )
-      if ((rogue_folder/"Libraries").exists)
-        rogue_folder /= "Libraries"
+      local libraries_folder = File( File( System.executable_filepath ).folder )
+      if ((libraries_folder/"Libraries").exists)
+        libraries_folder /= "Libraries"
       else
-        if ((rogue_folder/"Source/Libraries").exists)
-          rogue_folder /= "Source/Libraries"
+        if ((libraries_folder/"Source/Libraries").exists)
+          libraries_folder /= "Source/Libraries"
         else
-          rogue_folder .= parent
-          if ((rogue_folder/"Source/Libraries").exists)
-            rogue_folder /= "Source/Libraries"
-          elseIf ((rogue_folder/"Libraries").exists)
-            rogue_folder /= "Libraries"
+          libraries_folder .= parent
+          if ((libraries_folder/"Source/Libraries").exists)
+            libraries_folder /= "Source/Libraries"
+          elseIf ((libraries_folder/"Libraries").exists)
+            libraries_folder /= "Libraries"
           else
-            rogue_folder = File(".")
+            libraries_folder = File(".")
           endIf
         endIf
       endIf
 
-      Program.add_include_search_path( rogue_folder )
+      if (Program.no_stdlib)
+        Program.include( forEach in command//args, &api=api_includes )
+      else
+        Program.add_include_search_path( libraries_folder, &library )
+        Program.include( "StandardMacros" )
+        Program.include( forEach in command//args, &api=api_includes )
+        Program.include( "Standard" )
+      endIf
 
-      Program.include( "StandardMacros" )
-
-      Program.include( forEach in command//args, &api=api_includes )
-
-      Program.include( "Standard" )
+      if (Program.generate_doc)
+        if (command//options//doc == Variant(true))
+          # Include all Standard Library files to generate the docs from.
+          Program.doc_root = libraries_folder.abs.filepath + '/'
+          Program.include( "Standard" )
+          Program.include( forEach in Files(libraries_folder,"**/*.rogue"), &api=api_includes )
+        else
+          local doc_path = File( command//options//doc->String )
+          Program.doc_root = doc_path.abs.filepath
+          if (doc_path.is_folder)
+            Program.doc_root += '/'
+            Program.include( forEach in Files(doc_path,"**/*.rogue"), &api=api_includes )
+          else
+            Program.include( doc_path.filepath, &api=api_includes )
+          endIf
+        endIf
+      endIf
 
       forEach (option in command//options//api)
-        if (option == Value(true)) nextIteration
+        if (option == Variant(true)) nextIteration
         if (option->String.ends_with(".rogue"))
           Program.include( option->String, &api )
         else
@@ -154,6 +194,26 @@ class RogueC
         endIf
       endForEach
 
+      check_autoincludes
+
+      Program.organize
+
+      if (Program.generate_doc)
+        Program.instantiate_doc_method_templates
+        Program.generate_doc_json
+        return
+      endIf
+
+      Program.resolve
+
+      Analytics.generate_c.start
+      Program.generate_c
+      Analytics.generate_c.stop
+      Analytics.total_time.stop
+
+      #if ($defined(DEBUG)) Analytics.display
+
+    method check_autoincludes
       while (Scanner.uses_autoinclude)
         local t = Program.t
         Scanner.uses_autoinclude = false
@@ -165,29 +225,24 @@ class RogueC
         if (Scanner.uses_Scanner)  Program.include( t, "IO/Scanner" ); Scanner.uses_Scanner = false
         if (Scanner.uses_Set)      Program.include( t, "Collection/Set" ); Scanner.uses_Set = false
         if (Scanner.uses_Table)    Program.include( t, "Collection/Table" ); Scanner.uses_Table = false
-        if (Scanner.uses_Value)    Program.include( t, "Core/Value" ); Scanner.uses_Value = false
+        if (Scanner.uses_Variant)    Program.include( t, "Core/Variant" ); Scanner.uses_Variant = false
       endWhile
 
-      Program.resolve
-
-      Analytics.generate_c.start
-      Program.generate_c
-      Analytics.generate_c.stop
-      Analytics.total_time.stop
-
-      #if ($defined(DEBUG)) Analytics.display
-
-    method parse_args( args:String[] )->Value
+    method parse_args( args:String[] )->Variant
       local command = CommandLineParser().
       [
         option( "--api=", &optional, &multi )
         option( "--debug" )
         option( "--define=", &alias="-D", &multi )
+        option( "--doc=", &optional )
         option( "--gc=" )
         option( "--gc-threshold=" )
         option( "--help",       &aliases=["-h","-?"] )
+        option( "--int=", &alias="-i" )
         option( "--libraries=", &alias="-L", &multi )
         option( "--main" )
+        option( "--no-stdlib" )
+        option( "--namespace=", &alias="-n" )
         option( "--output=" )
         option( "--real=", &alias="-r" )
         option( "--target=", &alias="-t", &multi )
@@ -228,7 +283,7 @@ class RogueC
 
       if (command//options.contains("gc-threshold"))
         local option = command//options["gc-threshold"]->String
-        local value = option->Int32
+        local value = option->Int
         if (option.ends_with("m",&ignore_case) or option.ends_with("mb",&ignore_case))
           value *= 1024*1024
         elseIf (option.ends_with("k",&ignore_case) or option.ends_with("kb",&ignore_case))
@@ -241,6 +296,14 @@ class RogueC
         Program.generate_main = true
       endIf
 
+      if (command//options//doc)
+        Program.generate_doc = true
+      endIf
+
+      if (command//options.contains("no-stdlib"))
+        Program.no_stdlib = true
+      endIf
+
       if (command//options//target)
         forEach (target_option in command//options//target)
           local targets = target_option->String.replacing(';',',')
@@ -250,9 +313,15 @@ class RogueC
               target = target.leftmost(-1).rightmost(-1)
             endIf
             Program.targets[target] = target
+            which (target)
+              case "C++": Program.targets["CPP"] = "CPP"; Program.targets_cpp = true
+              case "CPP": Program.targets["C++"] = "C++"; Program.targets_cpp = true
+              case "Windows": Program.targets_windows = true
+            endWhich
           endForEach
         endForEach
       endIf
+
       if (not Program.targets.count) Program.targets//C = "C"
 
       if (command//args.count > 0)
@@ -303,23 +372,37 @@ class RogueC
                |    Defining "name:value" is equivalent to: $define name value
                |    Defining "name" is equivalent to:       $define name true
                |
+               |  --doc
+               |  --doc=<folder-path>
+               |    RogueC generates documentation metadata instead of generating code.
+               |    '--doc' generates documentation for the standard library.
+               |    '--doc=<folder-path>' recursively includes and generates documentation for
+               |    all .rogue files nested in the specified folder. The generated metadata is
+               |    saved as a '.json' file.
+               |
                |  --help, -h, -?
                |    Show this help text.
                |
                |  --gc=[auto|manual]
                |    Sets garbage collection mode:
-               |      --gc=auto   - Collects after every [--gc-threshold] number of bytes have
-               |                    been allocated (default 1 MB). This is slower than 'manual'
-               |                    due to the extra overhead of tracking local variables.
-               |      --gc=manual - Rogue_collect_garbage() should be called by the C framework
-               |                    at a regular interval (such as after every frame) outside of
-               |                    any calls into Rogue code. Or: never call GC for programs
-               |                    that complete a task and then halt; this will allow them to
-               |                    execute as fast as possible. Calling Rogue_collect_garbage()
-               |                    only results in a GC if the --gc-threshold has been reached.
+               |      --gc=auto
+               |        Collects after every [--gc-threshold] number of bytes have been
+               |        allocated (default 1 MB). This is slower than 'manual' due to the extra
+               |        overhead of tracking local variables.
+               |      --gc=manual
+               |        Rogue_check_gc() should be called by the C framework at a regular
+               |        interval (such as after every frame) outside of any calls into Rogue
+               |        code; this will call Rogue_collect_garbage() if the --gc-threshold has
+               |        been reached. Or: never call GC for programs that complete a task and
+               |        then exit; this will allow them to execute as fast as possible.
+               |
                |  --gc-threshold={number}[MB|K]
                |    Sets the GC threshold in bytes (default), megabytes, or kilobytes.
                |    '1048576', '1024K', and '1MB' are all equivalent. The default is 1MB.
+               |
+               |  --int=32, -i 32
+               |    Specifies that the 'Int' datatype should be 32 bits instead of 64.
+               |    This affects the type of integer literals (0, 1, 0xff, ...) as well.
                |
                |  --libraries="path1;path2", -L path1:path2
                |    Specify paths RogueC should look through for '$include' and 'uses'
@@ -329,12 +412,20 @@ class RogueC
                |  --main
                |    Generates a main() function with the C output.
                |
+               |  --namespace=<TypePrefix>, -n <TypePrefix>
+               |    Generates C type names with the specified prefix, allowing multiple,
+               |    independent Rogue-generated C source files to be compiled together.
+               |
+               |  --no-stdlib
+               |    Prevents the Standard Library from automatically being included. The usual
+               |    include order is: StandardMacros, <command-line-files>, Standard.
+               |
                |  --output=<filepath>
-               |   Specify the destination folder and/or the base filename for generated C
-               |   output.
+               |    Specify the destination folder and/or the base filename for generated C
+               |    output.
                |
                |  --real=32, -r 32
-               |    Specifies that the 'Real' datatype should be Real32 instead of Real64.
+               |    Specifies that the 'Real' datatype should be 32 bits instead of 64.
                |    This affects the type of floating point literals (2.54, pi) as well.
                |
                |  --target=Target1,"Target2",..., -t Target

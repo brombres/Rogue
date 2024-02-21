@@ -6,7 +6,7 @@ class ClearLocalInfo : InspectionVisitor [singleton]
       m.locals.clear
       return prior.visit( m->(as Cmd) )
 
-    method on_visit( cmd:ControlStructure )
+    method on_visit_node( cmd:ControlStructure )
       cmd.locals.clear
 
 endClass

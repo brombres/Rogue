@@ -1,0 +1,169 @@
+class GitRepo( url:String, folder:File ) [compound]
+  # A simple wrapper for command-line Git. Git must be installed separately.
+  #
+  # EXAMPLE
+  #
+  #   uses Utility/GitRepo
+  #
+  #   local repo = GitRepo( "https://github.com/brombres/LSPath.git", File("LSPath") )
+  #   if (repo.exists)
+  #     if (not repo.has_local_changes and repo.has_remote_changes)
+  #       repo.pull( &verbose )
+  #     endIf
+  #   else
+  #     repo.clone( &verbose )
+  #   endIf
+  #
+  #   @trace repo.branches
+  #
+  #   if (not repo.local_branch_exists("test_branch_1"))
+  #     repo.create_branch( "test_branch_1", &verbose )
+  #   endIf
+  #   repo.checkout( "test_branch_1", &verbose )
+  #
+  #   repo.checkout( "test_branch_2", &create_branch, &verbose )
+  #   File("LSPath/TestFile.txt").save( "Test file content" )
+  #   repo.add( "TestF*.txt" )
+  #   repo.commit( "[TestFile]", &verbose )
+  #
+  #   repo.checkout( "test_branch_1" )
+  #   repo.pull
+  #   repo.merge_from( "test_branch_2", &verbose )
+  #   repo.push( &verbose )
+  #
+  #   repo.delete_local_branch( "test_branch_2", &verbose )
+  #   repo.checkout( "main", &verbose )
+  #   repo.delete_branch( "test_branch_1", &verbose )
+
+  METHODS
+    method add( file:File, &verbose )->Logical
+      _execute( "cd $ && git add $"(folder.esc,file.esc), &=verbose )
+
+    method add( pattern:String, &verbose )->Logical
+      local files = Files( folder, pattern )
+      local result = true
+      forEach (filepath in files)
+        if (not add(File(files.relative_filepath(filepath)),&=verbose)) result = false
+      endForEach
+      return result
+
+    method branch->String
+      local result = Process.run( "cd $ && git branch --show-current"(folder.esc), &env)
+      if (result.success) return result->String.trimmed
+      return null
+
+    method branches->String[]
+      local process_result = Process.run( "cd $ && git fetch --all && git branch -a"(folder.esc), &env )
+      if (not process_result.success) return String[]
+
+      local set = Set<<String>>()
+      forEach (line in LineReader(process_result->String))
+        line .= unleft( 2 )
+        if (line.contains(" -> ")) nextIteration
+        set.add( line.after_any("remotes/origin/") )
+      endForEach
+
+      return set.to_list
+
+    method clone( branch=null:String, &verbose )->Logical
+      local cmd = "git clone"
+      if (String.exists(branch)) cmd .= appending( "-b " + branch )
+      cmd .= appending( "$ $"(url,folder.esc) )
+      _execute( cmd, &=verbose )
+
+    method checkout( branch:String, &create_branch, &verbose )->Logical
+      local cmd = "cd $ && git checkout"(folder.esc)
+      if (create_branch) cmd .= appending( "-b" )
+      cmd .= appending( branch )
+      return _execute( cmd, &=verbose )
+
+    method create_branch( branch:String, &verbose )->Logical
+      local cmd = "cd $ && git branch $"(folder.esc,branch)
+      return _execute( cmd, &=verbose )
+
+    method commit( message:String, &all, &allow_empty, &verbose )->Logical
+      local cmd = "cd $ && git commit"(folder.esc)
+      if (all) cmd .= appending( "-a" )
+      if (allow_empty) cmd .= appending( "--allow-empty" )
+      cmd .= appending( ''-m "$"''(message.to_escaped_ascii(''"'')) )
+      return _execute( cmd, &=verbose )
+
+    method delete_branch( branch_name:String, &verbose )->Logical
+      local result = true
+      if (not delete_remote_branch(branch_name,&=verbose)) result = false
+      if (not delete_local_branch(branch_name,&=verbose)) result = false
+      return result
+
+    method delete_local_branch( branch_name:String, &verbose )->Logical
+      # Deletes the specified branch locally. The specified branch cannot
+      # be the current branch.
+      return _execute( "cd $ && git branch -D $"(folder.esc,branch_name), &=verbose )
+
+    method delete_remote_branch( branch_name:String, &verbose )->Logical
+      # Deletes the specified branch from the origin.
+      return _execute( "cd $ && git push -d origin $"(folder.esc,branch_name), &=verbose )
+
+    method exists->Logical
+      return folder.exists
+
+    method has_local_changes->Logical
+      local result = Process.run( "cd $ && git status --porcelain"(folder.esc), &env )
+      if (not result.success) return false
+      return (result->String.trimmed != "")
+
+    method has_remote_changes->Logical
+      # Note: the response may take a few moments. Due to the delay it is not recommended to
+      # automatically call this method frequentlly.
+      local cmd = "cd $ && git fetch --all && git status"(folder.esc)
+      return Process.run( cmd, &env )->String.contains("can be fast-forwarded")
+
+    method head( &short )->String
+      if (short) return Process.run( "cd $ && git rev-parse --short HEAD"(folder.esc) )->String.trimmed
+      else       return Process.run( "cd $ && git rev-parse HEAD"(folder.esc) )->String.trimmed
+
+    method local_branch_exists( branch_name:String )->Logical
+      local process_result = Process.run( "cd $ && git branch -a"(folder.esc), &env )
+      if (not process_result.success) return false
+
+      forEach (line in LineReader(process_result->String))
+        line .= unleft( 2 )
+        if (line.contains(" -> ")) nextIteration
+        if (line == branch_name) return true
+      endForEach
+
+      return false
+
+    method merge_from( from_branch:String, &verbose )->Logical
+      _execute( "cd $ && git merge $"(folder.esc,from_branch) )
+
+    method pull( &verbose )->Logical
+      return _execute( "cd $ && git pull"(folder.esc), &=verbose )
+
+    method push( &force, &verbose )->Logical
+      # Pushes this branch to the origin, setting up remote tracking if necessary.
+      local needs_tracking = Process.run( "cd $ && git rev-parse --abbrev-ref $@{upstream}"(folder.esc,branch) )
+      local cmd = "cd $ && git push"(folder.esc)
+      if (needs_tracking) cmd .= appending( "-u" )
+      cmd .= appending( "origin" ).appending( branch )
+      if (force) cmd .= appending( "-f" )
+      return _execute( cmd, &=verbose )
+
+    method set_origin( url:String, &verbose )->Logical
+      return _execute( "cd $ && git remote set-url origin $"(url), &=verbose )
+
+    method tag->String
+      return Process.run( "cd $ && git describe --tag"(folder.esc) )->String.trimmed
+
+    method to->String
+      return folder.filename
+
+    method _execute( cmd:String, &verbose )->Logical
+      if (verbose)
+        println "> " + cmd
+        return System.run( cmd )
+      else
+        return Process.run( cmd, &env ).success
+      endIf
+
+endClass
+

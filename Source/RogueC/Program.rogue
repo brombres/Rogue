@@ -2,22 +2,37 @@ module RogueC
 
 class Program [singleton]
   PROPERTIES
-    t                     = Token( TokenType.EOI, "RogueC" )
-    include_search_paths = String[]
+    t                    = Token( TokenType.EOI, "RogueC" )
+
+    include_search_paths = [String:Logical]  # maps to true for library path, false for user path
+
     included_files       = [String:IncludedFile]
     definitions          = [String:Token[]]
     macros               = [String:Macro[]]
     targets              = [String:String]
+    targets_cpp          : Logical
+    targets_windows      : Logical
+
+    command           : Variant  # RogueC launch command with //options and //args
 
     debug_mode        = false
     gc_auto           = true
-    gc_threshold      = 1024*1024 : Int32
+    gc_threshold      = 1024*1024 : Int
     generate_main     = false
+    generate_doc      = false
+    no_stdlib         = false
+    doc_root          : String
     output_filepath   : String
     stack_trace       = false
-    real_bits         : Int32 # Set with --real=32 compile option
+    int_bits          : Int # Set with --int=[32|64] compile option
+    real_bits         : Int # Set with --real=[32|64] compile option
     api_patterns      = String[]
     api_filepaths     = Set<<String>>()
+
+    # Set with --namespace=<TypePrefix>
+    namespace_lc          = ""
+    namespace_capitalized = ""
+    namespace_uc          = ""
 
     modules           = [String:Module]
     default_module    : Module
@@ -27,10 +42,11 @@ class Program [singleton]
     type_Byte         : Type
     type_Character    : Type
     type_Int32        : Type
+    type_Int          : Type
     type_Int64        : Type
     type_Real32       : Type
-    type_Real64       : Type
     type_Real         : Type
+    type_Real64       : Type
 
     type_null            : Type
     type_GenericFn       : Type
@@ -39,7 +55,7 @@ class Program [singleton]
     type_Math            : Type
     type_Object          : Type
     type_String          : Type
-    type_Value           : Type
+    type_Variant         : Type
     type_Exception       : Type
     type_TableType       : Type
     type_TypeInfo        : Type
@@ -50,7 +66,7 @@ class Program [singleton]
     unorganized_types    = Type[]
 
     unique_strings       = [String:String]
-    string_table_indices = [String:Int32]
+    string_table_indices = [String:Int]
 
     dynamic_methods   = [String:DynamicMethodGroup]
     call_signatures   = [String:Procedure[]]
@@ -58,7 +74,7 @@ class Program [singleton]
     all_types         = Type[]
     all_properties    = Property[]
 
-    base_type_lookup  = Int32[]
+    base_type_lookup  = Int[]
 
     anonymous_class_names = [String:String]
 
@@ -78,7 +94,10 @@ class Program [singleton]
     handled_call_indices          : Logical[]
     handled_property_ids          : Logical[]
 
-    native_property_count : Int32
+    native_property_count : Int
+
+    prior_warning : String
+    prior_warnings = Set<<String>>()
 
   METHODS
     method init
@@ -90,10 +109,13 @@ class Program [singleton]
       type_Byte      = TypeByte( t )
       type_Character = TypeCharacter( t )
       type_Int32     = TypeInt32( t )
+      type_Int       = TypeInt( t )
       type_Int64     = TypeInt64( t )
       type_Real32    = TypeReal32( t )
+      type_Real      = TypeReal( t )
       type_Real64    = TypeReal64( t )
-      real_bits      = 64  # default; calls set_real_bits
+      int_bits       = 64  # default; overridden with --int=32
+      real_bits      = 64  # default; overridden with --real=32
 
       type_null      = Type( t, "null", Attribute.OBJECT, &unlisted )
       type_null.attributes.is_defined = true
@@ -114,16 +136,17 @@ class Program [singleton]
       type_Byte.attributes.is_essential      = true
       type_Character.attributes.is_essential = true
       type_Int32.attributes.is_essential     = true
+      type_Int.attributes.is_essential       = true
       type_Int64.attributes.is_essential     = true
       type_Real32.attributes.is_essential    = true
       type_Real64.attributes.is_essential    = true
       type_Real.attributes.is_essential      = true
       type_String.attributes.is_essential    = true
 
-    method add_include_search_path( path:String )
+    method add_include_search_path( path:String, &library )
       path = File( path ).abs
       if (not include_search_paths.contains(path) and File(path).exists)
-        include_search_paths.add( path )
+        include_search_paths[path] = library
       endIf
 
     method apply( visitor:InspectionVisitor )
@@ -162,10 +185,10 @@ class Program [singleton]
         which (name)
           case "Date", "Time", "Timestamp", "TimeInterval": fix = "uses Standard/DateTime"
           case "File":  fix = "uses Standard/FileIO"
-          case "JSON":  fix = "uses Value"
+          case "JSON":  fix = "uses Variant"
           case "Set":   fix = "uses Standard/Collection/Set"
           case "Table": fix = "uses Standard/Collection/Table"
-          case "Value": fix = "uses Value"
+          case "Variant": fix = "uses Variant"
         endWhich
       endIf
 
@@ -177,6 +200,20 @@ class Program [singleton]
     method description->String
       return "Program"
 
+    method find_type( name:String )->Type
+      block
+        local (mod,type_name) = default_module.split_module_and_type( t, name, &suppress_error )
+        if (not type_name) return null
+        if (mod) return mod.find_type( t, type_name )
+      endBlock
+
+      forEach (mod in modules)
+        local type = mod.find_type( t, name )
+        if (type) return type
+      endForEach
+
+      return null
+
     method get_module( t:Token, name:String )->Module
       local m = modules[ name ]
       if (m) return m
@@ -185,12 +222,21 @@ class Program [singleton]
       modules[ name ] = m
       return m
 
-    method find_include( t:Token, filepath:String )->String
+    method find_include( t:Token, filepath:String, &api, &include_folder )->String
       if (File(filepath).exists)
         if (File(filepath).is_folder)
           local fpath = "$/$.rogue" (filepath,File(filepath).filename)
           if (File(fpath).exists) return File(fpath).abs
-          throw t.error( "Use $includeFolder to include all Rogue files in '$'."('$',filepath) )
+
+          if (include_folder)
+            forEach (rogue_filepath in Files(filepath,"**/*.rogue"))
+              include( t, rogue_filepath, &=api )
+            endForEach
+
+            return ""
+          else
+            return null
+          endIf
         else
           return File(filepath).abs
         endIf
@@ -204,18 +250,32 @@ class Program [singleton]
     method include( filepath:String, &api )
       include( t, filepath, &=api )
 
-    method include( t:Token, filepath:String, &api, &is_optional )
-      local found = find_include( t, filepath )
+    method include( t:Token, filepath:String, &api, &is_optional, &include_folder, &library )
+      local found = find_include( t, filepath, &=api, &=include_folder )
       if (not found)
-        forEach (path in include_search_paths)
-          found = find_include( t, path/filepath )
-          if (found) escapeForEach
-        endForEach
+        block
+          forEach (is_library at path in include_search_paths)
+            if (not is_library)
+              found = find_include( t, path/filepath, &=include_folder )
+              if (found) escapeBlock
+            endIf
+          endForEach
+          forEach (is_library at path in include_search_paths)
+            if (is_library)
+              found = find_include( t, path/filepath, &=include_folder )
+              if (found) escapeBlock
+            endIf
+          endForEach
+        endBlock
       endIf
+
+      if (found and found == "") return  # recursive folder include already performed
 
       if (found)
         local folder = File( found ).folder
-        if (String.exists(folder)) add_include_search_path( folder )
+        if (String.exists(folder))
+          add_include_search_path( folder, &=library )
+        endIf
         filepath = found
       elseIf (is_optional)
         return
@@ -226,6 +286,12 @@ class Program [singleton]
       if (api) api_filepaths.add( filepath )
 
       if (included_files.contains(filepath)) return
+
+      if (File(filepath).filename == "Standard.rogue")
+        # Program.t starts out with a placeholder filepath; update it if possible
+        this.t.filepath = filepath
+      endIf
+
       included_files[ filepath ] = IncludedFile(null,null,false) # placeholder
 
       temporarily current_module = Program.default_module
@@ -276,12 +342,16 @@ class Program [singleton]
       unorganized_types.clear
       is_organizing = false
 
-    method resolve
+    method organize
       (forEach in modules.values).collect_used_modules
 
       # We've collected all class templates.
       Analytics.ensure_definitions.start
-      (forEach in (forEach in modules.values).types).ensure_definition
+      forEach (mod in modules.values)
+        forEach (type in mod.types)
+          type.ensure_definition
+        endForEach
+      endForEach
       Analytics.ensure_definitions.stop
 
       # Reparse the tokens for each file.
@@ -301,7 +371,7 @@ class Program [singleton]
       Analytics.main_parse.stop
 
       Analytics.instantiate_essential.start
-      (forEach in modules).instantiate_essential_and_api_types
+      instantiate_essential_api_and_doc_types
       Analytics.instantiate_essential.stop
 
       Analytics.organize_methods.start
@@ -312,6 +382,41 @@ class Program [singleton]
       apply( Transformer() )
       Analytics.tranform.stop
 
+      if local type_Routine = find_type( "Rogue::Routine" )
+        type_Routine.t = this.t
+      endIf
+
+    method print_warning( t:Token, message:String )
+      local warning_line = ''          $''(t.filepath)
+      if (t.line) warning_line += " line $"(t.line)
+
+      local combined_warning = message + warning_line
+      if (prior_warnings.contains(combined_warning)) return
+      prior_warnings.add( combined_warning )
+
+      local w = Console.width
+      if (w == 0) w = 100
+      else        w .= clamped(40,100)
+      w -= "[WARNING] ".count
+
+      if (message is not prior_warning)
+        prior_warning = message
+
+        ConsoleStyle.set( ConsoleStyle.FG_LIGHT_YELLOW )
+
+        local lines = message.word_wrapped( w )
+        forEach (line at i in LineReader(lines))
+          if (i == 0) error.print   "[WARNING] "
+          else        error.print   "          "
+          error.println line
+        endForEach
+
+        ConsoleStyle.set( ConsoleStyle.FG_DEFAULT )
+      endIf
+
+      error.println warning_line
+
+    method resolve
       Analytics.resolve_used_elements.start
       ResolveUsedElements().apply
       Analytics.resolve_used_elements.stop
@@ -320,10 +425,287 @@ class Program [singleton]
       Finalizer().apply
       Analytics.finalize.stop
 
+    method instantiate_doc_method_templates
+      forEach (mod in modules)
+        forEach (type in mod.types)
+          type.instantiate_doc_method_templates
+        endForEach
+      endForEach
+
+    method instantiate_essential_api_and_doc_types
+      block any_changes = true
+        while (any_changes)
+          any_changes = false
+          forEach (mod in modules)
+            if (mod.instantiate_essential_and_api_types) any_changes = true
+          endForEach
+        endWhile
+      endBlock
+
+    method doc_name( name:String )->String
+      name = name.replacing( "Rogue::_Doc_Gen_", "$" )
+      name = name.replacing( "_Doc_Gen_", "$" )
+      which (name)
+        case "$DataType[]": return "List<<$DataType>>"
+        case "$DataType?":  return "Optional<<$DataType>>"
+        case "[$KeyType:$ValueType]": return "Table<<$KeyType,$ValueType>>"
+      endWhich
+      return name
+
+    method doc_name( type:Type )->String
+      if (type is null) return null
+      return doc_name( type.name )
+
+    method generate_doc_json
+      output_filepath = command//options//output->String
+      if (not String.exists(output_filepath))
+        if (command//options//doc.is_logical)
+          output_filepath = "API.json"
+        else
+          output_filepath = File( command//options//doc->String ).filename
+        endIf
+      endIf
+
+      local (filepath,ext) = File(output_filepath).split_filepath_and_extension
+      if (not String.exists(ext) or ext != "json") output_filepath = filepath + ".json"
+
+      local doc = @{ modules:[] }
+
+      forEach (mod in Program.modules)
+        local module_info = @{ name:mod.name, types:[] }
+
+        forEach (type in mod.types)
+          if (not type.documentable) nextIteration
+
+          local type_info =
+          @{
+            "scoped_name": doc_name(type.scoped_name)
+            "module":      doc_name(type.module_context.name)
+            "name":        doc_name(type.name)
+            "attributes":  []
+          }
+
+          if (type.t.filepath.begins_with(Program.doc_root))
+            type_info//filepath = type.t.filepath.after_first( Program.doc_root )
+          else
+            type_info//filepath = File(filepath).filename
+          endIf
+
+          if (type.is_object)        type_info//attributes.add( "class" )
+          elseIf (type.is_enum)      type_info//attributes.add( "enum" )
+          elseIf (type.is_compound)  type_info//attributes.add( "compound" )
+          elseIf (type.is_aspect)    type_info//attributes.add( "aspect" )
+          elseIf (type.is_primitive) type_info//attributes.add( "primitive" )
+          else throw Error( "Unhandled type classification:" + type )
+
+          if (type.attributes.is_singleton) type_info//attributes.add( "singleton" )
+          if (type.attributes.bitflags)     type_info//attributes.add( "bitflags" )
+
+          if local def = type.class_def->(as Class)
+            if (def.doc) type_info//description = def.doc
+          endIf
+
+          if (type.base_class)
+            type_info//base_class = doc_name( type.base_class.scoped_name )
+            type_info//doc_base_class = doc_name( type.base_class.doc_type.scoped_name )
+          endIf
+
+          if (type.aspects)
+            local aspects = @[]
+            forEach (a in type.aspects)
+              if (not a.attributes.is_augment)
+                aspects.add( doc_name(a.doc_type.scoped_name) )
+              endIf
+              if (aspects.count) type_info//aspects = aspects
+            endForEach
+          endIf
+
+          local augmented_type : Type
+          if (type.attributes.augmented and type.type_template and type.type_template.doc_type)
+            augmented_type = type.type_template.doc_type
+            type_info//augmented_type = doc_name( augmented_type.scoped_name )
+            type_info//doc_augmented_type = doc_name( augmented_type.doc_type.scoped_name )
+          endIf
+
+          if (type.categories)
+            use resolver = ObjectPool<<Resolver>>
+              resolver.resolve_definitions( type )
+            endUse
+
+            local categories = @[]
+            type_info//categories = categories
+            forEach (category in type.categories)
+              local category_info =
+              @{
+                name:  doc_name(category.name)
+                value: category.ordinal
+              }
+              if (category.doc) category_info//description = category.doc
+              categories.add( category_info )
+            endForEach
+          endIf
+
+          if (type.global_properties.count)
+            local properties = @[]
+            forEach (p in type.global_properties)
+              if (p.attributes.omit_doc) nextIteration
+              if (p.name.begins_with('.')) nextIteration  # native property
+              local property =
+              @{
+                name: doc_name(p.name)
+                type: doc_name(p.type.scoped_name)
+                doc_type: doc_name(p.type.doc_type.scoped_name)
+              }
+              if (p.doc) property//description = p.doc
+              properties.add( property )
+            endForEach
+            if (properties.count) type_info//global_properties = properties
+          endIf
+
+          if (type.global_methods.count)
+            local is_routine = (type.name == "Routine")
+            local methods = @[]
+            forEach (m in type.global_methods)
+              if (m.attributes.omit_doc) nextIteration
+              if (augmented_type and type.base_class is Program.type_Object and not m.attributes.augmented) nextIteration
+              if (is_routine and not m.t.filepath.begins_with(Program.doc_root)) nextIteration
+
+              local m_info =
+              @{
+                signature: doc_name(m.signature)
+                name: doc_name(m.name)
+                parameters: []
+                return_type: null
+                doc_return_type: null
+              }
+              if (m.return_type)
+                m_info//return_type = doc_name(m.return_type.scoped_name)
+                m_info//doc_return_type = doc_name(m.return_type.doc_type.scoped_name)
+              endIf
+
+              if (is_routine) m_info//filepath = m.t.filepath.after_first( Program.doc_root )
+
+              local params = m_info//parameters
+              forEach (p in m.parameters)
+                local p_info =
+                @{
+                  name: doc_name(p.original_name)
+                  type: doc_name(p.type.scoped_name)
+                  doc_type: doc_name(p.type.doc_type.scoped_name)
+                }
+                if (p.initial_value)
+                  p_info//default_value = p.initial_value_tokens->String
+                endIf
+                params.add( p_info )
+              endForEach
+
+              if (m.doc) m_info//description = m.doc
+
+              methods.add( m_info )
+            endForEach
+
+            if (methods.count) type_info//global_methods = methods
+          endIf
+
+          if (type.properties.count)
+            local properties = @[]
+            forEach (p in type.properties)
+              if (p.attributes.omit_doc) nextIteration
+              if (p.name.begins_with('.')) nextIteration  # native property
+              local property =
+              @{
+                name: doc_name(p.name)
+                type: doc_name(p.type.scoped_name)
+                doc_type: doc_name(p.type.doc_type.scoped_name)
+              }
+              if (p.doc) property//description = p.doc
+              properties.add( property )
+            endForEach
+            if (properties.count) type_info//properties = properties
+          endIf
+
+          if (type.methods.count)
+            local methods = @[]
+            forEach (m in type.methods)
+              if (m.type_context is not type or m.attributes.omit_doc) nextIteration
+              if (augmented_type and type.base_class is Program.type_Object and not m.attributes.augmented) nextIteration
+
+              local m_info =
+              @{
+                signature: doc_name(m.signature)
+                name: doc_name(m.name)
+                parameters: []
+                return_type: null
+                doc_return_type: null
+              }
+              if (m.return_type)
+                m_info//return_type = doc_name(m.return_type.scoped_name)
+                m_info//doc_return_type = doc_name(m.return_type.doc_type.scoped_name)
+              endIf
+
+              local params = m_info//parameters
+              forEach (p in m.parameters)
+                local p_info =
+                @{
+                  name: doc_name(p.original_name)
+                  type: doc_name(p.type.scoped_name)
+                  doc_type: doc_name(p.type.doc_type.scoped_name)
+                }
+                if (p.initial_value)
+                  if (p.initial_value_tokens) p_info//default_value = p.initial_value_tokens->String
+                  if (p.attributes.is_default_parameter) p_info//default_parameter = true
+                endIf
+                params.add( p_info )
+              endForEach
+
+              if (m.doc) m_info//description = m.doc
+
+              methods.add( m_info )
+            endForEach
+
+            if (methods.count) type_info//methods = methods
+          endIf
+
+          if (type.name != "Routine" or type_info//global_methods.count) module_info//types.add( type_info )
+
+        endForEach
+
+        if (module_info//types.count) doc//modules.add( module_info )
+      endForEach
+
+      println "Writing documentation metadata to " + output_filepath
+      File( output_filepath ).save( doc.to_json(&formatted) )
+
+    method set_int_bits( @int_bits )
+      if (int_bits == 64)
+        definitions["INT_MINIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int64.MINIMUM->String )]
+        definitions["INT_MAXIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int64.MAXIMUM->String )]
+        definitions["INT_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Int64" )]
+        definitions["INT_BITS"] = [t.cloned( TokenType.INTEGER, "64" )]
+      else
+        definitions["INT_MINIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int32.MINIMUM->String )]
+        definitions["INT_MAXIMUM"] = [t.cloned( TokenType.IDENTIFIER, Int32.MAXIMUM->String )]
+        definitions["INT_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Int32" )]
+        definitions["INT_BITS"] = [t.cloned( TokenType.INTEGER, "32" )]
+      endIf
+
     method set_real_bits( @real_bits )
-      definitions["Real"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
-      if (real_bits == 64) type_Real = type_Real64
-      else                 type_Real = type_Real32
+      if (real_bits == 64)
+        definitions["REAL_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Real64" )]
+        definitions["REAL_BITS"] = [t.cloned( TokenType.INTEGER, "64" )]
+      else
+        definitions["REAL_TYPE"] = [t.cloned( TokenType.IDENTIFIER, "Real32" )]
+        definitions["REAL_BITS"] = [t.cloned( TokenType.INTEGER, "32" )]
+      endIf
+
+    method source_type->String
+      if (targets.contains("CPP"))
+        if (targets.contains("ObjC")) return "mm"
+        else                          return "cpp"
+      else
+        if (targets.contains("ObjC")) return "m"
+        else                          return "c"
+      endIf
 
     method type_TypeInfo->Type
       if (@type_TypeInfo) return @type_TypeInfo
@@ -331,10 +713,10 @@ class Program [singleton]
       type_TypeInfo = default_module.must_find_type( t, "TypeInfo" )
       return @type_TypeInfo
 
-    method type_Value->Type
-      if (@type_Value) return @type_Value
-      type_Value = default_module.must_find_type( t, "Value" )
-      return @type_Value
+    method type_Variant->Type
+      if (@type_Variant) return @type_Variant
+      type_Variant = default_module.must_find_type( t, "Variant" )
+      return @type_Variant
 
 endClass
 

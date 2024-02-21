@@ -15,7 +15,7 @@ class MethodInfo
 
   GLOBAL METHODS
     method init_class
-      method_table = Dim<<MethodInfo>>( native("Rogue_method_count")->Int32 )
+      method_table = Dim<<MethodInfo>>( native("%Ns%Rogue_method_count")->Int32 )
 
     method create( method_index:Int32, is_global=false:Logical )->MethodInfo
       local m = method_table[method_index]
@@ -24,23 +24,23 @@ class MethodInfo
       m = MethodInfo()
       m.method_index = method_index
       m.is_global = is_global
-      local data_index = native("Rogue_method_info[$method_index]")->Int32
+      local data_index = native("%Ns%Rogue_method_info[$method_index]")->Int32
 
-      m.type_context_index = native("Rogue_type_data[$data_index]")->Int32
-      m.name = native("Rogue_string_table[ Rogue_type_data[++$data_index] ]")->String
+      m.type_context_index = native("%Ns%Rogue_type_data[$data_index]")->Int32
+      m.name = native("%Ns%Rogue_string_table[ %Ns%Rogue_type_data[++$data_index] ]")->String
 
-      local n = native("Rogue_type_data[++$data_index]")->Int32
+      local n = native("%Ns%Rogue_type_data[++$data_index]")->Int32
       m.parameters.reserve( n )
       loop n
-        local param_name = native("Rogue_string_table[ Rogue_type_data[++$data_index] ]")->String
-        local type_index = native("Rogue_type_data[++$data_index]")->Int32
+        local param_name = native("%Ns%Rogue_string_table[ %Ns%Rogue_type_data[++$data_index] ]")->String
+        local type_index = native("%Ns%Rogue_type_data[++$data_index]")->Int32
         m.parameters.add( ParameterInfo(param_name,type_index) )
       endLoop
-      m.return_type_index = native("Rogue_type_data[++$data_index]")->Int32
+      m.return_type_index = native("%Ns%Rogue_type_data[++$data_index]")->Int32
 
-      m.call_index = native("Rogue_type_data[++$data_index]")->Int32
-      m.attributes = native("Rogue_type_data[++$data_index]")->Int32
-      m.attributes = (m.attributes:<<:32) | ((native("Rogue_type_data[++$data_index]")->Int32->Int64) & 0xFFFF_FFFF)
+      m.call_index = native("%Ns%Rogue_type_data[++$data_index]")->Int32
+      m.attributes = native("%Ns%Rogue_type_data[++$data_index]")->Int32
+      m.attributes = (m.attributes:<<:32) | ((native("%Ns%Rogue_type_data[++$data_index]")->Int32->Int64) & 0xFFFF_FFFF)
 
       local sig_len = m.name.count + 2                                # name()
       sig_len += (m.parameters.count - 1)                             # commas
@@ -65,19 +65,19 @@ class MethodInfo
     method init
       noAction
 
-    method call( context_or_args=undefined:Value )->Value
+    method call( context_or_args=undefined:Variant )->Variant
       # Call this global or object method.
       #
       # context_or_args
       #   Global methods: a single arg, a @[list], or 'undefined'.
       #   Object methods: call context
       if (is_global)
-        return call_global_method( call_index, native("(RogueInt64)Rogue_method_pointers[$method_index]")->Int64, context_or_args )
+        return call_global_method( call_index, native("(%Ns%RogueInt64)%Ns%Rogue_method_pointers[$method_index]")->Int64, context_or_args )
       else
-        return call_object_method( call_index, native("(RogueInt64)Rogue_method_pointers[$method_index]")->Int64, context_or_args, undefined )
+        return call_object_method( call_index, native("(%Ns%RogueInt64)%Ns%Rogue_method_pointers[$method_index]")->Int64, context_or_args, undefined )
       endIf
 
-    method call( context:Value, args:Value )->Value
+    method call( context:Variant, args:Variant )->Variant
       # Call this object method.
       #
       # context
@@ -85,7 +85,7 @@ class MethodInfo
       #
       # args
       #   A single arg, a @[list], or 'undefined'.
-      return call_object_method( call_index, native("(RogueInt64)Rogue_method_pointers[$method_index]")->Int64, context, args )
+      return call_object_method( call_index, native("(%Ns%RogueInt64)%Ns%Rogue_method_pointers[$method_index]")->Int64, context, args )
 
     method return_type->TypeInfo
       if (return_type_index == -1) return null
@@ -98,7 +98,7 @@ class MethodInfo
       return TypeInfo[type_context_index]
 
   GLOBAL METHODS
-    method call_global_method( call_index:Int32, fnptr:Int64, args:Value )->Value [essential]
+    method call_global_method( call_index:Int32, fnptr:Int64, args:Variant )->Variant [essential]
       # args
       #   A single arg, a @[list], or 'undefined'.
 
@@ -106,7 +106,7 @@ class MethodInfo
 
       return undefined
 
-    method call_object_method( call_index:Int32, fnptr:Int64, context:Value, args:Value )->Value [essential]
+    method call_object_method( call_index:Int32, fnptr:Int64, context:Variant, args:Variant )->Variant [essential]
       # context
       #   The context object to call the method on.
       #
@@ -121,7 +121,7 @@ endClass
 class ParameterInfo( name:String, type_index:Int32 ) [compound]
   METHODS
     method parameter_module_name->String
-      return native("Rogue_string_table[ Rogue_types[$type_index]->module_name_index ]")->String
+      return native("%Ns%Rogue_string_table[ %Ns%Rogue_types[$type_index]->module_name_index ]")->String
 
     method parameter_type_name->String
       return Object.__type_name( type_index )

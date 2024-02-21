@@ -1,3 +1,4 @@
+$include StandardMacros
 $include Codec/UTF16String
 $include Core
 $include Collection
@@ -5,25 +6,24 @@ $include Console
 $include IO
 $include Math
 
-# RogueC auto-includes Value and JSON if they are referenced during tokenization.
+# RogueC auto-includes Variant and JSON if they are referenced during tokenization.
 
 # This
 #
-#   NATIVE_POINTER_TYPE<<RogueInt32Pointer,"RogueInt32*">>
+#   ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueInt32*", RogueInt32Pointer >>
 #
 # creates
-#
-#   nativeType<<"RogueInt32*">> RogueInt32Pointer
-#
-# with a Rogue-side .exists method.
-NATIVE_POINTER_TYPE<< RogueRealPointer,      "RogueReal*"      >>
-NATIVE_POINTER_TYPE<< RogueReal64Pointer,    "RogueReal64*"    >>
-NATIVE_POINTER_TYPE<< RogueReal32Pointer,    "RogueReal32*"    >>
-NATIVE_POINTER_TYPE<< RogueInt64Pointer,     "RogueInt64*"     >>
-NATIVE_POINTER_TYPE<< RogueInt32Pointer,     "RogueInt32*"     >>
-NATIVE_POINTER_TYPE<< RogueCharacterPointer, "RogueCharacter*" >>
-NATIVE_POINTER_TYPE<< RogueWordPointer,      "RogueWord*"      >>
-NATIVE_POINTER_TYPE<< RogueVoidPointer,      "void*"           >>
+#   - nativeType<<"%Ns%RogueInt32*">> RogueInt32Pointer
+#   - With Rogue-side .exists and operator? methods.
+ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueNewReal*",      RogueRealPointer      >>
+ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueReal64*",    RogueReal64Pointer    >>
+ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueReal32*",    RogueReal32Pointer    >>
+ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueInt64*",     RogueInt64Pointer     >>
+ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueInt32*",     RogueInt32Pointer     >>
+ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueCharacter*", RogueCharacterPointer >>
+ROGUE_NATIVE_POINTER_TYPE<< "%Ns%RogueWord*",      RogueWordPointer      >>
+ROGUE_NATIVE_POINTER_TYPE<< "void*",               RogueVoidPointer      >>
+ROGUE_NATIVE_POINTER_TYPE<< "const char*",         RogueConstCharPointer >>
 
 routine recast_tuple<<$OldType,$NewType>>( tuple:$OldType )->$NewType
   # For internal use only - used by the compiler to cast between compatible tuple types.

@@ -160,10 +160,10 @@ class Zip
       local size : Int64
       local crc32  : Int32
       native @|zip_entry_openbyindex( $this->zip, $index );
-              |$name = RogueString_create( zip_entry_name($this->zip) );
-              |$is_folder = (RogueLogical) zip_entry_isdir( $this->zip );
-              |$size = (RogueInt64) zip_entry_size( $this->zip );
-              |$crc32 = (RogueInt32) zip_entry_crc32( $this->zip );
+              |$name = %Ns%RogueString_create( zip_entry_name($this->zip) );
+              |$is_folder = (%Ns%RogueLogical) zip_entry_isdir( $this->zip );
+              |$size = (%Ns%RogueInt64) zip_entry_size( $this->zip );
+              |$crc32 = (%Ns%RogueInt32) zip_entry_crc32( $this->zip );
               |zip_entry_close( $this->zip );
 
       return ZipEntry( this, name, is_folder, size, crc32 )
@@ -188,12 +188,12 @@ class Zip
       mode = DELETE
 
       local count = list.count
-      native @|char** entries = ROGUE_MALLOC( sizeof(char*) * $count );
+      native @|char** entries = %NS%ROGUE_MALLOC( sizeof(char*) * $count );
       forEach (entry at i in list)
         native @|entries[$i] = $entry.name->data->as_utf8;
       endForEach
       native @|zip_entries_delete( $this->zip, entries, $count );
-              |ROGUE_FREE( entries );
+              |%NS%ROGUE_FREE( entries );
 
     method remove( name:String )
       remove( find(name) )

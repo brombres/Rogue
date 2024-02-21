@@ -11,19 +11,19 @@ class Transformer : Visitor
       ++autoname_index
       return result
 
-    method on( cmd:ConditionalContext )->Cmd
+    method on_visit( cmd:ConditionalContext )->Cmd
       cmd.context = visit( cmd.context )
       inline_stack.add( IfConditionalContext(cmd.t,cmd,null) )
       return cmd
 
-    method on( cmd:InlineForEach )->Cmd
+    method on_visit( cmd:InlineForEach )->Cmd
       local name = autoname( "iterator" )
       cmd.control.name = name
       visit( cmd.control )
       inline_stack.add( ForEach(cmd.t,cmd.control,null) )
       return Access( cmd.t, name )
 
-    method on_visit( cmd:Procedure )
+    method on_visit_node( cmd:Procedure )
       autoname_index = 0
       visit_children( cmd )
 

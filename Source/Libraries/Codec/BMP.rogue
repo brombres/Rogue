@@ -1,5 +1,5 @@
 uses IO/BitIO
-uses Bitmap
+uses Graphics
 
 class BMP [singleton]
   DEFINITIONS
@@ -17,23 +17,23 @@ enum BMPVersion
   BITMAPV5HEADER      = 124
 
   METHODS
-    method operator<>( other:BMPVersion )->Int32
+    method operator<>(other:BMPVersion)->Int
       return value <> other.value
 endEnum
 
 class BMPReader : BitReader
   METHODS
-    method read_uint16_lh->Int32
-      local result = read : Int32
+    method read_uint16_lh->Int
+      local result = read : Int
       return (read:<<:8)  | result
 
-    method read_int24_lh->Int32
-      local result = read : Int32
+    method read_int24_lh->Int
+      local result = read : Int
       result = (read:<<:8)  | result
       return (read:<<:16) | result
 
-    method read_int32_lh->Int32
-      local result = read : Int32
+    method read_int32_lh->Int
+      local result = read : Int
       result = (read:<<:8)  | result
       result = (read:<<:16) | result
       return (read:<<:24) | result
@@ -41,8 +41,8 @@ endClass
 
 class BMPColorComponentReader
   PROPERTIES
-    bits  : Int32
-    shift : Int32
+    bits  : Int
+    shift : Int
     next  : BMPColorComponentReader
 
   METHODS
@@ -51,17 +51,17 @@ class BMPColorComponentReader
     method init( bitfield:BMPBitField, next=null )
       init( bitfield.bit_count, bitfield.left_shift_for_argb, next )
 
-    method read( reader:BitReader, argb=0:Int32 )->Int32
-      if (bits) argb |= (reader.read->Int32 :<<: shift)
+    method read( reader:BitReader, argb=0:Int )->Int
+      if (bits) argb |= (reader.read->Int :<<: shift)
       else      argb |= (255 :<<: shift)
 
       if (next) return next.read( reader, argb )
       else      return argb
 endClass
 
-class BMPBitField( bitmask:Int32, left_shift_for_argb:Int32 ) [compound]
+class BMPBitField( bitmask:Int, left_shift_for_argb:Int ) [compound]
   METHODS
-    method bit_count->Int32
+    method bit_count->Int
       if (bitmask == 0) return 0
 
       local mask = bitmask
@@ -76,7 +76,7 @@ class BMPBitField( bitmask:Int32, left_shift_for_argb:Int32 ) [compound]
 
       return n
 
-    method bit_shift->Int32
+    method bit_shift->Int
       if (bitmask == 0)           return 0
       if (bitmask == 0x8000_0000) return 31
 
@@ -86,7 +86,7 @@ class BMPBitField( bitmask:Int32, left_shift_for_argb:Int32 ) [compound]
 
       return n
 
-    method operator<>( other:BMPBitField )->Int32
+    method operator<>(other:BMPBitField)->Int
       return (bit_shift <> other.bit_shift)
 
     method reader( next=null:BMPColorComponentReader )->BMPColorComponentReader
@@ -95,7 +95,7 @@ class BMPBitField( bitmask:Int32, left_shift_for_argb:Int32 ) [compound]
 endClass
 
 class BMPDecoder
-  METHODS
+  GLOBAL METHODS
     method decode( encoded_bytes:Byte[], bitmap=null:Bitmap )->Bitmap
       local reader = BMPReader( encoded_bytes )
       reader.skip( 10 )
@@ -152,10 +152,10 @@ class BMPDecoder
       if (palette_count)
         ensure<<palette>>( palette_count )
         loop (palette_count)
-          local b = reader.read_byte->Int32
-          local g = reader.read_byte->Int32
-          local r = reader.read_byte->Int32
-          local a = reader.read_byte->Int32
+          local b = reader.read_byte->Int
+          local g = reader.read_byte->Int
+          local r = reader.read_byte->Int
+          local a = reader.read_byte->Int
           if (a == 0) a = 255
           palette.add( Color(r,g,b,a) )
         endLoop
@@ -206,7 +206,7 @@ class BMPDecoder
         else
           loop (height)
             forEach (i in 0..<width)
-              pixels[ line_start+i ] = pixel_reader.read( reader )
+              pixels[ line_start+i ] = Color( pixel_reader.read(reader) )
             endForEach
             reader.read( skip_bits )
             line_start += next_line_offset

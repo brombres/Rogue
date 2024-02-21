@@ -1,0 +1,239 @@
+class FilePatcher
+  PROPERTIES
+    file        : File
+    lines       : String[]
+    is_modified : Logical
+
+  METHODS
+    method init( file )
+      if (file.exists)
+        if (file.is_folder) throw Error( "[FilePatcher] '$' is a folder."(file) )
+        lines = String( file ).split( '\n' )
+        if (lines.last == "") lines.remove_last
+      else
+        lines = String[]
+        is_modified = true
+      endIf
+
+    method add( text:String )
+      if (text.contains('\n'))
+        lines.add( text.split('\n') )
+      else
+        lines.add( text )
+      endIf
+      is_modified = true
+
+    method apply( diff:FileDiff )
+      diff.apply( lines )
+      is_modified = true
+
+    method contains( text:String )->Logical
+      if ((forEach in lines).contains(text)) return true
+      return false
+
+    method delete( line_index:Int32 ):
+      lines.remove_at( line_index )
+      is_modified = true
+
+    method insert( text:String, before_index=0:Int32 )
+      if (text.contains('\n'))
+        lines.insert( text.split('\n'), before_index )
+      else
+        lines.insert( text, before_index )
+      endIf
+      is_modified = true
+
+    method is_empty->Logical
+      return lines.is_empty
+
+    method locate( text:String, i1=0:Int32 )->Int32?
+      forEach (line at i in lines from i1)
+        if (line.contains(text)) return i
+      endForEach
+      return null
+
+    method locate_last( text:String, i1=null:Int32? )->Int32?
+      if (not i1) i1 = lines.count - 1
+      forEach (line at i in lines from i1.value step -1)
+        if (line.contains(text)) return i
+      endForEach
+      return null
+
+    method locate_last_pattern( pattern:String )->Int32?
+      forEach (line at i in lines step -1)
+        if (line.contains_pattern(pattern)) return i
+      endForEach
+      return null
+
+    method locate_pattern( pattern:String )->Int32?
+      forEach (line at i in lines)
+        if (line.contains_pattern(pattern)) return i
+      endForEach
+      return null
+
+    method replace( old_string:String, new_string:String, &first, &last )->Logical
+      local replaced_any = false
+
+      if (first or not last)
+        forEach (line at i in lines)
+          if (line.contains(old_string))
+            replaced_any = true
+            line .= replacing( old_string, new_string )
+            lines[i] = line
+            is_modified = true
+            if (first) escapeForEach
+          endIf
+        endForEach
+      endIf
+
+      if (last)
+        forEach (line at i in lines step -1)
+          if (line.contains(old_string))
+            replaced_any = true
+            line .= replacing( old_string, new_string )
+            lines[i] = line
+            is_modified = true
+            escapeForEach
+          endIf
+        endForEach
+      endIf
+
+      return replaced_any
+
+    method replace_line( index:Int32, new_text:String )->Logical
+      local old_line = lines[ index ]
+
+      local n = 0
+      forEach (ch in old_line)
+        if (ch == ' ' or ch == '\t') ++n
+        else                         escapeForEach
+      endForEach
+      new_text = old_line.substring(0,n) + new_text
+
+      if (old_line == new_text) return false
+
+      lines.remove_at( index )
+      insert( new_text, index )
+      return true
+
+    method replace_line( old_line_pattern:String, new_line:String, &all )->Logical
+      local replaced_any = false
+      loop
+        if local line = locate_pattern( old_line_pattern )
+          replaced_any = true
+          replace_line( line, new_line )
+          if (not all) escapeLoop
+        else
+          escapeLoop
+        endIf
+      endLoop
+      return replaced_any
+
+    method save( new_file=null:File? )->Logical
+      if (new_file)            file = new_file.value
+      elseIf (not is_modified) return false
+      file.save( lines.join('\n')+"\n" )
+      is_modified = false
+      return true
+endClass
+
+class FileDiff
+  PROPERTIES
+    hunks = FileDiffHunk[]
+
+  METHODS
+    method init( file:File )
+      init( String(file) )
+
+    method init( diff:String )
+      local reader = LineReader( diff )
+      if (reader.has_another and reader.peek.begins_with("---")) reader.read
+      else throw Error( "[FileDiff] Expected first line to begin with '---'." )
+
+      if (reader.has_another and reader.peek.begins_with("+++")) reader.read
+      else throw Error( "[FileDiff] Expected second line to begin with '+++'." )
+
+      while (reader.has_another and reader.peek.begins_with("@@"))
+        local info = reader.read
+        local parts = info.extract_strings( "@@ $,$ $,$ @@" )
+        if (not parts)
+          throw Error( "[FileDiff] Error parsing hunk info: $"(info) )
+        endIf
+
+        local line_index = -(parts[0]->Int32)
+        local hunk = FileDiffHunk( line_index, parts[1]->Int32 )
+        while (reader.has_another and not reader.peek.begins_with("@@"))
+          local line = reader.read
+          if (line.begins_with('+'))
+            hunk.lines.add( FileDiffAddLine(line_index,line.unleft(1)) )
+          elseIf (line.begins_with('-'))
+            hunk.lines.add( FileDiffRemoveLine(line_index,line.unleft(1)) )
+            ++line_index
+          else
+            hunk.lines.add( FileDiffContextLine(line_index,line.unleft(1)) )
+            ++line_index
+          endIf
+        endWhile
+        hunks.add( hunk )
+      endWhile
+
+    method apply( lines:String[] )
+      local rewriter = lines.rewriter_object
+      local n = 1
+      forEach (hunk in hunks)
+        while (n < hunk.first_line_index) rewriter.write( rewriter.read ); ++n
+        while (hunk.contains(n))
+          n = (forEach in hunk.lines).apply( n, rewriter )
+        endWhile
+      endForEach
+      while (rewriter.has_another) rewriter.write( rewriter.read )
+
+endClass
+
+class FileDiffHunk
+  PROPERTIES
+    first_line_index : Int32
+    last_line_index  : Int32
+    lines = FileDiffLine[]
+
+  METHODS
+    method init( first_line_index, count:Int32 )
+      last_line_index = first_line_index + (count - 1)
+
+    method contains( n:Int32 )->Logical
+      return (n >= first_line_index and n <= last_line_index)
+endClass
+
+class FileDiffLine( index:Int32, text:String ) [abstract]
+  METHODS
+    method apply( n:Int32, line_rewriter:ListRewriterObject<<String>> )->Int32 [abstract]
+endClass
+
+class FileDiffAddLine( index:Int32, text:String ) : FileDiffLine
+  METHODS
+    method apply( n:Int32, line_rewriter:ListRewriterObject<<String>> )->Int32
+      line_rewriter.write( text )
+      return n
+
+endClass
+
+class FileDiffContextLine( index:Int32, text:String ) : FileDiffLine
+  METHODS
+    method apply( n:Int32, line_rewriter:ListRewriterObject<<String>> )->Int32
+      local line = line_rewriter.read
+      if (line != text)
+        throw Error( "[FileDiff] Expected line $ to be '$', found '$'."(n,text,line) )
+      endIf
+      line_rewriter.write( line )
+      return n+1
+endClass
+
+class FileDiffRemoveLine( index:Int32, text:String ) : FileDiffLine
+  METHODS
+    method apply( n:Int32, line_rewriter:ListRewriterObject<<String>> )->Int32
+      local line = line_rewriter.read
+      if (line != text)
+        throw Error( "[FileDiff] Expected line $ to be '$', found '$'."(n,text,line) )
+      endIf
+      return n+1
+endClass

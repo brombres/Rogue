@@ -1,8 +1,7 @@
 module Geometry
 
-class Circle( position:XY, radius:Int32 ) [compound]
+class Circle( position:XY, radius:Real ) [compound]
   METHODS
-    #{
     method at( angle:Radians )->XY
       # Returns the point along the edge of the circle at the given angle.
       #
@@ -16,21 +15,20 @@ class Circle( position:XY, radius:Int32 ) [compound]
       # Example:
       #   one_oclock = circle.at( Degrees(360.0/12.0) )
       return position + XY( radius, angle )
-      }#
 
     method contains( point:XY )->Logical
-      return (point - position).magnitude2 <= radius*radius
+      return (point - position).magnitude_squared <= radius*radius
 
-      #{
+    method hash_code->Int
+      return position.hash_code ~ radius.hash_code
+
     method intersects( box:Box )->Logical
       return box.intersects( this )
-      }#
 
     method intersects( other:Circle )->Logical
-      local delta = (position - other.position).magnitude2
+      local delta = (position - other.position).magnitude_squared
       return (delta <= (radius + other.radius) ^ 2)
 
-      #{
     method intersects( quad:Quad )->Logical
       return quad.intersects( this )
 
@@ -39,7 +37,14 @@ class Circle( position:XY, radius:Int32 ) [compound]
 
     method intersects( triangle:Triangle )->Logical
       return triangle.intersects( this )
-      }#
+
+    method operator==( other:Circle )->Logical
+      return position == other.position and radius == other.radius
+
+    method operator<>( other:Circle )->Logical
+      local result = position <> other.position
+      if (result) return result
+      return radius <> other.radius
 
     method operator+( delta:XY )->Circle
       return Circle( position+delta, radius )
@@ -52,6 +57,13 @@ class Circle( position:XY, radius:Int32 ) [compound]
 
     method operator/( scale:Real )->Circle
       return Circle( position/scale, radius/scale )
+
+    method print_to( buffer:PrintWriter )
+      buffer.print "(@"
+      buffer.print position
+      buffer.print ", r:"
+      buffer.print radius
+      buffer.print ')'
 
     method to->String
       return "(@$, r:$)" (position,radius)

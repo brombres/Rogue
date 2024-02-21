@@ -3,7 +3,7 @@ class File( filepath:String ) [compound]
     nativeHeader @|#include <stdio.h>
                   |#include <sys/stat.h>
                   |
-                  |#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
+                  |#if !defined(%NS%ROGUE_PLATFORM_WINDOWS) && !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
                   |  #include <dirent.h>
                   |#endif
 
@@ -31,15 +31,15 @@ class File( filepath:String ) [compound]
       local filepath = resolved.filepath
       local return_value : String
 
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
               |{
                  use filepath_utf16=ObjectPool<<UTF16String>>, abs_filepath_utf16=ObjectPool<<UTF16String>>
                    filepath_utf16.init( filepath )
 
-                   local utf16_count = native( "GetFullPathName($filepath_utf16->data->as_wchars, 0, 0, 0)" )->Int32
+                   local utf16_count = native( "GetFullPathNameW($filepath_utf16->data->as_wchars, 0, 0, 0)" )->Int
                    abs_filepath_utf16.data.expand_to_count( utf16_count*2 )
 
-      native @|    if (GetFullPathName($filepath_utf16->data->as_wchars, $utf16_count, $abs_filepath_utf16->data->as_wchars, 0) != 0)
+      native @|    if (GetFullPathNameW($filepath_utf16->data->as_wchars, $utf16_count, $abs_filepath_utf16->data->as_wchars, 0) != 0)
               |    {
                      return_value = abs_filepath_utf16->String
                      return_value .= replacing( '\\', '/' )
@@ -54,7 +54,7 @@ class File( filepath:String ) [compound]
               |  char c_filepath[ PATH_MAX ];
                  localize is_folder
       native @|
-              |  int len = $filepath->data->count;
+              |  %Ns%RogueInt len = $filepath->data->count;
               |  if (len >= PATH_MAX) len = PATH_MAX - 1;
               |  memcpy( c_filepath, (char*)$filepath->data->as_utf8, len );
               |  c_filepath[len] = 0;
@@ -70,7 +70,7 @@ class File( filepath:String ) [compound]
               |  {
               |    // fchdir only works with a path, not a path+filename (c_filepath).
               |    // Copy out the filename and null terminate the filepath to be just a path.
-              |    int i = (int) strlen( c_filepath ) - 1;
+              |    %Ns%RogueInt i = (%Ns%RogueInt) strlen( c_filepath ) - 1;
               |    while (i >= 0 && c_filepath[i] != '/') --i;
               |    strcpy( filename, c_filepath+i+1 );
               |    if (i == -1) strcpy( c_filepath, "." );
@@ -94,7 +94,7 @@ class File( filepath:String ) [compound]
               |    r = fchdir( original_dir_fd );
               |    if ( r != 0 ) break;
               |
-              |    $return_value = RogueString_create( c_filepath );
+              |    $return_value = %Ns%RogueString_create( c_filepath );
               |  } while (0);
               |
               |  if (original_dir_fd >= 0) close( original_dir_fd );
@@ -106,8 +106,16 @@ class File( filepath:String ) [compound]
       error.println( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
       return this
 
+    method appending( suffix:String )->File
+      # "filename.png".appending("@2x") -> "filename@2x.png"
+      # "filename.png".appending(null) -> "filename.png"
+      if (not suffix) return this
+      local (filepath,ext) = split_filepath_and_extension
+      if (ext == "") return filepath + suffix
+      return File("$$.$"(filepath,suffix,ext))
+
     method character_writer->CharacterToUTF8ByteWriter
-      return CharacterToUTF8ByteWriter( File.writer(resolved.filepath) )
+      return CharacterToUTF8ByteWriter( File(resolved.filepath).writer )
 
     method common_folder( other:File )->File
       local a = resolved.filepath
@@ -131,7 +139,11 @@ class File( filepath:String ) [compound]
       if (not is_folder) return false
       return listing( pattern ).count > 0
 
-    method copy_to( destination:File, &if_different, &if_newer, &dry_run, &verbose, &ignore_hidden )->Int32?
+    method contains_wildcards->Logical
+      local filepath = resolved.filepath
+      return filepath.contains('*') or filepath.contains('?')
+
+    method copy_to( destination:File, &if_different, &if_newer, &dry_run, &verbose, &ignore_hidden )->Int?
       # Copies a file or the contents of a folder to a specified file or folder.
       # Returns the count of files copied or null on an error.
       if (this.is_folder)
@@ -191,10 +203,10 @@ class File( filepath:String ) [compound]
       else                   return filepath
 
     method crc32->Int32
-      nativeHeader @|extern const RogueUInt32 Rogue_crc32_table[256];
+      nativeHeader @|extern const %Ns%RogueUInt32 %Ns%Rogue_crc32_table[256];
 
       nativeCode...
-        @|const RogueUInt32 Rogue_crc32_table[256] =
+        @|const %Ns%RogueUInt32 %Ns%Rogue_crc32_table[256] =
          |{
          |  0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
          |  0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -244,19 +256,19 @@ class File( filepath:String ) [compound]
       local file = resolved
       if (not file.exists) return 0
 
-      native @|RogueUInt32 result = ~0U;
+      native @|%Ns%RogueUInt32 result = ~0U;
       local reader = file.reader
       local file_buffer = Byte[]( 1024 )
       while (reader.has_another)
         reader.read( file_buffer.[clear], 1024 )
-        native @|RogueByte* byte_ptr = $file_buffer->as_bytes - 1;
-                |for (int i=$file_buffer->count+1; --i; )
+        native @|%Ns%RogueByte* byte_ptr = $file_buffer->as_bytes - 1;
+                |for (%Ns%RogueInt i=$file_buffer->count+1; --i; )
                 |{
-                |  result = Rogue_crc32_table[ (result ^ *(++byte_ptr)) & 0xFF ] ^ (result >> 8);
+                |  result = %Ns%Rogue_crc32_table[ (result ^ *(++byte_ptr)) & 0xFF ] ^ (result >> 8);
                 |}
       endWhile
 
-      return native( "(RogueInt32)~result" )->Int32
+      return native( "(%Ns%RogueInt32)~result" )->Int32
 
     method create_folder->Logical
       # Creates the specified folder along with intermediate folders
@@ -274,10 +286,10 @@ class File( filepath:String ) [compound]
 
       # Note: 0777 is a permission mask rather than the actual permission setting.
       local status : Logical
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
-              |  $status = (0 == mkdir((char*)$filepath->data->as_utf8));
+      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+              |  $status = (0 == mkdir((char*)$file.filepath->data->as_utf8));
               |#else
-              |  $status = (0 == mkdir((char*)$filepath->data->as_utf8, 0777));
+              |  $status = (0 == mkdir((char*)$file.filepath->data->as_utf8, 0777));
               |#endif
       return status
 
@@ -285,9 +297,9 @@ class File( filepath:String ) [compound]
       local file = resolved
       if (file.is_folder)
         File(forEach in file.listing(FilePattern("*"))).delete  # Recursively delete nested content
-        return (0 == native( "rmdir( (const char*) $filepath->data->as_utf8 )")->Int32)
+        return (0 == native( "rmdir( (const char*) $file.filepath->data->as_utf8 )")->Int32)
       endIf
-      return (0 == native( "unlink( (const char*) $filepath->data->as_utf8 )")->Int32)
+      return (0 == native( "unlink( (const char*) $file.filepath->data->as_utf8 )")->Int32)
 
     method esc->String
       local acceptable : String
@@ -346,13 +358,10 @@ class File( filepath:String ) [compound]
       if (not i?) return this
       return filepath.from( i.value+1 )
 
-    method filepath_before_pattern->String
+    method filepath_before_wildcards->String
       # Example: alpha/beta/image*.png -> alpha/beta
       local filepath = resolved.filepath
-      while (filepath.contains('?') or filepath.contains('*'))
-        filepath = File(filepath).folder
-      endWhile
-      return filepath
+      return filepath.before_first('*').before_first('?')
 
     method folder->String
       local filepath = resolved.filepath
@@ -378,6 +387,14 @@ class File( filepath:String ) [compound]
 
       return filepath.from(0, i1.value-1)
 
+    method folder_before_wildcards->String
+      # Example: alpha/beta/image*.png -> alpha/beta
+      local filepath = resolved.filepath
+      while (filepath.contains('?') or filepath.contains('*'))
+        filepath = File(filepath).folder
+      endWhile
+      return filepath
+
     method has_parent->Logical
       return resolved.folder.count > 0
 
@@ -394,7 +411,7 @@ class File( filepath:String ) [compound]
 
       local filepath = resolved.filepath
 
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
               |  struct stat s;
                  if (native("stat((char*)$filepath->data->as_utf8, &s) != 0")->Logical) return false
                  return native("((s.st_mode & S_IFMT) == S_IFDIR)")->Logical
@@ -537,6 +554,15 @@ class File( filepath:String ) [compound]
     method reader->FileReader
       return FileReader( resolved.filepath )
 
+    method relative_to( base_folder:File )->File
+      local filepath = resolved.abs.filepath
+      local base_filepath = base_folder.resolved.abs.filepath + "/"
+      if (filepath.begins_with(base_filepath))
+        return File( filepath.after_first(base_filepath) )
+      else
+        return this
+      endIf
+
     method rename( destination:File )->Logical
       if (not this.exists) return false
       local source_filepath = resolved.filepath
@@ -652,11 +678,11 @@ class File( filepath:String ) [compound]
       return not outfile.error
 
     method separator->Character
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
-              |  return '\\';
-              |#else
-              |  return '/';
+      local result = '/'
+      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+              |  $result = '\\';
               |#endif
+      return result
 
     method is_valid_filename_character( ch:Character, &any_os )->Logical
       if (ch < 32 or ch == 127) return false
@@ -670,7 +696,7 @@ class File( filepath:String ) [compound]
                if (native("!fp")->Logical) return 0
       native @|
               |fseek( fp, 0, SEEK_END );
-              |$size = (RogueInt64) ftell( fp );
+              |$size = (%Ns%RogueInt64) ftell( fp );
               |fclose( fp );
       return size;
 
@@ -692,13 +718,15 @@ class File( filepath:String ) [compound]
         Process.run( "ln -s $ $" (target.esc,file.esc) )
       endIf
 
+    method timestamp->Timestamp
+      return Timestamp( timestamp_ms / 1000.0 )
+
     method timestamp_ms->Int64
       # Returns the last modified time.
-
       local ms : Int64
       local filepath = resolved.filepath
 
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
                use filepath_utf16 = ObjectPool<<UTF16String>>
                  filepath_utf16.init( filepath )
       native @|  HANDLE handle = CreateFile( $filepath_utf16->data->as_wchars, 0, 0, NULL, OPEN_EXISTING,
@@ -708,7 +736,7 @@ class File( filepath:String ) [compound]
               |    BY_HANDLE_FILE_INFORMATION info;
               |    if (GetFileInformationByHandle( handle, &info ))
               |    {
-              |      RogueInt64 result = info.ftLastWriteTime.dwHighDateTime;
+              |      %Ns%RogueInt64 result = info.ftLastWriteTime.dwHighDateTime;
               |      result <<= 32;
               |      result |= info.ftLastWriteTime.dwLowDateTime;
               |      result /= 10000; // convert from Crazyseconds to Milliseconds
@@ -719,7 +747,7 @@ class File( filepath:String ) [compound]
               |    CloseHandle(handle);
               |  }
                endUse
-      native @|#elif defined(ROGUE_PLATFORM_UNIX_COMPATIBLE)
+      native @|#elif defined(%NS%ROGUE_PLATFORM_UNIX_COMPATIBLE)
               |  int file_id = open( (const char*)$filepath->data->as_utf8, O_RDONLY );
               |  if (file_id >= 0)
               |  {
@@ -727,12 +755,12 @@ class File( filepath:String ) [compound]
               |    if (0 == fstat(file_id, &info))
               |    {
               |#if defined(__APPLE__)
-              |      RogueInt64 result = info.st_mtimespec.tv_sec;
+              |      %Ns%RogueInt64 result = info.st_mtimespec.tv_sec;
               |      result *= 1000000000;
               |      result += info.st_mtimespec.tv_nsec;
               |      result /= 1000000;  // convert to milliseconds
               |#else
-              |      RogueInt64 result = (RogueInt64) info.st_mtime;
+              |      %Ns%RogueInt64 result = (%Ns%RogueInt64) info.st_mtime;
               |      result *= 1000;  // convert to ms
               |#endif
               |      close(file_id);
@@ -798,6 +826,35 @@ class File( filepath:String ) [compound]
         return destination
 
       endIf
+
+    method with_extension( ext:String )->File
+      # if ext is null or "":
+      #   Removes any current ".extension".
+      # else
+      #   Removes any current ".extension" and adds ".$"(ext).
+      local filepath = resolved.filepath
+      if (String.exists(ext))
+        if (filepath.ends_with(ext))
+          if (ext.begins_with('.') or filepath.count == ext.count or filepath[filepath.count-(ext.count+1)] == '.')
+            # Extension is already correct
+            return File( filepath )
+            # else ends with 'ext' but not '.ext'
+          endIf
+        endIf
+
+        local base = split_filepath_and_extension.filepath
+        if (ext.begins_with('.')) return File( "$$"(base,ext) )
+        return File( "$.$"(base,ext) )
+
+      else
+        # just remove extension
+        local base = split_filepath_and_extension.filepath
+        return File( base )
+
+      endIf
+
+    method without_extension->File
+      return split_filepath_and_extension.filepath
 
     method without_trailing_separator->File
       # Removes trailing slash on anything except "/"

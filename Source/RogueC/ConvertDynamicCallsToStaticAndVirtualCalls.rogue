@@ -2,7 +2,7 @@ module RogueC
 
 class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor [singleton]
   METHODS
-    method on( cmd:CallDynamicMethod )->Cmd
+    method on_visit( cmd:CallDynamicMethod )->Cmd
       if (cmd.context instanceOf This)
         return visit( CallThisDynamicMethod(cmd.t,cmd.info,cmd.args).[result_discarded=cmd.result_discarded] )
       endIf
@@ -31,12 +31,12 @@ class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor [singleton]
         if (VCALLS and not context_type.is_aspect)
           # V-table eligible
           context_type.method_vtable[ info.signature ] = info->(as Method)
-          return visit( CallVirtualMethod(cmd.t,cmd.context,info,cmd.args) )
+          return visit( CallVirtualMethod(cmd.t,cmd.context,info,cmd.args).[result_discarded=cmd.result_discarded] )
         endIf
 
         local group = Program.dynamic_methods[info.dynamic_signature]
         if (group) group.is_used = true
-        return visit_content( cmd )
+        return visit_node( cmd )
 
       endContingent
 
@@ -49,7 +49,7 @@ class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor [singleton]
       endForEach
       return false
 
-    method on( cmd:CallThisDynamicMethod )->Cmd
+    method on_visit( cmd:CallThisDynamicMethod )->Cmd
       local info = cmd.info
 
       contingent
@@ -70,16 +70,16 @@ class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor [singleton]
         if (VCALLS and this_type.is_aspect)
           # V-table eligible
           this_type.method_vtable[ info.signature ] = info->(as Method)
-          return visit( CallThisVirtualMethod(cmd.t,info,cmd.args) )
+          return visit( CallThisVirtualMethod(cmd.t,info,cmd.args).[result_discarded=cmd.result_discarded] )
         endIf
 
         local group = Program.dynamic_methods[info.dynamic_signature]
         if (group) group.is_used = true
-        return visit_content( cmd )
+        return visit_node( cmd )
 
       endContingent
 
-    method on_visit( cmd:Statements )
+    method on_visit_node( cmd:Statements )
       forEach (statement in writer=cmd.list.rewriter)
         statement = visit( statement )
 

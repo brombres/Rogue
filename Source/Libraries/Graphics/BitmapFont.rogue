@@ -1,11 +1,11 @@
-module Bitmap
+module Graphics
 
 class BitmapFont
   PROPERTIES
     atlas      : Bitmap  # Font strip
-    height     : Int32
+    height     : Int
     characters = BitmapFontCharacterInfo[](128)
-    kerning    = Int32[][0]
+    kerning    = Int[][0]
       # Format. kerning[] is indexed into from the "prev_ch" BitmapFontCharacterInfo.
       #
       #   [count_x,next1,offset1,next2,offset2,..., count_y,next1,offset1,...]
@@ -35,6 +35,33 @@ class BitmapFont
       #
 
   METHODS
+    method init
+      # Used by FreeTypeFace.to->BitmapFont
+
+    method init( font_name:String, pixel_height:Int, characters=null:String, &ascii )
+      if (not characters and not ascii) ascii = true
+
+      if (characters)
+        use character_list = WorkList<<Character>>
+          character_list.add( forEach in characters )
+          init( font_name, pixel_height, character_list, &=ascii )
+        endUse
+      else
+        init( font_name, pixel_height, null->(as Character[]), &=ascii )
+      endIf
+
+    method init( font_name:String, pixel_height:Int, characters:Character[], &ascii )
+      local face = FreeTypeFace( font_name, pixel_height )
+      if (not face)
+        throw Error( ''Unable to load font "$".''(font_name) )
+      endIf
+
+      if (characters) face.render( characters )
+
+      if (ascii) face.render_ascii
+
+      face->BitmapFont( this )
+
     method init( atlas, height )
       # Caller should next populate font info with calls to add(BitmapFontCharacterInfo) and modifications
       # to .kerning
@@ -52,10 +79,10 @@ class BitmapFont
     method bitmap( ch:BitmapFontCharacterInfo )->Bitmap
       return Bitmap( atlas, ch.bounds )
 
-    method draw( text:String, dest_bitmap:Bitmap, position:XY, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
+    method draw( text:String, dest_bitmap:Bitmap, position:IntXY, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
       draw( text, dest_bitmap, position.x, position.y, anchor, blit_fn )
 
-    method draw( text:String, dest_bitmap:Bitmap, x:Int32, y:Int32, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
+    method draw( text:String, dest_bitmap:Bitmap, x:Int, y:Int, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
       if (text.contains('\n'))
         y = Box( x, y, measure(text) ).relative_to( anchor ).position.y
         anchor = Anchor( XY(anchor.position.x,0) )  # anchor vertical alignment to TOP
@@ -107,7 +134,7 @@ class BitmapFont
         return characters[ ch ]
       endIf
 
-    method measure( text:String )->XY
+    method measure( text:String )->IntXY
       local w = 0
       local max_w = 0
       local h = 0
@@ -144,11 +171,11 @@ class BitmapFont
       max_w .= or_larger( w )
       h += height
 
-      return XY( max_w, h )
+      return IntXY( max_w, h )
 
 endClass
 
-class BitmapFontCharacterInfo( character:Character, offset_x:Int32, advance_x:Int32, kerning_index:Int32, bounds:Box ) [compound]
+class BitmapFontCharacterInfo( character:Character, offset_x:Int, advance_x:Int, kerning_index:Int, bounds:Box ) [compound]
   # kerning
   #   Advance mappings for this as the previous character.
 endClass

@@ -247,10 +247,10 @@ class ScanPatternParser [singleton]
 
   PROPERTIES
     scanner    : Scanner
-    state      : Int32
+    state      : Int
     stack      = ScanPattern[]
     builder    = String()
-    list_start = Int32[]
+    list_start = Int[]
 
   METHODS
     method parse( pattern:String )->ScanPattern

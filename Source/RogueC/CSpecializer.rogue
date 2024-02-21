@@ -65,6 +65,7 @@ class CSpecializer : Visitor
     method collect_literal_string( str:String )
       if (not Program.unique_strings.contains(str))
         local builder = String()
+        builder.print( Program.namespace_lc )
         builder.print( "str_" )
         forEach (i in 0..<str.count.or_smaller(20))
           local ch = str[i]
@@ -91,7 +92,7 @@ class CSpecializer : Visitor
     method insert( cmd:Cmd )
       current_statements.write( cmd )
 
-    method on( cmd:CallDynamicMethod )->Cmd
+    method on_visit( cmd:CallDynamicMethod )->Cmd
       # Anchor the object context if necessary
       local context = cmd.context
       if (Program.gc_auto)
@@ -106,9 +107,9 @@ class CSpecializer : Visitor
           endIf
         endIf
       endIf
-      return on( cmd->(as CallProcedure) )
+      return on_visit( cmd->(as CallProcedure) )
 
-    method on( cmd:CallProcedure )->Cmd
+    method on_visit( cmd:CallProcedure )->Cmd
       visit_children( cmd )
 
       # Anchor any args that need it
@@ -124,7 +125,7 @@ class CSpecializer : Visitor
       if (cmd.info.throws?)
         # Decompose call
         if (cmd.info.return_type? and not cmd.result_discarded)
-          local v = add_local( cmd.t, "call", cmd.info.return_type, DummyInitialValue )
+          local v = add_local( cmd.t, "call_result", cmd.info.return_type, DummyInitialValue )
           insert( SetLocal(cmd.t,v,cmd,&initial_assignment) )
           insert( ReturnOnException(cmd.t) )
           return GetLocal( cmd.t, v )
@@ -136,7 +137,7 @@ class CSpecializer : Visitor
         return cmd
       endIf
 
-    method on( cmd:CallStaticMethod )->Cmd
+    method on_visit( cmd:CallStaticMethod )->Cmd
       # Anchor the object context if necessary
       local context = cmd.context
       if (Program.gc_auto)
@@ -151,15 +152,15 @@ class CSpecializer : Visitor
           endIf
         endIf
       endIf
-      return on( cmd->(as CallProcedure) )
+      return on_visit( cmd->(as CallProcedure) )
 
-    method on( cmd:ControlStructure )->Cmd
+    method on_visit( cmd:ControlStructure )->Cmd
       control_stack.add( cmd )
-      visit_content( cmd )
+      visit_node( cmd )
       control_stack.remove_last
       return cmd
 
-    method on( cmd:CreateObject )->Cmd
+    method on_visit( cmd:CreateObject )->Cmd
       visit_children( cmd )
 
       if (Program.gc_auto or cmd.m_init)
@@ -173,7 +174,7 @@ class CSpecializer : Visitor
         return cmd
       endIf
 
-    method on_visit( cmd:If )
+    method on_visit_node( cmd:If )
       control_stack.add( cmd )
 
       cmd.condition = visit( cmd.condition )
@@ -182,9 +183,9 @@ class CSpecializer : Visitor
 
       control_stack.remove_last
 
-    method on( cmd:InlineWhich )->Cmd
+    method on_visit( cmd:InlineWhich )->Cmd
       if (not cmd.needs_decomposition)
-        visit_content( cmd )
+        visit_node( cmd )
         return validate( cmd )
       endIf
 
@@ -229,7 +230,7 @@ class CSpecializer : Visitor
 
       return cmd_if
 
-    method on_visit( cmd:Iterator )
+    method on_visit_node( cmd:Iterator )
       control_stack.add( cmd )
 
       local v = add_local( cmd.t, "condition", Program.type_Logical, DummyInitialValue )
@@ -242,14 +243,14 @@ class CSpecializer : Visitor
 
       control_stack.remove_last
 
-    method on_visit( cmd:LiteralString )
+    method on_visit_node( cmd:LiteralString )
       collect_literal_string( cmd.value )
 
-    method on_visit( cmd:Local )
+    method on_visit_node( cmd:Local )
       cmd.type = visit(cmd.type)->(as Type)
       if (not cmd.c_name) cmd.c_name = "$_$"(cmd.name,cmd.index)
 
-    method on( cmd:LogicalAnd )->Cmd
+    method on_visit( cmd:LogicalAnd )->Cmd
       if (cmd.left.needs_decomposition or cmd.right.needs_decomposition)
         local t = cmd.t
 
@@ -288,7 +289,7 @@ class CSpecializer : Visitor
       endIf
       return cmd
 
-    method on( cmd:LogicalOr )->Cmd
+    method on_visit( cmd:LogicalOr )->Cmd
       local decompose_left  = cmd.left.needs_decomposition
       local decompose_right = cmd.right.needs_decomposition
       if (decompose_left or decompose_right)
@@ -329,7 +330,7 @@ class CSpecializer : Visitor
       endIf
       return cmd
 
-    method on_visit( cmd:Procedure )
+    method on_visit_node( cmd:Procedure )
       autoname_index = 0
 
       cmd.c_result_name = "_auto_result"
@@ -344,10 +345,10 @@ class CSpecializer : Visitor
 
       visit_children( cmd )
 
-    method on_visit( cmd:Return )
+    method on_visit_node( cmd:Return )
       visit_children( cmd )
 
-    method on_visit( cmd:Statements )
+    method on_visit_node( cmd:Statements )
       temporarily current_statements = cmd.list.rewriter
         forEach (statement in current_statements)
           statement = visit( statement )
@@ -359,7 +360,7 @@ class CSpecializer : Visitor
         endForEach
       endTemporarily
 
-    method on( cmd:SetLocal )->Cmd
+    method on_visit( cmd:SetLocal )->Cmd
       local cmd_create = cmd.new_value->(as CreateObject)
       if (not cmd_create)
         visit_children( cmd )
@@ -379,7 +380,7 @@ class CSpecializer : Visitor
         return cmd_create2
       endIf
 
-    method on_visit( cmd:Throw )
+    method on_visit_node( cmd:Throw )
       insert( PushStackTraceCutoff(cmd.t) )
       visit_children( cmd )
 endClass
@@ -635,7 +636,7 @@ augment Property
       if (@c_name) return @c_name
 
       if (attributes.is_global)
-        @c_name = "$__g_$"(type_context.c_name,name)
+        @c_name = "$$__g_$"(Program.namespace_capitalized,type_context.c_name,name)
       else
         @c_name = name
       endIf
@@ -671,12 +672,14 @@ augment Type
       else
         @c_name = Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
       endIf
+
+      @c_name = Program.namespace_capitalized + @c_name
       return @c_name
 
     method c_sig_name->String
       if (@c_sig_name) return @c_sig_name
       if (is_aspect)
-        @c_sig_name = Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
+        @c_sig_name = Program.namespace_capitalized + Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
       else
         @c_sig_name = c_name
       endIf

@@ -13,93 +13,74 @@ class ExceptionAnalyzer : InspectionVisitor
       endWhile
 
     method back_propagate_thrown_exception( type:Type )
-      is_modified = true
-
       forEach (control_structure in control_stack step -1)
         if (control_structure.catches_exception(type)) return
         if (control_structure.requires_cleanup)
+          if (not control_structure.catches_escape) is_modified = true
+          if (not control_structure.exception_passthrough) is_modified = true
           control_structure.catches_escape = true
           control_structure.exception_passthrough = true
         endIf
       endForEach
 
       # Never caught
-      if (this_procedure.throws)
-        if (this_procedure.throws.instance_of(type))
-          this_procedure.throws = type
-        elseIf (not type.instance_of(this_procedure.throws))
-          this_procedure.throws = Program.type_Exception
-        endIf
-      else
-        this_procedure.throws = type
+      if (not this_procedure.throws.contains(type))
+        is_modified = true
+        this_procedure.throws |= type
       endIf
+
+    method back_propagate_thrown_exception( types:ExceptionTypes )
+      use exception_types = WorkList<<Type>>
+        types.collect_types( exception_types )
+        back_propagate_thrown_exception( forEach in exception_types )
+      endUse
 
     method propagate_exceptions_among_dynamic_methods( reference_m:Procedure )
       local group = Program.dynamic_methods[reference_m.dynamic_signature].methods
       if (not group) return
 
-      forEach (m1 at i in group)
-        forEach (m2 in group from i+1)
-          if (m2 is m1) nextIteration
-          if (m1.throws is not m2.throws)
-            if (m1.type_context.instance_of(m2.type_context) or m2.type_context.instance_of(m1.type_context))
-              if (m1.throws)
-                if (m2.throws)
-                  m1.throws = Program.type_Exception
-                  m2.throws = Program.type_Exception
-                else
-                  m2.throws = m1.throws
-                endIf
-              else
-                m1.throws = m2.throws
-              endIf
-            endIf
-          endIf
-        endForEach
-      endForEach
+      local throws : ExceptionTypes
+      throws |= (forEach in group).throws
+      (forEach in group).throws = throws
+      #@trace reference_m, %throws
 
-    method on_visit( cmd:CallProcedure )
+    method on_visit_node( cmd:CallProcedure )
       if (cmd.info.throws)
-        if (cmd.exception_analyzed) return
-        cmd.exception_analyzed = true
         back_propagate_thrown_exception( cmd.info.throws )
       endIf
 
-    method on_visit( cmd:CallDynamicMethod )
+    method on_visit_node( cmd:CallDynamicMethod )
       propagate_exceptions_among_dynamic_methods( cmd.info )
-      on_visit( cmd->(as CallProcedure) )
+      on_visit_node( cmd->(as CallProcedure) )
 
-    method on( cmd:CleanupBlock )->Logical
+    method on_visit( cmd:CleanupBlock )->Logical
       control_stack.add( cmd )
       visit( cmd.statements )
       control_stack.remove_last
       visit( cmd.cleanup )
       return false
 
-    method on( cmd:ControlStructure )->Logical
+    method on_visit( cmd:ControlStructure )->Logical
       control_stack.add( cmd )
       visit_children( cmd )
       control_stack.remove_last
       return false
 
-    method on_visit( cmd:CallThisDynamicMethod )
+    method on_visit_node( cmd:CallThisDynamicMethod )
       propagate_exceptions_among_dynamic_methods( cmd.info )
-      on_visit( cmd->(as CallProcedure) )
+      on_visit_node( cmd->(as CallProcedure) )
 
-    method on_visit( cmd:CreateObject )
-      if (cmd.m_init and cmd.m_init.throws)
-        if (cmd.exception_analyzed) return
-        cmd.exception_analyzed = true
-
+    method on_visit_node( cmd:CreateObject )
+      if (cmd.m_init and cmd.m_init.throws?)
         back_propagate_thrown_exception( cmd.m_init.throws )
       endIf
 
-    method on_visit( cmd:Throw )
+    method on_visit_node( cmd:Throw )
       if (cmd.is_analyzed) return
       cmd.is_analyzed = true
       back_propagate_thrown_exception( cmd.exception.type )
 
-    method on( cmd:Try )->Cmd
+    method on_visit( cmd:Try )->Cmd
       control_stack.add( cmd )
       visit( cmd.statements )
       control_stack.remove_last

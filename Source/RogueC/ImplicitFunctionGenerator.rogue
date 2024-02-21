@@ -11,7 +11,7 @@ class ImplicitFunctionGenerator : Visitor [singleton]
       endIf
       return GenericFunctionDefinition( cmd.t, params, null, Statements(cmd.t,visit(cmd)) )
 
-    method on( cmd:GenericFnArg )->Cmd
+    method on_visit( cmd:GenericFnArg )->Cmd
       if (cmd.t.type == TokenType.SYMBOL_DOLLAR)
         return Access(cmd.t,"arg")
       else

@@ -20,107 +20,107 @@ endClass
 augment Real64?
   METHODS
     method to->Real32?
-      return which{ this|| Real32?() }
+      return which{ this:value->Real32 || Real32?() }
 
     method to->Int64?
-      return which{ this || Int64?() }
+      return which{ this:value->Int64 || Int64?() }
 
     method to->Int32?
-      return which{ this || Int32?() }
+      return which{ this:value->Int32 || Int32?() }
 
     method to->Character?
-      return which{ this || Character?() }
+      return which{ this:value->Character || Character?() }
 
     method to->Byte?
-      return which{ this || Byte?() }
+      return which{ this:value->Byte || Byte?() }
 endAugment
 
 augment Real32?
   METHODS
     method to->Real64?
-      return which{ this|| Real64?() }
+      return which{ this:value->Real64 || Real64?() }
 
     method to->Int64?
-      return which{ this || Int64?() }
+      return which{ this:value->Int64 || Int64?() }
 
     method to->Int32?
-      return which{ this || Int32?() }
+      return which{ this:value->Int32 || Int32?() }
 
     method to->Character?
-      return which{ this || Character?() }
+      return which{ this:value->Character || Character?() }
 
     method to->Byte?
-      return which{ this || Byte?() }
+      return which{ this:value->Byte || Byte?() }
 endAugment
 
 augment Int64?
   METHODS
     method to->Real64?
-      return which{ this|| Real64?() }
+      return which{ this:value->Real64 || Real64?() }
 
     method to->Real32?
-      return which{ this || Real32?() }
+      return which{ this:value->Real32  || Real32?() }
 
     method to->Int32?
-      return which{ this || Int32?() }
+      return which{ this:value->Int32  || Int32?() }
 
     method to->Character?
-      return which{ this || Character?() }
+      return which{ this:value->Character  || Character?() }
 
     method to->Byte?
-      return which{ this || Byte?() }
+      return which{ this:value->Byte  || Byte?() }
 endAugment
 
 augment Int32?
   METHODS
     method to->Real64?
-      return which{ this|| Real64?() }
+      return which{ this:value->Real64 || Real64?() }
 
     method to->Real32?
-      return which{ this || Real32?() }
+      return which{ this:value->Real32 || Real32?() }
 
     method to->Int64?
-      return which{ this || Int64?() }
+      return which{ this:value->Int64 || Int64?() }
 
     method to->Character?
-      return which{ this || Character?() }
+      return which{ this:value->Character || Character?() }
 
     method to->Byte?
-      return which{ this || Byte?() }
+      return which{ this:value->Byte || Byte?() }
 endAugment
 
 augment Character?
   METHODS
     method to->Real64?
-      return which{ this|| Real64?() }
+      return which{ this:value->Real64 || Real64?() }
 
     method to->Real32?
-      return which{ this || Real32?() }
+      return which{ this:value->Real32 || Real32?() }
 
     method to->Int64?
-      return which{ this || Int64?() }
+      return which{ this:value->Int64 || Int64?() }
 
     method to->Int32?
-      return which{ this || Int32?() }
+      return which{ this:value->Int32 || Int32?() }
 
     method to->Byte?
-      return which{ this || Byte?() }
+      return which{ this:value->Byte || Byte?() }
 endAugment
 
 augment Byte?
   METHODS
     method to->Real64?
-      return which{ this|| Real64?() }
+      return which{ this:value->Real64 || Real64?() }
 
     method to->Real32?
-      return which{ this || Real32?() }
+      return which{ this:value->Real32 || Real32?() }
 
     method to->Int64?
-      return which{ this || Int64?() }
+      return which{ this:value->Int64 || Int64?() }
 
     method to->Int32?
-      return which{ this || Int32?() }
+      return which{ this:value->Int32 || Int32?() }
 
     method to->Character?
-      return which{ this || Character?() }
+      return which{ this:value->Character || Character?() }
 endAugment

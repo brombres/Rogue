@@ -13,7 +13,7 @@ class AccessAndAssignPatcher : Visitor [singleton]
     method patch( cmd:Cmd, context )->Cmd
       return visit( cmd )
 
-    method on( cmd:AccessAndAssignContext )->Cmd
+    method on_visit( cmd:AccessAndAssignContext )->Cmd
       if (context) return context  # patching
       context = cmd.context        # finding
       return cmd

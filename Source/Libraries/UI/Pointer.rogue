@@ -2,8 +2,8 @@ module UI
 
 class Pointer [singleton]
   PROPERTIES
-    position  : XY?   # of most recently active press (may be still active)
-    positions = XY[]  # of active presses
+    position  : IntXY?   # of most recently active press (may be still active)
+    positions = IntXY[]  # of active presses
 
   METHODS
     method on( e:PointerEvent )
@@ -39,15 +39,15 @@ class Pointer [singleton]
 
       endIf
 
-    method closest_pointer_index( pos:XY )->Int32?
+    method closest_pointer_index( pos:IntXY )->Int?
       which (positions.count)
         case 0
           return null
         case 1
           return 0
         others
-          local shortest_index    : Int32?
-          local shortest_distance : Int32
+          local shortest_index    : Int?
+          local shortest_distance : Int
           forEach (xy at index in positions)
             local d = (pos - xy).magnitude_squared
             if (not shortest_index.exists or d < shortest_distance)
@@ -58,6 +58,6 @@ class Pointer [singleton]
           return shortest_index.value
       endWhich
 
-    method press_count->Int32
+    method press_count->Int
       return positions.count
 endClass

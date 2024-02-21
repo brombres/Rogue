@@ -1,0 +1,210 @@
+$include Control/ProgressFn
+
+class State<<$ExtendedType>>
+  DEFINITIONS
+    # Duration values
+    INSTANT    =  0  # one and done
+    INDEFINITE = -1  # action loops until finish() called or overridden is_finished()->true [default]
+
+  GLOBAL METHODS
+    method create( fn:Function() )->$ExtendedType
+      return StateCall<<$ExtendedType>>( fn )
+
+    method create( fn:Function(Real), duration:Real, progress_fn=ProgressFn.LINEAR:Function(Real)->Real )->$ExtendedType
+      return StateCallWithProgress<<$ExtendedType>>( fn, duration, progress_fn )
+
+    method operator+( a:$ExtendedType, b:$ExtendedType )->$ExtendedType
+      if (not a) return b
+      if (not b) return a
+      return a.and_then( b )
+
+    method operator|( a:$ExtendedType, b:$ExtendedType )->$ExtendedType
+      if (not a) return b
+      if (not b) return a
+      return a.also( b )
+
+    method wait( duration:Real )->$ExtendedType
+      return StateWait<<$ExtendedType>>( duration )
+
+    method wait_for( condition:Function->Logical, duration=$ExtendedType.INDEFINITE:Real )->$ExtendedType
+      return StateWaitFor<<$ExtendedType>>( condition, duration )
+
+  PROPERTIES
+    duration    : Real
+    progress_fn = ProgressFn.LINEAR : Function(Real)->Real
+
+    next_state       : $ExtendedType
+    concurrent_state : $ExtendedType
+
+    t          : Real
+    delta_time : Real
+    prev_time  : Real  # 0 = not started
+
+    exited : Logical # flag that assists when states finish outside of updated()
+
+  METHODS
+    method init_object
+      duration = default_duration
+
+    method init
+      noAction
+
+    method init( duration, progress_fn=ProgressFn.LINEAR, &indefinite )
+      if (indefinite) duration = INDEFINITE
+
+    method and_then( state:$ExtendedType )->$ExtendedType
+      if (state)
+        local cur = this
+        while (cur.next_state) cur = cur.next_state
+        cur.next_state = state
+      endIf
+      return this->(as $ExtendedType)
+
+    method and_then_also( state:$ExtendedType )->$ExtendedType
+      if (next_state) next_state = next_state.also( state )
+      else      next_state = state
+      return this->(as $ExtendedType)
+
+    method also( state:$ExtendedType )->$ExtendedType
+      if (state)
+        local cur = this
+        while (cur.concurrent_state) cur = cur.concurrent_state
+        cur.concurrent_state = state
+      endIf
+      return this->(as $ExtendedType)
+
+    method change_state( new_state:$ExtendedType )
+      next_state = new_state
+      exit_state
+
+    method count->Int32
+      local n = 1
+      if (next_state) n += next_state.count
+      if (concurrent_state) n += concurrent_state.count
+      return n
+
+    method default_duration->Real
+      return INDEFINITE
+
+    method describe->String
+      return type_name
+
+    method description->String
+      local result = describe
+      if (next_state) result = "$ + $" (result,next_state->String)
+      if (concurrent_state) result = "($) | ($)" (result,concurrent_state)
+      return result
+
+    method exit_state
+      exited = true
+      finish
+
+    method finish
+      if (duration < 0) duration = 0
+      t = duration
+
+    method insert_next( state:$ExtendedType )
+      if (state) next_state = state.and_then( next_state )
+
+    method is_finished->Logical
+      return (duration >= 0 and t >= duration)
+
+    method last->$ExtendedType
+      # Returns the last state in this chain
+      local cur = this
+      while (cur.next_state ) cur = cur.next_state
+      return cur
+
+    method make_indefinite
+      duration = $ExtendedType.INDEFINITE
+
+    method make_instant
+      duration = $ExtendedType.INSTANT
+
+    method on_start
+
+    method on_update
+
+    method on_finish
+
+    method progress->Real
+      return which{ duration>0:progress_fn(t/duration) || 1.0 }
+
+    method start_next->$ExtendedType
+      # Finds the successor to this state, adjusts links if necessary, and
+      # returns it or the result of a call to its updated().
+      if (next_state)
+        if (concurrent_state)
+          # Attach any parallel commands remaining in this finished command to the
+          # next_state command in this chain that will be the new head.
+          next_state = next_state.also( concurrent_state )
+          concurrent_state = null
+        endIf
+        return next_state.updated
+      elseIf (concurrent_state)
+        # start_next() is called after updated(), which has already updated 'concurrent_state' this tick.
+        return concurrent_state
+      else
+        return null
+      endIf
+
+    method to->String
+      return description
+
+    method updated->$ExtendedType
+      if (exited)
+        # Already exited outside of updated()
+        if (concurrent_state)
+          concurrent_state = concurrent_state.updated
+        endIf
+      else
+        local cur_time = System.execution_time
+        if (not prev_time)
+          on_start
+        else
+          delta_time = (cur_time - prev_time)
+          if (delta_time > 1.0/10.0) delta_time = 1.0/60.0
+          t += delta_time
+          if (duration >= 0 and t > duration) t = duration
+        endIf
+
+        prev_time = cur_time
+
+        on_update
+
+        if (concurrent_state)
+          concurrent_state = concurrent_state.updated
+        endIf
+
+        if (not is_finished) return this->(as $ExtendedType)
+      endIf
+
+      _handle_finish
+
+      return start_next
+
+    method _handle_finish
+      on_finish
+
+endClass
+
+class StateWait<<$ExtendedType>>( duration ) : State<<$ExtendedType>>;
+
+class StateWaitFor<<$ExtendedType>>( condition:Function->Logical, duration=$ExtendedType.INDEFINITE ) : State<<$ExtendedType>>
+  METHODS
+    method is_finished->Logical
+      return condition()
+endClass
+
+class StateCall<<$ExtendedType>>( fn:Function(), duration=$ExtendedType.INSTANT ) : State<<$ExtendedType>>
+  METHODS
+    method on_start
+      fn()
+endClass
+
+class StateCallWithProgress<<$ExtendedType>>( fn:Function(Real), duration, progress_fn ) : State<<$ExtendedType>>
+  METHODS
+    method on_update
+      fn( progress )
+endClass
+

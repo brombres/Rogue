@@ -5,8 +5,8 @@ An ergonomic object-oriented high-level language that compiles to C.
 
 About     | Current Release
 ----------|-----------------------
-Version   | 2.12
-Date      | February 11, 2023
+Version   | 2.34
+Date      | November 9, 2023
 Platforms | Windows, macOS, Linux
 License   | [MIT License](LICENSE)
 
@@ -22,6 +22,10 @@ Installing Morlock will also install Rogue and [Rogo](https://github.com/brombre
 ## Manual Install
 1. Clone this repository locally.
 2. Run `make`.
+
+# Documentation and Examples
+
+[API documentation](https://github.com/brombres/Rogue/wiki/API), a [syntax guide](https://github.com/brombres/Rogue/wiki/Syntax), and the source for various Rogue-based [utilities](https://github.com/brombres/Rogue/wiki/Written-in-Rogue) can be found on the [wiki](https://github.com/brombres/Rogue/wiki).
 
 # Syntax Highlighting
 

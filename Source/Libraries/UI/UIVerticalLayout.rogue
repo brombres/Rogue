@@ -2,7 +2,7 @@ module UI
 
 class UIVerticalLayout : UILayout
   METHODS
-    method measure_content_height( subcomponents:UIComponent[] )->Int32?
+    method measure_content_height( subcomponents:UIComponent[] )->Int?
       local total_h = 0
       forEach (component in subcomponents)
         local h = component.measure_height( null )
@@ -11,7 +11,7 @@ class UIVerticalLayout : UILayout
       endForEach
       return total_h
 
-    method measure_content_width( subcomponents:UIComponent[] )->Int32?
+    method measure_content_width( subcomponents:UIComponent[] )->Int?
       local max_w = 0
       forEach (component in subcomponents)
         local w = component.measure_width( null )
@@ -20,10 +20,10 @@ class UIVerticalLayout : UILayout
       endForEach
       return max_w
 
-    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int32 )
-      use subcomponent_heights = WorkList<<Int32?>>
-        local fixed_w     = 0
-        local flex_count  = 0
+    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int )
+      use subcomponent_heights = WorkList<<Int?>>
+        local fixed_w = 0
+        local flex_count = 0
         local flex_weight = 0.0
         forEach (component in subcomponents)
           local h = component.measure_height( null )
@@ -36,15 +36,15 @@ class UIVerticalLayout : UILayout
           endIf
         endForEach
 
-        local excess_w = Int32( (container_height - fixed_w).clamped_low(0) )
+        local excess_w = Int( (container_height - fixed_w).clamped_low(0) )
         local remaining_w = excess_w
         forEach (component at i in subcomponents)
           local h = subcomponent_heights[i]
-          local new_h : Int32
+          local new_h : Int
           if (h)
             new_h = component.size.y
           else
-            new_h = which{ flex_count==1:remaining_w || (excess_w*(component.weight.y/flex_weight))->Int32 }
+            new_h = which{ flex_count==1:remaining_w || (excess_w*(component.weight.y/flex_weight))->Int }
             remaining_w -= new_h
             --flex_count
           endIf
@@ -52,11 +52,11 @@ class UIVerticalLayout : UILayout
         endForEach
       endUse
 
-    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:IntBox ) [override]
       local cursor = container.position
       local w = container.size.x
       forEach (component in subcomponents)
-        component.update_layout_placement( Box(cursor, XY(w,component.size.y)) )
+        component.update_layout_placement( IntBox(cursor, IntXY(w,component.size.y)) )
         cursor += component.size.yv
       endForEach
 endClass

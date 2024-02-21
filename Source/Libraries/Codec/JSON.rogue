@@ -2,21 +2,21 @@
 
 class JSON
   GLOBAL METHODS
-    method load( file:File, error_log=null:PrintWriter )->Value
+    method load( file:File, error_log=null:PrintWriter )->Variant
       if (not file.exists) return undefined
       return parse( String(file) )
 
-    method parse( file:File, error_log=null:PrintWriter )->Value
+    method parse( file:File, error_log=null:PrintWriter )->Variant
       return load( file, &=error_log )
 
-    method parse( json:String, error_log=null:PrintWriter )->Value
+    method parse( json:String, error_log=null:PrintWriter )->Variant
       try
         return JSONParser( json ).parse_value
       catch (err:JSONParseError)
         if (error_log) error_log.println "JSON parse error: " + err
       endTry
 
-    method save( value:Value, file:File, &formatted, &omit_commas )->Logical
+    method save( value:Variant, file:File, &formatted, &omit_commas )->Logical
       return file.save( value.to_json(&=formatted, &=omit_commas)  )
 
 endClass
@@ -45,7 +45,7 @@ class JSONParser
     method next_is( ch:Character )->Logical
       return (reader.peek == ch)
 
-    method parse_value->Value
+    method parse_value->Variant
       consume_whitespace_and_eols
 
       if (not reader.has_another) return undefined
@@ -82,7 +82,7 @@ class JSONParser
         return undefined
       endIf
 
-    method parse_table( open_ch='{':Character, close_ch='}':Character )->Value
+    method parse_table( open_ch='{':Character, close_ch='}':Character )->Variant
       consume_whitespace_and_eols
 
       if (not reader.consume(open_ch)) return undefined
@@ -121,7 +121,7 @@ class JSONParser
 
       return table
 
-    method parse_list( open_ch='[':Character, close_ch=']':Character )->Value
+    method parse_list( open_ch='[':Character, close_ch=']':Character )->Variant
       consume_whitespace_and_eols
 
       if (not reader.consume(open_ch)) return undefined
@@ -216,7 +216,7 @@ class JSONParser
       if (ch.is_identifier_start("$")) return true
       return (ch == '"' or ch == '\'')
 
-    method parse_number->Value
+    method parse_number->Variant
       consume_whitespace_and_eols
 
       local sign = 1.0

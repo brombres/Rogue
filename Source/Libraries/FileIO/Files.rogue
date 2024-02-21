@@ -98,7 +98,7 @@ class Files
         File(filepath).copy_to( File(to_filepath), &=if_newer, &=if_different, &=verbose, &=dry_run )
       endForEach
 
-    method count->Int32
+    method count->Int
       return filepath_set.count
 
     method delete( &verbose, &dry_run )
@@ -115,8 +115,8 @@ class Files
     method filepaths->TableValuesIterator<<String,String>>
       return filepath_set.values
 
-    method get( index:Int32 )->String
-      return filepath_set[ index ]
+    method get( index:Int )->String
+      return filepath_set.at( index )
 
     method newest_timestamp_ms->Int64?
       local result : Int64?
@@ -155,7 +155,7 @@ class Files
 
     method remove( pattern:FilePattern )
       # Removes files from this listing but not from the filesystem - use delete() for that.
-      return remove( pattern.pattern )
+      remove( pattern.pattern )
 
     method remove( pattern:String )
       # Removes files from this listing but not from the filesystem - use delete() for that.
@@ -183,8 +183,8 @@ class Files
         filepath_set.remove( filepath )
       endForEach
 
-    method sync_to( dest_folder:File, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
-      if (dry_run) verbose = true
+    method sync_to( dest_folder:File, &verbose, &keep_unused, &dry_run, &missing_only, &if_newer )->Int
+      # If 'if_newer' is not specified then files are copied if they are different.
       dest_folder .= resolved
 
       if (not dest_folder.exists and not dry_run)
@@ -226,8 +226,12 @@ class Files
         contingent
           sufficient (not File(dest_filepath).exists)
           necessary  (not missing_only)
-          sufficient (File(src_filepath).size != File(dest_filepath).size)
-          necessary  (File(src_filepath).crc32 != File(dest_filepath).crc32)
+          if (if_newer)
+            necessary (File(src_filepath).is_newer_than(File(dest_filepath)))
+          else
+            sufficient (File(src_filepath).size != File(dest_filepath).size)
+            necessary  (File(src_filepath).crc32 != File(dest_filepath).crc32)
+          endIf
 
         satisfied
           ++change_count

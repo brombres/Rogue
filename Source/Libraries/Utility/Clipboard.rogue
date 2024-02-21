@@ -1,0 +1,340 @@
+================================================================================
+# Clipboard.rogue
+#
+# LINUX
+#   - Ensure the 'xclip' and 'uuid' are installed with the following Rogo
+#     buildfile directives:
+#     #$ LIBRARIES(Linux) = xclip
+#     #$ LIBRARIES(Linux) = uuid(uuid-dev)
+#
+# MACOS
+#  - Add the following C compile args (CC_ARGS_MACOS in Rogo buildfile):
+#    -I /System/Libraries/Frameworks -framework Foundation -framework AppKit
+#
+# WINDOWS
+#   - Link with user32.lib, gdi32.lib, and Rpcrt4.lib
+#   - Use CC_ARGS_WINDOWS in Rogo buildfile.
+================================================================================
+uses Graphics
+uses Codec/BMP
+uses Utility/UUID
+
+class Clipboard [singleton]
+  METHODS
+    method bitmap->Bitmap
+      if (System.is_windows)
+        return WindowsClipboard.bitmap
+      elseIf (System.is_linux)
+        if local result = LinuxClipboard.bitmap( "png" )
+          # Handles JPG too
+          return result
+        elseIf local result = LinuxClipboard.bitmap( "bmp" )
+          return result
+        else
+          return null
+        endIf
+      elseIf (System.is_macos)
+        return MacOSClipboard.bitmap
+      else
+        return null
+      endIf
+
+    method set_bitmap( bitmap:Bitmap )
+      if (System.is_windows)
+        WindowsClipboard.bitmap = bitmap
+      elseIf (System.is_linux)
+        LinuxClipboard.bitmap = bitmap
+      elseIf (System.is_macos)
+        MacOSClipboard.bitmap = bitmap
+      endIf
+
+endClass
+
+class LinuxClipboard [singleton]
+  # Implemented with assistance from:
+  # - https://stackoverflow.com/a/27995840/135791
+  # - https://stackoverflow.com/questions/18695934/error-cant-open-display-null-when-using-xclip-to-copy-ssh-public-key
+  # - https://emacs.stackexchange.com/questions/39019/xclip-hangs-shell-command
+  METHODS
+    method bitmap( type="png":String )->Bitmap
+      if (not System.is_linux) return null
+
+      local png_file = temp_file( type )
+      local cmd = "timeout 1.0 xclip -display :0 -select clipboard -target image/$ -out > $ 2> /dev/null\n"(type,png_file.esc)
+
+      local script_file = temp_file( "sh" )
+      script_file.save( cmd )
+
+      cmd = "sh $"(script_file.esc)
+      Process( cmd ).finish
+
+      if (png_file.exists and png_file.size)
+        local result = Bitmap( png_file )
+        png_file.delete
+        script_file.delete
+        return result
+      else
+        png_file.delete
+        script_file.delete
+        return null
+      endIf
+
+    method set_bitmap( bitmap:Bitmap )
+      if (not bitmap) return
+
+      local png_file = temp_file( "png" )
+      png_file.save( bitmap.to_png_bytes )
+
+      local cmd = "timeout 1.0 xclip -d :0 -selection clipboard -in $ &> /dev/null\n"(png_file.esc)
+      local script_file = temp_file( "sh" )
+      script_file.save( cmd )
+      cmd = "sh $"(script_file.esc)
+      Process( cmd ).finish
+
+      System.sleep( 0.1 )
+      png_file.delete
+      script_file.delete
+
+    method temp_file( extension="png":String )->File
+      return File( "/tmp/$.$"(UUID(),extension) )
+
+endClass
+
+class MacOSClipboard [singleton]
+  METHODS
+    method bitmap->Bitmap
+      local result : Bitmap
+      local width  : Int32
+      local height : Int32
+
+      native...
+        @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
+         |{
+         |  NSPasteboard* pb = NSPasteboard.generalPasteboard;
+         |
+         |  NSData* data = [pb dataForType:NSPasteboardTypePNG];
+         |  if ( !data ) data = [pb dataForType:NSPasteboardTypeTIFF];
+         |
+         |  if (data)
+         |  {
+         |    CGImageRef image = [[[NSImage alloc] initWithData:data] CGImageForProposedRect:NULL context:NULL hints:NULL];
+         |    if (image)
+         |    {
+         |      $width = (%Ns%RogueInt32)CGImageGetWidth( image );
+         |      $height = (%Ns%RogueInt32)CGImageGetHeight( image );
+                result = Bitmap( width, height )
+      native ...
+        @|      CGContextRef gc = CGBitmapContextCreate( (GLubyte*)$result->pixels->as_int32s, $width, $height, 8, $width*4,
+         |                                            CGColorSpaceCreateDeviceRGB(), kCGImageAlphaPremultipliedLast );
+         |      CGContextDrawImage( gc, CGRectMake(0.0, 0.0, (CGFloat)$width, (CGFloat)$height), image );
+         |      CGContextRelease( gc );
+
+      native ...
+        @|    }
+         |  }
+         |}
+         |#endif
+
+         if (result) result.[ swap_red_and_blue, is_premultiplied_alpha=true, unmultiply_alpha ]
+       return result
+
+    method set_bitmap( bitmap:Bitmap )
+      native...
+        @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
+
+      local png_bytes = bitmap.to_png_bytes
+      if (not png_bytes or not png_bytes.count) return
+      local count = png_bytes.count
+
+      native...
+        @|NSData* data = [NSData dataWithBytesNoCopy:$png_bytes->as_bytes length:$count freeWhenDone:NO];
+         |NSPasteboard* pb = NSPasteboard.generalPasteboard;
+         |[pb clearContents];
+         |[pb setData:data forType:NSPasteboardTypePNG];
+         |#endif
+
+  NATIVE
+    nativeHeader
+      @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
+       |  #import <Cocoa/Cocoa.h>
+       |  #import <Foundation/Foundation.h>
+       |#endif
+endClass
+
+class WindowsClipboard [singleton]
+  METHODS
+    method bitmap( existing_bitmap=null:Bitmap )->Bitmap
+      if (not open) return null
+
+      local bmp_bytes = Byte[]
+
+      native...
+        @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+         |HGLOBAL clipboard_data_handle = (HGLOBAL)GetClipboardData(CF_DIB);
+         |if ( !clipboard_data_handle )
+         |{
+         |  // Clipboard object is not a DIB, and is not auto-convertible to DIB
+         |  CloseClipboard();
+            return null
+      native...
+        @|}
+         |
+         |BITMAPINFOHEADER* info_header = (BITMAPINFOHEADER *)GlobalLock(clipboard_data_handle);
+         |if ( !info_header )
+         |{
+         |  // This can theoretically fail if mapping the HGLOBAL into local address space fails.
+         |  CloseClipboard();
+            return null
+      native...
+        @|}
+         |
+         |SIZE_T clipboard_data_size = GlobalSize(clipboard_data_handle);
+         |if (clipboard_data_size < sizeof(BITMAPINFOHEADER))
+         |{
+         |  // Malformed data. While older DIB formats exist (e.g. BITMAPCOREHEADER),
+         |  // they are not valid data for CF_DIB; it mandates a BITMAPINFO struct.
+         |  // If this fails, just act as if it wasn't a bitmap in the clipboard.
+         |  GlobalUnlock( clipboard_data_handle );
+         |  CloseClipboard();
+            return null
+      native...
+        @|}
+         |
+         |int pixel_data_offset = %Ns%RogueWindows_get_pixel_data_offset_for_packed_dib( info_header );
+         |
+         |size_t total_bitmap_file_size = sizeof(BITMAPFILEHEADER) + clipboard_data_size;
+         |
+         |BITMAPFILEHEADER file_header = {0};
+         |file_header.bfType = 0x4D42;
+         |file_header.bfSize = (DWORD)total_bitmap_file_size; // Will fail if bitmap size is nonstandard >4GB
+         |file_header.bfOffBits = sizeof(BITMAPFILEHEADER) + pixel_data_offset;
+
+         bmp_bytes.dim( native("total_bitmap_file_size")->Int32 )
+
+      native...
+        @|memcpy( $bmp_bytes->as_bytes, &file_header, sizeof(BITMAPFILEHEADER) );
+         |memcpy( $bmp_bytes->as_bytes+sizeof(BITMAPFILEHEADER), info_header, (DWORD)clipboard_data_size );
+         |
+         |GlobalUnlock( clipboard_data_handle );
+         |CloseClipboard();
+         |#endif
+
+      if (bmp_bytes.count) return BMPDecoder().decode( bmp_bytes, existing_bitmap )
+      return null
+
+    method open->Logical
+      native...
+        @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+          loop 20
+            if (native("OpenClipboard(NULL)")->Logical) return true
+            native @|Sleep( 10 );  // 10ms
+          endLoop
+      native...
+        @|#endif
+        return false
+
+    method set_bitmap( bitmap:Bitmap )
+     # Adapted from https://stackoverflow.com/a/66401824/135791
+     if (not bitmap or not open) return
+
+     local width = bitmap.width
+     local height = bitmap.height
+     native...
+       @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+        |const void* data = $bitmap->pixels->data;
+        |
+        |// Nomenclature: Data at offset 0 is R top left corner, offset 1 is G top left corner, etc.
+        |//               This is pretty much the opposite of what a HBITMAP normally does.
+        |
+        |// GDI won't help us here if we want to preserve the alpha channel. It doesn't support BI_ALPHABITFIELDS, and
+        |// we can't use BI_RGB directly because BI_RGB actually means BGRA in reality.
+        |// That means, unfortunately it's not going to be a simple memcpy :(
+        |
+        |DWORD pixel_data_size = $width * $height * 4;
+        |
+        |// We need BI_BITFIELDS for RGB color masks here.
+        |size_t total_size = sizeof(BITMAPINFOHEADER) + pixel_data_size;
+        |HGLOBAL h_global = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, total_size);
+        |void *mem = GlobalLock(h_global);
+        |
+        |BITMAPINFOHEADER *header = (BITMAPINFOHEADER *)mem;
+        |header->biSize = sizeof(BITMAPINFOHEADER);
+        |header->biWidth = $width;
+        |header->biHeight = -$height; // Negative height means top-down bitmap
+        |header->biPlanes = 1;
+        |header->biBitCount = 32;
+        |header->biCompression = BI_RGB;
+        |header->biSizeImage = pixel_data_size;
+        |
+        |BYTE *pixel_data = (BYTE *)mem + sizeof(BITMAPINFOHEADER);
+        |DWORD pixel_count = $width * $height;
+        |for (DWORD i = 0; i < pixel_count; ++i)
+        |{
+        |    // Convert RGBA to BGRA
+        |    DWORD tmp = ((DWORD *)data)[i];
+        |    //DWORD tmp2 = tmp & 0xff00ff00; // assumes LE
+        |    //tmp2 |= (tmp >> 16) & 0xff;
+        |    //tmp2 |= (tmp & 0xff) << 16;
+        |    //((DWORD *)pixel_data)[i] = tmp2;
+        |    ((DWORD *)pixel_data)[i] = tmp;
+        |}
+        |
+        |GlobalUnlock( h_global );
+        |
+        |EmptyClipboard();
+        |SetClipboardData( CF_DIB, h_global );
+        |
+        |// The h_global now belongs to the clipboard. Do not free it.
+        |
+        |#endif
+
+  NATIVE
+   # Adapted from https://stackoverflow.com/a/66401824/135791
+   nativeCode...
+     @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      |static INT  %Ns%RogueWindows_get_pixel_data_offset_for_packed_dib( const BITMAPINFOHEADER *info_header );
+      |
+      |// Returns the offset, in bytes, from the start of the BITMAPINFO, to the start of the pixel data array, for a packed DIB.
+      |static INT %Ns%RogueWindows_get_pixel_data_offset_for_packed_dib( const BITMAPINFOHEADER *info_header )
+      |{
+      |    INT offset_extra = 0;
+      |
+      |    if (info_header->biSize == sizeof(BITMAPINFOHEADER) /* 40 */)
+      |    {
+      |        // This is the common BITMAPINFOHEADER type. In this case, there may be bit masks following the BITMAPINFOHEADER
+      |        // and before the actual pixel bits (does not apply if bitmap has <= 8 bpp)
+      |        if (info_header->biBitCount > 8)
+      |        {
+      |            if (info_header->biCompression == BI_BITFIELDS)
+      |            {
+      |                offset_extra += 3 * sizeof(RGBQUAD);
+      |            }
+      |            else if (info_header->biCompression == 6 /* BI_ALPHABITFIELDS */)
+      |            {
+      |                // Not widely supported, but valid.
+      |                offset_extra += 4 * sizeof(RGBQUAD);
+      |            }
+      |        }
+      |    }
+      |
+      |    if (info_header->biClrUsed > 0)
+      |    {
+      |        // We have no choice but to trust this value.
+      |        offset_extra += info_header->biClrUsed * sizeof(RGBQUAD);
+      |    }
+      |    else
+      |    {
+      |        // In this case, the color table contains the maximum number for the current bit count (0 if > 8bpp)
+      |        if (info_header->biBitCount <= 8)
+      |        {
+      |            // 1bpp: 2
+      |            // 4bpp: 16
+      |            // 8bpp: 256
+      |            offset_extra += sizeof(RGBQUAD) << info_header->biBitCount;
+      |        }
+      |    }
+      |
+      |    return info_header->biSize + offset_extra;
+      |}
+      |#endif
+endClass

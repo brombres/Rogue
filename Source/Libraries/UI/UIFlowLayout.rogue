@@ -2,19 +2,19 @@ module UI
 
 class UIFlowLayout : UILayout
   PROPERTIES
-    content_height : Int32
-    line_spacing   : Int32   # Extra pixels between lines
+    content_height : Int
+    line_spacing   : Int   # Extra pixels between lines
 
   METHODS
     method init_object
       shrink_to_fit_height
 
-    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int32 )
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int )
       forEach (component in subcomponents)
         component.update_layout_height( component.measure_height(0).value )
       endForEach
 
-      local cursor = XY.zero
+      local cursor = IntXY.zero
       local max_width = container_width
       local line_height = 0
       local i = 0
@@ -77,7 +77,7 @@ class UIFlowLayout : UILayout
           # Can't fit any part of this component on the current line
           if (cursor.x > 0)
             # Retry all this on the next line
-            cursor = XY( 0, cursor.y+line_height+line_spacing )
+            cursor = IntXY( 0, cursor.y+line_height+line_spacing )
             line_height = 0
             nextIteration
           endIf
@@ -95,7 +95,7 @@ class UIFlowLayout : UILayout
         line_height .= or_larger( component.size.y )
 
         if (component.is_br)
-          cursor = XY( 0, cursor.y+line_height+line_spacing )
+          cursor = IntXY( 0, cursor.y+line_height+line_spacing )
           line_height = 0
         endIf
 
@@ -103,10 +103,10 @@ class UIFlowLayout : UILayout
       endWhile
 
       # Increase the height of this layout to contain all items
-      cursor += XY(0,line_height+line_spacing)
+      cursor += IntXY(0,line_height+line_spacing)
       content_height = cursor.y
 
-    method measure_height( container_height:Int32? )->Int32?
+    method measure_height( container_height:Int? )->Int?
       if (is_fixed_height) return size.y
       if (is_expand_to_fill_height) return container_height
 
@@ -114,10 +114,10 @@ class UIFlowLayout : UILayout
       # so content_height will always be set by now.
       return content_height
 
-    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int32 )
+    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int )
       noAction  # already done as part of update_subcomponent_widths()
 
-    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:IntBox ) [override]
       local x1 = container.position.x
       local cursor = container.position
       local max_width = container.size.x
@@ -144,7 +144,7 @@ class UIFlowLayout : UILayout
 
         if (not (cursor.x + total_w <= max_width) and cursor.x)
           # Advance to next line
-          cursor = XY( x1, cursor.y+line_height+line_spacing )
+          cursor = IntXY( x1, cursor.y+line_height+line_spacing )
           line_height = 0
           justify( subcomponents, i1, i-1, max_width )
           i1 = i
@@ -152,13 +152,13 @@ class UIFlowLayout : UILayout
         endIf
 
         # Ready to place component
-        component.update_layout_placement( Box(cursor,component.size) )
+        component.update_layout_placement( IntBox(cursor,component.size) )
         local text = component.text_content
         if (cursor.x > x1 or not text or text != " ") cursor += component.size.xv
         line_height .= or_larger( component.size.y )
 
         if (component.is_br)
-          cursor = XY( x1, cursor.y+line_height+line_spacing )
+          cursor = IntXY( x1, cursor.y+line_height+line_spacing )
           line_height = 0
           justify( subcomponents, i1, i-1, max_width )
           i1 = i
@@ -168,16 +168,16 @@ class UIFlowLayout : UILayout
       endWhile
       justify( subcomponents, i1, i-1, max_width )
 
-    method justify( subcomponents:UIComponent[], i1:Int32, i2:Int32, max_width:Int32 )
+    method justify( subcomponents:UIComponent[], i1:Int, i2:Int, max_width:Int )
       if (i2 < i1) return
       localize alignment
       if (alignment.position.x == 0.0) return  # already left-justified
 
       max_width -= subcomponents[ forEach in i1..i2 ].size.x
-      local delta = ((max_width * alignment.position.x) / 2).floor->Int32
+      local delta = ((max_width * alignment.position.x) / 2).floor->Int
       if (delta)
         forEach (i in i1..i2)
-          subcomponents[i].position += XY(delta,0)
+          subcomponents[i].position += IntXY(delta,0)
         endForEach
       endIf
 

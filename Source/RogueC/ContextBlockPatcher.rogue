@@ -8,6 +8,6 @@ class ContextBlockPatcher : Visitor [singleton]
     method patch( v, cmd:Cmd )->Cmd
       return visit( cmd )
 
-    method on( cmd:ContextBlockContext )->Cmd
+    method on_visit( cmd:ContextBlockContext )->Cmd
       return GetLocal( v.t, v )
 endClass

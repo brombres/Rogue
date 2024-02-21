@@ -10,7 +10,7 @@ class MutexFile
   #   endUse
   PROPERTIES
     file : File
-    fd   : Int32
+    fd   : Int
 
   METHODS
     method init( file )
@@ -25,6 +25,6 @@ class MutexFile
       native @|flock( $fd, LOCK_EX );
       return this
 
-    method on_end_use( THIS:MutexFile )
+    method on_end_use( THISOBJ:MutexFile )
       native @|flock( $fd, LOCK_UN );
 endClass

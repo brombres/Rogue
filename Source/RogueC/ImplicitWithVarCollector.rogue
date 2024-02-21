@@ -1,0 +1,13 @@
+module RogueC
+
+class ImplicitWithVarCollector : ScopeVisitor
+  PROPERTIES
+    unknown_identifiers = String[]
+
+  METHODS
+    method on_visit( cmd:Access )->Cmd
+      if (not find_local(cmd.name) and not unknown_identifiers.contains(cmd.name))
+        unknown_identifiers.add( cmd.name )
+      endIf
+      return cmd
+endClass

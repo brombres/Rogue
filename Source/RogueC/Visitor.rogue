@@ -8,8 +8,8 @@ class Visitor
   #
   #   CALL                       OVERLOADABLE METHOD
   #   --------------------       -----------------------------------------
-  #   visit(cmd)->Cmd         -> on(cmd:CmdType)->Cmd
-  #     visit_content(cmd)    ->   on_visit(cmd:CmdType)
+  #   visit(cmd)->Cmd         -> on_visit(cmd:CmdType)->Cmd
+  #     visit_node(cmd)    ->   on_visit_node(cmd:CmdType)
   #       visit_children(cmd) ->     on_visit_children(cmd:CmdType)
   #     validate(cmd)->Cmd    ->   on_validate(cmd:CmdType)->Cmd
   #
@@ -22,12 +22,12 @@ class Visitor
     this_procedure : Procedure
 
   METHODS
-    method on( cmd:Cmd )->Cmd
-      visit_content( cmd )
+    method on_visit( cmd:Cmd )->Cmd
+      visit_node( cmd )
       return validate( cmd )
 
-    method on_visit( cmd:Cmd )
-      # Called from on(CmdType). If you overload this method with an extended
+    method on_visit_node( cmd:Cmd )
+      # Called from on_visit(CmdType). If you overload this method with an extended
       # Cmd type, this node's children will only be visited if and
       # when you call visit_children(cmd).
       visit_children( cmd )
@@ -36,32 +36,32 @@ class Visitor
       return cmd
 
     method visit( cmd:Cmd )->Cmd [propagated]
-      # Call to invoke the appropriate on/on_visit() for the given Cmd type.
+      # Call to invoke the appropriate on_visit/on_visit_node() for the given Cmd type.
       #
       # For example:
-      #   method on( cmd:Binary )->Cmd
+      #   method on_visit( cmd:Binary )->Cmd
       #     cmd.left  = visit(cmd.left)
       #     cmd.right = visit(cmd.right)
       #     return cmd
       if (cmd is null) return null
-      return cmd.dispatch<<on,ThisType,Cmd>>( this )
+      return cmd.dispatch<<on_visit,ThisType,Cmd>>( this )
 
     method visit_children( cmd:Cmd )->Cmd [propagated]
-      # Call from 'on()' or 'on_visit()' handler to visit subtrees.
+      # Call from 'on_visit()' or 'on_visit_node()' handler to visit subtrees.
       cmd.dispatch<<on_visit_children,ThisType>>( this )
       return cmd
 
-    method visit_content( cmd:Cmd )->Cmd [propagated]
-      # Primarily for internal use - see on(Cmd) for usage.
-      cmd.dispatch<<on_visit,ThisType>>( this )
+    method visit_node( cmd:Cmd )->Cmd [propagated]
+      # Primarily for internal use - see on_visit(Cmd) for usage.
+      cmd.dispatch<<on_visit_node,ThisType>>( this )
       return cmd
 
     method visit( m:Module )
       temporarily this_module = m
-        on_visit( m )
+        on_visit_node( m )
       endTemporarily
 
-    method on_visit( m:Module )
+    method on_visit_node( m:Module )
       visit_types( m )
 
     method visit_types( m:Module )
@@ -151,6 +151,7 @@ class Visitor
     method on_visit_children( cmd:Local )
       cmd.type = visit(cmd.type)->(as Type)
       cmd.initial_value = visit(cmd.initial_value)
+      cmd.initial_value_tokens = visit(cmd.initial_value_tokens)->(as TokenList)
 
     method on_visit_children( cmd:LocalDeclarations )
       cmd.declarations = visit(cmd.declarations)
@@ -498,7 +499,7 @@ class Visitor
 
     method on_visit_children( cmd:Contingent )
       cmd.statements = visit(cmd.statements)
-      cmd.satisfied_statements = visit(cmd.satisfied_statements)
+      cmd.satisfied_scope = visit(cmd.satisfied_scope)
       cmd.unsatisfied_statements = visit(cmd.unsatisfied_statements)
 
     method on_visit_children( cmd:Necessary )
@@ -691,10 +692,10 @@ class Visitor
       cmd.conditional_context = visit(cmd.conditional_context)->(as ConditionalContext)
       cmd.statements = visit(cmd.statements)
 
-    method on_visit_children( cmd:ValueList )
+    method on_visit_children( cmd:VariantList )
       cmd.args = visit(cmd.args)
 
-    method on_visit_children( cmd:ValueTable )
+    method on_visit_children( cmd:VariantTable )
       cmd.args = visit(cmd.args)->(as KeyValuePairList)
 
     method on_visit_children( cmd:CallMethodPointer )
@@ -732,6 +733,27 @@ class Visitor
     method on_visit_children( cmd:InvokeContext )
       cmd.context = visit(cmd.context)
       cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:ListIndexedAccess )
+      cmd.context = visit(cmd.context)
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:ExplicitCast )
+      cmd.operand = visit(cmd.operand)
+      cmd.to_type = visit(cmd.to_type)->(as Type)
+
+    method on_visit_children( cmd:NotIsType )
+      cmd.operand = visit(cmd.operand)
+      cmd.compare_type = visit(cmd.compare_type)->(as Type)
+
+    method on_visit_children( cmd:LiteralReal )
+      #cmd.value = visit(cmd.value)->(as Real)
+
+    method on_visit_children( cmd:LiteralReal32 )
+      #cmd.value = visit(cmd.value)->(as Real)
+
+    method on_visit_children( cmd:LiteralReal64 )
+      #cmd.value = visit(cmd.value)->(as Real)
 
 endClass
 

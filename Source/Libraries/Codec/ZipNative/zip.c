@@ -36,7 +36,7 @@
 #include <unistd.h>
 #endif
 
-// Rogue Libraries/Utility/Zip.rogue includes these headers.
+// %Ns%Rogue Libraries/Utility/Zip.rogue includes these headers.
 // #include "miniz.h"
 // #include "zip.h"
 

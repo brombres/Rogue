@@ -45,7 +45,11 @@ class Attribute
     FAUX               = (Int64(1):<<:40)
     PREFERRED          = (Int64(1):<<:41)
     NATIVE_TYPE        = (Int64(1):<<:42)
-    GENERATOR          = (Int64(1):<<:43)
+    DOC_GENERATED      = (Int64(1):<<:43)
+    OMIT_DOC           = (Int64(1):<<:44)
+    AUGMENTED          = (Int64(1):<<:45)
+    REPLACE            = (Int64(1):<<:46)
+    GENERATOR          = (Int64(1):<<:47)
 endClass
 
 class Attributes : CmdList
@@ -92,6 +96,10 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE<< is_faux,              Attribute.FAUX >>
   ROGUE_ATTRIBUTE<< is_preferred,         Attribute.PREFERRED >>
   ROGUE_ATTRIBUTE<< is_native_type,       Attribute.NATIVE_TYPE >>
+  ROGUE_ATTRIBUTE<< doc_generated,        Attribute.DOC_GENERATED >>
+  ROGUE_ATTRIBUTE<< omit_doc,             Attribute.OMIT_DOC >>
+  ROGUE_ATTRIBUTE<< augmented,            Attribute.AUGMENTED >>
+  ROGUE_ATTRIBUTE<< is_replace,           Attribute.REPLACE >>
   ROGUE_ATTRIBUTE<< is_generator,         Attribute.GENERATOR >>
 
   PROPERTIES
@@ -186,6 +194,9 @@ augment
 
     method AttributePropagated.attribute_flags->Int64
       return Attribute.PROPAGATED
+
+    method AttributeReplace.attribute_flags->Int64
+      return Attribute.REPLACE
 
     method AttributeReturnsThis.attribute_flags->Int64
       return Attribute.RETURNS_THIS

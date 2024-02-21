@@ -56,7 +56,7 @@ class ResolveUsedElements : InspectionVisitor
               local type_PropertyInfo = Program.default_module.types//PropertyInfo
               type_PropertyInfo.resolve
 
-              m_call_global = type_MethodInfo.global_methods["call_global_method(Rogue::Int32,Rogue::Int64,Rogue::Value)"]
+              m_call_global = type_MethodInfo.global_methods["call_global_method(Rogue::Int32,Rogue::Int64,Rogue::Variant)"]
               assert m_call_global
               m_call_global.resolve
               local t = m_call_global.t
@@ -72,7 +72,7 @@ class ResolveUsedElements : InspectionVisitor
                 m_call_global.body.statements.insert( cmd_which )
               endUse
 
-              m_call_object = type_MethodInfo.global_methods["call_object_method(Rogue::Int32,Rogue::Int64,Rogue::Value,Rogue::Value)"]
+              m_call_object = type_MethodInfo.global_methods["call_object_method(Rogue::Int32,Rogue::Int64,Rogue::Variant,Rogue::Variant)"]
               assert m_call_object
               m_call_object.resolve
               t = m_call_object.t
@@ -105,7 +105,7 @@ class ResolveUsedElements : InspectionVisitor
                 m_get_global_property.body.statements.add( Return(t,GetLocal(m_get_global_property.locals[0])) )
               endUse
 
-              m_get_property = type_PropertyInfo.global_methods["get_property(Rogue::Int32,Rogue::Value)"]
+              m_get_property = type_PropertyInfo.global_methods["get_property(Rogue::Int32,Rogue::Variant)"]
               assert m_get_property
               m_get_property.resolve
               t = m_get_property.t
@@ -122,7 +122,7 @@ class ResolveUsedElements : InspectionVisitor
                 m_get_property.body.statements.add( Return(t,GetLocal(m_get_property.locals[0])) )
               endUse
 
-              m_set_global_property = type_PropertyInfo.global_methods["set_global_property(Rogue::Int32,Rogue::Value)"]
+              m_set_global_property = type_PropertyInfo.global_methods["set_global_property(Rogue::Int32,Rogue::Variant)"]
               assert m_set_global_property
               m_set_global_property.resolve
               t = m_set_global_property.t
@@ -138,7 +138,7 @@ class ResolveUsedElements : InspectionVisitor
                 m_set_global_property.body.statements.add( cmd_which )
               endUse
 
-              m_set_property = type_PropertyInfo.global_methods["set_property(Rogue::Int32,Rogue::Value,Rogue::Value)"]
+              m_set_property = type_PropertyInfo.global_methods["set_property(Rogue::Int32,Rogue::Variant,Rogue::Variant)"]
               assert m_set_property
               m_set_property.resolve
               t = m_set_property.t
@@ -183,7 +183,7 @@ class ResolveUsedElements : InspectionVisitor
         endIf
       endWhile
 
-    method on_visit( mod:Module ) [override]
+    method on_visit_node( mod:Module ) [override]
       assert( mod.m_on_launch )
       if (mod.m_on_launch.statements.count)
         visit( mod.m_on_launch.type_context )
@@ -196,6 +196,8 @@ class ResolveUsedElements : InspectionVisitor
       endForEach
 
     method on_visit_type( type:Type ) [override]
+      type.resolve
+
       if (type.attributes.is_visiting) return
       type.attributes.is_visiting = true
 
@@ -215,13 +217,15 @@ class ResolveUsedElements : InspectionVisitor
       endForEach
 
       temporarily this_type = type
-        forEach (m in type.global_methods)
-          if ((m.attributes.is_essential or m.attributes.is_api))
-            temporarily this_module=m.module_context, this_procedure=m
-              visit( m )
-            endTemporarily
-          endIf
-        endForEach
+        if (not type.attributes.is_augment)
+          forEach (m in type.global_methods)
+            if ((m.attributes.is_essential or m.attributes.is_api))
+              temporarily this_module=m.module_context, this_procedure=m
+                visit( m )
+              endTemporarily
+            endIf
+          endForEach
+        endIf
       endTemporarily
 
       if (type.attributes.is_aspect) return
@@ -268,13 +272,13 @@ class ResolveUsedElements : InspectionVisitor
         endForEach
       endTemporarily
 
-    method on_visit( cmd:CallProcedure )
+    method on_visit_node( cmd:CallProcedure )
       visit( cmd.info )
 
-    method on_visit( cmd:CallDynamicMethod )
+    method on_visit_node( cmd:CallDynamicMethod )
       visit_dynamic_call( cmd.info )
 
-    method on_visit( cmd:CallThisDynamicMethod )
+    method on_visit_node( cmd:CallThisDynamicMethod )
       visit_dynamic_call( cmd.info )
 
     method visit_dynamic_call( info:Procedure )
@@ -293,17 +297,17 @@ class ResolveUsedElements : InspectionVisitor
         endContingent
       endForEach
 
-    method on_visit( cmd:CreateObject )
+    method on_visit_node( cmd:CreateObject )
       visit( cmd.m_init )
 
-    method on_visit( cmd:CreateObjectAndSetLocal )
+    method on_visit_node( cmd:CreateObjectAndSetLocal )
       visit( cmd.of_type )
 
-    method on_visit( cmd:GetGlobalProperty )
+    method on_visit_node( cmd:GetGlobalProperty )
       visit( cmd.info.type_context )
       visit( cmd.info )
 
-    method on( m:Procedure )->Logical
+    method on_visit( m:Procedure )->Logical
       if (m.attributes.is_visiting or m.attributes.is_abstract) return false
       m.attributes.is_visiting = true
 
@@ -344,13 +348,13 @@ class ResolveUsedElements : InspectionVisitor
 
       if (prop.attributes.is_global)
         block
-          # return global_property->Value
+          # return global_property->Variant
           local v_result = m_get_global_property.locals[0]
           cmd_access = GetGlobalProperty( t, prop )                             # global_property
-          if (prop.type is not Program.@type_Value)
-            cmd_access = TypeAccess(t, Program.@type_Value,Args(t,cmd_access))   # global_property->Value
+          if (prop.type is not Program.@type_Variant)
+            cmd_access = TypeAccess(t, Program.@type_Variant,Args(t,cmd_access))   # global_property->Variant
           endIf
-          cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment ) # result = global_property->Value
+          cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment ) # result = global_property->Variant
 
           cmd_access = Statements( t, cmd_access )
           local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
@@ -367,7 +371,7 @@ class ResolveUsedElements : InspectionVisitor
         if (not prop.type_context.is_compound)
           # global_property = new_value->to<<property-type>>
           cmd_access = GetLocal( t, m_set_global_property.parameters[1] )                         # new_value
-          if (prop.type is not Program.@type_Value)
+          if (prop.type is not Program.@type_Variant)
             cmd_access = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type, Args(t) )  # new_value.to<<property-type>>
           endIf
           cmd_access = SetGlobalProperty( t, prop, cmd_access )               # global_property = new_value.to<<property-type>>
@@ -385,19 +389,20 @@ class ResolveUsedElements : InspectionVisitor
         endIf
 
       else
+        # Object property
         block
-          # return context.to<<Type>>.property->Value
+          # return context.to<<Type>>.property->Variant
           local params = m_get_property.parameters
           local v_result = m_get_property.locals[0]
           cmd_access = GetLocal( t, params[1] )  # context
-          if (prop.type_context is not Program.@type_Value)
+          if (prop.type_context is not Program.@type_Variant)
             cmd_access = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type_context, Args(t) )  # context.to<<context-type>>
           endIf
           cmd_access = ContextDirectAccess( t, cmd_access, prop.name )            # context.to<<ArgType>>.property
-          if (prop.type is not Program.@type_Value)
-            cmd_access = TypeAccess(t, Program.@type_Value,Args(t,cmd_access))     # context.to<<ArgType>>.property->Value
+          if (prop.type is not Program.@type_Variant)
+            cmd_access = TypeAccess(t, Program.@type_Variant,Args(t,cmd_access))     # context.to<<ArgType>>.property->Variant
           endIf
-          cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment )   # result = context.to<<ArgType>>.property->Value
+          cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment )   # result = context.to<<ArgType>>.property->Variant
 
           cmd_access = Statements( t, cmd_access )
           local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
@@ -414,11 +419,11 @@ class ResolveUsedElements : InspectionVisitor
         if (not prop.type_context.is_compound)
           # property = new_value->to<<property-type>>
           local cmd_context = GetLocal( t, m_set_property.parameters[1] ) : Cmd                          # context
-          if (prop.type_context is not Program.@type_Value)
+          if (prop.type_context is not Program.@type_Variant)
             cmd_context = TemplatedMethodContextAccess( t, cmd_context, "to", prop.type_context, Args(t) ) # context.to<<context-type>>
           endIf
           cmd_access  = GetLocal( t, m_set_property.parameters[2] )                             # new_value
-          if (prop.type is not Program.@type_Value)
+          if (prop.type is not Program.@type_Variant)
             cmd_access  = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type, Args(t) ) # new_value.to<<property-type>>
           endIf
           cmd_access  = SetProperty( t, cmd_context, prop, cmd_access )                         # property = new_value.to<<property-type>>
@@ -458,22 +463,26 @@ class ResolveUsedElements : InspectionVisitor
         local param_types = TypeList(t)
         local args = Args(t)
         if (not m.is_global)
-          param_types.add( m.type_context )
+          param_types.add( m.type_context.generic_type )
           args.add( GetLocal(t,dispatch_params[2]) )
         endIf
         forEach (p at i in m.parameters)
           local cmd = IndexedAccess( t, GetLocal(t,value_args_info), LiteralInt32(t,i) ) : Cmd # args[i]
-          if (p.type is not Program.@type_Value)
-            cmd = TemplatedMethodContextAccess( t, cmd, "to", p.type, Args(t) )  # args[i].to<<ArgType>>
+          local generic_type = p.type.generic_type
+          if (p.type is not Program.@type_Variant)
+            cmd = TemplatedMethodContextAccess( t, cmd, "to", generic_type, Args(t) )  # args[i].to<<ArgType>>
           endIf
-          param_types.add( p.type )
+          param_types.add( generic_type )
           args.add( cmd )
         endForEach
 
         cmd_call = CallMethodPointer( t, m, GetLocal(t,dispatch_params[1]), param_types, args, m.return_type )
 
-        if (m.return_type and m.return_type is not Program.@type_Value)
-          cmd_call = Return( t, TypeAccess(t, Program.@type_Value,Args(t,cmd_call)) )
+        if (m.return_type and m.return_type is not Program.@type_Variant)
+          local arg : Cmd
+          if (m.return_type.is_reference) arg = ExplicitCast( t, cmd_call, m.return_type )
+          else                            arg = cmd_call
+          cmd_call = Return( t, TypeAccess(t, Program.@type_Variant,Args(t,arg)) )
         endIf
 
         cmd_call = Statements( t, cmd_call )
@@ -493,7 +502,7 @@ class ResolveUsedElements : InspectionVisitor
       if (m.is_global) cmd_call_global_cases.add( cmd_case )
       else             cmd_call_object_cases.add( cmd_case )
 
-    method on_visit( cmd:Type )
+    method on_visit_node( cmd:Type )
       visit_type( cmd )
 
 endClass

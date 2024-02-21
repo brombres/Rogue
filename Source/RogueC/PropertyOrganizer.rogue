@@ -8,9 +8,9 @@ class PropertyOrganizer : Visitor
       # Called when instantiating a template
       visit( class_def )
 
-    method on_visit( cmd:Class )
+    method on_visit_node( cmd:Class )
       if (this_type.is_enum)
-        collect( cmd.t, Property(cmd.t, "value", null, Program.type_Int32) )
+        collect( cmd.t, Property(cmd.t, "value", null, Program.type_Int) )
         ensure<<this_type.categories>>
 
       elseIf (cmd.constructor_properties)
@@ -50,7 +50,7 @@ class PropertyOrganizer : Visitor
         if (not class_def.constructor_properties) class_def.constructor_properties = Parameters(this_type.t)
         local enum_properties = class_def.constructor_properties
 
-        local ordinal = 0 : Int32?
+        local ordinal = 0 : Int?
         if (this_type.attributes.bitflags) ordinal = 1
 
         local prev_name   : String
@@ -71,17 +71,17 @@ class PropertyOrganizer : Visitor
 
           local value = category.value
           if (value)
-            if (value instanceOf LiteralInt32)
-              ordinal = advance_ordinal( value->(as LiteralInt32).value, &bitflags=this_type.attributes.bitflags )
+            if (value instanceOf LiteralInt)
+              ordinal = advance_ordinal( value->(as LiteralInt).value, &bitflags=this_type.attributes.bitflags )
             else
               ordinal = null
             endIf
           else
             if (ordinal)
-              value = LiteralInt32(t,ordinal.value)
+              value = LiteralInt(t,ordinal.value)
               ordinal = advance_ordinal( ordinal.value, &bitflags=this_type.attributes.bitflags )
             else
-              value = Add( t, ContextAccess(t,TypeContext(t,this_type),prev_name), LiteralInt32(t,1) )
+              value = Add( t, ContextAccess(t,TypeContext(t,this_type),prev_name), LiteralInt(t,1) )
             endIf
           endIf
 
@@ -103,7 +103,7 @@ class PropertyOrganizer : Visitor
         endBlock
       endIf
 
-    method advance_ordinal( ordinal:Int32, &bitflags )->Int32
+    method advance_ordinal( ordinal:Int, &bitflags )->Int
       if (bitflags)
         local next_value = 1
         while (next_value <= ordinal and next_value >= 0) next_value = next_value :<<: 1
@@ -112,7 +112,15 @@ class PropertyOrganizer : Visitor
         return ordinal + 1
       endIf
 
-    method on( cmd:GlobalPropertyDeclarations )->Cmd
+    method on_visit( cmd:GlobalPropertyDeclarations )->Cmd
+      forEach (decl in cmd.declarations)
+        if local p = decl->(as Property)
+          p.doc = cmd.doc
+        elseIf local p = decl->(as NativeProperty)
+          p.doc = cmd.doc
+        endIf
+      endForEach
+
       local type = cmd.type
       if (type)
         forEach (decl in cmd.declarations)
@@ -132,16 +140,24 @@ class PropertyOrganizer : Visitor
             p.attributes.flags |= cmd.attributes.flags
             collect_global( p.t, p )
           else
-            local c_property = decl->(as NativeCProperty)
-            if (c_property)
-              throw c_property.t.error( "Global properties cannot be native." )
+            local native_property = decl->(as NativeProperty)
+            if (native_property)
+              throw native_property.t.error( "Global properties cannot be native." )
             endIf
           endIf
         endForEach
       endIf
       return null
 
-    method on( cmd:PropertyDeclarations )->Cmd
+    method on_visit( cmd:PropertyDeclarations )->Cmd
+      forEach (decl in cmd.declarations)
+        if local p = decl->(as Property)
+          p.doc = cmd.doc
+        elseIf local p = decl->(as NativeProperty)
+          p.doc = cmd.doc
+        endIf
+      endForEach
+
       local type = cmd.type
       if (type)
         forEach (decl in cmd.declarations)
@@ -161,10 +177,10 @@ class PropertyOrganizer : Visitor
             p.attributes.flags |= cmd.attributes.flags
             collect( p.t, p )
           else
-            local c_property = decl->(as NativeCProperty)
-            if (c_property)
+            local native_property = decl->(as NativeProperty)
+            if (native_property)
               ++Program.native_property_count
-              p = Property( c_property.t, ".native"+Program.native_property_count, c_property.expression )
+              p = Property( native_property.t, ".native"+Program.native_property_count, native_property.expression )
               p.attributes.flags |= cmd.attributes.flags
               collect( p.t, p )
             endIf
@@ -173,7 +189,7 @@ class PropertyOrganizer : Visitor
       endIf
       return null
 
-    method on_visit( cmd:This )
+    method on_visit_node( cmd:This )
       cmd.this_type = this_type
 
     method collect( t:Token, p:Property )
@@ -211,16 +227,11 @@ class PropertyOrganizer : Visitor
         endIf
       endIf
 
-      p.type.[ ensure_definition, organize_properties ]
-
-      if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
-        p.type.attributes.contains_reference = true
-      endIf
+      p.type.[ ensure_definition, organize_type ]
 
       local existing_p = this_type.global_properties[p.name]
       if (existing_p and existing_p.type_context is this_type)
         throw t.error( ''Type $ already defines a property called "$".''(this_type,p.name) )
       endIf
       this_type.global_properties[ p.name ] = p
-
 endClass

@@ -13,10 +13,10 @@ class InspectionVisitor<<$ReturnType>>
   METHODS
     method visit( m:Module )
       temporarily this_module = m
-        on_visit( m )
+        on_visit_node( m )
       endTemporarily
 
-    method on_visit( m:Module )
+    method on_visit_node( m:Module )
       visit_types( m )
 
     method visit_types( m:Module )
@@ -57,28 +57,28 @@ class InspectionVisitor<<$ReturnType>>
 
     method visit( cmd:Cmd )->$ReturnType [propagated]
       if (cmd is null) return $defaultValue<<$ReturnType>>
-      return cmd.dispatch<<on,ThisType,$ReturnType>>( this )
+      return cmd.dispatch<<on_visit,ThisType,$ReturnType>>( this )
 
-    method visit_content( cmd:Cmd ) [propagated]
-      cmd.dispatch<<on_visit,ThisType>>( this )
+    method visit_node( cmd:Cmd ) [propagated]
+      cmd.dispatch<<on_visit_node,ThisType>>( this )
 
     method visit_children( cmd:Cmd )->$ReturnType [propagated]
-      # Call from 'on()' or 'on_visit()' handler to visit subtrees.
+      # Call from 'on_visit()' or 'on_visit_node()' handler to visit subtrees.
       return cmd.dispatch<<on_visit_children,ThisType,$ReturnType>>( this )
 
-    method on( cmd:Cmd )->$ReturnType
+    method on_visit( cmd:Cmd )->$ReturnType
       # Default per-node InspectionVisitor call sequence.
       #
       #   CALL                                   OVERLOADABLE METHOD
       #   --------------------                   ------------------------
-      #   visit(cmd)->$ReturnType            ->  on(cmd:CmdType)->$ReturnType
-      #     visit_content(cmd)               ->    on_visit(cmd:CmdType)
+      #   visit(cmd)->$ReturnType            ->  on_visit(cmd:CmdType)->$ReturnType
+      #     visit_node(cmd)               ->    on_visit_node(cmd:CmdType)
       #     visit_children(cmd)->$ReturnType ->    on_visit_children(cmd:CmdType)
-      visit_content( cmd )
+      visit_node( cmd )
       return visit_children( cmd )
 
-    method on_visit( cmd:Cmd )
-      # This method is called from the default on(CmdType) before
+    method on_visit_node( cmd:Cmd )
+      # This method is called from the default on_visit(CmdType) before
       # children are visited.
 
     method on_visit_children( cmd:Cmd )->$ReturnType
@@ -461,6 +461,8 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.type)
       if (result?) return result
       result = visit(cmd.initial_value)
+      if (result?) return result
+      result = visit(cmd.initial_value_tokens)
       return result
 
     method on_visit_children( cmd:LocalDeclarations )->$ReturnType
@@ -703,7 +705,7 @@ class InspectionVisitor<<$ReturnType>>
       local result : $ReturnType
       result = visit(cmd.statements)
       if (result?) return result
-      result = visit(cmd.satisfied_statements)
+      result = visit(cmd.satisfied_scope)
       if (result?) return result
       result = visit(cmd.unsatisfied_statements)
       return result
@@ -1050,12 +1052,12 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.statements)
       return result
 
-    method on_visit_children( cmd:ValueList )->$ReturnType
+    method on_visit_children( cmd:VariantList )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.args)
       return result
 
-    method on_visit_children( cmd:ValueTable )->$ReturnType
+    method on_visit_children( cmd:VariantTable )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.args)
       return result
@@ -1123,6 +1125,42 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.context)
       if (result?) return result
       result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:ListIndexedAccess )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:ExplicitCast )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.to_type)
+      return result
+
+    method on_visit_children( cmd:NotIsType )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.compare_type)
+      return result
+
+    method on_visit_children( cmd:LiteralReal )->$ReturnType
+      local result : $ReturnType
+      #result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:LiteralReal32 )->$ReturnType
+      local result : $ReturnType
+      #result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:LiteralReal64 )->$ReturnType
+      local result : $ReturnType
+      #result = visit(cmd.value)
       return result
 
 endClass
