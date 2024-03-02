@@ -819,10 +819,10 @@ class Bitmap
         local need = this_width
         while (need >= available)
           if (native("*((%Ns%RogueInt32*)src)")->Int32)
-            b += native("(%Ns%RogueNewReal)src[0]")->Real * available
-            g += native("(%Ns%RogueNewReal)src[1]")->Real * available
-            r += native("(%Ns%RogueNewReal)src[2]")->Real * available
-            a += native("(%Ns%RogueNewReal)src[3]")->Real * available
+            b += native("(%Ns%RogueReal)src[0]")->Real * available
+            g += native("(%Ns%RogueReal)src[1]")->Real * available
+            r += native("(%Ns%RogueReal)src[2]")->Real * available
+            a += native("(%Ns%RogueReal)src[3]")->Real * available
             n += available
           else
             # Transparent black (0x00000000) can't be averaged in as usual or else it will
@@ -838,10 +838,10 @@ class Bitmap
 
         if (need)
           if (native("*((%Ns%RogueInt32*)src)")->Int32)
-            b += native("(%Ns%RogueNewReal)src[0]")->Real * need
-            g += native("(%Ns%RogueNewReal)src[1]")->Real * need
-            r += native("(%Ns%RogueNewReal)src[2]")->Real * need
-            a += native("(%Ns%RogueNewReal)src[3]")->Real * need
+            b += native("(%Ns%RogueReal)src[0]")->Real * need
+            g += native("(%Ns%RogueReal)src[1]")->Real * need
+            r += native("(%Ns%RogueReal)src[2]")->Real * need
+            a += native("(%Ns%RogueReal)src[3]")->Real * need
             n += need
           else
             # Transparent black (0x00000000) can't be averaged in as usual or else it will
@@ -870,13 +870,13 @@ class Bitmap
     method resize_write_row( dest_bitmap:Bitmap, dest_i:Int, new_width:Int, resize_row_buffer:Real[] )
       local row_buffer = resize_row_buffer
       native @|%Ns%RogueByte*   dest = (%Ns%RogueByte*)($dest_bitmap->pixels->as_int32s + $dest_i);
-              |%Ns%RogueNewReal*   buffer = $row_buffer->as_reals;
-              |%Ns%RogueNewReal    divisor;
+              |%Ns%RogueReal*   buffer = $row_buffer->as_reals;
+              |%Ns%RogueReal    divisor;
 
       forEach (1..new_width)
         native @|if ((divisor = buffer[4]))
                 |{
-                |  %Ns%RogueNewReal z;
+                |  %Ns%RogueReal z;
                 |  if ((z = buffer[5]))
                 |  {
                 |    // Incorporate zero values (transparent black). Increase each R,G,B component by
