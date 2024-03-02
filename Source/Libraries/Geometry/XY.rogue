@@ -172,8 +172,8 @@ class XY( x:Real, y:Real ) [compound]
     method floor->XY
       return XY( x.floor, y.floor )
 
-    method hash_code->Int
-      return x.hash_code ~ y.hash_code
+    method hashcode->Int
+      return x.hashcode ~ y.hashcode
 
     method is_zero->Logical
       return x == 0 and y == 0

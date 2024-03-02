@@ -106,7 +106,7 @@ class Table<<$KeyType,$ValueType>> : TableType
       return (count == 0)
 
     method find( key:$KeyType )->TableEntry<<$KeyType,$ValueType>>
-      local hash = key.hash_code
+      local hash = key.hashcode
       local entry = bins[ hash & bin_mask ]
 
       while (entry)
@@ -275,7 +275,7 @@ class Table<<$KeyType,$ValueType>> : TableType
 
       if (count >= bins.count) _grow()
 
-      local hash = key.hash_code
+      local hash = key.hashcode
       local index = hash & bin_mask
 
       # Add to the correct bin

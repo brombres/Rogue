@@ -37,8 +37,8 @@ class Anchor( position:XY ) [compound]
       return IntXY( anchor.position.x*size.x, anchor.position.y*size.y )
 
   METHODS
-    method hash_code->Int
-      return position.hash_code
+    method hashcode->Int
+      return position.hashcode
 
     method operator==( other:Anchor )->Logical
       return position == other.position

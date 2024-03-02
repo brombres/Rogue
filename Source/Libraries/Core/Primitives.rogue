@@ -59,8 +59,8 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
 
       return st
 
-    method hash_code->Int
-      return integer_bits.hash_code
+    method hashcode->Int
+      return integer_bits.hashcode
 
     method integer_bits->Int64
       return native("*((%Ns%RogueInt64*)&$this)")->Int64
@@ -261,8 +261,8 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
       #   ',' - Add commas.
       return this->REAL_TYPE.format( fmt )
 
-    method hash_code->Int
-      return integer_bits.hash_code
+    method hashcode->Int
+      return integer_bits.hashcode
 
     method integer_bits->REAL_TYPE
       return this->REAL_TYPE.integer_bits
@@ -385,8 +385,8 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
 
       return st
 
-    method hash_code->Int
-      return integer_bits.hash_code
+    method hashcode->Int
+      return integer_bits.hashcode
 
     method integer_bits->Int32
       return native("*((%Ns%RogueInt32*)&$this)")->Int32
@@ -548,7 +548,7 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
 
       return result
 
-    method hash_code->Int
+    method hashcode->Int
       if (Int isType Int32) return Int32(this :>>: 32) ~ Int32(this)
       else                  return this
 
@@ -714,8 +714,8 @@ class Int : CommonPrimitiveMethods<<Int>> [primitive]
       #   ',' - Add commas in base 10.
       return this->INT_TYPE.format( fmt, bits )
 
-    method hash_code->Int
-      return this->INT_TYPE.hash_code
+    method hashcode->Int
+      return this->INT_TYPE.hashcode
 
     method minimum_bits->Int
       return this->INT_TYPE.minimum_bits
@@ -779,7 +779,7 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
     method format( fmt:String )->String
       return Int64( this ).format( fmt, 32 )
 
-    method hash_code->Int
+    method hashcode->Int
       return this
 
     method minimum_bits->Int
@@ -954,7 +954,7 @@ class Character [primitive]
       if (ignore_case) return this.to_lowercase == other.to_lowercase
       return this == other
 
-    method hash_code->Int
+    method hashcode->Int
       return this->Int
 
     method is_alphanumeric->Logical
@@ -1173,7 +1173,7 @@ class Byte : CommonPrimitiveMethods<<Byte>> [primitive]
     method format( fmt:String )->String
       return Int64( this ).format( fmt, 8 )
 
-    method hash_code->Int
+    method hashcode->Int
       return this->Int
 
     method minimum_bits->Int
@@ -1210,7 +1210,7 @@ class Logical [primitive]
     method description->String
       return this->String
 
-    method hash_code->Int
+    method hashcode->Int
       if (this) return 1
       else      return 0
 

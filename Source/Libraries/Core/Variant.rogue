@@ -336,31 +336,31 @@ class Variant [compound]
           else                return undefined
       endWhich
 
-    method hash_code->Int
+    method hashcode->Int
       which (type)
         case TYPE_UNDEFINED: return 0
         case TYPE_NULL:      return 0
         case TYPE_LOGICAL:   return which{ logical:1 || 0 }
-        case TYPE_BYTE:      return byte.hash_code
-        case TYPE_CHARACTER: return character.hash_code
-        case TYPE_INT32:     return int32.hash_code
-        case TYPE_INT:       return integer.hash_code
-        case TYPE_INT64:     return int64.hash_code
-        case TYPE_REAL32:    return real32.hash_code
-        case TYPE_REAL:      return real.hash_code
-        case TYPE_REAL64:    return real64.hash_code
-        case TYPE_XY:        return xy.hash_code
-        case TYPE_XYZ:       return xyz.hash_code
-        case TYPE_XYZW:      return xyzw.hash_code
-        case TYPE_ANCHOR:    return xy.hash_code
-        case TYPE_BOX:       return box.hash_code
-        case TYPE_CIRCLE:    return circle.hash_code
-        case TYPE_OBJECT:    return object.hash_code
-        case TYPE_STRING:    return object->(as String).hash_code
-        case TYPE_LIST:      return object->(as Variant[]).hash_code
-        case TYPE_TABLE:     return object->(as [Variant:Variant]).hash_code
+        case TYPE_BYTE:      return byte.hashcode
+        case TYPE_CHARACTER: return character.hashcode
+        case TYPE_INT32:     return int32.hashcode
+        case TYPE_INT:       return integer.hashcode
+        case TYPE_INT64:     return int64.hashcode
+        case TYPE_REAL32:    return real32.hashcode
+        case TYPE_REAL:      return real.hashcode
+        case TYPE_REAL64:    return real64.hashcode
+        case TYPE_XY:        return xy.hashcode
+        case TYPE_XYZ:       return xyz.hashcode
+        case TYPE_XYZW:      return xyzw.hashcode
+        case TYPE_ANCHOR:    return xy.hashcode
+        case TYPE_BOX:       return box.hashcode
+        case TYPE_CIRCLE:    return circle.hashcode
+        case TYPE_OBJECT:    return object.hashcode
+        case TYPE_STRING:    return object->(as String).hashcode
+        case TYPE_LIST:      return object->(as Variant[]).hashcode
+        case TYPE_TABLE:     return object->(as [Variant:Variant]).hashcode
         others:
-          Global.error.print( "[Variant.hash_code()] Undefined type $"(type) )
+          Global.error.print( "[Variant.hashcode()] Undefined type $"(type) )
           return 0
       endWhich
 

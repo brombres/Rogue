@@ -6,8 +6,8 @@ class Corners( top_left:XY, bottom_right:XY ) [compound]
       return Corners( bounds.position, bounds.position+bounds.size )
 
   METHODS
-    method hash_code->Int
-      return top_left.hash_code ~ bottom_right.hash_code
+    method hashcode->Int
+      return top_left.hashcode ~ bottom_right.hashcode
 
     method to->Box
       return Box( top_left, bottom_right-top_left )

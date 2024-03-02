@@ -30,8 +30,8 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
       # Check if point is in triangle
       return (u >= 0) and (v >= 0) and (u + v < 1)
 
-    method hash_code->Int
-      return a.hash_code ~ b.hash_code ~ c.hash_code
+    method hashcode->Int
+      return a.hashcode ~ b.hashcode ~ c.hashcode
 
     method intersects( box:Box )->Logical
       return box->Quad.intersects( this )

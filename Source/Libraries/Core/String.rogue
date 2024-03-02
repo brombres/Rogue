@@ -3,7 +3,7 @@ class String : Poolable PrintWriter
     count           : Int  # in whole characters
     cursor_offset   : Int  # in bytes
     cursor_index    : Int  # in characters
-    hash_code       = -1
+    hashcode        : Int
     indent          : Int
     at_newline      = true
     is_immutable    : Logical
@@ -40,7 +40,7 @@ class String : Poolable PrintWriter
       if (a is null)     return (b is null)
       elseIf (b is null) return false
 
-      if (a.hash_code != b.hash_code or a.count != b.count) return false
+      if (a.hashcode != b.hashcode or a.count != b.count) return false
       return native("(0==memcmp($a->data->as_utf8,$b->data->as_utf8,$a->data->count))")->Logical
 
     method operator<>( a:String, b:String )->Int
@@ -152,7 +152,7 @@ class String : Poolable PrintWriter
     method init( existing:String )
       if (is_immutable) return
       count = existing.count
-      hash_code = existing.hash_code
+      hashcode = existing.hashcode
       is_ascii = existing.is_ascii
       data = existing.data.cloned( existing.data.count + 1 )
       data[data.count] = 0
@@ -175,7 +175,7 @@ class String : Poolable PrintWriter
       _data[_data.count] = 0
       is_ascii = (count == _data.count)
       data = _data
-      hash_code = -1
+      hashcode = 0
 
     method cloned->String
       return String( this )
@@ -317,7 +317,7 @@ class String : Poolable PrintWriter
       count = 0
       @indent = 0
       at_newline = true
-      hash_code = -1
+      hashcode = 0
       is_ascii = true
 
     method clipped( &left=0:Int, &right=0:Int )->String
@@ -448,7 +448,7 @@ class String : Poolable PrintWriter
       data.discard_from( cursor_offset )
       count = cursor_index
 
-      hash_code = -1
+      hashcode = 0
       if (i1 == 0) is_ascii = true
 
     method ends_with( ch:Character, &ignore_case )->Logical
@@ -627,11 +627,11 @@ class String : Poolable PrintWriter
          |}
       return result
 
-    method hash_code->Int
-      if (@hash_code == -1)
-        native @|$hash_code = %Ns%RogueString_compute_hash_code( $this, 0 );
+    method hashcode->Int
+      if (not @hashcode)
+        native @|$hashcode = %Ns%RogueString_compute_hashcode( $this, 0 );
       endIf
-      return @hash_code
+      return @hashcode
 
     method indent->Int
       return @indent
@@ -658,7 +658,7 @@ class String : Poolable PrintWriter
       data.shift( n ) # shift data right to make room for same bytes at beginning
       data.copy( i1+n, n, data, 0 ) # copy bytes to beginning
       data.discard_from(i1+n)
-      hash_code = -1
+      hashcode = 0
 
     method is_integer->Logical
       if (count == 0) return false
@@ -936,7 +936,7 @@ class String : Poolable PrintWriter
 
     method print( value:Character )
       if (is_immutable) return
-      hash_code = -1  # invalidate
+      hashcode = 0  # invalidate
 
       if (value == '\n')
         at_newline = true
@@ -1016,7 +1016,7 @@ class String : Poolable PrintWriter
         if (not value.is_ascii) is_ascii = false
       endIf
 
-      hash_code = -1;
+      hashcode = 0
 
     method print( value:RogueConstCharPointer )
       if (is_immutable) return
@@ -1040,7 +1040,7 @@ class String : Poolable PrintWriter
       local utf8_character_count = native("%Ns%RogueString_utf8_character_count($value.value,$byte_count)")->Int
 
       if (byte_count != utf8_character_count) is_ascii = false
-      hash_code = -1
+      hashcode = 0
 
       reserve( byte_count )
       if (utf8_character_count == -1)
@@ -1104,7 +1104,7 @@ class String : Poolable PrintWriter
 
       cursor = 1
       data.shift( -cursor_offset )
-      hash_code = -1
+      hashcode = 0
       --count
       data[count] = 0
       if (count == 0) is_ascii = true
@@ -1117,7 +1117,7 @@ class String : Poolable PrintWriter
       cursor = count - 1
       data.discard_from( cursor_offset )
       --count
-      hash_code = -1
+      hashcode = 0
       if (count == 0) is_ascii = true
       return result
 
@@ -2388,7 +2388,7 @@ class String : Poolable PrintWriter
                   |%Ns%RogueString* %Ns%RogueString_create_from_ascii256( const char* cstring, RogueInt byte_count, RogueInt usage );
                   |%Ns%RogueString* %Ns%RogueString_create_permanent( const char* cstring );
                   |%Ns%RogueString* %Ns%RogueString_create_string_table_entry( const char* cstring );
-                  |%Ns%RogueInt     %Ns%RogueString_compute_hash_code( %Ns%RogueString* THISOBJ, %Ns%RogueInt starting_hash );
+                  |%Ns%RogueInt     %Ns%RogueString_compute_hashcode( %Ns%RogueString* THISOBJ, %Ns%RogueInt starting_hash );
                   |const char*      %Ns%RogueString_to_c_string( %Ns%RogueString* st );
                   |%Ns%RogueInt     %Ns%RogueString_utf8_character_count( const char* cstring, RogueInt byte_count );
                   |
@@ -2443,7 +2443,7 @@ class String : Poolable PrintWriter
                  |
                  |  result->count        = character_count;
                  |  result->is_immutable = 1;
-                 |  result->hash_code    = -1;
+                 |  result->hashcode     = 0;
                  |  result->is_ascii     = (character_count == byte_count);
                  |  return result;
                  |}
@@ -2485,7 +2485,7 @@ class String : Poolable PrintWriter
                  |
                  |  result->count        = byte_count;   // ASCII 256 bytes == characters
                  |  result->is_immutable = 1;
-                 |  result->hash_code    = -1;
+                 |  result->hashcode    =  0;
                  |
                  |  char* utf8 = data->as_utf8;
                  |  RogueInt dest_i = 0;
@@ -2525,7 +2525,7 @@ class String : Poolable PrintWriter
                  |  return result;
                  |}
                  |
-                 |%Ns%RogueInt %Ns%RogueString_compute_hash_code( %Ns%RogueString* THISOBJ, %Ns%RogueInt starting_hash )
+                 |%Ns%RogueInt %Ns%RogueString_compute_hashcode( %Ns%RogueString* THISOBJ, %Ns%RogueInt starting_hash )
                  |{
                  |  %Ns%RogueInt hash = starting_hash;
                  |  RogueInt n = THISOBJ->data->count;
@@ -2534,7 +2534,8 @@ class String : Poolable PrintWriter
                  |  {
                  |    hash = ((hash<<3) - hash) + *(++src);
                  |  }
-                 |  return hash;
+                 |  if (hash == 0) return 1;
+                 |  else           return hash;
                  |}
                  |
                  |const char* %Ns%RogueString_to_c_string( %Ns%RogueString* st )
