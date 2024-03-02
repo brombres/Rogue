@@ -19,8 +19,8 @@ class Circle( position:XY, radius:Real ) [compound]
     method contains( point:XY )->Logical
       return (point - position).magnitude_squared <= radius*radius
 
-    method hash_code->Int
-      return position.hash_code ~ radius.hash_code
+    method hashcode->Int
+      return position.hashcode ~ radius.hashcode
 
     method intersects( box:Box )->Logical
       return box.intersects( this )

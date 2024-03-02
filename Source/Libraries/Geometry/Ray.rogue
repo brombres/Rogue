@@ -9,8 +9,8 @@ class Ray( position:XY, direction:XY ) [compound]
       return Ray( position, XY(1.0,angle) )
 
   METHODS
-    method hash_code->Int
-      return position.hash_code ~ direction.hash_code
+    method hashcode->Int
+      return position.hashcode ~ direction.hashcode
 
     method intersection( box:Box )->XY?
       return intersection( box->Quad )

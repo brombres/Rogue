@@ -21,8 +21,8 @@ class XYZW( x:Real, y:Real, z:Real, w=1:Real ) [compound]
       return XYZW( xyz.x, xyz.y, xyz.z, w )
 
   METHODS
-    method hash_code->Int
-      return x.hash_code ~ y.hash_code ~ z.hash_code ~ w.hash_code
+    method hashcode->Int
+      return x.hashcode ~ y.hashcode ~ z.hashcode ~ w.hashcode
 
     method operator==( other:XYZW )->Logical
       return (x == other.x) and (y == other.y) and (z == other.z) and (w == other.w)

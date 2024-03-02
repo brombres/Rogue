@@ -24,8 +24,8 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
 
       return (Triangle(a,b,c).contains(point) or Triangle(a,c,d).contains(point))
 
-    method hash_code->Int
-      return a.hash_code ~ b.hash_code ~ c.hash_code ~ d.hash_code
+    method hashcode->Int
+      return a.hashcode ~ b.hashcode ~ c.hashcode ~ d.hashcode
 
     method intersects( line:Line )->Logical
       # Returns true if this Quad quad and `line` intersect.

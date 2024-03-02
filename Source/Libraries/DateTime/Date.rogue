@@ -249,7 +249,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
         return Date.ymd( y, m, d )
       endIf
 
-    method hash_code->Int
+    method hashcode->Int
       return (year * 10000 + month*100 + day)
 
     method incremented->Date
@@ -370,10 +370,10 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
 
     method operator<>(other:Date)->Int
       # For Dates the hash code contains all necessary info so we can use it to compare safely
-      return (hash_code <> other.hash_code)
+      return (hashcode <> other.hashcode)
 
     method operator==( other:Date )->Logical
-      return (hash_code == other.hash_code)
+      return (hashcode == other.hashcode)
       # For Dates the hash code contains all necessary info so we can use it to compare safely
 
     method to->String
