@@ -45,6 +45,9 @@ class Bitmap
       local result = decode( bytes )
       return result
 
+    method create( existing:Bitmap, subset:IntBox )->Bitmap
+      return existing.extract( subset )
+
     method encode_data( bytes:Byte[], width=0:Int )->Bitmap
       # Creates a bitmap that uses the raw bytes as pixel values so that a chunk of
       # data can be saved as a PNG or other lossless format. Use decode_data[] to
@@ -170,6 +173,10 @@ class Bitmap
       forEach (1..width*rows) pixels.add( color )
       height += rows
 
+    method all_pixels_are_transparent( bounds=null:IntBox? )->Logical
+      if (not bounds) bounds = IntBox( size )
+      return RequireAllTransparentPixels.check( this, bounds.value )
+
     method blit( dest_bitmap:Bitmap, x:Int, y:Int, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
       blit( dest_bitmap, IntXY(x,y), &=blit_fn )
 
@@ -247,7 +254,6 @@ class Bitmap
     method clear( color=Color(0):Color )
       forEach (i of pixels) pixels[i] = color
 
-  METHODS
     method convert_gray_to_alpha
       local count = width * height
 
@@ -282,6 +288,14 @@ class Bitmap
       this.width = reframed.width
       this.height = reframed.height
       this.pixels = reframed.pixels
+
+    method crop( subset_bounds:IntBox )
+      local pos = subset_bounds.position
+      local sz  = subset_bounds.size
+      crop( pos.x, pos.y, width-(pos.x+sz.x), height-(pos.y+sz.y) )
+
+    method extract( bounds:IntBox )->Bitmap
+      return cloned.[ crop(subset_bounds) ]
 
     method cropped( delta:Int, pad_color=Color(0):Color )->Bitmap
       return cropped( delta, delta, delta, delta, &=pad_color )
@@ -690,6 +704,66 @@ class Bitmap
       this.height = result.height
       this.pixels = result.pixels
 
+    method non_transparent_bounds->IntBox?
+      local w_limit = width
+      local h_limit = height
+
+      local top_h = 1
+      block y1 = 0
+        while (top_h < h_limit)
+          if (not all_pixels_are_transparent(IntBox(0,y1,w_limit,1)))
+            --top_h
+            escapeWhile
+          endIf
+          ++top_h
+          ++y1
+        endWhile
+      endBlock
+
+      if (top_h == h_limit) return null
+
+      local bottom_h = 1
+      block y2 = h_limit - 1
+        loop
+          if (not all_pixels_are_transparent(IntBox(0,y2,w_limit,1)))
+            --bottom_h
+            escapeLoop
+          endIf
+          --y2
+          ++bottom_h
+        endLoop
+      endBlock
+
+      local result_h = h_limit - (top_h + bottom_h)
+
+      local left_w = 1
+      block x1 = 0
+        loop
+          if (not all_pixels_are_transparent(IntBox(x1,top_h,1,result_h)))
+            --left_w
+            escapeLoop
+          endIf
+          ++left_w
+          ++x1
+        endLoop
+      endBlock
+
+      local right_w = 1
+      block x2 = w_limit - 1
+        loop
+          if (not all_pixels_are_transparent(IntBox(x2,top_h,1,result_h)))
+            --right_w
+            escapeLoop
+          endIf
+          --x2
+          ++right_w
+        endLoop
+      endBlock
+
+      local result_w = w_limit - (left_w + right_w)
+
+      return IntBox( left_w, top_h, result_w, result_h )
+
     method operator+( rhs:Bitmap )->Bitmap
       # Join two bitmaps side by side - this on the left and rhs on the right.
       # If necessary the shorter bitmap will be aspect-resized to match the height of the
@@ -1040,6 +1114,18 @@ class Bitmap
       Global.error.println "ERROR: No TIFF encoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment method Graphics::Bitmap.to_tiff_bytes->Byte[] to utilize an alternate decoder."
       return null
 
+    method trim->Logical
+      if local bounds = non_transparent_bounds
+        if (bounds == IntBox(size)) return false
+        crop( bounds )
+        return true
+      else
+        if (width == 1 and height == 1) return false
+        width = 1
+        height = 1
+        pixels = Bitmap(1,1).pixels
+        return true
+      endIf
 
     method to->String
       return "($x$ Bitmap)" (width,height)
@@ -1183,6 +1269,40 @@ class AlphaFillBitmapBlitFn( color:Color ) : BitmapBlitFn
               |  src_limit  += $src_width;
               |  dest_start += $dest_width;
               |}
+endClass
+
+class RequireAllTransparentPixels : BitmapBlitFn [singleton]
+  PROPERTIES
+    success : Logical
+
+  METHODS
+    method check( bitmap:Bitmap, bounds:IntBox )->Logical
+      bitmap.blit( bounds, bitmap, bounds.position, this )
+      return success
+
+    method call( src:Bitmap, src_x1:Int, src_y1:Int, dest:Bitmap, dest_x1:Int, dest_y1:Int,
+                 blit_width:Int, blit_height:Int )
+      local width = src.width
+      native
+      @|%Ns%RogueInt32* src_start  = $src->pixels->as_int32s + ($src_y1 * $width + $src_x1);
+       |%Ns%RogueInt32* src_limit  = src_start + $blit_width;
+       |while (--$blit_height >= 0)
+       |{
+       |  %Ns%RogueInt32* src  = src_start - 1;
+       |  while (++src < src_limit)
+       |  {
+       |    if (*src & 0xFF000000)
+       |    {
+              success = false
+              return
+      native
+      @|    }
+       |  }
+       |  src_start  += $width;
+       |  src_limit  += $width;
+       |}
+      success = true
+
 endClass
 
 enum BitmapEncodingType
