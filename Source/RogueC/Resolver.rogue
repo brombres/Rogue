@@ -1953,8 +1953,9 @@ class Resolver : Poolable, Visitor
           endWhile
         endBlock
 
+        local omit_routines = type_context and not is_global and not args
         local is_fallback = false
-        local match = find_method( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
+        local match = find_method( t, type_context, context, name, args, &require_global=is_global, &suppress_error, &=omit_routines )
         if (match)
           if (match.attributes.is_fallback)
             is_fallback = true
@@ -1976,6 +1977,11 @@ class Resolver : Poolable, Visitor
               else      return validate( cmd_get_p )
             endIf
 
+            if (omit_routines)
+              local r_match = find_method( t, type_context, context, name, args, &suppress_error, &only_routines )
+              if (r_match) return resolve_call( t, context, r_match, args )
+            endIf
+
           endIf
         endIf
 
@@ -1995,6 +2001,7 @@ class Resolver : Poolable, Visitor
                 endIf
               endIf
             endForEach
+
           endIf
         endIf
 
@@ -2250,16 +2257,18 @@ class Resolver : Poolable, Visitor
       endForEach
 
     method find_method( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
-        &constructor, &require_global, &suppress_error )->Procedure
+        &constructor, &require_global, &suppress_error, &omit_routines, &only_routines )->Procedure
       # Wraps find_procedure() and expands it by also instantiating method templates
       # as needed.
       if (not type_context or constructor or require_global)
         return find_procedure( t, type_context, context, name, args, &=constructor,
-                               &=require_global, &=suppress_error )
+                               &=require_global, &=suppress_error,
+                               &=omit_routines, &=only_routines )
       endIf
 
       local proc = find_procedure( t, type_context, context, name, args, &=constructor,
-                               &=require_global, &suppress_error )
+                               &=require_global, &=suppress_error,
+                               &=omit_routines, &=only_routines )
       if (proc) return proc
 
       if (args and args.count)
@@ -2284,10 +2293,11 @@ class Resolver : Poolable, Visitor
       endIf
 
       return find_procedure( t, type_context, context, name, args, &=constructor,
-                               &=require_global, &=suppress_error )
+                             &=require_global, &=suppress_error, &=omit_routines, &=only_routines )
 
     method find_procedure( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
-        &constructor, &require_global, &suppress_error, &exact_arg_types, &relaxed_arg_types, &limit_conversions )->Procedure
+        &constructor, &require_global, &suppress_error, &exact_arg_types, &relaxed_arg_types, &limit_conversions,
+        &omit_routines, &only_routines )->Procedure
       # 'context' is only passed for error description purposes.
       visit( args )  # resolve args to determine types
       use Candidates
@@ -2296,8 +2306,7 @@ class Resolver : Poolable, Visitor
           type_context.collect_methods( "create", Candidates.list, &require_global )
           type_context.collect_methods( "init", Candidates.list )
         else
-          type_context.collect_methods( name, Candidates.list, &=require_global )
-          if (not context)
+          if (not context and not omit_routines)
             local type_Routine = type_context.module_context.must_find_type( t, "Routine" )
             if (type_context is not type_Routine)
               type_Routine.collect_methods( name, Candidates.list, &require_global )
@@ -2309,8 +2318,13 @@ class Resolver : Poolable, Visitor
               endIf
             endForEach
           endIf
-          if (type_context.is_aspect and type_context.is_reference)
-            Program.type_Object.collect_methods( name, Candidates.list, &=require_global )
+
+          if (not only_routines)
+            type_context.collect_methods( name, Candidates.list, &=require_global )
+
+            if (type_context.is_aspect and type_context.is_reference)
+              Program.type_Object.collect_methods( name, Candidates.list, &=require_global )
+            endIf
           endIf
         endIf
         Candidates.organize
