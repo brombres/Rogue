@@ -124,7 +124,10 @@ class GitRepo( url:String, folder:File ) [compound]
     method has_local_changes->Logical
       local result = Process.run( "cd $ && git status --porcelain"(folder.esc), &env )
       if (not result.success) return false
-      return (result->String.trimmed != "")
+
+      local lines = result->String.trimmed.split( '\n' )
+      lines.discard( $.begins_with("??") )
+      return not lines.is_empty
 
     method has_remote_changes->Logical
       # Note: the response may take a few moments. Due to the delay it is not recommended to
