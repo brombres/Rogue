@@ -1,6 +1,8 @@
 class ConsoleCursor [compound]
   # API
-  #   Console.cursor = (x,y)  # (0,0) is top-left
+  #   Console.cursor = (x,y)  # Defined in Console.set_cursor(), (0,0) is top-left
+  #   Console.cursor->IntXY   # (0,0) is top-left
+  #   Console.cursor.position->IntXY  # Same as above
   #   Console.cursor += (delta_x,delta_y)
   #   Console.cursor.save_position
   #   Console.cursor.restore_position
@@ -22,6 +24,41 @@ class ConsoleCursor [compound]
       endIf
       output.flush
 
+    method position->IntXY
+      local x, y : Int
+      native
+      @|
+       |#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+       |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
+       |  CONSOLE_SCREEN_BUFFER_INFO info;
+       |  GetConsoleScreenBufferInfo( h_stdout, &info );
+       |  $x = info.dwCursorPosition.X;
+       |  $y = info.dwCursorPosition.Y - info.srWindow.Top;
+       |#else
+       |  printf("\033[6n");
+       |
+       |  struct termios old_settings, new_settings;
+       |  tcgetattr( STDIN_FILENO, &old_settings );
+       |  new_settings = old_settings;
+       |  new_settings.c_lflag &= ~(ICANON | ECHO);
+       |  tcsetattr(STDIN_FILENO, TCSANOW, &new_settings );
+       |
+       |  if (getchar() == '\x1B' && getchar() == '\x5B')
+       |  {
+       |    int ch;
+       |    while ((ch = getchar()) != ';') $x = $x*10 + (ch-'0');
+       |    while ((ch = getchar()) != 'R') $y = $y*10 + (ch-'0');
+       |  }
+       |
+       |  tcsetattr(STDIN_FILENO, TCSANOW, &old_settings );
+       |  --$x;
+       |  --$y;
+       |#endif
+      return IntXY(x,y)
+
+    method print_to( buffer:PrintWriter )
+      position.print_to( buffer )
+
     method restore_position( output=Global:PrintWriter )
       output.[ flush, print("\e[u"), flush ]
 
@@ -35,5 +72,17 @@ class ConsoleCursor [compound]
 
     method show( output=Global:PrintWriter )
       hide( false, output )
+
+    method to->IntXY
+      return position
+
+    method to->String
+      return position->String
+
+    method x->Int
+      return position.x
+
+    method y->Int
+      return position.y
 
 endClass
