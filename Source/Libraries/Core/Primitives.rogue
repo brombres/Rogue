@@ -695,8 +695,8 @@ endClass
 
 class Int : CommonPrimitiveMethods<<Int>> [primitive]
   DEFINITIONS
-    MAXIMUM = INT_MAXIMUM  # defined by compiler
-    MINIMUM = INT_MINIMUM  # defined by compiler
+    MAXIMUM = INT_MAXIMUM
+    MINIMUM = INT_MINIMUM
 
   METHODS
     method format( fmt:String, bits=64:Int )->String
