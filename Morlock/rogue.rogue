@@ -43,6 +43,8 @@ class RoguePackage : Package
       local libs = Files( archive_folder/"Source/Libraries", "**" )
       libs.sync_to( install_folder/"Libraries" )
 
+      dependency "brombres/rogo@2.16"
+
     method handle_uninstall
       throw error( "Essential package $ cannot be uninstalled."(name) )
 endClass

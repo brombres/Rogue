@@ -2,7 +2,7 @@
 # to this folder and type "rogo" at the command line, or "rogo help" for a list
 # of supported commands.
 
-$requireRogue "2.0"
+$requireRogue "2.34"
 
 augment Build
   # You can create a Local.settings file with overrides for these values, e.g.:
