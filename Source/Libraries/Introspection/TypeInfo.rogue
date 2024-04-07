@@ -89,8 +89,8 @@ class TypeInfo
       if (id == ancestor_id) return true
 
       native...
-       @|%Ns%RogueInt32* base_ids = %Ns%Rogue_types[$index]->base_type_ids - 1;
-        |%Ns%RogueInt32  count = %Ns%Rogue_types[$index]->base_type_count;
+       @|%Ns%RogueInt* base_ids = %Ns%Rogue_types[$index]->base_type_ids - 1;
+        |%Ns%RogueInt  count = %Ns%Rogue_types[$index]->base_type_count;
         |while (--count >= 0)
         |{
         |  if (*(++base_ids) == $ancestor_id)
