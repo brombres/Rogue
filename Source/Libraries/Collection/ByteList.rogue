@@ -1,8 +1,10 @@
+uses Codec/Base64
+
 augment Byte[]
   METHODS
-    method init( hex:String )
+    method init( encoded:String, &base64, &hex )
       init
-      add( hex )
+      add( encoded, &=base64, &=hex )
 
     method cloned->Byte[]
       local result = Byte[]( count+1 )
@@ -10,20 +12,24 @@ augment Byte[]
       copy( 0, count, result, 0 )
       return result
 
-    method add( hex:String )
-      if (hex.count & 1)
-        println "ERROR: odd number of characters in Byte[].add(hex:String)."
-        return
+    method add( encoded:String, &base64, &hex )
+      if (hex)
+        if (encoded.count & 1)
+          println "ERROR: odd number of characters in Byte[].add(encoded:String)."
+          return
+        endIf
+
+        local dest_i = count  # end of current is beginning of new
+        reserve( encoded.count/2 )
+        count += encoded.count/2
+
+        forEach (hex_i of encoded step 2)
+          this[ dest_i ] = (encoded[hex_i].to_number(16) :<<: 4) | encoded[hex_i+1].to_number(16)
+          ++dest_i
+        endForEach
+      else
+        add( encoded.decode_base64 )
       endIf
-
-      local dest_i = count  # end of current is beginning of new
-      reserve( hex.count/2 )
-      count += hex.count/2
-
-      forEach (hex_i of hex step 2)
-        this[ dest_i ] = (hex[hex_i].to_number(16) :<<: 4) | hex[hex_i+1].to_number(16)
-        ++dest_i
-      endForEach
 
     method has_byte_order_mark->Logical
       if (count < 3) return false
@@ -93,23 +99,30 @@ augment Byte[]
       native @|return_false:
                return false
 
-    method to->String( hex:Logical, &uppercase, &lowercase )
-      # Returns a string of hexadecimal digit pairs encoding each byte.
+    method to->String( &base64, &hex, &uppercase, &lowercase )
+      # Returns a these bytes encoded as a string. If &hex is specified,
+      # returns a string of hexadecimal digit pairs encoding each byte.
       # Uppercase by default unless &lowercase is specified.
+      #
+      # If &base64 is specified, returns a base64-encoded string.
       #
       # Example:
       #
       #   println Byte[][0,127,160,255]->String(&hex) # "007FA0FF"
-      local buffer = String( count*2 )
-      if (lowercase)
-        forEach (b in this)
-          buffer.[ print(((b:>>:4)&15).to_digit.to_lowercase), print((b&15).to_digit.to_lowercase) ]
-        endForEach
-      else
-        forEach (b in this)
-          buffer.[ print(((b:>>:4)&15).to_digit), print((b&15).to_digit) ]
-        endForEach
+      if (hex)
+        local buffer = String( count*2 )
+        if (lowercase)
+          forEach (b in this)
+            buffer.[ print(((b:>>:4)&15).to_digit.to_lowercase), print((b&15).to_digit.to_lowercase) ]
+          endForEach
+        else
+          forEach (b in this)
+            buffer.[ print(((b:>>:4)&15).to_digit), print((b&15).to_digit) ]
+          endForEach
+        endIf
+        return buffer
       endIf
-      return buffer
+
+      return this.to_base64
 endAugment
 
