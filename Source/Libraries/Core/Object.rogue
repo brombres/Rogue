@@ -13,7 +13,7 @@ class Object
     method hashcode->Int
       return object_id->Int
 
-    method hash_code->Int  # deprecated in favor of .hashcode()
+    method hash_code->Int32  # deprecated in favor of .hashcode()
       return hashcode
 
     method object_id->Int64
