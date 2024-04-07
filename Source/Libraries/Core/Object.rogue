@@ -13,6 +13,9 @@ class Object
     method hashcode->Int
       return object_id->Int
 
+    method hash_code->Int  # deprecated in favor of .hashcode()
+      return hashcode
+
     method object_id->Int64
       local addr : Int64
       native "$addr = (%Ns%RogueInt64)(void*)$this;"
