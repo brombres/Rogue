@@ -324,6 +324,7 @@ routine rogo_publish( new_version:String )
   if (not Console.input("Continue publishing release to GitHub? ").to_lowercase.begins_with('y')) return
 
   execute ''gh release create v$ --title "v$" --notes ""''(new_version,new_version)
+  execute "git pull"
 
   rogo_update_wiki
 endRoutine
