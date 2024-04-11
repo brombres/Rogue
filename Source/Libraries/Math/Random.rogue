@@ -81,6 +81,45 @@ class Random [singleton]
       if (INT_TYPE isType Int32) return int32
       else                       return int64
 
+    method int( limit:Int )->Int
+      # Returns an evenly distributed random integer in
+      # the range [0,limit) - includes 0 but does not include limit.
+      #
+      # int(limit) is preferred over int % limit because it avoids
+      # the low number bias of a simple mod.
+      #
+      # Example:
+      #   println( Random.int(100) )  # Prints a number 0..99
+      if (limit <= 0) return 0
+
+      # Avoid the low-number bias of simply performing 'next32 % limit'.
+      if ((limit & (limit-1)) == 0)
+        # limit is a power of 2
+        return int & (limit-1)
+      endIf
+
+      if (INT_TYPE isType Int32)
+        local threshold = native("(-(uint32_t)$limit) % (uint32_t)$limit")->Int
+        loop
+          local num = next32
+          if (native("(uint32_t)$num >= (uint32_t)$threshold")->Logical)
+            return native("(uint32_t)$num % (uint32_t)$limit")->Int
+          endIf
+        endLoop
+      else
+        local threshold = native("(-(uint64_t)$limit) % (uint64_t)$limit")->Int
+        loop
+          local num = int64
+          if (native("(uint64_t)$num >= (uint64_t)$threshold")->Logical)
+            return native("(uint64_t)$num % (uint64_t)$limit")->Int
+          endIf
+        endLoop
+      endIf
+
+    method int( low:Int, high:Int )->Int
+      # Returns a random integer between low and high, inclusive.
+      return int( (high-low)+1 ) + low
+
     method int32->Int32
       # Returns a normalized, evenly distributed random integer in
       # the range [0,2^31-1] inclusive.
