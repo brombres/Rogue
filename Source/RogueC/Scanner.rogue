@@ -64,10 +64,11 @@ class Scanner : ScannerCore, Poolable
       @value        = 0
       @digits       = 0
 
-    method mark_beginning_of_line
+    method mark_beginning_of_line->Int
       beginning_of_line = _scanner.location
+      return 0
 
-    method process_comment
+    method process_comment->Int
       local comment = buffer.cloned
       if (comment.contains("FIXME"))
         local cur_loc = _scanner.location
@@ -84,40 +85,49 @@ class Scanner : ScannerCore, Poolable
           println "[FIXME][$:$] $"(File(_filepath).filename,beginning_of_line.line,match)
         endForEach
       endIf
+      return 0
 
-    method use_DateTime
+    method use_DateTime->Int
       uses_DateTime = true
       uses_autoinclude = true
+      return 0
 
-    method use_File
+    method use_File->Int
       uses_File = true
       uses_autoinclude = true
+      return 0
 
-    method use_Introspection
+    method use_Introspection->Int
       uses_Introspection = true
       uses_autoinclude = true
+      return 0
 
-    method use_Process
+    method use_Process->Int
       uses_Process = true
       uses_autoinclude = true
+      return 0
 
-    method use_Promise
+    method use_Promise->Int
       uses_Promise = true
       uses_autoinclude = true
+      return 0
 
-    method use_Set
+    method use_Set->Int
       uses_Set = true
       uses_autoinclude = true
+      return 0
 
-    method use_Scanner
+    method use_Scanner->Int
       uses_Scanner = true
       uses_autoinclude = true
+      return 0
 
-    method use_Table
+    method use_Table->Int
       uses_Table = true
       uses_autoinclude = true
+      return 0
 
-    method use_Value
+    method use_Value->Int
       use_Variant
       if (not _filepath.contains("StandardMacros.rogue"))
         Program.print_warning(
@@ -125,9 +135,11 @@ class Scanner : ScannerCore, Poolable
           "Type name 'Value' is deprecated and will be removed in the future. Use 'Variant' instead."
         )
       endIf
+      return 0
 
-    method use_Variant
+    method use_Variant->Int
       uses_Variant = true
       uses_autoinclude = true
+      return 0
 
 endClass

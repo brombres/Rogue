@@ -74,14 +74,17 @@ class Parser : ParserCore, Poolable
 
       if (local_macros) local_macros.clear
 
-    method create_rogue_version_string
+    method create_rogue_version_string->Int
       processed_tokens.add( _cur_t.cloned(TokenType.STRING,VERSION.after_any('v')) )
+      return 0
 
-    method create_source_filepath
+    method create_source_filepath->Int
       processed_tokens.add( _cur_t.cloned(TokenType.STRING,_cur_t.filepath) )
+      return 0
 
-    method create_source_line
+    method create_source_line->Int
       processed_tokens.add( _cur_t.cloned(TokenType.INTEGER,_cur_t.line) )
+      return 0
 
     method preprocess
       temporarily Program.current_module = Program.default_module
@@ -91,8 +94,8 @@ class Parser : ParserCore, Poolable
         _tokens.add( processed_tokens )
       endTemporarily
 
-    method set_augment_context_name
-      if (not collecting_templates) return
+    method set_augment_context_name->Int
+      if (not collecting_templates) return 0
 
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
@@ -123,9 +126,10 @@ class Parser : ParserCore, Poolable
       endForEach
       if (depth > 0) throw _tokens[i1].error( "Unterminated '<<'." )
       @augment_context_name = builder
+      return 0
 
-    method batch_augment_create_method
-      if (not collecting_templates) return
+    method batch_augment_create_method->Int
+      if (not collecting_templates) return 0
 
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
@@ -158,13 +162,15 @@ class Parser : ParserCore, Poolable
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
       local template = Template( augment_t, mod, aspect_name, Token[], tokens, attributes )
       mod.templates[aspect_name] = template
+      return 0
 
-    method begin_join_ids
+    method begin_join_ids->Int
       id_start_stack.add( processed_tokens.count )
+      return 0
 
-    method end_join_ids
+    method end_join_ids->Int
       local i1 = id_start_stack.remove_last
-      if (i1 >= processed_tokens.count) return
+      if (i1 >= processed_tokens.count) return 0
 
       local t = processed_tokens[i1]
       if (t.type != TokenType.IDENTIFIER) t .= cloned( TokenType.IDENTIFIER, t->String )
@@ -173,13 +179,15 @@ class Parser : ParserCore, Poolable
       endForEach
       processed_tokens.discard_from( i1 )
       processed_tokens.add( t )
+      return 0
 
-    method begin_join_lowercase
+    method begin_join_lowercase->Int
       string_start_stack.add( processed_tokens.count )
+      return 0
 
-    method end_join_lowercase
+    method end_join_lowercase->Int
       local i1 = string_start_stack.remove_last
-      if (i1 >= processed_tokens.count) return
+      if (i1 >= processed_tokens.count) return 0
 
       local t = processed_tokens[i1]
       if (t.type != TokenType.STRING) t .= cloned( TokenType.STRING, t->String )
@@ -190,13 +198,15 @@ class Parser : ParserCore, Poolable
 
       processed_tokens.discard_from( i1 )
       processed_tokens.add( t )
+      return 0
 
-    method begin_join_strings
+    method begin_join_strings->Int
       string_start_stack.add( processed_tokens.count )
+      return 0
 
-    method end_join_strings
+    method end_join_strings->Int
       local i1 = string_start_stack.remove_last
-      if (i1 >= processed_tokens.count) return
+      if (i1 >= processed_tokens.count) return 0
 
       local t = processed_tokens[i1]
       if (t.type != TokenType.STRING) t .= cloned( TokenType.STRING, t->String )
@@ -205,13 +215,15 @@ class Parser : ParserCore, Poolable
       endForEach
       processed_tokens.discard_from( i1 )
       processed_tokens.add( t )
+      return 0
 
-    method begin_join_uppercase
+    method begin_join_uppercase->Int
       string_start_stack.add( processed_tokens.count )
+      return 0
 
-    method end_join_uppercase
+    method end_join_uppercase->Int
       local i1 = string_start_stack.remove_last
-      if (i1 >= processed_tokens.count) return
+      if (i1 >= processed_tokens.count) return 0
 
       local t = processed_tokens[i1]
       if (t.type != TokenType.STRING) t .= cloned( TokenType.STRING, t->String )
@@ -222,8 +234,9 @@ class Parser : ParserCore, Poolable
 
       processed_tokens.discard_from( i1 )
       processed_tokens.add( t )
+      return 0
 
-    method define_macro
+    method define_macro->Int
       assert _cmd_stack.count >= 3
       local tokens = _cmd_stack.remove_last->(as TokenList).tokens
       local placeholders = _cmd_stack.remove_last->(as Placeholders)
@@ -253,6 +266,7 @@ class Parser : ParserCore, Poolable
       endIf
 
       macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
+      return 0
 
     method define_local_macro
       assert _cmd_stack.count >= 3
@@ -284,7 +298,7 @@ class Parser : ParserCore, Poolable
 
       macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
 
-    method define_native_type
+    method define_native_type->Int
       # EXAMPLE: nativeType<<"char*">> RogueCString
       #
       # cur_t is 'nativeType'
@@ -294,7 +308,7 @@ class Parser : ParserCore, Poolable
         _read # "char*"
         _read # >>
         _read # RogueCString
-        return
+        return 0
       endIf
 
       local t = _cur_t
@@ -340,14 +354,16 @@ class Parser : ParserCore, Poolable
 
       local template = Template( t, mod, type_name, Token[], tokens, Attribute.COMPOUND|Attribute.NATIVE_TYPE )
       mod.templates[extended_name] = template
+      return 0
 
-    method clone
-      if (disable_output or _cmd_stack.is_empty) return
+    method clone->Int
+      if (disable_output or _cmd_stack.is_empty) return 0
       local cmd = _cmd_stack.last
       if (cmd) _cmd_stack.add( cmd.cloned )
       else     _cmd_stack.add( cmd )
+      return 0
 
-    method check_target
+    method check_target->Int
       local t = _read
       if (t.type != TokenType.STRING) throw t.error( "Literal string expected." )
       if (Program.targets.contains(t.content))
@@ -355,19 +371,22 @@ class Parser : ParserCore, Poolable
       else
         processed_tokens.add( t.cloned(TokenType.KEYWORD_FALSE,null) )
       endIf
+      return 0
 
-    method class_attribute_essential
+    method class_attribute_essential->Int
       _attribute_essential = true
+      return 0
 
-    method create_definition
+    method create_definition->Int
       local def_name = buffer.cloned
       Program.definitions[ def_name ] = token_buffer
       use history = WorkList<<String>>
         detect_definition_cycle( history, def_name, token_buffer )
       endUse
       token_buffer = Token[]
+      return 0
 
-    method create_local_definition
+    method create_local_definition->Int
       ensure<<local_definitions>>
       local def_name = buffer.cloned
       local_definitions[ def_name ] = token_buffer
@@ -375,12 +394,15 @@ class Parser : ParserCore, Poolable
         detect_definition_cycle( history, def_name, token_buffer )
       endUse
       token_buffer = Token[]
+      return 0
 
-    method collect_next_token
+    method collect_next_token->Int
       token_buffer.add( _read )
+      return 0
 
-    method collect_token_string
+    method collect_token_string->Int
       buffer.print _cur_t->String
+      return 0
 
     method detect_definition_cycle( history:String[], name:String, tokens:Token[] )
       if (history.contains(name))
@@ -405,10 +427,11 @@ class Parser : ParserCore, Poolable
       endForEach
       history.remove_last
 
-    method discard_last
+    method discard_last->Int
       if (_cmd_stack.count) _cmd_stack.remove_last
+      return 0
 
-    method insert_definition
+    method insert_definition->Int
       if (local_definitions)
         local def = local_definitions[ _cur_t.content ]
         if (def)
@@ -417,7 +440,7 @@ class Parser : ParserCore, Poolable
             _limit += def.count
             if (_position < _limit) _next_t = _tokens[_position]
           endIf
-          return
+          return 0
         endIf
       endIf
 
@@ -428,15 +451,16 @@ class Parser : ParserCore, Poolable
           _limit += def.count
           if (_position < _limit) _next_t = _tokens[_position]
         endIf
-        return
+        return 0
       endIf
 
       if (_next_t.type == TokenType.SYMBOL_LTLT)
-        if (expand_macro(Program.macros[_cur_t.content])) return
-        if (local_macros and expand_macro(local_macros[_cur_t->String])) return
+        if (expand_macro(Program.macros[_cur_t.content])) return 0
+        if (local_macros and expand_macro(local_macros[_cur_t->String])) return 0
       endIf
 
       processed_tokens.add( _cur_t )
+      return 0
 
     method expand_macro( macros:Macro[] )->Logical
       if (not macros) return false
@@ -481,8 +505,8 @@ class Parser : ParserCore, Poolable
       _restore_position
       return false
 
-    method filename_to_file_bytes
-      if (disable_output or _cmd_stack.is_empty) return
+    method filename_to_file_bytes->Int
+      if (disable_output or _cmd_stack.is_empty) return 0
       local string_node = _cmd_stack.remove_last
       local t = string_node.t
       local file = File(string_node->String)
@@ -490,9 +514,10 @@ class Parser : ParserCore, Poolable
       if (not file.exists) throw t.error( "No such file: $"(file) )
       local bytes = Byte[](file)
       _cmd_stack.add( TypeAccess( t, Type(t,Program.type_Byte), Args(t,LiteralString(t,bytes->String(&hex))) ) )
+      return 0
 
-    method filename_to_file_string
-      if (disable_output or _cmd_stack.is_empty) return
+    method filename_to_file_string->Int
+      if (disable_output or _cmd_stack.is_empty) return 0
       local string_node = _cmd_stack.remove_last
       local t = string_node.t
       local file = File(string_node->String)
@@ -500,9 +525,10 @@ class Parser : ParserCore, Poolable
       if (not file.exists) throw t.error( "No such file: $"(file) )
       local string = String(file)
       _cmd_stack.add( LiteralString(t,string) )
+      return 0
 
-    method load_filepath_as_string
-      if (disable_output or _cmd_stack.is_empty) return
+    method load_filepath_as_string->Int
+      if (disable_output or _cmd_stack.is_empty) return 0
       local cmd_string = _cmd_stack.last->(as LiteralString)
       assert cmd_string
       local file = File(cmd_string->String)
@@ -511,51 +537,59 @@ class Parser : ParserCore, Poolable
       endIf
       if (not file.exists) throw cmd_string.t.error("No such file: "+file.filepath)
       cmd_string.value = String(file)
+      return 0
 
-    method mark_token
+    method mark_token->Int
       marked_token = _cur_t
       _attribute_no_include = false
+      return 0
 
     method has_another->Logical
       return _position < _limit or inserted_tokens.count
 
-    method include_filepath
+    method include_filepath->Int
       Program.include( marked_token, buffer.cloned, &api=include_attribute_api,
                        &is_optional=include_attribute_optional, &include_folder=include_attribute_folder )
+      return 0
 
-    method join_identifiers
+    method join_identifiers->Int
       if (not disable_output and _cmd_stack.count >= 2)
         local b = _cmd_stack.remove_last
         local a = _cmd_stack.remove_last
         _cmd_stack.add( Identifier(b.t, a->String + b->String) )
       endIf
+      return 0
 
-    method join_template_args
+    method join_template_args->Int
       if (not disable_output and _cmd_stack.count >= 2)
         local b = _cmd_stack.remove_last
         local a = _cmd_stack.remove_last
         _cmd_stack.add( Identifier(b.t, b->(as TemplateArgs)->String(a->String)) )
       endIf
+      return 0
 
-    method join_strings
+    method join_strings->Int
       if (not disable_output and _cmd_stack.count >= 2)
         local a = _cmd_stack[_cmd_stack.count-2]->(as LiteralString)
         local b = _cmd_stack.remove_last->(as LiteralString)  # we already know b is a literal string
         a.value += b.value
       endIf
+      return 0
 
-    method swap
+    method swap->Int
       if (not disable_output and _cmd_stack.count >= 2)
         local b = _cmd_stack.remove_last
         local a = _cmd_stack.remove_last
         _cmd_stack.add( b )
         _cmd_stack.add( a )
       endIf
+      return 0
 
-    method uses_attribute_no_include
+    method uses_attribute_no_include->Int
       _attribute_no_include = true
+      return 0
 
-    method uses_filepath
+    method uses_filepath->Int
       # The first pass $include's the given file
       local filepath = buffer.cloned
       if (filepath == "") throw marked_token.error( "Module path expected." )
@@ -572,13 +606,14 @@ class Parser : ParserCore, Poolable
 
         Program.include( marked_token, filepath, &is_optional, &library )
       endIf
+      return 0
 
     method evaluate_meta_expression
-      #if (disable_output or _cmd_stack.is_empty) return
+      #if (disable_output or _cmd_stack.is_empty) return 0
       #local condition = _cmd_stack.remove_last
       #meta_condition = condition.evaluate
 
-    method on_is_defined
+    method on_is_defined->Int
       if (not disable_output)
         local t = _cur_t
         local name = t->String
@@ -588,11 +623,13 @@ class Parser : ParserCore, Poolable
           processed_tokens.add( t.cloned(TokenType.KEYWORD_FALSE,null) )
         endIf
       endIf
+      return 0
 
-    method on_begin_arg
+    method on_begin_arg->Int
       ++generic_fn_args_depth
+      return 0
 
-    method on_generic_fn_arg
+    method on_generic_fn_arg->Int
       if (_cur_t.type == TokenType.SYMBOL_DOLLAR)
         generic_fn_args_used |= 1
       else
@@ -603,8 +640,9 @@ class Parser : ParserCore, Poolable
       if ((generic_fn_args_used & !1) and (generic_fn_args_used & 1))
         throw _cur_t.error( "Cannot mix single arg ('$') and multiple arg ('$N') implicit function argument syntax." )
       endIf
+      return 0
 
-    method on_end_arg
+    method on_end_arg->Int
       --generic_fn_args_depth
       if (generic_fn_args_used and generic_fn_args_depth == 0)
         if (not disable_output)
@@ -627,9 +665,10 @@ class Parser : ParserCore, Poolable
           generic_fn_args_used = 0
         endIf
       endIf
+      return 0
 
-    method on_parsed_augment
-      if (not collecting_templates) return
+    method on_parsed_augment->Int
+      if (not collecting_templates) return 0
 
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
@@ -657,8 +696,9 @@ class Parser : ParserCore, Poolable
       local attributes = Attribute.ASPECT | Attribute.AUGMENT
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
       mod.templates[aspect_name] = Template( augment_t, mod, aspect_name, Token[], tokens, attributes )
+      return 0
 
-    method on_uses_module
+    method on_uses_module->Int
       assert _cmd_stack.count >= 2
       local attributes = _cmd_stack.remove_last->(as Attributes)
       local path = _cmd_stack.remove_last
@@ -666,16 +706,19 @@ class Parser : ParserCore, Poolable
         local m = Program.get_module( path.t, path->String.replacing("/","::") )
         Program.current_module.uses_module( m, &is_exported=attributes.is_exported )
       endIf
+      return 0
 
-    method on_parsed_class
+    method on_parsed_class->Int
       create_type_template
+      return 0
 
-    method on_parsed_enum
+    method on_parsed_enum->Int
       local _template = create_type_template
       if (_template)
         _template.attributes.is_enum = true
         _template.attributes.is_compound = true
       endIf
+      return 0
 
     method create_type_template->Template
       local attributes : Int64
@@ -720,9 +763,9 @@ class Parser : ParserCore, Poolable
       m.templates[extended_name] = result
       return result
 
-    method on_parsed_subclass
+    method on_parsed_subclass->Int
       if (disable_output and not collecting_templates)
-        return
+        return 0
       endIf
 
       local i1 = _saved_positions.last.position
@@ -802,15 +845,16 @@ class Parser : ParserCore, Poolable
         endIf
 
       endIf
+      return 0
 
-    method on_parsed_routine
+    method on_parsed_routine->Int
       local attributes : Int64
       if (_attribute_essential)
         attributes |= Attribute.ESSENTIAL
       endIf
       _attribute_essential = false
 
-      if (not collecting_templates) return
+      if (not collecting_templates) return 0
 
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
@@ -842,13 +886,14 @@ class Parser : ParserCore, Poolable
       attributes |= Attribute.ASPECT | Attribute.AUGMENT
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
       m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, attributes )
+      return 0
 
-    method parse_doc_comment
-      if (disable_output) return
+    method parse_doc_comment->Int
+      if (disable_output) return 0
 
       if (not has_another)
         _push( null, 0 )
-        return
+        return 0
       endIf
 
       _save_position
@@ -859,7 +904,7 @@ class Parser : ParserCore, Poolable
         if (not has_another or _peek.type != TokenType.EOL)
           _restore_position
           _push( null, 0 )
-          return
+          return 0
         endIf
       endBlock
 
@@ -872,7 +917,7 @@ class Parser : ParserCore, Poolable
         if (t.type != TokenType.EOL or not String.exists(t.content))
           _restore_position
           _push( null, 0 )
-          return
+          return 0
         endIf
       endIf
 
@@ -886,8 +931,9 @@ class Parser : ParserCore, Poolable
 
       _restore_position
       _push( LiteralString(doc_t,doc), 0 )
+      return 0
 
-    method parse_module_id
+    method parse_module_id->Int
       # Doing this natively because we need to also switch context to the parsed module
       # so that we can store class templates in the appropriate module.
       local t = _next_t
@@ -897,7 +943,7 @@ class Parser : ParserCore, Poolable
       elseIf (t.type != TokenType.IDENTIFIER)
         if (not disable_output) _push( null, 0 )
         Program.current_module = Program.default_module
-        return
+        return 0
       endIf
 
       if (_next_t.type != TokenType.IDENTIFIER) _throw_syntax_error( "Identifier expected." )
@@ -912,6 +958,7 @@ class Parser : ParserCore, Poolable
       local module_id = buffer.cloned
       if (not disable_output) _push( Identifier(t,module_id), 0 )
       Program.current_module = Program.get_module( t, module_id )
+      return 0
 
     method _peek->Token
       if (inserted_tokens.count) return inserted_tokens.last
@@ -922,7 +969,7 @@ class Parser : ParserCore, Poolable
       loop (10) println _read
       _restore_position
 
-    method print_peek
+    method print_peek->Int
       println "PEEK [$:$.$] $"(_next_t.filepath,_next_t.line,_next_t.column,_next_t)
 
     method print_stack
@@ -968,7 +1015,7 @@ class Parser : ParserCore, Poolable
       if (inserted_tokens.count) return inserted_tokens.remove_last
       return prior._read
 
-    method require_rogue_version
+    method require_rogue_version->Int
       local v_req = _cur_t.content.after_any('v').after_any('V')
       local v_cur = VERSION.after_any('v').after_any('V')
       if (VersionNumber(v_req) > v_cur)
@@ -981,17 +1028,17 @@ class Parser : ParserCore, Poolable
         )
       endIf
 
-    method rewrite_cur_token
+    method rewrite_cur_token->Int
       processed_tokens.add( _cur_t )
 
-    method rewrite_token
+    method rewrite_token->Int
       processed_tokens.add( _read )
 
-    method set_cur_token
+    method set_cur_token->Int
       _cur_t = _next_t
 
-    method store_statement_args
-      if (disable_output) return
+    method store_statement_args->Int
+      if (disable_output) return 0
 
       local args = _cmd_stack.remove_last->(as Args)
       assert args?
@@ -999,7 +1046,7 @@ class Parser : ParserCore, Poolable
         if (access)
           if (access.args) throw args.t.error( "Unexpected expression." )
           access.args = args
-          return
+          return 0
         endIf
       endBlock
 
@@ -1007,17 +1054,17 @@ class Parser : ParserCore, Poolable
         if (access)
           if (not access.args) access.args = args
           else throw args.t.error( "Unexpected expression." )
-          return
+          return 0
         endIf
       endBlock
 
       throw args.t.error( "Unexpected expression." )
 
-    method use_Introspection
+    method use_Introspection->Int
       Scanner.uses_Introspection = true
       Scanner.uses_autoinclude = true
 
-    method use_Table
+    method use_Table->Int
       Scanner.uses_Table = true
       Scanner.uses_autoinclude = true
 
@@ -1030,11 +1077,11 @@ class Parser : ParserCore, Poolable
         )
       endIf
 
-    method use_Variant
+    method use_Variant->Int
       Scanner.uses_Variant = true
       Scanner.uses_autoinclude = true
 
-    method write_this_module_id
+    method write_this_module_id->Int
       processed_tokens.add( _cur_t.cloned(TokenType.IDENTIFIER, Program.current_module.name) )
 
 endClass
