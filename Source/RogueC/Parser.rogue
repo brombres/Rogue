@@ -971,6 +971,7 @@ class Parser : ParserCore, Poolable
 
     method print_peek->Int
       println "PEEK [$:$.$] $"(_next_t.filepath,_next_t.line,_next_t.column,_next_t)
+      return 0
 
     method print_stack
       @trace _cmd_stack
@@ -1027,15 +1028,19 @@ class Parser : ParserCore, Poolable
           "Rogue v$ is currently installed and cannot compile Rogue v1.x files.."(v_cur)
         )
       endIf
+      return 0
 
     method rewrite_cur_token->Int
       processed_tokens.add( _cur_t )
+      return 0
 
     method rewrite_token->Int
       processed_tokens.add( _read )
+      return 0
 
     method set_cur_token->Int
       _cur_t = _next_t
+      return 0
 
     method store_statement_args->Int
       if (disable_output) return 0
@@ -1063,12 +1068,14 @@ class Parser : ParserCore, Poolable
     method use_Introspection->Int
       Scanner.uses_Introspection = true
       Scanner.uses_autoinclude = true
+      return 0
 
     method use_Table->Int
       Scanner.uses_Table = true
       Scanner.uses_autoinclude = true
+      return 0
 
-    method use_Value
+    method use_Value->Int
       use_Variant
       if (not _filepath.contains("StandardMacros.rogue"))
         Program.print_warning(
@@ -1076,12 +1083,15 @@ class Parser : ParserCore, Poolable
           "Type name 'Value' is deprecated and will be removed in the future. Use 'Variant' instead."
         )
       endIf
+      return 0
 
     method use_Variant->Int
       Scanner.uses_Variant = true
       Scanner.uses_autoinclude = true
+      return 0
 
     method write_this_module_id->Int
       processed_tokens.add( _cur_t.cloned(TokenType.IDENTIFIER, Program.current_module.name) )
+      return 0
 
 endClass
