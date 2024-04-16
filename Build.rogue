@@ -392,8 +392,10 @@ endRoutine
 
 routine execute( commands:String, error_message=null:String, &suppress_error )->Logical
   forEach (cmd in LineReader(commands))
+    ConsoleStyle.set<<FG_LIGHT_GREEN>>
     print( "> " )
     println( cmd )
+    ConsoleStyle.set<<FG_DEFAULT>>
     if (0 != System.run(cmd))
       if (suppress_error)
         return false
