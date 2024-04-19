@@ -28,11 +28,11 @@ class Color( argb:Int32 ) [compound]
     method create( r:Int, g:Int, b:Int, a=255:Int )->Color
       return Color( a.clamped(0,255):<<:24 | r.clamped(0,255):<<:16 | g.clamped(0,255):<<:8 | b.clamped(0,255) )
 
-    method create( r:Real64, g:Real64, b:Real64, a=1.0:Real64 )->Color
+    method create( r:Real, g:Real, b:Real, a=1.0:Real )->Color
       return Color( (r*255)->Int, (g*255)->Int, (b*255)->Int, (a*255)->Int )
 
   METHODS
-    method alpha->Real64
+    method alpha->Real
       return ((argb :>>: 24) & 255) / 255.0
 
     method alpha_byte->Int
@@ -47,13 +47,13 @@ class Color( argb:Int32 ) [compound]
       if (a == 0) return Color(0)
       return Color( (red_byte*255)/a, (green_byte*255)/a, (blue_byte*255)/a, a )
 
-    method blue->Real64
+    method blue->Real
       return (argb & 255) / 255.0
 
     method blue_byte->Int
       return argb & 255
 
-    method green->Real64
+    method green->Real
       return ((argb :>>: 8) & 255) / 255.0
 
     method green_byte->Int
@@ -82,23 +82,23 @@ class Color( argb:Int32 ) [compound]
     method operator!->Color
       return Color( !argb )
 
-    method red->Real64
+    method red->Real
       return ((argb :>>: 16) & 255) / 255.0
 
     method red_byte->Int
       return (argb :>>: 16) & 255
 
-    method with_opacity( a:Real64 )->Color
-      return (Int((argb:>>:24) * a):<<:24) | (argb & 0xffFFff)
-
     method to->String
       return argb->String(&hex)
 
-    method with_alpha( a:Real64 )->Color
+    method with_alpha( a:Real )->Color
       return with_alpha_byte( (a*255)->Int )
 
     method with_alpha_byte( a:Int )->Color
       return Color( (a.clamped(0,255) :<<: 24) | (this.argb & 0xFFffFF) )
+
+    method with_opacity( a:Real )->Color
+      return Color( (Int((argb:>>:24) * a):<<:24) | (argb & 0xffFFff) )
 
 endClass
 
