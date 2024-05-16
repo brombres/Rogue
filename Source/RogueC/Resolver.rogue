@@ -1211,7 +1211,7 @@ class Resolver : Poolable, Visitor
           Add( v.t, visit(cmd.loop_count).resolve_conversion_to(Program.type_Int, this, &coerce), LiteralInt(v.t,1) )
           )
         )
-        iterator.condition = PreDecrementLocal( v.t, v )
+        iterator.condition = ExplicitCast( v.t, PreDecrementLocal( v.t, v ), Program.type_Logical )
 
         local t = cmd.t
         return visit( If(t, CompareGT(t,GetLocal(v),LiteralInt(t,0)), Statements(t,iterator), null) )

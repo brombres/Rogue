@@ -266,10 +266,10 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       |  #define STDERR_FILENO 2
       |#endif
       |
-      |void %Ns%Rogue_fwrite( const char* utf8, %Ns%RogueInt byte_count, %Ns%RogueInt out );
+      |void %Ns%Rogue_fwrite( const char* utf8, %Ns%RogueInt byte_count, int out );
 
     nativeCode
-      @|void %Ns%Rogue_fwrite( const char* utf8, %Ns%RogueInt byte_count, %Ns%RogueInt out )
+      @|void %Ns%Rogue_fwrite( const char* utf8, %Ns%RogueInt byte_count, int out )
        |{
        |  #if !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
        |  while (byte_count)

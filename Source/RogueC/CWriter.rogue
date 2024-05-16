@@ -415,7 +415,7 @@ class CWriter : BufferedPrintWriter
            |
            |int %Ns%Rogue_quit(void)
            |{
-           |  %Ns%RogueInt status = !!%Ns%Rogue_exception;
+           |  int status = !!%Ns%Rogue_exception;
            |  %Ns%Rogue_print_exception();  // Only has an effect if there is a pending exception
            |
            |  %Ns%RogueGlobal__call_exit_functions();
