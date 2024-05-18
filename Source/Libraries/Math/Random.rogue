@@ -99,19 +99,19 @@ class Random [singleton]
       endIf
 
       if (INT_TYPE isType Int32)
-        local threshold = native("(-(uint32_t)$limit) % (uint32_t)$limit")->Int
+        local threshold = native("(-(RogueUInt32)$limit) % (RogueUInt32)$limit")->Int
         loop
           local num = next32
-          if (native("(uint32_t)$num >= (uint32_t)$threshold")->Logical)
-            return native("(uint32_t)$num % (uint32_t)$limit")->Int
+          if (native("(RogueUInt32)$num >= (RogueUInt32)$threshold")->Logical)
+            return native("(RogueUInt32)$num % (RogueUInt32)$limit")->Int
           endIf
         endLoop
       else
-        local threshold = native("(-(uint64_t)$limit) % (uint64_t)$limit")->Int
+        local threshold = native("(-(RogueUInt64)$limit) % (RogueUInt64)$limit")->Int
         loop
           local num = int64
-          if (native("(uint64_t)$num >= (uint64_t)$threshold")->Logical)
-            return native("(uint64_t)$num % (uint64_t)$limit")->Int
+          if (native("(RogueUInt64)$num >= (RogueUInt64)$threshold")->Logical)
+            return native("(RogueUInt64)$num % (RogueUInt64)$limit")->Int
           endIf
         endLoop
       endIf
@@ -142,11 +142,11 @@ class Random [singleton]
         return next32 & (limit-1)
       endIf
 
-      local threshold = native("(-(uint32_t)$limit) % (uint32_t)$limit")->Int32
+      local threshold = native("(-(RogueUInt32)$limit) % (RogueUInt32)$limit")->Int32
       loop
         local num = next32
-        if (native("(uint32_t)$num >= (uint32_t)$threshold")->Logical)
-          return native("(uint32_t)$num % (uint32_t)$limit")->Int32
+        if (native("(RogueUInt32)$num >= (RogueUInt32)$threshold")->Logical)
+          return native("(RogueUInt32)$num % (RogueUInt32)$limit")->Int32
         endIf
       endLoop
 
@@ -168,10 +168,10 @@ class Random [singleton]
       # Returns an pseudo-random Int32 in the full range of possible values [-80000000,7FFFffff].
       local result : Int32
       native
-      @|uint64_t old_state = (uint64_t)$state;
+      @|RogueUInt64 old_state = (RogueUInt64)$state;
        |$state = (RogueInt64)(old_state * 6364136223846793005ULL) + $stream;
-       |uint32_t xorshifted = ((old_state >> 18u) ^ old_state) >> 27u;
-       |uint32_t rot = old_state >> 59u;
+       |RogueUInt32 xorshifted = (RogueUInt32)(((old_state >> 18u) ^ old_state) >> 27u);
+       |RogueUInt32 rot = (RogueUInt32)(old_state >> 59u);
        |$result = (RogueInt32)((xorshifted >> rot) | (xorshifted << ((-rot) & 31)));
       return result
 
