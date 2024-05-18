@@ -1904,9 +1904,11 @@ parser
     on "<<"
       identifier
       mustConsume ">>"
+      consume_eols
       string
       produce NativeProperty( target:String, expression:String )
     elseOnOthers
+      consume_eols
       string
       produce NativeProperty( target="C":String, expression:String )
     endOn
