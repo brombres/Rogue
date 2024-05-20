@@ -32,6 +32,9 @@ class Color( argb:Int32 ) [compound]
       return Color( (r*255)->Int, (g*255)->Int, (b*255)->Int, (a*255)->Int )
 
   METHODS
+    method abgr->Int32
+      return (argb & 0xFF00FF00) | ((argb:<<:16) & 0x00FF0000) | ((argb:>>>:16) & 0x000000FF)
+
     method alpha->Real
       return ((argb :>>: 24) & 255) / 255.0
 
