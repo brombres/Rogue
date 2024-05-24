@@ -502,6 +502,11 @@ class ResolveUsedElements : InspectionVisitor
       if (m.is_global) cmd_call_global_cases.add( cmd_case )
       else             cmd_call_object_cases.add( cmd_case )
 
+    method on_visit_node( cmd:SetGlobalProperty )
+      visit( cmd.info.type_context )
+      visit( cmd.info )
+      visit( cmd.new_value )
+
     method on_visit_node( cmd:Type )
       visit_type( cmd )
 

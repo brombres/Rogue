@@ -3244,6 +3244,10 @@ augment
           local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
           if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
 
+          local context = args.remove_first
+          m = resolver.find_procedure( t, p.type, context, op_method_name, args, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, context, m, args) )
+
           operand = operand.resolve_conversion_to(p.type, resolver)
           return resolver.validate( $OpGlobal(t,p,operand) )
         endIf
@@ -3406,6 +3410,10 @@ augment
           local args = Args(t,GetGlobalProperty(t,p),operand)
           local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
           if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          context = args.remove_first
+          m = resolver.find_procedure( t, p.type, context, op_method_name, args, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, context, m, args) )
 
           operand = operand.resolve_conversion_to(p.type, resolver)
           return resolver.validate( $OpGlobal(t,p,operand) )
