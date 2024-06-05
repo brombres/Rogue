@@ -1090,7 +1090,7 @@ class Bitmap
       return tiles
 
     method swap_red_and_blue
-      native @|int n = $width * $height;
+      native @|%Ns%RogueInt n = $width * $height;
               |%Ns%RogueInt32* src = $pixels->as_int32s + n;
               |while (--n >= 0)
               |{
@@ -1316,8 +1316,8 @@ endEnum
 
 augment Rogue::MacOS
   METHODS
-    method decode_bitmap( encoded_bytes:Byte[] )->Bitmap
-      local result : Bitmap
+    method decode_bitmap( encoded_bytes:Byte[] )->Graphics::Bitmap
+      local result : Graphics::Bitmap
 
       native
       @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
@@ -1330,7 +1330,7 @@ augment Rogue::MacOS
       native
       @|    $width = (%Ns%RogueInt32)CGImageGetWidth( image );
        |    $height = (%Ns%RogueInt32)CGImageGetHeight( image );
-            result = Bitmap( width, height )
+            result = Graphics::Bitmap( width, height )
       native ...
       @|    CGContextRef gc = CGBitmapContextCreate( (GLubyte*)$result->pixels->as_int32s, $width, $height, 8, $width*4,
        |                                          CGColorSpaceCreateDeviceRGB(), kCGImageAlphaPremultipliedLast );
@@ -1345,7 +1345,7 @@ augment Rogue::MacOS
       if (result) result.[ swap_red_and_blue, is_premultiplied_alpha=true, unmultiply_alpha ]
       return result
 
-    method encode_bitmap( bitmap:Bitmap, type:BitmapEncodingType )->Byte[]
+    method encode_bitmap( bitmap:Graphics::Bitmap, type:Graphics::BitmapEncodingType )->Byte[]
       bitmap.swap_red_and_blue
       bitmap.premultiply_alpha
 
@@ -1401,23 +1401,23 @@ augment Rogue::MacOS
       bitmap.unmultiply_alpha
       return encoded_bytes
 
-    method to_bmp_bytes( bitmap:Bitmap )->Byte[]
-      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_BMP )
+    method to_bmp_bytes( bitmap:Graphics::Bitmap )->Byte[]
+      return encode_bitmap( bitmap, Graphics::BitmapEncodingType.TYPE_BMP )
 
-    method to_gif_bytes( bitmap:Bitmap )->Byte[]
-      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_GIF )
+    method to_gif_bytes( bitmap:Graphics::Bitmap )->Byte[]
+      return encode_bitmap( bitmap, Graphics::BitmapEncodingType.TYPE_GIF )
 
-    method to_jpeg_bytes( bitmap:Bitmap )->Byte[]
-      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_JPEG )
+    method to_jpeg_bytes( bitmap:Graphics::Bitmap )->Byte[]
+      return encode_bitmap( bitmap, Graphics::BitmapEncodingType.TYPE_JPEG )
 
-    method to_jpeg2000_bytes( bitmap:Bitmap )->Byte[]
-      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_JPEG2000 )
+    method to_jpeg2000_bytes( bitmap:Graphics::Bitmap )->Byte[]
+      return encode_bitmap( bitmap, Graphics::BitmapEncodingType.TYPE_JPEG2000 )
 
-    method to_png_bytes( bitmap:Bitmap )->Byte[]
-      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_PNG )
+    method to_png_bytes( bitmap:Graphics::Bitmap )->Byte[]
+      return encode_bitmap( bitmap, Graphics::BitmapEncodingType.TYPE_PNG )
 
-    method to_tiff_bytes( bitmap:Bitmap )->Byte[]
-      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_TIFF )
+    method to_tiff_bytes( bitmap:Graphics::Bitmap )->Byte[]
+      return encode_bitmap( bitmap, Graphics::BitmapEncodingType.TYPE_TIFF )
 
 
   NATIVE
