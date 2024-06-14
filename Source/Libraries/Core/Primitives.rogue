@@ -263,7 +263,7 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
     method hashcode->Int
       return integer_bits.hashcode
 
-    method integer_bits->REAL_TYPE
+    method integer_bits->INT_TYPE
       return this->REAL_TYPE.integer_bits
 
     method is_infinite->Logical
