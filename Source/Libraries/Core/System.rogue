@@ -161,6 +161,22 @@ class System [essential]
                  return 0
       native @|#endif
 
+    method is_native_byte_order_low_high->Logical
+      # true is returned if the native byte order is low-high (0x11223344 stored as [44,33,22,11])
+      # false is returned if the native byte order is high-low (0x11223344 stored as [11,22,33,44])
+      local result : Logical
+
+      native
+      @|union
+       |{
+       |  RogueInt32 int32;
+       |  RogueByte  bytes[4];
+       |} int32_bytes = { .int32 = 0x11223344 };
+       |
+       |$result = (int32_bytes.bytes[0] == 0x44);
+
+      return result
+
     method os->String
       # Returns one of:
       #   macOS
