@@ -63,9 +63,27 @@ class DataReader : Reader<<Byte>>
     method read_int32_low_high->Int32
       # Reads 4 bytes in low-high order, e.g. [88,99,AA,BB] -> BBAA9988
       local result = read->Int32
-      result |= (Int32(read) :<<: 8)
-      result |= (Int32(read) :<<: 16)
+      result |= (Int32(read) :<<: 8)->Int32
+      result |= (Int32(read) :<<: 16)->Int32
       return result | (Int32(read) :<<: 24)
+
+    method read_int32_native_byte_order->Int32
+      local b1 = read_byte
+      local b2 = read_byte
+      local b3 = read_byte
+      local b4 = read_byte
+
+      local result : Int32
+      native
+      @|union
+       |{
+       |  RogueInt32 int32;
+       |  RogueByte  bytes[4];
+       |} int32_bytes = { .bytes = {$b1,$b2,$b3,$b4} };
+       |
+       |$result = int32_bytes.int32;
+
+       return result
 
     method read_int32x->Int
       return read_int64x->Int
@@ -246,6 +264,26 @@ class DataWriter : Writer<<Byte>>
       write( value:>>>:8 )
       write( value:>>>:16 )
       write( value:>>>:24 )
+
+    method write_int32_native_byte_order( value:Int32 )
+      local b1, b2, b3, b4 : Int
+
+      native
+      @|union
+       |{
+       |  RogueInt32 int32;
+       |  RogueByte  bytes[4];
+       |} int32_bytes = { .int32 = $value };
+       |
+       |$b1 = int32_bytes.bytes[0];
+       |$b2 = int32_bytes.bytes[1];
+       |$b3 = int32_bytes.bytes[2];
+       |$b4 = int32_bytes.bytes[3];
+
+      write_byte( b1 )
+      write_byte( b2 )
+      write_byte( b3 )
+      write_byte( b4 )
 
     method write_int32x( value:Int )
       write_int64x( value->Int64 )
