@@ -37,12 +37,19 @@ class Bitmap
       return Bitmap( width, height, Color(0) )
 
     method create( file:File )->Bitmap
-      local result = Bitmap( Byte[](file) )
-      if (result) result.filepath = file.filepath
+      local result = Bitmap.load( file )
+      if (not result)
+        result = Bitmap( 1, 1 )
+        result.error = "Error loading bitmap '$'."(file)
+      endIf
       return result
 
     method create( bytes:Byte[] )->Bitmap
       local result = decode( bytes )
+      if (not result)
+        result = Bitmap( 1, 1 )
+        result.error = "Error decoding bytes as bitmap."
+      endIf
       return result
 
     method create( existing:Bitmap, subset:IntBox )->Bitmap
@@ -101,17 +108,17 @@ class Bitmap
 
     method decode_bmp( bytes:Byte[] )->Bitmap
       if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      error.println "ERROR: No BMP decoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment global method Graphics::Bitmap.decode_bmp(Byte[])->Bitmap to utilize an alternate decoder."
+      Global.error.println "ERROR: No BMP decoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment global method Graphics::Bitmap.decode_bmp(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
     method decode_heic( bytes:Byte[] )->Bitmap
       if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      error.println "ERROR: No HEIC decoder available. Augment global method Graphics::Bitmap.decode_heic(Byte[])->Bitmap to utilize an alternate decoder."
+      Global.error.println "ERROR: No HEIC decoder available. Augment global method Graphics::Bitmap.decode_heic(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
     method decode_jpeg( bytes:Byte[] )->Bitmap
       if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      error.println "ERROR: No JPEG decoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment global method Graphics::Bitmap.decode_jpeg(Byte[])->Bitmap to utilize an alternate decoder."
+      Global.error.println "ERROR: No JPEG decoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment global method Graphics::Bitmap.decode_jpeg(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
     method decode_png( bytes:Byte[] )->Bitmap
@@ -121,7 +128,7 @@ class Bitmap
 
     method decode_webp( bytes:Byte[] )->Bitmap
       if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      error.println "ERROR: No WEBP decoder available. Augment global method Graphics::Bitmap.decode_webp(Byte[])->Bitmap to utilize an alternate decoder."
+      Global.error.println "ERROR: No WEBP decoder available. Augment global method Graphics::Bitmap.decode_webp(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
     method detect_string( bytes:Byte[], index:Int, string:String )->Logical
@@ -131,12 +138,18 @@ class Bitmap
       endForEach
       return true
 
+    method load( file:File )->Bitmap
+      local result = decode( Byte[](file) )
+      if (result) result.filepath = file.filepath
+      return result
+
   PROPERTIES
     width                  : Int
     height                 : Int
     pixels                 : Color[]
     is_premultiplied_alpha : Logical
     filepath               : String
+    error                  : String
 
   METHODS
     method init( size:IntXY, color=Color(0):Color ) [essential]
