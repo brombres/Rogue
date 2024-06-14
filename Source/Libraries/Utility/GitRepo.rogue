@@ -126,7 +126,7 @@ class GitRepo( url:String, folder:File ) [compound]
       if (not result.success) return false
 
       local lines = result->String.trimmed.split( '\n' )
-      lines.discard( $.begins_with("??") )
+      lines.discard( $.begins_with("??") or $ == "" )
       return not lines.is_empty
 
     method has_remote_changes->Logical
