@@ -299,7 +299,10 @@ class CWriter : BufferedPrintWriter
            |extern %Ns%RogueObjectList %Ns%RogueMM_objects;
            |extern %Ns%RogueObjectList %Ns%RogueMM_objects_requiring_cleanup;
            |
-           |void*        %Ns%Rogue_as( void* obj, %Ns%RogueInt recast_type_id );
+           |struct %Ns%RogueWeakReference;
+           |extern struct %Ns%RogueWeakReference* %Ns%RogueMM_weak_references;
+           |
+           |void*  %Ns%Rogue_as( void* obj, %Ns%RogueInt recast_type_id );
            |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%RogueInt ancestor_id );
         println
 
@@ -403,7 +406,10 @@ class CWriter : BufferedPrintWriter
            |
            |void %Ns%Rogue_check_gc(void)
            |{
-           |  if (%Ns%RogueMM_bytes_allocated_since_gc >= %NS%ROGUE_MM_GC_THRESHOLD || %Ns%RogueMM_gc_request) %Ns%Rogue_collect_garbage();
+           |  if (%Ns%RogueMM_gc_request || %Ns%RogueMM_bytes_allocated_since_gc >= %NS%ROGUE_MM_GC_THRESHOLD)
+           |  {
+           |    %Ns%Rogue_collect_garbage();
+           |  }
            |}
            |
            |void %Ns%Rogue_request_gc(void)
@@ -507,14 +513,15 @@ class CWriter : BufferedPrintWriter
            |
            |%Ns%RogueObject*     %Ns%Rogue_exception  = 0;
            |%Ns%RogueCallFrame*  %Ns%Rogue_call_stack = 0;
-           |%Ns%RogueInt              %Ns%Rogue_call_stack_count    = 0;
-           |%Ns%RogueInt              %Ns%Rogue_call_stack_capacity = 0;
-           |%Ns%RogueInt              %Ns%Rogue_call_stack_line     = 0;
+           |%Ns%RogueInt            %Ns%Rogue_call_stack_count    = 0;
+           |%Ns%RogueInt            %Ns%Rogue_call_stack_capacity = 0;
+           |%Ns%RogueInt            %Ns%Rogue_call_stack_line     = 0;
            |
-           |%Ns%RogueInt              %Ns%RogueMM_bytes_allocated_since_gc  = 0;
-           |%Ns%RogueInt              %Ns%RogueMM_gc_request                = 0;
-           |%Ns%RogueObjectList  %Ns%RogueMM_objects                   = {0};
-           |%Ns%RogueObjectList  %Ns%RogueMM_objects_requiring_cleanup = {0};
+           |%Ns%RogueInt            %Ns%RogueMM_bytes_allocated_since_gc  = 0;
+           |%Ns%RogueInt            %Ns%RogueMM_gc_request                = 0;
+           |%Ns%RogueObjectList     %Ns%RogueMM_objects                   = {0};
+           |%Ns%RogueObjectList     %Ns%RogueMM_objects_requiring_cleanup = {0};
+           |%Ns%RogueWeakReference* %Ns%RogueMM_weak_references = 0;
            |
            |void* %Ns%Rogue_as( void* obj, %Ns%RogueInt recast_type_id )
            |{

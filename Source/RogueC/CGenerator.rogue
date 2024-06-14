@@ -2467,6 +2467,19 @@ augment
                         |}
                         |%Ns%RogueMM_objects_requiring_cleanup.count -= cleanup_count;
                         |
+                        |// Null out weak references to objects that are about to be deleted.
+                        |%Ns%RogueWeakReference* cur = %Ns%RogueMM_weak_references;
+                        |while (cur)
+                        |{
+                        |  if (cur->object && cur->object->__refcount >= 0)
+                        |  {
+                        |    // The object ref held by this weak reference is about to be
+                        |    // deleted by the GC system; null out the object.
+                        |    cur->object = 0;
+                        |  }
+                        |  cur = cur->next_weak_reference;
+                        |}
+                        |
                         |// Free unreferenced objects and reset the traced flag on referenced objects.
                         |for (write_i=-1,i=%Ns%RogueMM_objects.count, refptr=%Ns%RogueMM_objects.data-1; --i>=0; )
                         |{

@@ -1,0 +1,41 @@
+class WeakReference [essential]
+  PROPERTIES
+    next_weak_reference : WeakReference
+    native "RogueObject* object;"
+
+  METHODS
+    method init( _object:Object )
+      native @|$this->object = $_object;
+              |$next_weak_reference = %Ns%RogueMM_weak_references;
+              |%Ns%RogueMM_weak_references = $this;
+
+    method on_cleanup
+      native @|$this->object = 0;
+              |if (%Ns%RogueMM_weak_references == $this)
+              |{
+              |  %Ns%RogueMM_weak_references = $next_weak_reference;
+              |}
+              |else
+              |{
+              |  %Ns%RogueWeakReference* cur = %Ns%RogueMM_weak_references;
+              |  while (cur && cur->next_weak_reference != $this)
+              |  {
+              |    cur = cur->next_weak_reference;
+              |  }
+              |  if (cur) cur->next_weak_reference = cur->next_weak_reference->next_weak_reference;
+              |}
+
+    method set_object( new_object:Object )->this
+      native @|$this->object = $new_object;
+      return this
+
+    method object->Object
+      return native( "$this->object" )->Object
+endClass
+
+class WeakReference<<$DataType>> : WeakReference
+  METHODS
+    method object->$DataType
+      return native( "$this->object" )->$DataType
+endClass
+
