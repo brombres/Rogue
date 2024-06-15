@@ -175,7 +175,7 @@ class CWriter : BufferedPrintWriter
            |
            |#if !defined(%NS%ROGUE_CREATE_OBJECT)
            |  #define %NS%ROGUE_CREATE_OBJECT( TypeName ) \
-           |      ((TypeName*)%Ns%Rogue_create_object(&Type##TypeName))
+           |      ((TypeName*)%Ns%Rogue_create_object(&Type##TypeName,1))
            |#endif
            |
            |#if !defined(%NS%ROGUE_NEW_OBJECT)
@@ -273,7 +273,8 @@ class CWriter : BufferedPrintWriter
            |void* %Ns%Rogue_release( void* obj );  // Increase the refcount of the given Rogue object, preventing it from being GC'd
            |void* %Ns%Rogue_retain( void* obj );   // Decrease the refcount of the given object
            |
-           |void* %Ns%Rogue_create_object( void* type );
+           |void* %Ns%Rogue_create_object( void* type, int initialize );
+           |void  %Ns%Rogue_init_object( %Ns%RogueRuntimeType* type, %Ns%RogueObject* obj );
            |void  %Ns%Rogue_destroy_object( void* obj );
            |void* %Ns%Rogue_new_object( void* type );
            |void* %Ns%Rogue_singleton( void* type, void* singleton_ref );
@@ -323,7 +324,7 @@ class CWriter : BufferedPrintWriter
            |  %Ns%Rogue_argv = argv;
            |}
            |
-           |void* %Ns%Rogue_create_object( void* _type )
+           |void* %Ns%Rogue_create_object( void* _type, int initialize )
            |{
            |  #if defined(%NS%ROGUE_GC_AUTO)
            |    if (%Ns%RogueMM_bytes_allocated_since_gc >= %NS%ROGUE_MM_GC_THRESHOLD) %Ns%Rogue_collect_garbage();
@@ -337,6 +338,13 @@ class CWriter : BufferedPrintWriter
            |  else                     %Ns%RogueObjectList_add( &%Ns%RogueMM_objects, obj );
            |  %Ns%RogueMM_bytes_allocated_since_gc += type->size;
            |
+           |  if (initialize) %Ns%Rogue_init_object( type, obj );
+           |
+           |  return obj;
+           |}
+           |
+           |void %Ns%Rogue_init_object( %Ns%RogueRuntimeType* type, %Ns%RogueObject* obj )
+           |{
            |  if (type->fn_init_object)
            |  {
            |    #ifdef %NS%ROGUE_GC_AUTO
@@ -347,8 +355,6 @@ class CWriter : BufferedPrintWriter
            |      type->fn_init_object( obj );
            |    #endif
            |  }
-           |
-           |  return obj;
            |}
            |
            |void %Ns%Rogue_destroy_object( void* obj )
@@ -377,8 +383,10 @@ class CWriter : BufferedPrintWriter
            |{
            |  if (*((%Ns%RogueObject**)singleton_ref)) return *((%Ns%RogueObject**)singleton_ref);
            |  %Ns%RogueRuntimeType* type = (%Ns%RogueRuntimeType*) _type;
-           |  %Ns%RogueObject* obj = (%Ns%RogueObject*)%Ns%Rogue_create_object( type );
+           |  %Ns%RogueObject* obj = (%Ns%RogueObject*)%Ns%Rogue_create_object( type, 0 );
            |  (*((%Ns%RogueObject**)singleton_ref)) = obj;
+           |
+           |  %Ns%Rogue_init_object( type, obj );
            |  if (type->fn_init) type->fn_init(obj);  // call init() if it exists
            |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( 0, obj );
            |  return obj;
