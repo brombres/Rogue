@@ -1156,8 +1156,9 @@ class Resolver : Poolable, Visitor
     method on_visit( cmd:LogicalAnd )->Cmd
       cmd.left  = visit( cmd.left ).logicalized( this )
       cmd.right = visit( cmd.right ).logicalized( this )
-      if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
-        return LiteralLogical( cmd.t, cmd.left->(as LiteralLogical).value and cmd.right->(as LiteralLogical).value )
+      if (cmd.left instanceOf LiteralPrimitive)
+        if (cmd.left.is_truthy) return cmd.right.logicalized( this )
+        else                    return LiteralLogical( cmd.t, false )
       endIf
       return cmd
 
@@ -1183,8 +1184,10 @@ class Resolver : Poolable, Visitor
     method on_visit( cmd:LogicalOr )->Cmd
       cmd.left  = visit( cmd.left ).logicalized( this )
       cmd.right = visit( cmd.right ).logicalized( this )
-      if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
-        return LiteralLogical( cmd.t, cmd.left->(as LiteralLogical).value or cmd.right->(as LiteralLogical).value )
+      if (cmd.left instanceOf LiteralPrimitive)
+        return LiteralLogical( cmd.t, cmd.left.is_truthy or cmd.right.is_truthy )
+        if (cmd.left.is_truthy) return LiteralLogical( cmd.t, true )
+        return cmd.right.logicalized( this )
       endIf
       return cmd
 
