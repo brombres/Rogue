@@ -59,6 +59,23 @@ class Matrix( ...
     method create->Matrix
       return Matrix( 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 )
 
+    method frustum( left:Real, right:Real, top:Real, bottom:Real, z_near:Real, z_far:Real )->Matrix
+      # Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
+      local m = Matrix()
+
+      m.r0c0 = 2 * z_near / (right - left)
+      m.r1c1 = 2 * z_near / (bottom - top)
+
+      m.r0c2 = (right + left) / (right - left)
+      m.r1c2 = (top + bottom) / (bottom - top)
+      m.r2c2 = z_far / (z_near - z_far)
+      m.r3c2 = -1
+
+      m.r2c3 = -(z_far * z_near) / (z_far - z_near)
+      m.r3c3 = 0
+
+      return m
+
     method identity->Matrix
       local m = Matrix()
       m.r0c0 = 1
@@ -96,31 +113,29 @@ class Matrix( ...
 
       return result * Matrix.translate( -origin )
 
+    method mode_2dx( width:Real, height:Real, nominal_z=-2000:Real, z_origin=XY(0.5,0.5):XY, &invert_y )->Matrix
+      local max_z = nominal_z * 2
+      local k = (-nominal_z + 1) * 2
+      local left = ((-2 * width) / k)  * z_origin.x
+      local top  = ((-2 * height) / k) * z_origin.y
+      local right = left + 2*width/k
+      local bottom = top + 2*height/k
+
+      if (invert_y) swapValues( top, bottom )
+
+      return ...
+        Matrix.frustum( left, right, top, bottom, 1, (-max_z*k)/3 ) ...
+        * Matrix.translate( XYZ(-width*z_origin.x,-height*z_origin.y,0) )
+
     method perspective( fov_y:Radians, aspect_ratio:Real, z_near:Real, z_far:Real )->Matrix
-      # Returns a right-handed projection matrix (OpenGL is also right-hand).
-      local f = 1.0 / (fov_y * 0.5).tan
+      # Returns a right-handed projection matrix with Vulkan/D3D depth settings
       local m = Matrix()
-      m.r0c0 = f / aspect_ratio
-      m.r1c1 = f
-      m.r2c2 = (z_near + z_far) / (z_near - z_far)
-      m.r2c3 = (2 * z_near * z_far) / (z_near - z_far)
+      local f = (fov_y * 0.5).tan
+      m.r0c0 = 1.0 / (f * aspect_ratio)
+      m.r1c1 = 1.0 / f
+      m.r2c2 = z_far / (z_near - z_far)
+      m.r2c3 = -(z_far * z_near) / (z_far - z_near)
       m.r3c2 = -1
-      return m
-
-    method perspective( left:Real, top:Real, right:Real, bottom:Real, near:Real, far:Real )->Matrix
-      # Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
-      local m = identity
-
-      m.r0c0 = 2 * near / (right - left)
-      m.r1c1 = 2 * near / (top - bottom)
-
-      m.r0c2 = (right + left) / (right - left)
-      m.r1c2 = (top + bottom) / (top - bottom)
-      m.r2c2 = - (far + near) / (far - near)
-      m.r3c2 = -1
-
-      m.r2c3 = - (2 * far * near) / (far - near)
-
       return m
 
     method rotate( degrees:DegreesXYZ )->Matrix
@@ -275,6 +290,19 @@ class Matrix( ...
              0,      0,      0,      1
       )
 
+    method viewport( left:Real, top:Real, width:Real, height:Real )->Matrix
+      # Returns a matrix that converts coordinates from
+      # (left..<left+width)x(top..<top+height) -> (-1..1,-1..1)
+      local m = identity
+
+      m.r0c0 = 2.0 / width
+      m.r1c1 = 2.0 / height
+
+      m.r0c3 = -1.0
+      m.r1c3 = -1.0
+
+      return m
+
   METHODS
     method count->Int32
       return 16
@@ -367,15 +395,23 @@ class Matrix( ...
 
       return result
 
-    method operator*( v:XY )->XY
-      return XY(
+    method operator*( v:XY )->XYZW
+      return XYZW(
         this[0]   * v.x +
         this[4]   * v.y +
         this[12],
 
         this[1]   * v.x +
         this[5]   * v.y +
-        this[13]
+        this[13],
+
+        this[2]   * v.x +
+        this[6]   * v.y +
+        this[14],
+
+        this[3]   * v.x +
+        this[7]   * v.y +
+        this[15]
       )
 
     method operator*( v:XYZ )->XYZW
