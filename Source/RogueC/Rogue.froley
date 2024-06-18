@@ -2523,7 +2523,9 @@ parser
 
 - temporary_assignment
   expression
+  consume_eols
   on '='
+    consume_eols
     expression
     produce TemporaryAssignment(target,new_value)
   endOn
