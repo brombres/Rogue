@@ -625,11 +625,11 @@ class List<<$DataType>> : Poolable ListType
         --i2
       endWhile
 
-    method rewriter->ListRewriter<<$DataType>>
-      return ListRewriter<<$DataType>>( this )
+    method rewriter( starting_index=0:Int )->ListRewriter<<$DataType>>
+      return ListRewriter<<$DataType>>( this, starting_index, starting_index )
 
-    method rewriter_object->ListRewriterObject<<$DataType>>
-      return ListRewriterObject<<$DataType>>( this )
+    method rewriter_object( starting_index=0:Int )->ListRewriterObject<<$DataType>>
+      return ListRewriterObject<<$DataType>>( this, starting_index, starting_index )
 
     method rotate_left( w:Int, h:Int )
       # Treats this list as a 2D WxH set of data and rotates it 90º counter-clockwise.
