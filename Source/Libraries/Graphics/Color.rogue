@@ -163,3 +163,60 @@ augment Rogue::ConsoleStyle
       output.flush
 
 endAugment
+
+augment Rogue::DataReader
+  METHODS
+    method read_colors( buffer=Graphics::Color[]:Graphics::Color[], aligned_data=null:Int? )->Graphics::Color[]
+      local color_count = read_int32x
+      buffer.reserve( color_count )
+
+      read_logical  # ignore alignment flag
+      skip( 4 )     # ignore alignment buffer
+
+      if (aligned_data)
+        while (position & (aligned_data.value-1)) read_byte  # alignment padding
+      endIf
+
+      local byte_order_marker = read_int32
+
+      if (byte_order_marker == 0x11223344)
+        loop (color_count)
+          buffer.add( Color(read_int32) )
+        endLoop
+      else
+        loop (color_count)
+          buffer.add( Color(read_int32_low_high) )
+        endLoop
+      endIf
+
+      return buffer
+
+endAugment
+
+augment Rogue::DataWriter
+  METHODS
+    method write_colors( colors:Graphics::Color[], align_data=null:Int? )
+      write_int32x( colors.count + 1 )   # +1 for BOM
+
+      write_logical( false )  # reader-side flag for alignment performed
+      write_int32( 0 )        # reader-side alignment padding buffer
+
+      if (align_data)
+        # writer-side alignment padding
+        while (position & (align_data.value-1)) write_byte( 0 )
+      endIf
+
+      # Byte Order Marker
+      write_int32_native_byte_order( 0x11223344 )
+
+      if (System.is_native_byte_order_low_high)
+        forEach (color in colors)
+          write_int32_low_high( color.argb )
+        endForEach
+      else
+        forEach (color in colors)
+          write_int32( color.argb )
+        endForEach
+      endIf
+endAugment
+
