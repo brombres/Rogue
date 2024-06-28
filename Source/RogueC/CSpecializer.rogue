@@ -635,11 +635,13 @@ augment Property
     method c_name->String
       if (@c_name) return @c_name
 
+      if (name.begins_with('.')) @c_name = "_" + name.unleft(1)
+      else                       @c_name = name
+
       if (attributes.is_global)
-        @c_name = "$$__g_$"(Program.namespace_capitalized,type_context.c_name,name)
-      else
-        @c_name = name
+        @c_name = "$$__g_$"(Program.namespace_capitalized,type_context.c_name,@c_name)
       endIf
+
       return @c_name
 
 endAugment

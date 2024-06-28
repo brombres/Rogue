@@ -47,7 +47,7 @@ class Procedure : Cmd
       init( t, null, name, parameters, return_type, attributes, doc, body )
 
     method init( t, module_context, name, parameters=null, return_type=null,
-      attributes=null, doc=null, body=null )
+        attributes=null, doc=null, body=null )
       if (not parameters) parameters = Parameters(t)
       if (not attributes) attributes = Attributes( t )
       if (not body)       body = LocalScope(t)
