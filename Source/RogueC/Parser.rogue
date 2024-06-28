@@ -873,19 +873,19 @@ class Parser : ParserCore, Poolable
       tokens.add( tokens.last.cloned(TokenType.EOL,"") )
       tokens.add( tokens.last.cloned(TokenType.KEYWORD_END_CLASS) )
 
-      local m = Program.current_module
+      local mod = Program.current_module
       # Make this an augment of class Routine
 
       # Create a special aspect that will be incorporated into the designated class
-      local aspect_name = "Augment_$_Routine_$"(m.next_augment_id,m.name)
-      ++m.next_augment_id
+      local aspect_name = "Augment_$_Routine_$"(mod.next_augment_id,mod.name)
+      ++mod.next_augment_id
 
-      if (not m.augments.contains("Routine")) m.augments["Routine"] = String[]
-      m.augments["Routine"].add( aspect_name )
+      if (not mod.augments.contains("Routine")) mod.augments["Routine"] = String[]
+      mod.augments["Routine"].add( aspect_name )
 
       attributes |= Attribute.ASPECT | Attribute.AUGMENT
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
-      m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, attributes )
+      mod.templates[aspect_name] = Template( augment_t, mod, aspect_name, Token[], tokens, attributes )
       return 0
 
     method parse_doc_comment->Int

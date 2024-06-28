@@ -672,7 +672,7 @@ parser
     ++disable_output # Pass 2: also disable output; just parse to get past
 
     consume "routine"
-    procedure_name
+    procedure_definition_name
     if (nextIs("<<")) template_parameters
     procedure_parameters
     procedure_return_type
@@ -760,6 +760,15 @@ parser
 
 - procedure_body
   multi_line_statements
+
+- procedure_definition_name
+  on '.'
+    create Identifier( name=".":String )
+    identifier
+    call join_identifiers
+  elseOnOthers
+    procedure_name
+  endOn
 
 - procedure_name
   on @"operator"
@@ -1722,7 +1731,7 @@ parser
       endOn
 
     else
-      procedure_name
+      procedure_definition_name
       is_def = false
       if (nextIs("<<"))
         # Method template
@@ -1824,7 +1833,7 @@ parser
 
 - global_method
   on "method"
-    procedure_name
+    procedure_definition_name
 
     if (nextIs("<<"))
       is_def = false
@@ -1895,6 +1904,13 @@ parser
     optional_initial_value
     createNull
     produce Property( name=content, initial_value, type:Type )
+  elseOn '.'
+    create Identifier( name="." )
+    identifier
+    call join_identifiers
+    optional_initial_value
+    createNull
+    produce Property( name, initial_value, type:Type )
   elseOn PLACEHOLDER
     if (not disable_output) syntaxError
     optional_initial_value
@@ -2893,37 +2909,55 @@ parser
     access_args
     produce Access( name:String, args )
 
-  elseOnPeek IDENTIFIER
-    pathed_name
-    if (nextIs("<<"))
-      remaining_template_access
-      return
-    elseIf (nextIs("[]"))
-      remaining_type
-      type_access_or_typed_literal_list
-      return
-    elseIf (nextIs('?'))
-      on '?'
-        if (nextIs('(') or nextIs('?') or nextIs("[]"))
-          # Optional type constructor / optional type / optional list type
-          createNull
-          create Type(name:String,type_args:TemplateArgs)
-          create Type(core_type:Type,optional="true":Logical)
-          list_or_optional_type
-          type_access_or_typed_literal_list
-          return
-        else
-          # Logicalize
-          createNull
-          create Access( name:String, args )
-          produce Logicalize(operand):Unary
-        endIf
-      endOn
-    else
-      access_args
-      create Access( name:String, args )
-      subclass
-      return
+  elseOnOthers
+    next_is_internal = false
+    if (nextIs('.'))
+      savePosition
+      consume('.')
+      next_is_internal = nextIs(IDENTIFIER)
+      restorePosition
+    endIf
+
+    if (nextIs(IDENTIFIER) or next_is_internal)
+      if (next_is_internal)
+        consume '.'
+        create Identifier( name="." )
+        identifier
+        call join_identifiers
+      else
+        pathed_name
+      endIf
+
+      if (nextIs("<<"))
+        remaining_template_access
+        return
+      elseIf (nextIs("[]"))
+        remaining_type
+        type_access_or_typed_literal_list
+        return
+      elseIf (nextIs('?'))
+        on '?'
+          if (nextIs('(') or nextIs('?') or nextIs("[]"))
+            # Optional type constructor / optional type / optional list type
+            createNull
+            create Type(name:String,type_args:TemplateArgs)
+            create Type(core_type:Type,optional="true":Logical)
+            list_or_optional_type
+            type_access_or_typed_literal_list
+            return
+          else
+            # Logicalize
+            createNull
+            create Access( name:String, args )
+            produce Logicalize(operand):Unary
+          endIf
+        endOn
+      else
+        access_args
+        create Access( name:String, args )
+        subclass
+        return
+      endIf
     endIf
   endOn
   onPeek PLACEHOLDER
