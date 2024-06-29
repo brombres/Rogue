@@ -1436,18 +1436,6 @@ class Type : Cmd
           endIf
         endBlock
 
-        ## to->Int32
-        #block
-        #  local m = methods[ "to<<Rogue::Int32>>()" ]
-        #  if (not m or m.type_context is not this)
-        #    m = Method( t, this, "to<<Rogue::Int32>>" )
-        #    m.return_type = Program.type_Int32
-        #    m.statements.add( Return(t,Access(t,"value")) )
-        #    m.organize
-        #    methods[ m.signature ] = m
-        #  endIf
-        #endBlock
-
         # to->Int
         block
           local m = methods[ "to<<Rogue::Int>>()" ]
@@ -1460,17 +1448,17 @@ class Type : Cmd
           endIf
         endBlock
 
-        ## to->Int64
-        #block
-        #  local m = methods[ "to<<Rogue::Int64>>()" ]
-        #  if (not m or m.type_context is not this)
-        #    m = Method( t, this, "to<<Rogue::Int64>>" )
-        #    m.return_type = Program.type_Int64
-        #    m.statements.add( Return(t,Access(t,"value")) )
-        #    m.organize
-        #    methods[ m.signature ] = m
-        #  endIf
-        #endBlock
+        # hashcode->Int
+        block
+          local m = methods[ "hashcode()" ]
+          if (not m or m.type_context is not this)
+            m = Method( t, this, "hashcode" )
+            m.return_type = Program.type_Int
+            m.statements.add( Return(t,Access(t,"value")) )
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
 
         # to->String
         block
