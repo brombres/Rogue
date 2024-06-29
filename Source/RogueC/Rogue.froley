@@ -1097,15 +1097,6 @@ parser
   endWhile
   mustConsume ')'
 
-- hidden_or_pathed_name
-  on '.'
-    create Identifier( name="." )
-    identifier
-    call join_identifiers
-  elseOnOthers
-    pathed_name
-  endOn
-
 - pathed_name
   savePosition
   on "::"
@@ -2919,8 +2910,24 @@ parser
     produce Access( name:String, args )
 
   elseOnOthers
-    if (nextIs(IDENTIFIER) or nextIs('.'))
-      hidden_or_pathed_name
+    next_is_internal = false
+    if (nextIs('.'))
+      savePosition
+      consume('.')
+      next_is_internal = nextIs(IDENTIFIER)
+      restorePosition
+    endIf
+
+    if (nextIs(IDENTIFIER) or next_is_internal)
+      if (next_is_internal)
+        consume '.'
+        create Identifier( name="." )
+        identifier
+        call join_identifiers
+      else
+        pathed_name
+      endIf
+
       if (nextIs("<<"))
         remaining_template_access
         return
