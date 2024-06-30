@@ -289,3 +289,19 @@ augment Rogue::Random
       return Geometry::XY( real(limit.x), real(limit.y) )
 endAugment
 
+class XY32( x:Real32, y:Real32 ) [compound]
+  GLOBAL METHODS
+    method create( xy:XY )->XY32
+      return XY32( xy.x, xy.y )
+
+  METHODS
+    method hashcode->Int
+      return x.hashcode ~ y.hashcode
+
+    method operator<>( other:XY )->Int
+      if (x == other.x) return y <> other.y
+      else              return x <> other.x
+
+    method to->XY
+      return XY( x, y )
+endClass
