@@ -252,6 +252,9 @@ class Box( position:XY, size:XY ) [essential compound]
     method subset_y( new_height:Real, anchor=Anchor.CENTER:Anchor )->Box
       return subset( XY(width,new_height), anchor )
 
+    method to->Circle
+      return Circle( center, size.max/2 )
+
     method to->IntBox
       return IntBox( position, size )
 

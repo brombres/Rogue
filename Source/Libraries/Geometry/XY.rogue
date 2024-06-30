@@ -298,6 +298,9 @@ class XY32( x:Real32, y:Real32 ) [compound]
     method hashcode->Int
       return x.hashcode ~ y.hashcode
 
+    method operator?->Logical
+      return x or y
+
     method operator<>( other:XY )->Int
       if (x == other.x) return y <> other.y
       else              return x <> other.x
