@@ -20,15 +20,16 @@ class Variant [compound]
     TYPE_LOGICAL   =  9
     TYPE_NULL      = 10
     TYPE_ANCHOR    = 11
-    TYPE_BOX       = 12
-    TYPE_CIRCLE    = 13
-    TYPE_XY        = 14
-    TYPE_XYZ       = 15
-    TYPE_XYZW      = 16
-    TYPE_OBJECT    = 17
-    TYPE_STRING    = 18
-    TYPE_LIST      = 19
-    TYPE_TABLE     = 20
+    TYPE_XY        = 12
+    TYPE_XYZ       = 13
+    TYPE_XYZW      = 14
+    TYPE_LINE      = 15
+    TYPE_CIRCLE    = 16
+    TYPE_BOX       = 17
+    TYPE_OBJECT    = 18
+    TYPE_STRING    = 19
+    TYPE_LIST      = 20
+    TYPE_TABLE     = 21
 
   NATIVE
     nativeHeader
@@ -44,15 +45,16 @@ class Variant [compound]
        |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL    9
        |#define %NS%ROGUE_VARIANT_TYPE_NULL      10
        |#define %NS%ROGUE_VARIANT_TYPE_ANCHOR    11
-       |#define %NS%ROGUE_VARIANT_TYPE_BOX       12
-       |#define %NS%ROGUE_VARIANT_TYPE_CIRCLE    13
-       |#define %NS%ROGUE_VARIANT_TYPE_XY        14
-       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       15
-       |#define %NS%ROGUE_VARIANT_TYPE_XYZW      16
-       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    17
-       |#define %NS%ROGUE_VARIANT_TYPE_STRING    18
-       |#define %NS%ROGUE_VARIANT_TYPE_LIST      19
-       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     20
+       |#define %NS%ROGUE_VARIANT_TYPE_XY        12
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       13
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZW      14
+       |#define %NS%ROGUE_VARIANT_TYPE_LINE      15
+       |#define %NS%ROGUE_VARIANT_TYPE_CIRCLE    16
+       |#define %NS%ROGUE_VARIANT_TYPE_BOX       17
+       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    18
+       |#define %NS%ROGUE_VARIANT_TYPE_STRING    19
+       |#define %NS%ROGUE_VARIANT_TYPE_LIST      20
+       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     21
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -67,6 +69,7 @@ class Variant [compound]
     int32     : Int32     [faux]
     integer   : Int       [faux]
     int64     : Int64     [faux]
+    line      : Line      [faux]
     logical   : Logical   [faux]
     real32    : Real32    [faux]
     real      : Real      [faux]
@@ -85,6 +88,7 @@ class Variant [compound]
             |  %Ns%RogueInt       integer;
             |  %Ns%RogueInt64     int64;
             |  %Ns%RogueLogical   logical;
+            |  %Ns%GeometryLine   line;
             |  %Ns%RogueReal32    real32;
             |  %Ns%RogueReal      real;
             |  %Ns%RogueReal64    real64;
@@ -141,6 +145,9 @@ class Variant [compound]
 
     method create( value:Circle )->Variant
       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_CIRCLE, 0, {.circle=$value} }" )->Variant
+
+    method create( value:Line )->Variant
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_LINE, 0, {.line=$value} }" )->Variant
 
     method create( value:Object )->Variant [preferred]
       if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_OBJECT, $value }" )->Variant
@@ -355,6 +362,7 @@ class Variant [compound]
         case TYPE_ANCHOR:    return xy.hashcode
         case TYPE_BOX:       return box.hashcode
         case TYPE_CIRCLE:    return circle.hashcode
+        case TYPE_LINE:      return line.hashcode
         case TYPE_OBJECT:    return object.hashcode
         case TYPE_STRING:    return object->(as String).hashcode
         case TYPE_LIST:      return object->(as Variant[]).hashcode
@@ -548,6 +556,8 @@ class Variant [compound]
           else                            return box.size <> other.box.size
         case TYPE_CIRCLE
           return circle <> other.circle
+        case TYPE_LINE
+          return line <> other.line
         case TYPE_OBJECT
           if (object == other.object) return 0
           return object.object_id <> other.object.object_id
@@ -772,6 +782,7 @@ class Variant [compound]
         case TYPE_ANCHOR:    Anchor(xy).print_to( buffer )
         case TYPE_BOX:       box.print_to( buffer )
         case TYPE_CIRCLE:    circle.print_to( buffer )
+        case TYPE_LINE:      line.print_to( buffer )
         case TYPE_OBJECT:    object.print_to( buffer )
         case TYPE_STRING:    buffer.print( object->(as String) )
         case TYPE_LIST:      object->(as Variant[]).print_to( buffer )
@@ -869,6 +880,7 @@ class Variant [compound]
       which (type)
         case TYPE_BOX:    return box
         case TYPE_CIRCLE: return Box( circle.position-circle.radius, XY(circle.radius*2) )
+        case TYPE_LINE:   return Box.from_corners( line.a, line.b )
         case TYPE_XY:     return Box(xy)
         others:           return $defaultValue<<Box>>
       endWhich
@@ -910,6 +922,12 @@ class Variant [compound]
         case TYPE_BOX:    return Circle( box.position + box.size/2, box.size.max/2 )
         case TYPE_CIRCLE: return circle
         others:           return $defaultValue<<Circle>>
+      endWhich
+
+    method to->Line
+      which (type)
+        case TYPE_LINE:   return line
+        others:           return $defaultValue<<Line>>
       endWhich
 
     method to->Int32
@@ -973,6 +991,7 @@ class Variant [compound]
         case TYPE_XYZW:      return xyzw.x? or xyzw.y? or xyzw.z? or xyzw.w?
         case TYPE_BOX:       return box.size.x? or box.size.y?
         case TYPE_CIRCLE:    return circle.radius?
+        case TYPE_LINE:      return line.a != line.b;
         case TYPE_OBJECT:    return true
         case TYPE_STRING:    return true
         case TYPE_LIST:      return true
@@ -1189,6 +1208,9 @@ class Variant [compound]
         case TYPE_CIRCLE
           builder.[ print("[["), print(circle.position.x), print(','), print(circle.position.y) ]
           builder.[ print("],"), print(circle.radius), print("]") ]
+        case TYPE_LINE
+          builder.[ print("[["), print(line.a.x), print(','), print(line.a.y), print("],[") ]
+          builder.[ print(line.b.x), print(','), print(line.b.y), print("]]") ]
         case TYPE_OBJECT
           object.write_json( builder, &=formatted, &=omit_commas )
         case TYPE_STRING

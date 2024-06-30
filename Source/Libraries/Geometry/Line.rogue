@@ -85,6 +85,10 @@ class Line( a:XY, b:XY ) [compound]
       # if the triangle contains either end point
       return triangle.contains( a )
 
+    method operator<>( other:Line )->Int
+      if (a == other.a) return b <> other.b
+      else              return a <> other.a
+
     method normal->XY
       local v = (b - a)
       return XY( -v.y, v.x ).normalized

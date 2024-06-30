@@ -210,6 +210,7 @@ class RogueC
       Analytics.generate_c.stop
       Analytics.total_time.stop
 
+      #Analytics.display
       #if ($defined(DEBUG)) Analytics.display
 
     method check_autoincludes
