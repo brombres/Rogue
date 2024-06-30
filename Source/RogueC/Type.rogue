@@ -786,6 +786,14 @@ class Type : Cmd
       if (module_context.attributes.is_essential or module_context.attributes.is_api) attributes.is_essential = true
       if (module_context.attributes.is_api) attributes.is_api = true
 
+      if (is_compound)
+        ensure<<aspects>>
+        contingent
+          sufficient ((forEach in aspects).name == "CommonCompoundMethods")
+          aspects.add( Type(t, "CommonCompoundMethods") )
+        endContingent
+      endIf
+
       if (is_enum)
         local extended : Type
         contingent
