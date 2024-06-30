@@ -943,7 +943,7 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
 
 endClass
 
-class Character [primitive]
+class Character : CommonPrimitiveMethods [primitive]
   METHODS
     method description->String
       return this->String
@@ -1203,7 +1203,7 @@ class Byte : CommonPrimitiveMethods<<Byte>> [primitive]
       return this->String
 endClass
 
-class Logical [primitive]
+class Logical : CommonPrimitiveMethods [primitive]
   METHODS
     method description->String
       return this->String
@@ -1222,7 +1222,10 @@ class Logical [primitive]
       return which{ this:"true" || "false" }
 endClass
 
-class CommonPrimitiveMethods<<$DataType>> [aspect]
+class CommonPrimitiveMethods [aspect]
+endClass
+
+class CommonPrimitiveMethods<<$DataType>> : CommonPrimitiveMethods [aspect]
   METHODS
     method abs->$DataType
       if (this >= 0) return this
@@ -1322,4 +1325,7 @@ class PrimitiveFormat( n:Int, d:Int, sign:Logical, spaces:Logical, zeros:Logical
       endIf
       return result
 
+endClass
+
+class CommonCompoundMethods [aspect]
 endClass
