@@ -128,3 +128,27 @@ class Quad<<$DataType>>( a:$DataType, b:$DataType, c:$DataType, d:$DataType ) [c
       return "[$ $ $ $]" (a,b,c,d)
 endClass
 
+class Quad32( a:XY32, b:XY32, c:XY32, d:XY32 ) [compound]
+  GLOBAL METHODS
+    method create( quad:Quad )->Quad32
+      return Quad32( quad.a, quad.b, quad.c, quad.d )
+
+  METHODS
+    method hashcode->Int
+      return a.hashcode ~ b.hashcode ~ c.hashcode ~ d.hashcode
+
+    method operator<>( other:Quad32 )->Int
+      local result = a <> other.a
+      if (result) return result
+      result = b <> other.b
+      if (result) return result
+      result = c <> other.c
+      if (result) return result
+      return d <> other.d
+
+    method to->Quad
+      return Quad( a, b, c, d )
+
+    method to->String
+      return "[$ $ $ $]" (a,b,c,d)
+endClass

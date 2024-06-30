@@ -200,6 +200,11 @@ class Box( position:XY, size:XY ) [essential compound]
 
       return Box( tl, br-tl )
 
+    method operator<>( other:Box )->Int
+      local result = size <> other.size
+      if (result) return result
+      return position <> other.position
+
     method positioned_within( enclosing:Box, anchor=Anchor.CENTER:Anchor )->Box
       return Box( enclosing.position + anchor * (enclosing.size-size), size )
 
@@ -246,6 +251,9 @@ class Box( position:XY, size:XY ) [essential compound]
 
     method subset_y( new_height:Real, anchor=Anchor.CENTER:Anchor )->Box
       return subset( XY(width,new_height), anchor )
+
+    method to->Circle
+      return Circle( center, size.max/2 )
 
     method to->IntBox
       return IntBox( position, size )
