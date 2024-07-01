@@ -9,6 +9,9 @@ class Line( a:XY, b:XY ) [compound]
     method at( p:Real )->XY
       return a + (b - a) * p
 
+    method bounding_box->Box
+      return Box.from_corners( a, b )
+
     method direction->XY
       return (b - a)
 

@@ -3,6 +3,11 @@ module Geometry
 class Triangle( a:XY, b:XY, c:XY ) [compound]
   # [a,b,c] should be defined in clockwise order to ensure visibility
   METHODS
+    method bounding_box->Box
+      local tl = a.or_smaller(b).or_smaller(c)
+      local br = a.or_larger(b).or_larger(c)
+      return Box.from_corners( tl, br )
+
     method centroid->XY
       return (a + b + c) / 3
 
@@ -69,6 +74,16 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
 
     method operator/( scale:XY )->Triangle
       return Triangle( a/scale, b/scale, c/scale )
+
+    method operator<>( other:Triangle )->Int
+      local result = a <> other.a
+      if (result) return result
+      result = b <> other.b
+      if (result) return result
+      return c <> other.c
+
+    method operator?->Logical
+      return a? or b? or c?
 
     method rotated( angle:Degrees )->Triangle
       return this.rotated( angle->Radians )

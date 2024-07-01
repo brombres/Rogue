@@ -25,12 +25,13 @@ class Variant [compound]
     TYPE_XYZW      = 14
     TYPE_LINE      = 15
     TYPE_CIRCLE    = 16
-    TYPE_BOX       = 17
-    TYPE_QUAD32    = 18
-    TYPE_OBJECT    = 19
-    TYPE_STRING    = 20
-    TYPE_LIST      = 21
-    TYPE_TABLE     = 22
+    TYPE_TRIANGLE  = 17
+    TYPE_BOX       = 18
+    TYPE_QUAD32    = 19
+    TYPE_OBJECT    = 20
+    TYPE_STRING    = 21
+    TYPE_LIST      = 22
+    TYPE_TABLE     = 23
 
   NATIVE
     nativeHeader
@@ -51,12 +52,13 @@ class Variant [compound]
        |#define %NS%ROGUE_VARIANT_TYPE_XYZW      14
        |#define %NS%ROGUE_VARIANT_TYPE_LINE      15
        |#define %NS%ROGUE_VARIANT_TYPE_CIRCLE    16
-       |#define %NS%ROGUE_VARIANT_TYPE_BOX       17
-       |#define %NS%ROGUE_VARIANT_TYPE_QUAD32    18
-       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    19
-       |#define %NS%ROGUE_VARIANT_TYPE_STRING    20
-       |#define %NS%ROGUE_VARIANT_TYPE_LIST      21
-       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     22
+       |#define %NS%ROGUE_VARIANT_TYPE_TRIANGLE  17
+       |#define %NS%ROGUE_VARIANT_TYPE_BOX       18
+       |#define %NS%ROGUE_VARIANT_TYPE_QUAD32    19
+       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    20
+       |#define %NS%ROGUE_VARIANT_TYPE_STRING    21
+       |#define %NS%ROGUE_VARIANT_TYPE_LIST      22
+       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     23
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -77,28 +79,30 @@ class Variant [compound]
     real32    : Real32    [faux]
     real      : Real      [faux]
     real64    : Real64    [faux]
+    triangle  : Triangle  [faux]
     xy        : XY        [faux]
     xyz       : XYZ       [faux]
     xyzw      : XYZW      [faux]
 
     native @|union
             |{
-            |  %Ns%GeometryBox    box;
-            |  %Ns%RogueByte      byte;
-            |  %Ns%RogueCharacter character;
-            |  %Ns%GeometryCircle circle;
-            |  %Ns%RogueInt32     int32;
-            |  %Ns%RogueInt       integer;
-            |  %Ns%RogueInt64     int64;
-            |  %Ns%RogueLogical   logical;
-            |  %Ns%GeometryLine   line;
-            |  %Ns%GeometryQuad32 quad32;
-            |  %Ns%RogueReal32    real32;
-            |  %Ns%RogueReal      real;
-            |  %Ns%RogueReal64    real64;
-            |  %Ns%GeometryXY     xy;
-            |  %Ns%GeometryXYZ    xyz;
-            |  %Ns%GeometryXYZW   xyzw;
+            |  %Ns%GeometryBox      box;
+            |  %Ns%RogueByte        byte;
+            |  %Ns%RogueCharacter   character;
+            |  %Ns%GeometryCircle   circle;
+            |  %Ns%RogueInt32       int32;
+            |  %Ns%RogueInt         integer;
+            |  %Ns%RogueInt64       int64;
+            |  %Ns%RogueLogical     logical;
+            |  %Ns%GeometryLine     line;
+            |  %Ns%GeometryQuad32   quad32;
+            |  %Ns%RogueReal32      real32;
+            |  %Ns%RogueReal        real;
+            |  %Ns%RogueReal64      real64;
+            |  %Ns%GeometryTriangle triangle;
+            |  %Ns%GeometryXY       xy;
+            |  %Ns%GeometryXYZ      xyz;
+            |  %Ns%GeometryXYZW     xyzw;
             |};
 
   GLOBAL METHODS
@@ -156,6 +160,9 @@ class Variant [compound]
 
     method create( value:Circle )->Variant
       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_CIRCLE, 0, {.circle=$value} }" )->Variant
+
+    method create( value:Triangle )->Variant
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_TRIANGLE, 0, {.triangle=$value} }" )->Variant
 
     method create( value:Line )->Variant
       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_LINE, 0, {.line=$value} }" )->Variant
@@ -374,6 +381,7 @@ class Variant [compound]
         case TYPE_BOX:       return box.hashcode
         case TYPE_QUAD32:    return quad32.hashcode
         case TYPE_CIRCLE:    return circle.hashcode
+        case TYPE_TRIANGLE:  return triangle.hashcode
         case TYPE_LINE:      return line.hashcode
         case TYPE_OBJECT:    return object.hashcode
         case TYPE_STRING:    return object->(as String).hashcode
@@ -443,14 +451,14 @@ class Variant [compound]
     method is_null->Logical
       return (type == TYPE_NULL)
 
-    method is_quad->Logical
-      return (type == TYPE_QUAD32)
-
     method is_number->Logical
       return (type >= TYPE_BYTE and type <= TYPE_REAL64)
 
     method is_object->Logical
       return (type == TYPE_OBJECT)
+
+    method is_quad->Logical
+      return (type == TYPE_QUAD32)
 
     method is_real32->Logical
       return (type == TYPE_REAL32)
@@ -466,6 +474,9 @@ class Variant [compound]
 
     method is_table->Logical
       return (type == TYPE_TABLE)
+
+    method is_triangle->Logical
+      return (type == TYPE_TRIANGLE)
 
     method is_undefined->Logical
       return (type == TYPE_UNDEFINED)
@@ -575,6 +586,8 @@ class Variant [compound]
           return quad32 <> other.quad32
         case TYPE_CIRCLE
           return circle <> other.circle
+        case TYPE_TRIANGLE
+          return triangle <> other.triangle
         case TYPE_LINE
           return line <> other.line
         case TYPE_OBJECT
@@ -802,6 +815,7 @@ class Variant [compound]
         case TYPE_BOX:       box.print_to( buffer )
         case TYPE_QUAD32:    quad32.print_to( buffer )
         case TYPE_CIRCLE:    circle.print_to( buffer )
+        case TYPE_TRIANGLE:  triangle.print_to( buffer )
         case TYPE_LINE:      line.print_to( buffer )
         case TYPE_OBJECT:    object.print_to( buffer )
         case TYPE_STRING:    buffer.print( object->(as String) )
@@ -898,12 +912,13 @@ class Variant [compound]
 
     method to->Box
       which (type)
-        case TYPE_BOX:    return box
-        case TYPE_QUAD32: return quad32->Quad->Box
-        case TYPE_CIRCLE: return Box( circle.position-circle.radius, XY(circle.radius*2) )
-        case TYPE_LINE:   return Box.from_corners( line.a, line.b )
-        case TYPE_XY:     return Box(xy)
-        others:           return $defaultValue<<Box>>
+        case TYPE_BOX:      return box
+        case TYPE_QUAD32:   return quad32->Quad->Box
+        case TYPE_CIRCLE:   return circle.bounding_box
+        case TYPE_TRIANGLE: return triangle.bounding_box
+        case TYPE_LINE:     return line.bounding_box
+        case TYPE_XY:       return xy.bounding_box
+        others:             return $defaultValue<<Box>>
       endWhich
 
     method to->Byte
@@ -1087,6 +1102,12 @@ class Variant [compound]
       print_to( result )
       return result
 
+    method to->Triangle
+      which (type)
+        case TYPE_TRIANGLE: return triangle
+        others:             return $defaultValue<<Triangle>>
+      endWhich
+
     method to->XY
       which (type)
         case TYPE_XY, TYPE_ANCHOR: return xy
@@ -1243,6 +1264,10 @@ class Variant [compound]
         case TYPE_LINE
           builder.[ print("[["), print(line.a.x), print(','), print(line.a.y), print("],[") ]
           builder.[ print(line.b.x), print(','), print(line.b.y), print("]]") ]
+        case TYPE_TRIANGLE
+          builder.[ print("[["), print(quad32.a.x), print(','), print(quad32.a.y), print("],[") ]
+          builder.[ print(quad32.b.x), print(','), print(quad32.b.y), print("],[") ]
+          builder.[ print(quad32.c.x), print(','), print(quad32.c.y), print("]]") ]
         case TYPE_QUAD32
           builder.[ print("[["), print(quad32.a.x), print(','), print(quad32.a.y), print("],[") ]
           builder.[ print(quad32.b.x), print(','), print(quad32.b.y), print("],[") ]

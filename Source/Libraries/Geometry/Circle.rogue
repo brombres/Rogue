@@ -16,6 +16,9 @@ class Circle( position:XY, radius:Real ) [compound]
       #   one_oclock = circle.at( Degrees(360.0/12.0) )
       return position + XY( radius, angle )
 
+    method bounding_box->Box
+      return Box( position-radius, radius*2 )
+
     method contains( point:XY )->Logical
       return (point - position).magnitude_squared <= radius*radius
 
