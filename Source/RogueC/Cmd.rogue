@@ -3860,9 +3860,10 @@ class FunctionDefinition : Cmd
 
     fn_type     : Type
     base_type   : Type
+    mod         : Module
 
   METHODS
-    method init( t, parameters, return_type, with_values, statements )
+    method init( t, parameters, return_type, with_values, statements, mod=Program.current_module )
 
     method init( existing:FunctionDefinition )
       prior.init( existing )
@@ -3872,6 +3873,7 @@ class FunctionDefinition : Cmd
       if (existing.statements)  statements  = existing.statements.cloned
       if (existing.fn_type)     fn_type     = existing.fn_type.cloned
       if (existing.base_type)   base_type   = existing.base_type.cloned
+      mod = existing.mod
 
     method description->String
       return "FunctionDefinition($,$,$,$)" (%parameters,%return_type,%with_values,%statements)
@@ -3891,9 +3893,7 @@ class FunctionDefinition : Cmd
       endForEach
 
       base_type = FunctionType( t, param_types, return_type )
-      fn_type = Type( t, Program.default_module,
-                      "Function_$"(Program.default_module.types.count),
-                      Attribute.OBJECT|Attribute.SINGLETON )
+      fn_type = Type( t, mod, "Function_$"(mod.types.count), Attribute.OBJECT|Attribute.SINGLETON )
       fn_type.base_class = base_type
       fn_type.attributes.is_defined = true
 

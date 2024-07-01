@@ -212,7 +212,9 @@ augment
         endIf
       endIf
 
-      local fn_def = resolver.visit( FunctionDefinition(t,params,fn_type.return_type,with_values,statements) )
+      local fn_def = resolver.visit(
+        FunctionDefinition(t,params,fn_type.return_type,with_values,statements,resolver.this_module)
+      )
       return fn_def.resolve_conversion_to( target_type, resolver, &=suppress_error, &=coerce )
 
     method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions, &coerce )->Cmd [override]

@@ -46,10 +46,9 @@ class Visitor
       if (cmd is null) return null
       return cmd.dispatch<<on_visit,ThisType,Cmd>>( this )
 
-    method visit_children( cmd:Cmd )->Cmd [propagated]
+    method visit_children( cmd:Cmd ) [propagated]
       # Call from 'on_visit()' or 'on_visit_node()' handler to visit subtrees.
       cmd.dispatch<<on_visit_children,ThisType>>( this )
-      return cmd
 
     method visit_node( cmd:Cmd )->Cmd [propagated]
       # Primarily for internal use - see on_visit(Cmd) for usage.
