@@ -94,6 +94,9 @@ class Box( position:XY, size:XY ) [essential compound]
 
       return inner
 
+    method containing( xy:XY )->Box
+      return Box.from_corners( position.or_smaller(xy), bottom_right.or_larger(xy) )
+
     method contains( other:Box )->Logical
       local other_pos = other.position
       local other_br = other.bottom_right
