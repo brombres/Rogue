@@ -1,13 +1,22 @@
 module RogueC
 
-class ImplicitWithVarCollector : ScopeVisitor
+class ImplicitWithVarCollector( mod:Module ) : ScopeVisitor
   PROPERTIES
     unknown_identifiers = String[]
 
   METHODS
     method on_visit( cmd:Access )->Cmd
       if (not find_local(cmd.name) and not unknown_identifiers.contains(cmd.name))
-        unknown_identifiers.add( cmd.name )
+        local type = mod.find_type( cmd.t, cmd.name, &extended_search )
+        if (not type and mod is not Program.default_module)
+          type = Program.default_module.find_type( cmd.t, cmd.name, &extended_search )
+        endIf
+
+        if (type)
+          cmd.name = type.scoped_name  # ensure type name has module scope
+        else
+          unknown_identifiers.add( cmd.name )
+        endIf
       endIf
       visit_children( cmd )
       return cmd

@@ -28,7 +28,7 @@ class Variant [compound]
     TYPE_TRIANGLE  = 17
     TYPE_BOX       = 18
     TYPE_QUAD32    = 19
-    TYPE_OBJECT    = 20
+    TYPE_OBJECT    = 20  # All reference types should be >= TYPE_OBJECT
     TYPE_STRING    = 21
     TYPE_LIST      = 22
     TYPE_TABLE     = 23

@@ -675,7 +675,7 @@ class Resolver : Poolable, Visitor
     method on_visit( cmd:FunctionDefinition )->Cmd
       local type = cmd.resolve_type
 
-      local var_collector = ImplicitWithVarCollector()
+      local var_collector = ImplicitWithVarCollector(cmd.mod)
       forEach (param in cmd.parameters)
         var_collector.visible_locals.add( param.name )
       endForEach
