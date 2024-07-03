@@ -972,6 +972,8 @@ class Resolver : Poolable, Visitor
         else
           return LiteralLogical( cmd.t, operand_type.instance_of(cmd.compare_type) )
         endIf
+      elseIf (operand_type.instance_of(cmd.compare_type))
+        return LiteralLogical( cmd.t, true )
       elseIf (cmd.compare_type.instance_of(operand_type))
         # Leave it as a runtime check
         return cmd
