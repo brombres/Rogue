@@ -22,11 +22,6 @@ if (System.is_windows and File("Build/roguec.exe.old").exists)
   File("Build/roguec.exe.old").delete
 endIf
 
-routine rogo_x2
-  rogo_rebuild_debug
-  rogo_rebuild
-endRoutine
-
 routine rogo_bootstrap
   execute @|cc -O3 -Wall -fno-strict-aliasing Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS -lm
 endRoutine
