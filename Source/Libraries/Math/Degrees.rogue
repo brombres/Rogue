@@ -37,6 +37,9 @@ class Degrees( value:Real ) [compound]
     method floor->Degrees
       return Degrees( value.floor )
 
+    method hashcode->Int
+      return value.hashcode
+
     method operator-()->Degrees
       return Degrees( -this.value )
 

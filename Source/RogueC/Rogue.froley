@@ -1547,7 +1547,7 @@ parser
       produce IfLocal( name:String, expression, statements, else_if:IfLocal )
     endIf
 
-    expression
+    control_expression
     consume @"then"  # optional aesthetic syntax
 
     if (consume(EOL))
@@ -1609,7 +1609,7 @@ parser
 - if_statement_multi_line_elseIf_else
   savePosition
   on "elseIf"
-    expression
+    control_expression
     consume @"then"  # optional aesthetic syntax
     if (consume(EOL))
       # This elseIf is multi-line; good to keep going
@@ -1645,7 +1645,7 @@ parser
 - if_statement_single_line_elseIf_else
   savePosition
   on "elseIf"
-    expression
+    control_expression
     consume @"then"  # optional aesthetic syntax
     if (consume(EOL))
       # This elseIf is multi-line and outside our scope
@@ -2188,21 +2188,21 @@ parser
     produce Assert(expression,token_list:TokenList)
   endOn
   on "ensure" "<<" expression ">>" args -> Ensure(expression,args:Args)
-  on "escapeBlock"                -> EscapeBlock:Escape
-  on "escapeContingent"           -> EscapeContingent:Escape
-  on "escapeForEach"              -> EscapeForEach:Escape
-  on "escapeIf"                   -> EscapeIf:Escape
-  on "escapeLoop"                 -> EscapeLoop:Escape
-  on "escapeTry"                  -> EscapeTry:Escape
-  on "escapeWhich"                -> EscapeWhich:Escape
-  on "escapeWhile"                -> EscapeWhile:Escape
-  on "necessary" expression       -> Necessary(condition)
-  on "nextIteration"              -> NextIteration
-  on "noAction":                     return
-  on @"print"   args              -> Access(name=content,args)
-  on @"println" args              -> Access(name=content,args)
-  on "return" optional_expression -> Return(result)
-  on "sufficient" expression      -> Sufficient(condition)
+  on "escapeBlock"                   -> EscapeBlock:Escape
+  on "escapeContingent"              -> EscapeContingent:Escape
+  on "escapeForEach"                 -> EscapeForEach:Escape
+  on "escapeIf"                      -> EscapeIf:Escape
+  on "escapeLoop"                    -> EscapeLoop:Escape
+  on "escapeTry"                     -> EscapeTry:Escape
+  on "escapeWhich"                   -> EscapeWhich:Escape
+  on "escapeWhile"                   -> EscapeWhile:Escape
+  on "necessary" control_expression  -> Necessary(condition)
+  on "nextIteration"                 -> NextIteration
+  on "noAction":                        return
+  on @"print"   args                 -> Access(name=content,args)
+  on @"println" args                 -> Access(name=content,args)
+  on "return" optional_expression    -> Return(result)
+  on "sufficient" control_expression -> Sufficient(condition)
   on "swapValues" '(' expression ',' expression ')' -> SwapValues(a,b)
   onPeek "trace"
     verbose_trace
@@ -2440,7 +2440,7 @@ parser
       multi_line_statements
       mustConsume "endLoop"
     elseOnOthers
-      expression
+      control_expression
       if (consume(EOL)) multi_line_statements; mustConsume "endLoop"
       else              single_line_statements
     endOn
@@ -2449,7 +2449,7 @@ parser
 
 - which_conditional
   on "which"
-    expression
+    control_expression
     must_consume_eols
     beginList
       while (nextIs("case"))
@@ -2480,7 +2480,7 @@ parser
 
 - while_loop
   on "while"
-    expression
+    control_expression
     if (consume(EOL)) multi_line_statements; mustConsume "endWhile"
     else              single_line_statements
     produce While(condition,statements)
@@ -2629,6 +2629,18 @@ parser
 - optional_expression
   if (nextIs(EOL) or nextIs(';')) produceNull
   expression
+
+- control_expression
+  # Parens are optional but not considered part of the expression. Otherwise
+  # 'if (z) .internal_call' would be ambiguous with 'if ((z).internal_call)`.
+  if (consume('('))
+    consume_eols
+    expression
+    consume_eols
+    mustConsume ')'
+  else
+    expression
+  endIf
 
 - expression
   logical_xor
