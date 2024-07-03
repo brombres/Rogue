@@ -34,6 +34,9 @@ class Radians( value:Real ) [compound]
       if (diff > pi) diff = -(2*pi - diff)
       return Radians(diff)
 
+    method hashcode->Int
+      return value.hashcode
+
     method operator-()->Radians
       return Radians( -this.value )
 

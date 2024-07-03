@@ -17,21 +17,25 @@ class Variant [compound]
     TYPE_REAL32    =  6
     TYPE_REAL      =  7
     TYPE_REAL64    =  8
-    TYPE_LOGICAL   =  9
-    TYPE_NULL      = 10
-    TYPE_ANCHOR    = 11
-    TYPE_XY        = 12
-    TYPE_XYZ       = 13
-    TYPE_XYZW      = 14
-    TYPE_LINE      = 15
-    TYPE_CIRCLE    = 16
-    TYPE_TRIANGLE  = 17
-    TYPE_BOX       = 18
-    TYPE_QUAD32    = 19
-    TYPE_OBJECT    = 20  # All reference types should be >= TYPE_OBJECT
-    TYPE_STRING    = 21
-    TYPE_LIST      = 22
-    TYPE_TABLE     = 23
+    TYPE_FIRST_NUMBER = TYPE_BYTE
+    TYPE_LAST_NUMBER  = TYPE_RADIANS
+    TYPE_DEGREES   =  9
+    TYPE_RADIANS   = 10
+    TYPE_LOGICAL   = 11
+    TYPE_NULL      = 12
+    TYPE_ANCHOR    = 13
+    TYPE_XY        = 14
+    TYPE_XYZ       = 15
+    TYPE_XYZW      = 16
+    TYPE_LINE      = 17
+    TYPE_CIRCLE    = 18
+    TYPE_TRIANGLE  = 19
+    TYPE_BOX       = 20
+    TYPE_QUAD32    = 21
+    TYPE_OBJECT    = 22  # All reference types should be >= TYPE_OBJECT
+    TYPE_STRING    = 23
+    TYPE_LIST      = 24
+    TYPE_TABLE     = 25
 
   NATIVE
     nativeHeader
@@ -44,21 +48,23 @@ class Variant [compound]
        |#define %NS%ROGUE_VARIANT_TYPE_REAL32     6
        |#define %NS%ROGUE_VARIANT_TYPE_REAL       7
        |#define %NS%ROGUE_VARIANT_TYPE_REAL64     8
-       |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL    9
-       |#define %NS%ROGUE_VARIANT_TYPE_NULL      10
-       |#define %NS%ROGUE_VARIANT_TYPE_ANCHOR    11
-       |#define %NS%ROGUE_VARIANT_TYPE_XY        12
-       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       13
-       |#define %NS%ROGUE_VARIANT_TYPE_XYZW      14
-       |#define %NS%ROGUE_VARIANT_TYPE_LINE      15
-       |#define %NS%ROGUE_VARIANT_TYPE_CIRCLE    16
-       |#define %NS%ROGUE_VARIANT_TYPE_TRIANGLE  17
-       |#define %NS%ROGUE_VARIANT_TYPE_BOX       18
-       |#define %NS%ROGUE_VARIANT_TYPE_QUAD32    19
-       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    20
-       |#define %NS%ROGUE_VARIANT_TYPE_STRING    21
-       |#define %NS%ROGUE_VARIANT_TYPE_LIST      22
-       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     23
+       |#define %NS%ROGUE_VARIANT_TYPE_DEGREES    9
+       |#define %NS%ROGUE_VARIANT_TYPE_RADIANS   10
+       |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL   11
+       |#define %NS%ROGUE_VARIANT_TYPE_NULL      12
+       |#define %NS%ROGUE_VARIANT_TYPE_ANCHOR    13
+       |#define %NS%ROGUE_VARIANT_TYPE_XY        14
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       15
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZW      16
+       |#define %NS%ROGUE_VARIANT_TYPE_LINE      17
+       |#define %NS%ROGUE_VARIANT_TYPE_CIRCLE    18
+       |#define %NS%ROGUE_VARIANT_TYPE_TRIANGLE  19
+       |#define %NS%ROGUE_VARIANT_TYPE_BOX       20
+       |#define %NS%ROGUE_VARIANT_TYPE_QUAD32    21
+       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    22
+       |#define %NS%ROGUE_VARIANT_TYPE_STRING    23
+       |#define %NS%ROGUE_VARIANT_TYPE_LIST      24
+       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     25
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -70,12 +76,14 @@ class Variant [compound]
     byte      : Byte      [faux]
     character : Character [faux]
     circle    : Circle    [faux]
+    degrees   : Degrees   [faux]
     int32     : Int32     [faux]
     integer   : Int       [faux]
     int64     : Int64     [faux]
     line      : Line      [faux]
     logical   : Logical   [faux]
     quad32    : Quad32    [faux]
+    radians   : Radians   [faux]
     real32    : Real32    [faux]
     real      : Real      [faux]
     real64    : Real64    [faux]
@@ -90,12 +98,14 @@ class Variant [compound]
             |  %Ns%RogueByte        byte;
             |  %Ns%RogueCharacter   character;
             |  %Ns%GeometryCircle   circle;
+            |  %Ns%RogueDegrees     degrees;
             |  %Ns%RogueInt32       int32;
             |  %Ns%RogueInt         integer;
             |  %Ns%RogueInt64       int64;
             |  %Ns%RogueLogical     logical;
             |  %Ns%GeometryLine     line;
             |  %Ns%GeometryQuad32   quad32;
+            |  %Ns%RogueRadians     radians;
             |  %Ns%RogueReal32      real32;
             |  %Ns%RogueReal        real;
             |  %Ns%RogueReal64      real64;
@@ -118,6 +128,9 @@ class Variant [compound]
     method create( value:Character )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_CHARACTER, 0, {.character=$value} }" )->Variant
 
+    method create( value:Degrees )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_DEGREES, 0, {.degrees=$value} }" )->Variant
+
     method create( value:Int32 )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_INT32, 0, {.int32=$value} }" )->Variant
 
@@ -126,6 +139,9 @@ class Variant [compound]
 
     method create( value:Int64 )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_INT64, 0, {.int64=$value} }" )->Variant
+
+    method create( value:Radians )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_RADIANS, 0, {.radians=$value} }" )->Variant
 
     method create( value:Real32 )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_REAL32, 0, {.real32=$value} }" )->Variant
@@ -368,9 +384,11 @@ class Variant [compound]
         case TYPE_LOGICAL:   return which{ logical:1 || 0 }
         case TYPE_BYTE:      return byte.hashcode
         case TYPE_CHARACTER: return character.hashcode
+        case TYPE_DEGREES:   return degrees.hashcode
         case TYPE_INT32:     return int32.hashcode
         case TYPE_INT:       return integer.hashcode
         case TYPE_INT64:     return int64.hashcode
+        case TYPE_RADIANS:   return radians.hashcode
         case TYPE_REAL32:    return real32.hashcode
         case TYPE_REAL:      return real.hashcode
         case TYPE_REAL64:    return real64.hashcode
@@ -421,6 +439,9 @@ class Variant [compound]
     method is_circle->Logical
       return (type == TYPE_CIRCLE)
 
+    method is_degrees->Logical
+      return (type == TYPE_DEGREES)
+
     method is_empty->Logical
       return (count == 0)
 
@@ -452,13 +473,16 @@ class Variant [compound]
       return (type == TYPE_NULL)
 
     method is_number->Logical
-      return (type >= TYPE_BYTE and type <= TYPE_REAL64)
+      return (type >= TYPE_FIRST_NUMBER and type <= TYPE_LAST_NUMBER)
 
     method is_object->Logical
       return (type == TYPE_OBJECT)
 
     method is_quad->Logical
       return (type == TYPE_QUAD32)
+
+    method is_radians->Logical
+      return (type == TYPE_RADIANS)
 
     method is_real32->Logical
       return (type == TYPE_REAL32)
@@ -559,9 +583,9 @@ class Variant [compound]
     method operator<>(other:Variant)->Int
       if (type == TYPE_UNDEFINED) return (other.type != TYPE_UNDEFINED)
 
-      if (type <= TYPE_REAL64 and other.type <= TYPE_REAL64)
-        # Both are primitives
-        if (type == TYPE_REAL64 or other.type == TYPE_REAL64) return (real64 <> other.real64).sign
+      if (type <= TYPE_LAST_NUMBER and other.type <= TYPE_LAST_NUMBER)
+        # Both are numbers
+        if (type >= TYPE_REAL64 or other.type >= TYPE_REAL64) return (real64 <> other.real64).sign
         if (type == TYPE_REAL   or other.type == TYPE_REAL)   return (real   <> other.real  ).sign
         if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (real32 <> other.real32).sign
         return (int64 <> other.int64).sign
@@ -636,6 +660,8 @@ class Variant [compound]
         case TYPE_REAL32:    return Variant( a.real32    + b.real32 )
         case TYPE_REAL:      return Variant( a.real      + b.real )
         case TYPE_REAL64:    return Variant( a.real64    + b.real64 )
+        case TYPE_DEGREES:   return Variant( a.degrees   + b.degrees )
+        case TYPE_RADIANS:   return Variant( a.radians   + b.radians )
         case TYPE_LOGICAL:   return Variant( a.logical or b.logical )
         case TYPE_XY:        return Variant( a.xy        + b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       + b.xyz )
@@ -656,6 +682,8 @@ class Variant [compound]
         case TYPE_REAL32:    return Variant( a.real32    - b.real32 )
         case TYPE_REAL:      return Variant( a.real      - b.real )
         case TYPE_REAL64:    return Variant( a.real64    - b.real64 )
+        case TYPE_DEGREES:   return Variant( a.degrees   - b.degrees )
+        case TYPE_RADIANS:   return Variant( a.radians   - b.radians )
         case TYPE_XY:        return Variant( a.xy        - b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       - b.xyz )
         case TYPE_XYZW:      return Variant( a.xyzw      - b.xyzw )
@@ -677,6 +705,8 @@ class Variant [compound]
         case TYPE_REAL32:    return Variant( a.real32    * b.real32 )
         case TYPE_REAL:      return Variant( a.real      * b.real )
         case TYPE_REAL64:    return Variant( a.real64    * b.real64 )
+        case TYPE_DEGREES:   return Variant( a.degrees   * b.degrees )
+        case TYPE_RADIANS:   return Variant( a.radians   * b.radians )
         case TYPE_LOGICAL:   return Variant( a.logical and b.logical )
         case TYPE_XY:        return Variant( a.xy        * b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       * b.xyz )
@@ -698,6 +728,8 @@ class Variant [compound]
         case TYPE_REAL32:    return Variant( a.real32    / b.real32 )
         case TYPE_REAL:      return Variant( a.real      / b.real )
         case TYPE_REAL64:    return Variant( a.real64    / b.real64 )
+        case TYPE_DEGREES:   return Variant( a.degrees   / b.degrees )
+        case TYPE_RADIANS:   return Variant( a.radians   / b.radians )
         case TYPE_XY:        return Variant( a.xy        / b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       / b.xyz )
         case TYPE_XYZW:      return Variant( a.xyzw      / b.xyzw )
@@ -716,6 +748,8 @@ class Variant [compound]
         case TYPE_REAL32:    return Variant( a.real32    % b.real32 )
         case TYPE_REAL:      return Variant( a.real      % b.real )
         case TYPE_REAL64:    return Variant( a.real64    % b.real64 )
+        case TYPE_DEGREES:   return Variant( a.degrees   % b.degrees )
+        case TYPE_RADIANS:   return Variant( a.radians   % b.radians )
         case TYPE_XY:        return Variant( a.xy        % b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       % b.xyz )
         case TYPE_XYZW:      return Variant( a.xyzw      % b.xyzw )
@@ -734,6 +768,8 @@ class Variant [compound]
         case TYPE_REAL32:    return Variant( a.real32    ^ b.real32 )
         case TYPE_REAL:      return Variant( a.real      ^ b.real )
         case TYPE_REAL64:    return Variant( a.real64    ^ b.real64 )
+        case TYPE_DEGREES:   return Variant( a.degrees   ^ b.degrees )
+        case TYPE_RADIANS:   return Variant( a.radians   ^ b.radians )
         case TYPE_XY:        return Variant( a.xy        ^ b.xy )
         case TYPE_XYZ:       return Variant( a.xyz       ^ b.xyz )
         case TYPE_XYZW:      return Variant( a.xyzw      ^ b.xyzw )
@@ -808,6 +844,8 @@ class Variant [compound]
         case TYPE_REAL32:    real32.print_to( buffer )
         case TYPE_REAL:      real.print_to( buffer )
         case TYPE_REAL64:    real64.print_to( buffer )
+        case TYPE_DEGREES:   degrees.print_to( buffer )
+        case TYPE_RADIANS:   radians.print_to( buffer )
         case TYPE_XY:        xy.print_to( buffer )
         case TYPE_XYZ:       xyz.print_to( buffer )
         case TYPE_XYZW:      xyzw.print_to( buffer )
@@ -931,6 +969,8 @@ class Variant [compound]
         case TYPE_REAL32:    return real32->Byte
         case TYPE_REAL:      return real->Byte
         case TYPE_REAL64:    return real64->Byte
+        case TYPE_DEGREES:   return degrees.value->Byte
+        case TYPE_RADIANS:   return radians.value->Byte
         case TYPE_OBJECT:    return (object->String->Int)?
         case TYPE_STRING:    return (object->String->Int)?
         others:              return 0
@@ -946,6 +986,8 @@ class Variant [compound]
         case TYPE_REAL32:    return real32->Character
         case TYPE_REAL:      return real->Character
         case TYPE_REAL64:    return real64->Character
+        case TYPE_DEGREES:   return degrees.value->Character
+        case TYPE_RADIANS:   return radians.value->Character
         case TYPE_OBJECT, TYPE_STRING
           local st = object->String
           if (st and st.count) return st[0]
@@ -959,6 +1001,23 @@ class Variant [compound]
         case TYPE_QUAD32: return this->Box->Circle
         case TYPE_CIRCLE: return circle
         others:           return $defaultValue<<Circle>>
+      endWhich
+
+    method to->Degrees
+      which (type)
+        case TYPE_BYTE:      return Degrees(byte->Real)
+        case TYPE_CHARACTER: return Degrees(character->Real)
+        case TYPE_DEGREES:   return degrees
+        case TYPE_INT32:     return Degrees(int32->Real)
+        case TYPE_INT:       return Degrees(integer->Real)
+        case TYPE_INT64:     return Degrees(int64->Real)
+        case TYPE_RADIANS:   return Degrees(radians)
+        case TYPE_REAL32:    return Degrees(real32->Real)
+        case TYPE_REAL:      return Degrees(real->Real)
+        case TYPE_REAL64:    return Degrees(real64->Real)
+        case TYPE_OBJECT:    return Degrees(object->String->Real)
+        case TYPE_STRING:    return Degrees(object->String->Real)
+        others:              return Degrees(0)
       endWhich
 
     method to->Line
@@ -986,6 +1045,8 @@ class Variant [compound]
         case TYPE_REAL32:    return real32->Int32
         case TYPE_REAL:      return real->Int32
         case TYPE_REAL64:    return real64->Int32
+        case TYPE_DEGREES:   return degrees.value->Int32
+        case TYPE_RADIANS:   return radians.value->Int32
         case TYPE_OBJECT:    return object->String->Int32
         case TYPE_STRING:    return object->String->Int32
         others:              return 0
@@ -1001,6 +1062,8 @@ class Variant [compound]
         case TYPE_REAL32:    return real32->Int
         case TYPE_REAL:      return real->Int
         case TYPE_REAL64:    return real64->Int
+        case TYPE_DEGREES:   return degrees.value->Int
+        case TYPE_RADIANS:   return radians.value->Int
         case TYPE_OBJECT:    return object->String->Int
         case TYPE_STRING:    return object->String->Int
         others:              return 0
@@ -1016,6 +1079,8 @@ class Variant [compound]
         case TYPE_REAL32:    return real32->Int64
         case TYPE_REAL:      return real->Int64
         case TYPE_REAL64:    return real64->Int64
+        case TYPE_DEGREES:   return degrees.value->Int64
+        case TYPE_RADIANS:   return radians.value->Int64
         case TYPE_OBJECT:    return object->String->Int64
         case TYPE_STRING:    return object->String->Int64
         others:              return 0
@@ -1032,6 +1097,8 @@ class Variant [compound]
         case TYPE_REAL32:    return real32?
         case TYPE_REAL:      return real?
         case TYPE_REAL64:    return real64?
+        case TYPE_DEGREES:   return degrees?
+        case TYPE_RADIANS:   return radians?
         case TYPE_XY, TYPE_ANCHOR: return xy.x? or xy.y?
         case TYPE_XYZ:       return xyz.x? or xyz.y? or xyz.z?
         case TYPE_XYZW:      return xyzw.x? or xyzw.y? or xyzw.z? or xyzw.w?
@@ -1052,6 +1119,23 @@ class Variant [compound]
         others:                        return null
       endWhich
 
+    method to->Radians
+      which (type)
+        case TYPE_BYTE:      return Radians(byte->Real)
+        case TYPE_CHARACTER: return Radians(character->Real)
+        case TYPE_DEGREES:   return Radians(degrees)
+        case TYPE_INT32:     return Radians(int32->Real)
+        case TYPE_INT:       return Radians(integer->Real)
+        case TYPE_INT64:     return Radians(int64->Real)
+        case TYPE_RADIANS:   return radians
+        case TYPE_REAL32:    return Radians(real32->Real)
+        case TYPE_REAL:      return Radians(real->Real)
+        case TYPE_REAL64:    return Radians(real64->Real)
+        case TYPE_OBJECT:    return Radians(object->String->Real)
+        case TYPE_STRING:    return Radians(object->String->Real)
+        others:              return Radians(0)
+      endWhich
+
     method to->Real32
       which (type)
         case TYPE_BYTE:      return byte->Real32
@@ -1062,6 +1146,8 @@ class Variant [compound]
         case TYPE_REAL32:    return real32->Real32
         case TYPE_REAL:      return real->Real32
         case TYPE_REAL64:    return real64->Real32
+        case TYPE_DEGREES:   return degrees.value->Real32
+        case TYPE_RADIANS:   return radians.value->Real32
         case TYPE_OBJECT:    return object->String->Real32
         case TYPE_STRING:    return object->String->Real32
         others:              return 0
@@ -1077,6 +1163,8 @@ class Variant [compound]
         case TYPE_REAL32:    return real32->Real
         case TYPE_REAL:      return real->Real
         case TYPE_REAL64:    return real64->Real
+        case TYPE_DEGREES:   return degrees.value->Real
+        case TYPE_RADIANS:   return radians.value->Real
         case TYPE_OBJECT:    return object->String->Real
         case TYPE_STRING:    return object->String->Real
         others:              return 0
@@ -1092,6 +1180,8 @@ class Variant [compound]
         case TYPE_REAL32:    return real32->Real64
         case TYPE_REAL:      return real->Real64
         case TYPE_REAL64:    return real64->Real64
+        case TYPE_DEGREES:   return degrees.value->Real64
+        case TYPE_RADIANS:   return radians.value->Real64
         case TYPE_OBJECT:    return object->String->Real64
         case TYPE_STRING:    return object->String->Real64
         others:              return 0
@@ -1183,7 +1273,12 @@ class Variant [compound]
       if (type == TYPE_STRING or other.type == TYPE_STRING) return (Variant(this->String),Variant(other->String))
       if (type == TYPE_UNDEFINED or other.type == TYPE_UNDEFINED) return (undefined,undefined)
 
-      if (type <= TYPE_REAL64 and other.type <= TYPE_REAL64)
+      if (type <= TYPE_LAST_NUMBER and other.type <= TYPE_LAST_NUMBER)
+        if (type == TYPE_RADIANS or other.type == TYPE_RADIANS)
+          return (Variant(this->Radians),Variant(other->Radians))
+        elseIf (type == TYPE_DEGREES or other.type == TYPE_DEGREES)
+          return (Variant(this->Degrees),Variant(other->Degrees))
+        endIf
         if (type == TYPE_REAL64 or other.type == TYPE_REAL64) return (Variant(this->Real64),Variant(other->Real64))
         if (type == TYPE_REAL   or other.type == TYPE_REAL)   return (Variant(this->Real),  Variant(other->Real))
         if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (Variant(this->Real32),Variant(other->Real32))
@@ -1242,6 +1337,10 @@ class Variant [compound]
           builder.print( real )
         case TYPE_REAL64
           builder.print( real64 )
+        case TYPE_DEGREES
+          builder.print( degrees.value )
+        case TYPE_RADIANS
+          builder.print( radians.value )
         case TYPE_LOGICAL
           builder.print( logical )
         case TYPE_NULL
