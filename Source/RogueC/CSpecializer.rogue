@@ -18,11 +18,9 @@ class CSpecializer : Visitor
         endForEach
       endForEach
 
-      if (Program.default_module.types.contains("TypeInfo"))
-        forEach (mod in Program.modules.values)
-          collect_literal_string( mod.name )
-        endForEach
-      endIf
+      forEach (mod in Program.modules.values)
+        collect_literal_string( mod.name )
+      endForEach
 
       if (Program.default_module.types.contains("PropertyInfo"))
         forEach (mod in Program.modules)

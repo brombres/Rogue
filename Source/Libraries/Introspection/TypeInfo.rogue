@@ -18,7 +18,6 @@ class TypeInfo
        |    type_info->module_name = %Ns%Rogue_string_table[ THISOBJ->module_name_index ];
        |    type_info->name        = %Ns%RogueObject____type_name__%Ns%RogueInt( THISOBJ->index );
        |    type_info->index       = THISOBJ->index;
-       |    type_info->id          = THISOBJ->id;
        |    type_info->attributes  = THISOBJ->attributes;
        |    type_info->class_data_index = THISOBJ->class_data_index;
        |
@@ -59,7 +58,6 @@ class TypeInfo
     module_name       : String
     name              : String
     index             : Int32
-    id                : Int32
     attributes        : Int32
 
     class_data_index : Int32
@@ -85,11 +83,11 @@ class TypeInfo
       return create_object->(as $AsType)
 
     method instance_of( ancestor:TypeInfo )->Logical
-      local ancestor_id = ancestor.id
-      if (id == ancestor_id) return true
+      local ancestor_id = ancestor.index
+      if (index == ancestor_id) return true
 
       native...
-       @|%Ns%RogueInt* base_ids = %Ns%Rogue_types[$index]->base_type_ids - 1;
+       @|%Ns%RogueInt* base_ids = %Ns%Rogue_types[$index]->base_type_indices - 1;
         |%Ns%RogueInt  count = %Ns%Rogue_types[$index]->base_type_count;
         |while (--count >= 0)
         |{

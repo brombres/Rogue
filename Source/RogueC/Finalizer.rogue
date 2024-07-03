@@ -76,6 +76,19 @@ class Finalizer : Visitor
       forEach (type at index in types) type.index = index
       Program.all_types = types
 
+      # Type indices have been remade; map type IDs to indices
+      local id_to_index = [Int:Int]
+      forEach (type in types) id_to_index[type.id] = type.index
+      forEach (type in types)
+        type.id = id_to_index[type.id]
+        forEach (id in rewriter=type.base_type_ids.rewriter)
+          rewriter.write( id_to_index[id] )
+        endForEach
+      endForEach
+      forEach (id in rewriter=Program.base_type_lookup.rewriter)
+        rewriter.write( id_to_index[id] )
+      endForEach
+
       # Collect list of inheriting types for each method
       forEach (mod in Program.modules)
         forEach (type in mod.types)

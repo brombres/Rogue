@@ -2016,8 +2016,6 @@ augment
 
       c_writer.println "%Ns%RogueInt %Ns%Rogue_type_count = $;" (types.count)
 
-      local including_type_info = Program.default_module.types.contains("TypeInfo")
-
       block
         forEach (type in types)
           # V-Table data
@@ -2047,10 +2045,7 @@ augment
           assert type.index >= 0
           c_writer.print   type.index
           c_writer.print   ", "
-          c_writer.print   type.id
-          c_writer.print   ", "
-          if (including_type_info) c_writer.print Program.string_table_indices[type.module_context.name]
-          else                     c_writer.print '0'
+          c_writer.print   Program.string_table_indices[type.module_context.name]
           c_writer.print   ", "
           c_writer.print   type.class_data_index
           c_writer.print   ", "
@@ -2233,7 +2228,7 @@ augment
         endIf
 
         c_writer.indent += 2
-        c_writer.println "switch (((%Ns%RogueObject*)THISOBJ)->__type->id)"
+        c_writer.println "switch (((%Ns%RogueObject*)THISOBJ)->__type->index)"
         c_writer.println '{'
         c_writer.indent += 2
 

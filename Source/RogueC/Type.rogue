@@ -45,8 +45,9 @@ class Type : Cmd
     scoped_name           : String
     name_tokens           : Token[]
 
-    id    : Int       # used for dynamic dispatch tables; introspection data may not exist for all type ids
-    index = -1L       # index of type in lookup table; used for introspection
+    index = -1L       # index of type in meta info table
+    id    : Int       # intermediate value used to build dynamic tables etc. Remapped to
+                      # type indices after analysis is completed.
     class_data_index : Int
     exception_type   : ExceptionType
 
