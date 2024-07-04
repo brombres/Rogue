@@ -1112,6 +1112,14 @@ class Type : Cmd
         m.organize
         methods[ m.signature ] = m
 
+        # type_id()->Int
+        m = Method( t, this, "type_id" )
+        m.attributes.omit_doc = (this is not Program.type_Object)
+        m.return_type = Program.type_TypeID
+        m.statements.add( Return(t,TypeIndex(t,this)) )
+        m.organize
+        methods[ m.signature ] = m
+
       endIf
 
       # Add state methods

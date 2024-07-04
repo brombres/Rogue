@@ -3176,7 +3176,6 @@ parser
   on "<<"
     type
     mustConsume ">>"
-    call use_Introspection
     produce GetTypeInfo(of_type:Type)
   endOn
 

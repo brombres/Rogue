@@ -1,0 +1,36 @@
+class TypeID( index:Int )
+  METHODS
+    method instance_of( ancestor:TypeID )->Logical
+      local ancestor_id = ancestor.index
+      if (index == ancestor_id) return true
+
+      native...
+       @|%Ns%RogueInt* base_ids = %Ns%Rogue_types[$index]->base_type_indices - 1;
+        |%Ns%RogueInt  count = %Ns%Rogue_types[$index]->base_type_count;
+        |while (--count >= 0)
+        |{
+        |  if (*(++base_ids) == $ancestor_id)
+        |  {
+             return true
+      native...
+       @|  }
+        |}
+      return false
+
+    method module_context_name->String
+      local result : String
+      native @|$result = %Ns%Rogue_string_table[ %Ns%Rogue_types[$index]->module_name_index ];
+      return result
+
+    method name->String
+      local result : String
+      if (native("!%Ns%Rogue_types[$index]->name_object")->Logical)
+        native @|%Ns%Rogue_types[$index]->name_object =
+                |  %Ns%RogueString_create_permanent( %Ns%Rogue_types[$index]->name );
+      endIf
+      native @|$result = %Ns%Rogue_types[$index]->name_object;
+      return result
+
+    method to->String
+      return name
+endClass
