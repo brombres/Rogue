@@ -138,6 +138,10 @@ class RogueC
       endIf
 
       local api_includes = command//options//api.contains(true)
+      if (api_includes)
+        Scanner.uses_Introspection = true
+        Scanner.uses_autoinclude = true
+      endIf
 
       local libraries_folder = File( File( System.executable_filepath ).folder )
       if ((libraries_folder/"Libraries").exists)

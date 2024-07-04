@@ -730,7 +730,13 @@ class Resolver : Poolable, Visitor
 
     method on_visit( cmd:GetTypeInfo )->Cmd
       cmd.of_type.organize
-      return visit( IndexedAccess( cmd.t, TypeAccess(cmd.t,Program.type_TypeInfo), TypeIndex(cmd.t,cmd.of_type) ) )
+      return visit(
+        TypeAccess(
+          cmd.t,
+          Program.type_TypeID,
+          Args( cmd.t, TypeIndex(cmd.t,cmd.of_type) )
+        )
+      )
 
     method on_visit_node( cmd:GlobalMethod )
       temporarily this_type = cmd.type_context

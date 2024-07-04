@@ -57,6 +57,7 @@ class Program [singleton]
     type_String          : Type
     type_Variant         : Type
     type_Exception       : Type
+    type_TypeID          : Type
     type_TableType       : Type
     type_TypeInfo        : Type
     type_NativeProperty  : Type
@@ -128,6 +129,7 @@ class Program [singleton]
       type_String    = TypeString( t )
       type_TableType = Type( t, "TableType", Attribute.ASPECT )
       type_Exception = Type( t, "Exception", Attribute.OBJECT )
+      type_TypeID    = Type( t, "TypeID", Attribute.COMPOUND )
 
       type_NativeProperty = Type( t, "RogueCNativeProperty", Attribute.PRIMITIVE )
       type_NativeProperty.attributes.is_defined = true

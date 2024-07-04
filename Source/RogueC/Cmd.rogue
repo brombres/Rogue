@@ -4847,7 +4847,7 @@ class TypeIndex : Cmd
       return "TypeIndex($)" (%of_type)
 
     method type->Type
-      return Program.type_Int32
+      return Program.type_Int
 
 endClass
 

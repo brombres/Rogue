@@ -16,3 +16,70 @@ augment
       return TypeInfo[type_info_index]
 endAugment
 
+augment TypeID
+  METHODS
+    method to->TypeInfo
+      return TypeInfo[ index ]
+
+  METHODS # Forwarding
+    method attributes->Int32
+      return this->TypeInfo.attributes
+
+    method class_data_index->Int32
+      return this->TypeInfo.class_data_index
+
+    method create_object->Object
+      return this->TypeInfo.create_object
+
+    method create_object<<$AsType>>->$AsType
+      return this->TypeInfo.create_object<<$AsType>>
+
+    method find_global_method( name_or_sig:String, arg_count=null:Int32? )->MethodInfo
+      return this->TypeInfo.find_global_method( name_or_sig, arg_count )
+
+    method find_method( name_or_sig:String, arg_count=null:Int32? )->MethodInfo
+      return this->TypeInfo.find_method( name_or_sig, arg_count )
+
+    method find_method( method_list:MethodInfo[], name_or_sig:String, arg_count=null:Int32? )->MethodInfo
+      return this->TypeInfo.find_method( method_list, name_or_sig, arg_count )
+
+    method find_global_property( name:String )->PropertyInfo?
+      return this->TypeInfo.find_global_property( name )
+
+    method find_property( name:String )->PropertyInfo?
+      return this->TypeInfo.find_property( name )
+
+    method find_property( property_list:PropertyInfo[], name:String )->PropertyInfo?
+      return this->TypeInfo.find_property( name )
+
+    method global_properties->PropertyInfo[]
+      return this->TypeInfo.global_properties
+
+    method global_methods->MethodInfo[]
+      return this->TypeInfo.global_methods
+
+    method instance_of( ancestor:TypeInfo )->Logical
+      return this->TypeInfo.instance_of( ancestor )
+
+    method is_aspect->Logical
+      return this->TypeInfo.is_aspect
+
+    method is_compound->Logical
+      return this->TypeInfo.is_compound
+
+    method is_enum->Logical
+      return this->TypeInfo.is_enum
+
+    method is_object->Logical
+      return this->TypeInfo.is_object
+
+    method is_primitive->Logical
+      return this->TypeInfo.is_primitive
+
+    method methods->MethodInfo[]
+      return this->TypeInfo.methods
+
+    method properties->PropertyInfo[]
+      return this->TypeInfo.properties
+
+endAugment

@@ -15,6 +15,7 @@ $include Core/String
 $include Core/StringEncoding
 $include Core/StringPool
 $include Core/System
+$include Core/TypeID
 $include Core/WeakReference
 $include Core/Windows
 $include Core/WorkList
