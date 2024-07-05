@@ -607,6 +607,9 @@ augment
       if (result_discarded) return null
       return info.return_type
 
+    method ContextBlock.type->Type
+      return context.type
+
     method ConvertToByte.type->Type
       return Program.type_Byte
 
