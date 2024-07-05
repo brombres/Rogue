@@ -85,6 +85,12 @@ class Color( argb:Int32 ) [compound]
     method operator!->Color
       return Color( !argb )
 
+    method operator?->Logical
+      return argb?
+
+    method operator<>( other:Color )->Int
+      return argb <> other.argb
+
     method red->Real
       return ((argb :>>: 16) & 255) / 255.0
 
