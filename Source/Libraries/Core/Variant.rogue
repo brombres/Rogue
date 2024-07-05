@@ -4,6 +4,8 @@ $include IO/Scanner
 $include Codec/JSON
 
 uses Geometry
+uses Graphics [noInclude]
+$include Graphics/Color
 
 class Variant [compound]
   DEFINITIONS
@@ -12,30 +14,31 @@ class Variant [compound]
     TYPE_BYTE      =  1
     TYPE_CHARACTER =  2
     TYPE_INT32     =  3
-    TYPE_INT       =  4
-    TYPE_INT64     =  5
-    TYPE_REAL32    =  6
-    TYPE_REAL      =  7
-    TYPE_REAL64    =  8
+    TYPE_COLOR     =  4
+    TYPE_INT       =  5
+    TYPE_INT64     =  6
+    TYPE_REAL32    =  7
+    TYPE_REAL      =  8
+    TYPE_REAL64    =  9
     TYPE_FIRST_NUMBER = TYPE_BYTE
     TYPE_LAST_NUMBER  = TYPE_RADIANS
-    TYPE_DEGREES   =  9
-    TYPE_RADIANS   = 10
-    TYPE_LOGICAL   = 11
-    TYPE_NULL      = 12
-    TYPE_ANCHOR    = 13
-    TYPE_XY        = 14
-    TYPE_XYZ       = 15
-    TYPE_XYZW      = 16
-    TYPE_LINE      = 17
-    TYPE_CIRCLE    = 18
-    TYPE_TRIANGLE  = 19
-    TYPE_BOX       = 20
-    TYPE_QUAD32    = 21
-    TYPE_OBJECT    = 22  # All reference types should be >= TYPE_OBJECT
-    TYPE_STRING    = 23
-    TYPE_LIST      = 24
-    TYPE_TABLE     = 25
+    TYPE_DEGREES   = 10
+    TYPE_RADIANS   = 11
+    TYPE_LOGICAL   = 12
+    TYPE_NULL      = 13
+    TYPE_ANCHOR    = 14
+    TYPE_XY        = 15
+    TYPE_XYZ       = 16
+    TYPE_XYZW      = 17
+    TYPE_LINE      = 18
+    TYPE_CIRCLE    = 19
+    TYPE_TRIANGLE  = 20
+    TYPE_BOX       = 21
+    TYPE_QUAD32    = 22
+    TYPE_OBJECT    = 23  # All reference types should be >= TYPE_OBJECT
+    TYPE_STRING    = 24
+    TYPE_LIST      = 25
+    TYPE_TABLE     = 26
 
   NATIVE
     nativeHeader
@@ -43,28 +46,29 @@ class Variant [compound]
        |#define %NS%ROGUE_VARIANT_TYPE_BYTE       1
        |#define %NS%ROGUE_VARIANT_TYPE_CHARACTER  2
        |#define %NS%ROGUE_VARIANT_TYPE_INT32      3
-       |#define %NS%ROGUE_VARIANT_TYPE_INT        4
-       |#define %NS%ROGUE_VARIANT_TYPE_INT64      5
-       |#define %NS%ROGUE_VARIANT_TYPE_REAL32     6
-       |#define %NS%ROGUE_VARIANT_TYPE_REAL       7
-       |#define %NS%ROGUE_VARIANT_TYPE_REAL64     8
-       |#define %NS%ROGUE_VARIANT_TYPE_DEGREES    9
-       |#define %NS%ROGUE_VARIANT_TYPE_RADIANS   10
-       |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL   11
-       |#define %NS%ROGUE_VARIANT_TYPE_NULL      12
-       |#define %NS%ROGUE_VARIANT_TYPE_ANCHOR    13
-       |#define %NS%ROGUE_VARIANT_TYPE_XY        14
-       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       15
-       |#define %NS%ROGUE_VARIANT_TYPE_XYZW      16
-       |#define %NS%ROGUE_VARIANT_TYPE_LINE      17
-       |#define %NS%ROGUE_VARIANT_TYPE_CIRCLE    18
-       |#define %NS%ROGUE_VARIANT_TYPE_TRIANGLE  19
-       |#define %NS%ROGUE_VARIANT_TYPE_BOX       20
-       |#define %NS%ROGUE_VARIANT_TYPE_QUAD32    21
-       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    22
-       |#define %NS%ROGUE_VARIANT_TYPE_STRING    23
-       |#define %NS%ROGUE_VARIANT_TYPE_LIST      24
-       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     25
+       |#define %NS%ROGUE_VARIANT_TYPE_COLOR      4
+       |#define %NS%ROGUE_VARIANT_TYPE_INT        5
+       |#define %NS%ROGUE_VARIANT_TYPE_INT64      6
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL32     7
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL       8
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL64     9
+       |#define %NS%ROGUE_VARIANT_TYPE_DEGREES   10
+       |#define %NS%ROGUE_VARIANT_TYPE_RADIANS   11
+       |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL   12
+       |#define %NS%ROGUE_VARIANT_TYPE_NULL      13
+       |#define %NS%ROGUE_VARIANT_TYPE_ANCHOR    14
+       |#define %NS%ROGUE_VARIANT_TYPE_XY        15
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       16
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZW      17
+       |#define %NS%ROGUE_VARIANT_TYPE_LINE      18
+       |#define %NS%ROGUE_VARIANT_TYPE_CIRCLE    19
+       |#define %NS%ROGUE_VARIANT_TYPE_TRIANGLE  20
+       |#define %NS%ROGUE_VARIANT_TYPE_BOX       21
+       |#define %NS%ROGUE_VARIANT_TYPE_QUAD32    22
+       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    23
+       |#define %NS%ROGUE_VARIANT_TYPE_STRING    24
+       |#define %NS%ROGUE_VARIANT_TYPE_LIST      25
+       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     26
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -76,6 +80,7 @@ class Variant [compound]
     byte      : Byte      [faux]
     character : Character [faux]
     circle    : Circle    [faux]
+    color     : Color     [faux]
     degrees   : Degrees   [faux]
     int32     : Int32     [faux]
     integer   : Int       [faux]
@@ -98,6 +103,7 @@ class Variant [compound]
             |  %Ns%RogueByte        byte;
             |  %Ns%RogueCharacter   character;
             |  %Ns%GeometryCircle   circle;
+            |  %Ns%GraphicsColor    color;
             |  %Ns%RogueDegrees     degrees;
             |  %Ns%RogueInt32       int32;
             |  %Ns%RogueInt         integer;
@@ -127,6 +133,9 @@ class Variant [compound]
 
     method create( value:Character )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_CHARACTER, 0, {.character=$value} }" )->Variant
+
+    method create( value:Color )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_COLOR, 0, {.color=$value} }" )->Variant
 
     method create( value:Degrees )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_DEGREES, 0, {.degrees=$value} }" )->Variant
@@ -384,6 +393,7 @@ class Variant [compound]
         case TYPE_LOGICAL:   return which{ logical:1 || 0 }
         case TYPE_BYTE:      return byte.hashcode
         case TYPE_CHARACTER: return character.hashcode
+        case TYPE_COLOR:     return color.hashcode
         case TYPE_DEGREES:   return degrees.hashcode
         case TYPE_INT32:     return int32.hashcode
         case TYPE_INT:       return integer.hashcode
@@ -438,6 +448,9 @@ class Variant [compound]
 
     method is_circle->Logical
       return (type == TYPE_CIRCLE)
+
+    method is_color->Logical
+      return (type == TYPE_COLOR)
 
     method is_degrees->Logical
       return (type == TYPE_DEGREES)
@@ -655,6 +668,7 @@ class Variant [compound]
         case TYPE_BYTE:      return Variant( a.byte      + b.byte )
         case TYPE_CHARACTER: return Variant( a.character + b.character )
         case TYPE_INT32:     return Variant( a.int32     + b.int32 )
+        case TYPE_COLOR:     return Variant( Color(a.int32 + b.int32) )
         case TYPE_INT:       return Variant( a.integer   + b.integer )
         case TYPE_INT64:     return Variant( a.int64     + b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    + b.real32 )
@@ -677,6 +691,7 @@ class Variant [compound]
         case TYPE_BYTE:      return Variant( a.byte      - b.byte )
         case TYPE_CHARACTER: return Variant( a.character - b.character )
         case TYPE_INT32:     return Variant( a.int32     - b.int32 )
+        case TYPE_COLOR:     return Variant( Color(a.int32 - b.int32) )
         case TYPE_INT:       return Variant( a.integer   - b.integer )
         case TYPE_INT64:     return Variant( a.int64     - b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    - b.real32 )
@@ -700,6 +715,7 @@ class Variant [compound]
         case TYPE_BYTE:      return Variant( a.byte      * b.byte )
         case TYPE_CHARACTER: return Variant( a.character * b.character )
         case TYPE_INT32:     return Variant( a.int32     * b.int32 )
+        case TYPE_COLOR:     return Variant( Color(a.int32 * b.int32) )
         case TYPE_INT:       return Variant( a.integer   * b.integer )
         case TYPE_INT64:     return Variant( a.int64     * b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    * b.real32 )
@@ -723,6 +739,7 @@ class Variant [compound]
         case TYPE_BYTE:      return Variant( a.byte      / b.byte )
         case TYPE_CHARACTER: return Variant( a.character / b.character )
         case TYPE_INT32:     return Variant( a.int32     / b.int32 )
+        case TYPE_COLOR:     return Variant( Color(a.int32 / b.int32) )
         case TYPE_INT:       return Variant( a.integer   / b.integer )
         case TYPE_INT64:     return Variant( a.int64     / b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    / b.real32 )
@@ -743,6 +760,7 @@ class Variant [compound]
         case TYPE_BYTE:      return Variant( a.byte      % b.byte )
         case TYPE_CHARACTER: return Variant( a.character % b.character )
         case TYPE_INT32:     return Variant( a.int32     % b.int32 )
+        case TYPE_COLOR:     return Variant( Color(a.int32 % b.int32) )
         case TYPE_INT:       return Variant( a.integer   % b.integer )
         case TYPE_INT64:     return Variant( a.int64     % b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    % b.real32 )
@@ -763,6 +781,7 @@ class Variant [compound]
         case TYPE_BYTE:      return Variant( a.byte      ^ b.byte )
         case TYPE_CHARACTER: return Variant( a.character ^ b.character )
         case TYPE_INT32:     return Variant( a.int32     ^ b.int32 )
+        case TYPE_COLOR:     return Variant( Color(a.int32 ^ b.int32) )
         case TYPE_INT:       return Variant( a.integer   ^ b.integer )
         case TYPE_INT64:     return Variant( a.int64     ^ b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    ^ b.real32 )
@@ -781,6 +800,7 @@ class Variant [compound]
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 & other->Int64 )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   & other->Int )
+        elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32 & other->Int32))
         else                                                return Variant( this->Int32 & other->Int32 )
       else
         return undefined
@@ -790,6 +810,7 @@ class Variant [compound]
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 | other->Int64 )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   | other->Int )
+        elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32 | other->Int32))
         else                                                return Variant( this->Int32 | other->Int32 )
       else
         return undefined
@@ -799,6 +820,7 @@ class Variant [compound]
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 ~ other->Int64 )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   ~ other->Int )
+        elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32 ~ other->Int32))
         else                                                return Variant( this->Int32 ~ other->Int32 )
       else
         return undefined
@@ -808,6 +830,7 @@ class Variant [compound]
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 :<<: other->Int64 )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   :<<: other->Int )
+        elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32:<<:other->Int32))
         else                                                return Variant( this->Int32 :<<: other->Int32 )
       else
         return undefined
@@ -817,6 +840,7 @@ class Variant [compound]
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 :>>: other->Int64 )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   :>>: other->Int )
+        elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32:>>:other->Int32))
         else                                                return Variant( this->Int32 :>>: other->Int32 )
       else
         return undefined
@@ -826,6 +850,7 @@ class Variant [compound]
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 :>>>: other->Int64 )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   :>>>: other->Int )
+        elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32:>>>:other->Int32))
         else                                                return Variant( this->Int32 :>>>: other->Int32 )
       else
         return undefined
@@ -838,6 +863,7 @@ class Variant [compound]
         case TYPE_LOGICAL:   buffer.print( which{logical:"true" || "false"} )
         case TYPE_BYTE:      byte.print_to( buffer )
         case TYPE_CHARACTER: character.print_to( buffer )
+        case TYPE_COLOR:     color.print_to( buffer )
         case TYPE_INT32:     int32.print_to( buffer )
         case TYPE_INT:       integer.print_to( buffer )
         case TYPE_INT64:     int64.print_to( buffer )
@@ -964,6 +990,7 @@ class Variant [compound]
         case TYPE_BYTE:      return byte
         case TYPE_CHARACTER: return character->Byte
         case TYPE_INT32:     return int32->Byte
+        case TYPE_COLOR:     return color.argb->Byte
         case TYPE_INT:       return integer->Byte
         case TYPE_INT64:     return int64->Byte
         case TYPE_REAL32:    return real32->Byte
@@ -980,6 +1007,7 @@ class Variant [compound]
       which (type)
         case TYPE_BYTE:      return byte->Character
         case TYPE_CHARACTER: return character
+        case TYPE_COLOR:     return color.argb->Character
         case TYPE_INT32:     return int32->Character
         case TYPE_INT:       return integer->Character
         case TYPE_INT64:     return int64->Character
@@ -1003,10 +1031,17 @@ class Variant [compound]
         others:           return $defaultValue<<Circle>>
       endWhich
 
+    method to->Color
+      which (type)
+        case TYPE_COLOR:     return color
+        others:              return Color( this->Int32 )
+      endWhich
+
     method to->Degrees
       which (type)
         case TYPE_BYTE:      return Degrees(byte->Real)
         case TYPE_CHARACTER: return Degrees(character->Real)
+        case TYPE_COLOR:     return Degrees(color.argb)
         case TYPE_DEGREES:   return degrees
         case TYPE_INT32:     return Degrees(int32->Real)
         case TYPE_INT:       return Degrees(integer->Real)
@@ -1039,6 +1074,7 @@ class Variant [compound]
       which (type)
         case TYPE_BYTE:      return byte->Int32
         case TYPE_CHARACTER: return character->Int32
+        case TYPE_COLOR:     return color.argb
         case TYPE_INT32:     return int32->Int32
         case TYPE_INT:       return integer->Int32
         case TYPE_INT64:     return int64->Int32
@@ -1056,6 +1092,7 @@ class Variant [compound]
       which (type)
         case TYPE_BYTE:      return byte->Int
         case TYPE_CHARACTER: return character->Int
+        case TYPE_COLOR:     return color.argb->Int
         case TYPE_INT32:     return int32->Int
         case TYPE_INT:       return integer->Int
         case TYPE_INT64:     return int64->Int
@@ -1073,6 +1110,7 @@ class Variant [compound]
       which (type)
         case TYPE_BYTE:      return byte->Int64
         case TYPE_CHARACTER: return character->Int64
+        case TYPE_COLOR:     return color.argb->Int64
         case TYPE_INT32:     return int32->Int64
         case TYPE_INT:       return integer->Int64
         case TYPE_INT64:     return int64->Int64
@@ -1091,6 +1129,7 @@ class Variant [compound]
         case TYPE_LOGICAL:   return logical
         case TYPE_BYTE:      return byte?
         case TYPE_CHARACTER: return character?
+        case TYPE_COLOR:     return color.argb?
         case TYPE_INT32:     return int32?
         case TYPE_INT:       return integer?
         case TYPE_INT64:     return int64?
@@ -1123,6 +1162,7 @@ class Variant [compound]
       which (type)
         case TYPE_BYTE:      return Radians(byte->Real)
         case TYPE_CHARACTER: return Radians(character->Real)
+        case TYPE_COLOR:     return Radians(color.argb)
         case TYPE_DEGREES:   return Radians(degrees)
         case TYPE_INT32:     return Radians(int32->Real)
         case TYPE_INT:       return Radians(integer->Real)
@@ -1140,6 +1180,7 @@ class Variant [compound]
       which (type)
         case TYPE_BYTE:      return byte->Real32
         case TYPE_CHARACTER: return character->Real32
+        case TYPE_COLOR:     return color.argb->Real32
         case TYPE_INT32:     return int32->Real32
         case TYPE_INT:       return integer->Real32
         case TYPE_INT64:     return int64->Real32
@@ -1157,6 +1198,7 @@ class Variant [compound]
       which (type)
         case TYPE_BYTE:      return byte->Real
         case TYPE_CHARACTER: return character->Real
+        case TYPE_COLOR:     return color.argb->Real
         case TYPE_INT32:     return int32->Real
         case TYPE_INT:       return integer->Real
         case TYPE_INT64:     return int64->Real
@@ -1174,6 +1216,7 @@ class Variant [compound]
       which (type)
         case TYPE_BYTE:      return byte->Real64
         case TYPE_CHARACTER: return character->Real64
+        case TYPE_COLOR:     return color.argb->Real64
         case TYPE_INT32:     return int32->Real64
         case TYPE_INT:       return integer->Real64
         case TYPE_INT64:     return int64->Real64
@@ -1284,6 +1327,7 @@ class Variant [compound]
         if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (Variant(this->Real32),Variant(other->Real32))
         if (type == TYPE_INT64 or other.type == TYPE_INT64)   return (Variant(this->Int64), Variant(other->Int64))
         if (type == TYPE_INT   or other.type == TYPE_INT)     return (Variant(this->Int),   Variant(other->Int))
+        if (type == TYPE_COLOR or other.type == TYPE_COLOR)   return (Variant(this->Color), Variant(other->Color))
         if (type == TYPE_INT32 or other.type == TYPE_INT32)   return (Variant(this->Int32), Variant(other->Int32))
         if (type == TYPE_CHARACTER or other.type == TYPE_CHARACTER) return (Variant(this->Character),Variant(other->Character))
         return (Variant(this->Byte),Variant(other->Byte))
@@ -1325,6 +1369,8 @@ class Variant [compound]
           builder.print '"'
           write_json_character( character, builder )
           builder.print '"'
+        case TYPE_COLOR
+          builder.print( color.argb )
         case TYPE_INT32
           builder.print( int32 )
         case TYPE_INT
