@@ -907,10 +907,18 @@ class Property : Cmd
   METHODS
     method init( t, name, initial_value, type )
       attributes = Attributes(t)
+      if (name.begins_with("."))
+        name .= unleft(1)
+        attributes.is_internal_id = true
+      endIf
 
     method init( t, name, native_expression )
       type = Program.type_NativeProperty
       attributes = Attributes(t)
+      if (name.begins_with("."))
+        name .= unleft(1)
+        attributes.is_internal_id = true
+      endIf
 
     method init( existing:Property )
       prior.init( existing )

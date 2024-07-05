@@ -48,6 +48,11 @@ class Procedure : Cmd
 
     method init( t, module_context, name, parameters=null, return_type=null,
         attributes=null, doc=null, body=null )
+      if (name.begins_with("."))
+        name .= unleft(1)
+        attributes.is_internal_id = true
+      endIf
+
       if (not parameters) parameters = Parameters(t)
       if (not attributes) attributes = Attributes( t )
       if (not body)       body = LocalScope(t)

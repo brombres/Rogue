@@ -180,7 +180,7 @@ class PropertyOrganizer : Visitor
             local native_property = decl->(as NativeProperty)
             if (native_property)
               ++Program.native_property_count
-              p = Property( native_property.t, ".native"+Program.native_property_count, native_property.expression )
+              p = Property( native_property.t, "@native"+Program.native_property_count, native_property.expression )
               p.attributes.flags |= cmd.attributes.flags
               collect( p.t, p )
             endIf
