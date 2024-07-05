@@ -2922,16 +2922,16 @@ parser
     produce Access( name:String, args )
 
   elseOnOthers
-    next_is_internal = false
+    next_is_internal_id = false
     if (nextIs('.'))
       savePosition
       consume('.')
-      next_is_internal = nextIs(IDENTIFIER)
+      next_is_internal_id = nextIs(IDENTIFIER)
       restorePosition
     endIf
 
-    if (nextIs(IDENTIFIER) or next_is_internal)
-      if (next_is_internal)
+    if (nextIs(IDENTIFIER) or next_is_internal_id)
+      if (next_is_internal_id)
         consume '.'
         create Identifier( name="." )
         identifier

@@ -49,6 +49,7 @@ class Attribute
     OMIT_DOC           = (Int64(1):<<:44)
     AUGMENTED          = (Int64(1):<<:45)
     REPLACE            = (Int64(1):<<:46)
+    INTERNAL_ID        = (Int64(1):<<:47)
 endClass
 
 class Attributes : CmdList
@@ -99,6 +100,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE<< omit_doc,             Attribute.OMIT_DOC >>
   ROGUE_ATTRIBUTE<< augmented,            Attribute.AUGMENTED >>
   ROGUE_ATTRIBUTE<< is_replace,           Attribute.REPLACE >>
+  ROGUE_ATTRIBUTE<< is_internal_id,       Attribute.INTERNAL_ID >>
 
   PROPERTIES
     flags : Int64
