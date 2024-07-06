@@ -219,6 +219,9 @@ endClass
 
 
 class Real : CommonPrimitiveMethods<<Real>> [primitive]
+  DEFINITIONS
+    BITS = REAL_BITS
+
   METHODS
     method acos->Real
       return this->REAL_TYPE.acos
@@ -695,6 +698,7 @@ class Int : CommonPrimitiveMethods<<Int>> [primitive]
   DEFINITIONS
     MAXIMUM = INT_MAXIMUM
     MINIMUM = INT_MINIMUM
+    BITS    = INT_BITS
 
   METHODS
     method format( fmt:String, bits=64:Int )->String
