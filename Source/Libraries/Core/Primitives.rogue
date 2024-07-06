@@ -701,7 +701,7 @@ class Int : CommonPrimitiveMethods<<Int>> [primitive]
     BITS    = INT_BITS
 
   METHODS
-    method format( fmt:String, bits=64:Int )->String
+    method format( fmt:String )->String
       # fmt
       #   C-esque "[attributes][N]" - attributes must come before optional "N"
       #   but can otherwise be in any order.
@@ -714,7 +714,7 @@ class Int : CommonPrimitiveMethods<<Int>> [primitive]
       #   ' ' - Insert any padding between sign and number in base 10.
       #   '0' - Pad whole portion with 0's instead of spaces
       #   ',' - Add commas in base 10.
-      return this->INT_TYPE.format( fmt, bits )
+      return this->INT_TYPE.format( fmt )
 
     method hashcode->Int
       return this->INT_TYPE.hashcode
