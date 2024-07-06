@@ -48,8 +48,8 @@ class Procedure : Cmd
 
     method init( t, module_context, name, parameters=null, return_type=null,
         attributes=null, doc=null, body=null )
-      if (name.begins_with("."))
-        name .= unleft(1)
+      if (name.begins_with('.'))
+        name = '_' + name.unleft(1)
         attributes.is_internal_id = true
       endIf
 
