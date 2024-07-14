@@ -34,6 +34,9 @@ class Program [singleton]
     namespace_capitalized = ""
     namespace_uc          = ""
 
+    split_line_count     : Int?
+    generated_file_count : Int
+
     modules           = [String:Module]
     default_module    : Module
     current_module    : Module

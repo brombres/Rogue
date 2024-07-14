@@ -1813,6 +1813,25 @@ augment
     method NativeStatement.needs_semicolon->Logical
       return false
 
+    method Program.create_c_writer->CWriter
+      ++Program.generated_file_count
+      local filepath = Program.output_filepath
+      if (Program.split_line_count)
+        local file_index = Program.generated_file_count
+        return CWriter( File("$-$.$"(filepath,file_index,Program.source_type)), &=file_index )
+      else
+        return CWriter( File("$.$"(filepath,Program.source_type)) )
+      endIf
+
+    method Program.update_c_writer( c_writer:CWriter )->CWriter
+      if local threshold = Program.split_line_count
+        if (threshold >= c_writer.line_count)
+          c_writer.close
+          return create_c_writer
+        endIf
+      endIf
+      return c_writer
+
     method Program.generate_c
       CSpecializer().apply
 
@@ -1907,7 +1926,7 @@ augment
 
       #-------------------------------------------------------------------------
 
-      local c_writer = CWriter( File("$.$"(Program.output_filepath,source_type)) )
+      local c_writer = create_c_writer
 
       local method_info : Int32[]
       local type_data : Int32[]
@@ -1977,6 +1996,8 @@ augment
           c_writer.println
         endBlock
 
+        c_writer = update_c_writer( c_writer )
+
         block
           local column = 0;
           c_writer.println "%Ns%RogueInt %Ns%Rogue_type_data[$] ="(type_data.count)
@@ -1997,6 +2018,8 @@ augment
           c_writer.println
         endBlock
 
+        c_writer = update_c_writer( c_writer )
+
         block
           c_writer.println "void* %Ns%Rogue_method_pointers[$] ="(Program.all_methods.count)
           c_writer.println "{"
@@ -2012,12 +2035,16 @@ augment
           c_writer.println
         endBlock
 
+        c_writer = update_c_writer( c_writer )
+
       endIf
 
       c_writer.println "%Ns%RogueInt %Ns%Rogue_type_count = $;" (types.count)
 
       block
         forEach (type in types)
+          c_writer = update_c_writer( c_writer )
+
           # V-Table data
           if (type.method_vtable.count)
             c_writer.println
@@ -2155,6 +2182,8 @@ augment
           endIf
         endForEach
 
+        c_writer = update_c_writer( c_writer )
+
         forEach (type in types)
           forEach (code in type.native_code)
             if (type.attributes.is_used)
@@ -2162,10 +2191,14 @@ augment
               c_writer.println
             endIf
           endForEach
+          c_writer = update_c_writer( c_writer )
         endForEach
         c_writer.println
 
-        (forEach in types).generate_c_code( c_writer )
+        forEach (type in types)
+          type.generate_c_code( c_writer )
+          c_writer = update_c_writer( c_writer )
+        endForEach
       endBlock
 
       block
@@ -2186,6 +2219,8 @@ augment
         c_writer.println
       endBlock
 
+      c_writer = update_c_writer( c_writer )
+
       c_writer.println "%Ns%RogueInt %Ns%Rogue_base_types[$] =" (Program.base_type_lookup.count)
       c_writer.println "{"
       c_writer.indent += 2
@@ -2202,11 +2237,18 @@ augment
       c_writer.println "};"
       c_writer.println
 
-      (forEach in modules).generate_c_code( c_writer )
+      c_writer = update_c_writer( c_writer )
+
+      forEach (mod in modules)
+        mod.generate_c_code( c_writer )
+        c_writer = update_c_writer( c_writer )
+      endForEach
 
       local cgen = CGenerator( c_writer )
       forEach (group in Program.dynamic_methods)
         if (not group.is_used) nextIteration
+        c_writer = update_c_writer( c_writer )
+
         local methods = group.methods
         if (methods.count == 1 and not methods.first.attributes.is_placeholder) nextIteration
         write_c_dispatch_method_header( methods, c_writer )
@@ -2281,6 +2323,8 @@ augment
         c_writer.println
       endForEach
 
+      c_writer = update_c_writer( c_writer )
+
       c_writer.println "%Ns%RogueString* %Ns%Rogue_string_table[$];"(Program.unique_strings.count)
 
       forEach (str in Program.unique_strings)
@@ -2289,6 +2333,8 @@ augment
         c_writer.println " = 0;"
       endForEach
       c_writer.println
+
+      c_writer = update_c_writer( c_writer )
 
       # Rogue_clean_up()
       c_writer.println ...
@@ -2360,6 +2406,8 @@ augment
       c_writer.println ...
         @|}
          |
+
+      c_writer = update_c_writer( c_writer )
 
       c_writer.println @|
                         |void  %Ns%Rogue_collect_garbage( void )
