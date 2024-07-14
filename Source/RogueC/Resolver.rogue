@@ -2586,14 +2586,6 @@ class Resolver : Poolable, Visitor
         endIf
       endLoop
 
-      # Filter out candidates that don't have the same module context as the first candidate
-      local priority_module_context = Candidates[0].module_context
-      forEach (m in Candidates)
-        if (m.module_context is priority_module_context) Candidates.keep m
-      endForEach
-      if (Candidates.found_match) return Candidates.match
-      Candidates.refine
-
       # Prefer 'init' over 'create'
       if (Candidates.list.contains($.name == "init"))
         forEach (m in Candidates)
@@ -2705,7 +2697,7 @@ class Resolver : Poolable, Visitor
             gaps.add( gap )
           endForEach
 
-          # Prefer non-negative
+          # Prefer non-negative (widening) gap
           local smallest_gap = Best<<Int32>>( (a,b) => (a < b) )
           forEach (gap in gaps)
             if (gap and gap.value >= 0) smallest_gap.consider( gap.value )
@@ -2738,63 +2730,6 @@ class Resolver : Poolable, Visitor
         endUse
       endIf
 
-      # Prefer methods with integer args and non-real parameters
-      #if (arg_count)
-      #  forEach (m in Candidates)
-      #    if (has_named_arg) m.arrange_args( args, this )
-      #    contingent
-      #      forEach (arg at i in args)
-      #        local arg_precision = arg.type.precision_index
-      #        if (arg_precision >= Type.PRECISION_BYTE and arg_precision <= Type.PRECISION_INT64)  # Byte, Character, Int32, Int, Int64
-      #          local param_precision = m.parameters[i].type.precision_index
-      #          necessary (param_precision >= Type.PRECISION_INT32 and param_precision <= Type.PRECISION_INT64)  # Int32, Int, Int64
-      #        endIf
-      #      endForEach
-      #      Candidates.keep m
-      #    endContingent
-      #  endForEach
-      #  if (Candidates.found_match) return Candidates.match
-      #  Candidates.refine
-      #endIf
-
-      # Prefer methods with primitive parameters that are higher precision than the args
-      #if (arg_count)
-      #  forEach (m in Candidates)
-      #    if (has_named_arg) m.arrange_args( args, this )
-      #    contingent
-      #      forEach (arg at i in args)
-      #        local arg_type = arg.type
-      #        if (arg_type.is_primitive)
-      #          local param_type = m.parameters[i].type
-      #          if (param_type.is_primitive)
-      #            necessary (param_type.precision_index >= arg_type.precision_index)
-      #          endIf
-      #        endIf
-      #      endForEach
-      #      Candidates.keep m
-      #    endContingent
-      #  endForEach
-      #  if (Candidates.found_match) return Candidates.match
-      #  Candidates.refine
-      #endIf
-
-      # Prefer methods with the most same-precision primitive parameters
-      #if (arg_count)
-      #  local best = Best<<Int32>>( (a,b) => a > b )
-      #  forEach (m in Candidates)
-      #    if (has_named_arg) m.arrange_args( args, this )
-      #    best.consider( same_precision_primitive_count(args, m) )
-      #  endForEach
-
-      #  local best_count = best.value
-      #  forEach (m in Candidates)
-      #    if (same_precision_primitive_count(args,m) == best_count ) Candidates.keep m
-      #  endForEach
-
-      #  if (Candidates.found_match) return Candidates.match
-      #  Candidates.refine
-      #endIf
-
       # Keep methods with the fewest maximum args. More default args usually means more options that
       # aren't being used.
       # E.g. if to->String() is ambiguous with to->String(&binary,&hex,&octal), we want the former.
@@ -2809,18 +2744,6 @@ class Resolver : Poolable, Visitor
         if (Candidates.found_match) return Candidates.match
         Candidates.refine
       endBlock
-
-      # Prefer extended class methods over base class methods
-      forEach (m in Candidates)
-        contingent
-          forEach (m2 in Candidates)
-            sufficient (m2.type_context.instance_of(m.type_context) and not m.type_context.instance_of(m2.type_context))
-          endForEach
-          Candidates.keep m
-        endContingent
-      endForEach
-      if (Candidates.found_match) return Candidates.match
-      Candidates.refine
 
       if (arg_count == 1)
         # Prefer methods with single Variant parameter; the arg will be to->Variant'd
