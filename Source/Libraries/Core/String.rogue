@@ -965,6 +965,9 @@ class String : Poolable PrintWriter
         endIf
       endIf
 
+    method print( value:Int )
+      value.print_to( this )
+
     method print( value:Int32 )
       value.print_to( this )
 
@@ -1064,6 +1067,10 @@ class String : Poolable PrintWriter
       print '\n'
 
     method println( value:Character )
+      print value
+      print '\n'
+
+    method println( value:Int )
       print value
       print '\n'
 
