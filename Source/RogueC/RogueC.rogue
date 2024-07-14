@@ -137,6 +137,14 @@ class RogueC
         if (Program.namespace_uc.count) Program.namespace_uc .= with_suffix( '_' )
       endIf
 
+      if local split = command//options//split
+        if (split.is_string)
+          Program.split_line_count = split->String.replacing(",","").replacing("_","")->Int
+        else
+          Program.split_line_count = 50_000
+        endIf
+      endIf
+
       local api_includes = command//options//api.contains(true)
       if (api_includes)
         Scanner.uses_Introspection = true
@@ -249,6 +257,7 @@ class RogueC
         option( "--namespace=", &alias="-n" )
         option( "--output=" )
         option( "--real=", &alias="-r" )
+        option( "--split=", &alias="-s", &optional )
         option( "--target=", &alias="-t", &multi )
         option( "--version", &alias="-v" )
       ].parse( args )
@@ -431,6 +440,13 @@ class RogueC
                |  --real=32, -r 32
                |    Specifies that the 'Real' datatype should be 32 bits instead of 64.
                |    This affects the type of floating point literals (2.54, pi) as well.
+               |
+               |  --split, --split=<line-count>, -s <line-count>
+               |    Splits the generated .c/.cpp/.m/.mm into multiple files, each with
+               |    approximately <line-count> lines. If '--split' is specified, the default
+               |    line-count is 50,000. Monolithic source files 100k+ lines take
+               |    exponentially longer to compile with optimizations than multiple smaller
+               |    files. The output filenames are 'filename-1', 'filename-2', etc.
                |
                |  --target=Target1,"Target2",..., -t Target
                |    Specify arbitrary target languages, platforms, operating systems,
