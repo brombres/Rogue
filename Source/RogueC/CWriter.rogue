@@ -579,9 +579,6 @@ class CWriter : BufferedPrintWriter
       endIf
       prior.close
 
-    method print( value:Int ) [override]
-      prior.print( value )
-
     method print( value:Character ) [override]
       prior.print( value )
       if (value == '\n')
@@ -592,12 +589,20 @@ class CWriter : BufferedPrintWriter
       prior.println
       ++line_count
 
+    method print( obj:Object ) [override]
+      if (obj) print( obj->String )
+      else     print( "null" )
+
     method print( text:String ) [override]
       text .= replacing( "%ns%", Program.namespace_lc )
       text .= replacing( "%Ns%", Program.namespace_capitalized )
       text .= replacing( "%NS%", Program.namespace_uc )
       line_count += text.count('\n')
       prior.print( text )
+
+    method println( obj:Object ) [override]
+      print( obj )
+      println
 
     method println( text:String ) [override]
       print( text )
