@@ -12,9 +12,10 @@ class PrintWriter [abstract aspect]
     method indent->Int                                   [abstract]
     method print( value:Byte )                           [abstract]
     method print( value:Character )                      [abstract]
+    method print( value:Int )                            [abstract]
     method print( value:Int32 )                          [abstract]
-    method print( value:Logical )                        [abstract]
     method print( value:Int64 )                          [abstract]
+    method print( value:Logical )                        [abstract]
     method print( value:Object )                         [abstract]
     method print( value:Real64 )                         [abstract]
     method print( value:Real64, decimal_places:Int32 )   [abstract]
@@ -22,9 +23,10 @@ class PrintWriter [abstract aspect]
     method println                                       [abstract]
     method println( value:Byte )                         [abstract]
     method println( value:Character )                    [abstract]
+    method println( value:Int )                          [abstract]
     method println( value:Int32 )                        [abstract]
-    method println( value:Logical )                      [abstract]
     method println( value:Int64 )                        [abstract]
+    method println( value:Logical )                      [abstract]
     method println( value:Real64 )                       [abstract]
     method println( value:Real64, decimal_places:Int32 ) [abstract]
     method println( value:Object )                       [abstract]
@@ -55,6 +57,9 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [abstract aspect]
     method print( value:Character )
       $buffer.print( value )
       if (value == '\n') flush
+
+    method print( value:Int )
+      $buffer.print( value )
 
     method print( value:Int32 )
       $buffer.print( value )
@@ -87,6 +92,10 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [abstract aspect]
       println
 
     method println( value:Character )
+      print( value )
+      println
+
+    method println( value:Int )
       print( value )
       println
 
