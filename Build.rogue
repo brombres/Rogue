@@ -353,8 +353,6 @@ routine rogo_compile_rogue
 endRoutine
 
 routine rogo_compile_c
-  local c_filepath = File( "Build/$-$" (Build.PROJECT,System.os) ).esc
-
   local c_filename   = "$-$" (Build.PROJECT,System.os)
   local c_files = Files( "Build/$-*.c"(c_filename) )->String[].map<<String>>( File($1).esc ).join(' ')
 
