@@ -33,20 +33,27 @@ endRoutine
 
 routine rogo_update_bootstrap
   rogo_build
+
+  local existing = Files("Source/RogueC/Bootstrap")
+  existing.add( "*.h" )
+  existing.add( "*.c" )
+  existing.delete( &verbose )
+
   copy_bootstrap_file( "h" )
   copy_bootstrap_file( "c" )
 endRoutine
 
 routine copy_bootstrap_file( ext:String )
-  forEach (filepath in Files("Build/RogueC-$$*.$"(System.os,which{ext=="h":""||"-"},ext)))
+  forEach (filepath in Files("Build/RogueC-$*.$"(System.os,ext)))
     println "> copy $ Source/RogueC/Bootstrap/$"(filepath,File(filepath).filename)
     local content = String(File(filepath))
     content .= replacing( "RogueC-$"(System.os), "RogueC" )
     if (ext == "h" )
       File("Source/RogueC/Bootstrap/RogueC.$"(ext)).save( content )
     else
-      local index = filepath.extract_string("*RogueC-$-$(I).c"(System.os,'$'))
-      File("Source/RogueC/Bootstrap/RogueC-$.$"(index,ext)).save( content )
+      local dest_filepath = "Source/RogueC/Bootstrap"/File(filepath).filename
+      dest_filepath .= replacing( "RogueC-$"(System.os), "RogueC" )
+      File(dest_filepath).save( content )
     endIf
   endForEach
 endRoutine
@@ -340,12 +347,12 @@ routine rogo_compile_rogue
 
   local existing = Files( "Build" )
   existing.add( "$.h"(c_filename) )
-  existing.add( "$-*.c"(c_filename) )
+  existing.add( "$*.c"(c_filename) )
   existing.delete
 
   local flags = Build.ROGUEC_FLAGS
   if (Build.BUILD_MODE == "debug") flags = flags.appending("--debug")
-  local cmd = "roguec $ $ --target=Console,C,$ --output=$ --split"...
+  local cmd = "roguec $ $ --target=Console,C,$ --output=$"...
               (File(src_filepath).esc,flags,System.os,File(c_filepath).esc)
   println "> " + cmd
   local error = System.run( cmd )
@@ -354,7 +361,7 @@ endRoutine
 
 routine rogo_compile_c
   local c_filename   = "$-$" (Build.PROJECT,System.os)
-  local c_files = Files( "Build/$-*.c"(c_filename) )->String[].map<<String>>( File($1).esc ).join(' ')
+  local c_files = Files( "Build/$*.c"(c_filename) )->String[].map<<String>>( File($1).esc ).join(' ')
 
   local exe_filepath = exe_file.esc
   if (System.is_windows)

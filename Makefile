@@ -23,17 +23,7 @@ endif
 
 ABS_BUILD_FOLDER = `(cd $(BUILD_FOLDER) && pwd)`
 BUILD_EXE  = RogueC-$(PLATFORM)
-C_SRC      = Source/RogueC/Bootstrap/RogueC-1.c \
-             Source/RogueC/Bootstrap/RogueC-2.c \
-             Source/RogueC/Bootstrap/RogueC-3.c \
-             Source/RogueC/Bootstrap/RogueC-4.c \
-             Source/RogueC/Bootstrap/RogueC-5.c \
-             Source/RogueC/Bootstrap/RogueC-6.c \
-             Source/RogueC/Bootstrap/RogueC-7.c \
-             Source/RogueC/Bootstrap/RogueC-8.c \
-             Source/RogueC/Bootstrap/RogueC-9.c \
-             Source/RogueC/Bootstrap/RogueC-10.c \
-             Source/RogueC/Bootstrap/RogueC-11.c
+C_SRC      = Source/RogueC/Bootstrap/RogueC.c
 H_SRC      = Source/RogueC/Bootstrap/RogueC.h
 
 all: link
