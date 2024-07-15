@@ -93,8 +93,8 @@ routine rogo_build
 
   local source_files = Files( "Source/RogueC", "**/*.rogue" )
   if (source_files.any_newer_than(exe_file))
-    local c_filepath = "Build/$-$.c" (Build.PROJECT,System.os)
-    if (source_files.any_newer_than(c_filepath))
+    local h_filepath = "Build/$-$.h" (Build.PROJECT,System.os)
+    if (source_files.any_newer_than(h_filepath))
       rogo_compile_rogue
     endIf
     rogo_compile_c
@@ -353,8 +353,6 @@ routine rogo_compile_rogue
 endRoutine
 
 routine rogo_compile_c
-  local c_filepath = File( "Build/$-$" (Build.PROJECT,System.os) ).esc
-
   local c_filename   = "$-$" (Build.PROJECT,System.os)
   local c_files = Files( "Build/$-*.c"(c_filename) )->String[].map<<String>>( File($1).esc ).join(' ')
 
