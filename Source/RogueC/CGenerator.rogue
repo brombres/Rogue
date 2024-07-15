@@ -1825,7 +1825,7 @@ augment
 
     method Program.update_c_writer( c_writer:CWriter )->CWriter
       if local threshold = Program.split_line_count
-        if (threshold >= c_writer.line_count)
+        if (c_writer.line_count >= threshold)
           c_writer.close
           return create_c_writer
         endIf
