@@ -23,11 +23,12 @@ if (System.is_windows and File("Build/roguec.exe.old").exists)
 endIf
 
 routine rogo_bootstrap
-  execute @|cc -O3 -Wall -fno-strict-aliasing Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS -lm
+  local files = Files("Source/RogueC/Bootstrap/RogueC-*.c")
+  local c_files = files->String[].map<<String>>( File($1).esc ).join(' ')
+  execute "cc -O3 -Wall -fno-strict-aliasing $ -o Build/RogueC-macOS -lm"(c_files)
 endRoutine
 
 routine rogo_bootstrap_debug
-  execute @|cc -O0 -Wall -fno-strict-aliasing Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS -lm
 endRoutine
 
 routine rogo_update_bootstrap
@@ -37,10 +38,17 @@ routine rogo_update_bootstrap
 endRoutine
 
 routine copy_bootstrap_file( ext:String )
-  println "> copy Build/RogueC-$.$ Source/RogueC/Bootstrap/RogueC.$"(System.os,ext,ext)
-  local content = String(File("Build/RogueC-$.$"(System.os,ext)))
-  content .= replacing( "RogueC-$"(System.os), "RogueC" )
-  File("Source/RogueC/Bootstrap/RogueC.$"(ext)).save( content )
+  forEach (filepath in Files("Build/RogueC-$$*.$"(System.os,which{ext=="h":""||"-"},ext)))
+    println "> copy $ Source/RogueC/Bootstrap/$"(filepath,File(filepath).filename)
+    local content = String(File(filepath))
+    content .= replacing( "RogueC-$"(System.os), "RogueC" )
+    if (ext == "h" )
+      File("Source/RogueC/Bootstrap/RogueC.$"(ext)).save( content )
+    else
+      local index = filepath.extract_string("*RogueC-$-$(I).c"(System.os,'$'))
+      File("Source/RogueC/Bootstrap/RogueC-$.$"(index,ext)).save( content )
+    endIf
+  endForEach
 endRoutine
 
 
@@ -327,10 +335,17 @@ endRoutine
 routine rogo_compile_rogue
   rogo_libs
   local src_filepath = "Source/RogueC/$.rogue" (Build.PROJECT)
-  local c_filepath = "Build/$-$" (Build.PROJECT,System.os)
+  local c_filename   = "$-$" (Build.PROJECT,System.os)
+  local c_filepath   = "Build"/c_filename
+
+  local existing = Files( "Build" )
+  existing.add( "$.h"(c_filename) )
+  existing.add( "$-*.c"(c_filename) )
+  existing.delete
+
   local flags = Build.ROGUEC_FLAGS
   if (Build.BUILD_MODE == "debug") flags = flags.appending("--debug")
-  local cmd = "roguec $ $ --target=Console,C,$ --output=$"...
+  local cmd = "roguec $ $ --target=Console,C,$ --output=$ --split"...
               (File(src_filepath).esc,flags,System.os,File(c_filepath).esc)
   println "> " + cmd
   local error = System.run( cmd )
@@ -339,13 +354,17 @@ endRoutine
 
 routine rogo_compile_c
   local c_filepath = File( "Build/$-$" (Build.PROJECT,System.os) ).esc
+
+  local c_filename   = "$-$" (Build.PROJECT,System.os)
+  local c_files = Files( "Build/$-*.c"(c_filename) )->String[].map<<String>>( File($1).esc ).join(' ')
+
   local exe_filepath = exe_file.esc
   if (System.is_windows)
     local flags = Build.CC_FLAGS_WINDOWS
     if (flags != "") flags += " "
     flags += which{ Build.BUILD_MODE=="release":"/O2 /bigobj" || "/Od" }
     local obj_filepath = File( "Build/$-Windows.obj"(Build.PROJECT) ).esc
-    local cc = "cl $ /nologo $.c /Fo$ /Fe$.new" (flags,c_filepath,obj_filepath,exe_filepath)
+    local cc = "cl $ /nologo $.c /Fo$ /Fe$.new" (flags,c_files,obj_filepath,exe_filepath)
     cc .= appending( "$LIBRARY_FLAGS" )
 
     execute cc
@@ -356,7 +375,7 @@ routine rogo_compile_c
     local flags = Build.CC_FLAGS_UNIX
     if (flags != "") flags += " "
     flags += which{ Build.BUILD_MODE=="release":"-O3" || "-O0" }
-    local cc = "cc $ -Wall -fno-strict-aliasing $.c -o $ -lm" (flags,File(c_filepath).esc,exe_file.esc)
+    local cc = "cc $ -Wall -fno-strict-aliasing $ -o $ -lm" (flags,c_files,exe_file.esc)
     cc .= appending( "$LIBRARY_FLAGS" )
     execute cc
   endIf

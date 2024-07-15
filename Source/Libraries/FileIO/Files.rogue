@@ -103,7 +103,7 @@ class Files
 
     method delete( &verbose, &dry_run )
       forEach (filepath in filepath_set.values)
-        if (verbose) print "Deleting " + filepath
+        if (verbose) println "Deleting " + filepath
         if (not dry_run) File( filepath ).delete
       endForEach
 
