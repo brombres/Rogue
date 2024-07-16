@@ -103,6 +103,9 @@ class System [essential]
       if (System.is_windows) return System.env//HOMEDRIVE + System.env//HOMEPATH
       else                   return System.env//HOME
 
+    method int_bits->Int
+      return INT_BITS
+
     method is_android->Logical
       native @|#if defined(%NS%ROGUE_PLATFORM_ANDROID)
                  return 1
@@ -201,6 +204,9 @@ class System [essential]
       result = "Linux"
       native @|#endif
       return result
+
+    method real_bits->Int
+      return REAL_BITS
 
     method request_gc
       native @|%Ns%Rogue_request_gc();
