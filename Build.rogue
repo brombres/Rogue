@@ -117,9 +117,9 @@ routine rogo_froley
   execute "froley --project=RogueC $ Source/$"(froley_src.esc,Build.PROJECT)
 endRoutine
 
-routine rogo_build_debug
+routine rogo_build_debug( &call_stack )
   # Force-rebuilds in debug mode.
-  rogo_rebuild_debug
+  rogo_rebuild_debug( &=call_stack )
 endRoutine
 
 routine rogo_build_release
@@ -134,9 +134,10 @@ routine rogo_rebuild( &split )
   rogo_compile_c
 endRoutine
 
-routine rogo_rebuild_debug
+routine rogo_rebuild_debug( &call_stack )
   # Force-rebuilds in debug mode.
   Build.BUILD_MODE = "debug"
+  if (call_stack) Build.ROGUEC_FLAGS .= appending( "--debug" )
   rogo_rebuild
 endRoutine
 

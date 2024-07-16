@@ -2852,13 +2852,22 @@ class Resolver : Poolable, Visitor
 
     method arg_type_is_compatible( arg:Cmd, param_type:Type, &allow_conversions, &exact_logical, &limit_conversions )->Logical
       local arg_type = arg.require_type
-
       if (arg_type is param_type) return true
 
       if (arg_type is Program.type_GenericFn)
         if (param_type not instanceOf FunctionType) return false
-        block arg=arg->(as GenericFunctionDefinition), param_type=param_type->(as FunctionType)
-          return arg.parameters.count == param_type.param_types.count
+        local def = arg->(as GenericFunctionDefinition)
+        contingent
+          sufficient (def)
+          local named_arg = arg->(as NamedArg)
+          if (named_arg)
+            def = named_arg.value->(as GenericFunctionDefinition)
+            sufficient (def)
+          endIf
+          throw arg.t.error( "[INTERNAL] Cannot resolve generic function definition ($)."(%arg) )
+        endContingent
+        block param_type=param_type->(as FunctionType)
+          return def.parameters.count == param_type.param_types.count
         endBlock
       endIf
 
