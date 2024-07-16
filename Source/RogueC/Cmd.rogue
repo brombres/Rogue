@@ -2517,6 +2517,7 @@ class ContextDirectAccess : Cmd
 
   METHODS
     method init( t, context, name )
+      if (name.begins_with('.')) name = '_' + name.unleft(1)
 
     method init( existing:ContextDirectAccess )
       prior.init( existing )
@@ -2534,6 +2535,7 @@ class DirectAccess : Cmd
 
   METHODS
     method init( t, name )
+      if (name.begins_with('.')) name = '_' + name.unleft(1)
 
     method init( existing:DirectAccess )
       prior.init( existing )

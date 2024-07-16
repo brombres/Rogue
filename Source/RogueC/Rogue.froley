@@ -823,7 +823,7 @@ parser
   consume_eols
   on '&' identifier optional_parameter_initial_value optional_type -> Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type,attribute="default":String)
   on '@'
-    identifier
+    internal_id
     optional_parameter_initial_value
     if (nextIs(':')) syntaxError "Direct @property-set parameter cannot specify a type."
     createNull # type
@@ -1104,6 +1104,10 @@ parser
     identifier
     create ModuleQualifiedID(context,name:String)
     discardPosition
+  elseOn '.'
+    restorePosition
+    internal_id
+    return
   elseOnOthers
     restorePosition
     identifier
@@ -1111,8 +1115,14 @@ parser
 
   while nextIs("::")
     on "::"
-      identifier
-      create ModuleQualifiedID(context,name:String)
+      if (nextIs('.'))
+        internal_id
+        create ModuleQualifiedID(context,name:String)
+        return
+      else
+        identifier
+        create ModuleQualifiedID(context,name:String)
+      endIf
     endOn
   endWhile
 
@@ -1899,6 +1909,15 @@ parser
   call parse_doc_comment
   produce PropertyDeclarations( declarations, type:Type, attributes:Attributes, doc:String )
 
+- internal_id
+  on '.'
+    create Identifier( name="." )
+    identifier
+    call join_identifiers
+  elseOnOthers
+    identifier
+  endOn
+
 - property_declaration
   on IDENTIFIER
     optional_initial_value
@@ -2248,7 +2267,7 @@ parser
     consume_eols
     create AccessAndAssignContext(context)
     on '@'
-      identifier
+      internal_id
       create ContextDirectAccess(context,name:String)
     elseOnOthers
       procedure_name
@@ -2867,7 +2886,7 @@ parser
 
 - member_access
   on '@'
-    identifier
+    internal_id
     create ContextDirectAccess(context,name:String)
   elseOnOthers
     procedure_name
