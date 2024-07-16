@@ -127,10 +127,10 @@ routine rogo_build_release
   rogo_rebuild_release
 endRoutine
 
-routine rogo_rebuild
+routine rogo_rebuild( &split )
   # Force-rebuilds project.
   rogo_froley
-  rogo_compile_rogue
+  rogo_compile_rogue( &=split )
   rogo_compile_c
 endRoutine
 
@@ -339,7 +339,7 @@ routine rogo_publish( new_version:String )
   rogo_update_wiki
 endRoutine
 
-routine rogo_compile_rogue
+routine rogo_compile_rogue( &split )
   rogo_libs
   local src_filepath = "Source/RogueC/$.rogue" (Build.PROJECT)
   local c_filename   = "$-$" (Build.PROJECT,System.os)
@@ -351,7 +351,8 @@ routine rogo_compile_rogue
   existing.delete
 
   local flags = Build.ROGUEC_FLAGS
-  if (Build.BUILD_MODE == "debug") flags = flags.appending("--debug")
+  #if (Build.BUILD_MODE == "debug") flags .= appending("--debug")
+  if (split) flags .= appending( "--split" )
   local cmd = "roguec $ $ --target=Console,C,$ --output=$"...
               (File(src_filepath).esc,flags,System.os,File(c_filepath).esc)
   println "> " + cmd
