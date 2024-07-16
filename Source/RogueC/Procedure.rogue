@@ -53,7 +53,14 @@ class Procedure : Cmd
         attributes.is_internal_id = true
       endIf
 
-      if (not parameters) parameters = Parameters(t)
+      if (parameters)
+        forEach (param in parameters)
+          if (param.name.begins_with('.')) param.name = '_' + param.name.unleft(1)
+        endForEach
+      else
+        parameters = Parameters(t)
+      endIf
+
       if (not attributes) attributes = Attributes( t )
       if (not body)       body = LocalScope(t)
       statements = body.statements
