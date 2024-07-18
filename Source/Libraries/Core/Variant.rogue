@@ -9,8 +9,9 @@ $include Graphics/Color
 
 class Variant [compound]
   DEFINITIONS
-    # Internal use.
     TYPE_UNDEFINED =  0
+
+    # Numbers
     TYPE_BYTE      =  1
     TYPE_CHARACTER =  2
     TYPE_INT32     =  3
@@ -20,25 +21,31 @@ class Variant [compound]
     TYPE_REAL32    =  7
     TYPE_REAL      =  8
     TYPE_REAL64    =  9
-    TYPE_FIRST_NUMBER = TYPE_BYTE
-    TYPE_LAST_NUMBER  = TYPE_RADIANS
     TYPE_DEGREES   = 10
     TYPE_RADIANS   = 11
-    TYPE_LOGICAL   = 12
-    TYPE_NULL      = 13
-    TYPE_ANCHOR    = 14
-    TYPE_XY        = 15
-    TYPE_XYZ       = 16
-    TYPE_XYZW      = 17
-    TYPE_LINE      = 18
-    TYPE_CIRCLE    = 19
-    TYPE_TRIANGLE  = 20
+    TYPE_FIRST_NUMBER = TYPE_BYTE
+    TYPE_LAST_NUMBER  = TYPE_RADIANS
+
+    # Compounds and non-numeric primitives
+    TYPE_ANCHOR    = 20
     TYPE_BOX       = 21
-    TYPE_QUAD32    = 22
-    TYPE_OBJECT    = 23  # All reference types should be >= TYPE_OBJECT
-    TYPE_STRING    = 24
-    TYPE_LIST      = 25
-    TYPE_TABLE     = 26
+    TYPE_CIRCLE    = 22
+    TYPE_LINE      = 23
+    TYPE_LOGICAL   = 24
+    TYPE_QUAD32    = 25
+    TYPE_TRIANGLE  = 26
+    TYPE_XY        = 27
+    TYPE_XYZ       = 28
+    TYPE_XYZW      = 29
+
+    # Object-adjacent
+    TYPE_NULL      = 30
+
+    # Object types
+    TYPE_OBJECT    = 40
+    TYPE_STRING    = 41
+    TYPE_LIST      = 42
+    TYPE_TABLE     = 43
 
   NATIVE
     nativeHeader
@@ -54,21 +61,24 @@ class Variant [compound]
        |#define %NS%ROGUE_VARIANT_TYPE_REAL64     9
        |#define %NS%ROGUE_VARIANT_TYPE_DEGREES   10
        |#define %NS%ROGUE_VARIANT_TYPE_RADIANS   11
-       |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL   12
-       |#define %NS%ROGUE_VARIANT_TYPE_NULL      13
-       |#define %NS%ROGUE_VARIANT_TYPE_ANCHOR    14
-       |#define %NS%ROGUE_VARIANT_TYPE_XY        15
-       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       16
-       |#define %NS%ROGUE_VARIANT_TYPE_XYZW      17
-       |#define %NS%ROGUE_VARIANT_TYPE_LINE      18
-       |#define %NS%ROGUE_VARIANT_TYPE_CIRCLE    19
-       |#define %NS%ROGUE_VARIANT_TYPE_TRIANGLE  20
+       |
+       |#define %NS%ROGUE_VARIANT_TYPE_ANCHOR    20
        |#define %NS%ROGUE_VARIANT_TYPE_BOX       21
-       |#define %NS%ROGUE_VARIANT_TYPE_QUAD32    22
-       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    23
-       |#define %NS%ROGUE_VARIANT_TYPE_STRING    24
-       |#define %NS%ROGUE_VARIANT_TYPE_LIST      25
-       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     26
+       |#define %NS%ROGUE_VARIANT_TYPE_CIRCLE    22
+       |#define %NS%ROGUE_VARIANT_TYPE_LINE      23
+       |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL   24
+       |#define %NS%ROGUE_VARIANT_TYPE_QUAD32    25
+       |#define %NS%ROGUE_VARIANT_TYPE_TRIANGLE  26
+       |#define %NS%ROGUE_VARIANT_TYPE_XY        27
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       28
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZW      29
+       |
+       |#define %NS%ROGUE_VARIANT_TYPE_NULL      30
+       |
+       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    40
+       |#define %NS%ROGUE_VARIANT_TYPE_STRING    41
+       |#define %NS%ROGUE_VARIANT_TYPE_LIST      42
+       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     43
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
