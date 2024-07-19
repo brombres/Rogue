@@ -44,8 +44,11 @@ class Variant [compound]
     # Object types
     TYPE_OBJECT    = 40
     TYPE_STRING    = 41
-    TYPE_LIST      = 42
-    TYPE_TABLE     = 43
+    TYPE_FILE      = 42
+    TYPE_FIRST_STRINGLIKE = 41
+    TYPE_LAST_STRINGLIKE  = 42
+    TYPE_LIST      = 50
+    TYPE_TABLE     = 51
 
   NATIVE
     nativeHeader
@@ -77,8 +80,9 @@ class Variant [compound]
        |
        |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    40
        |#define %NS%ROGUE_VARIANT_TYPE_STRING    41
-       |#define %NS%ROGUE_VARIANT_TYPE_LIST      42
-       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     43
+       |#define %NS%ROGUE_VARIANT_TYPE_FILE      42
+       |#define %NS%ROGUE_VARIANT_TYPE_LIST      50
+       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     51
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -149,6 +153,9 @@ class Variant [compound]
 
     method create( value:Degrees )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_DEGREES, 0, {.degrees=$value} }" )->Variant
+
+    method create( value:File )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_FILE, (%Ns%RogueObject*)$value.filepath }" )->Variant
 
     method create( value:Int32 )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_INT32, 0, {.int32=$value} }" )->Variant
@@ -252,12 +259,12 @@ class Variant [compound]
       # If this value .is_string, returns the backing String; otherwise returns null.
       #
       #   Variant     | ->String  |  .as_string
-      #   ----------|-----------|------------
-      #   null      | "null"    | null
-      #   undefined | ""        | null
-      #   "ABC"     | "ABC"     | ABC
-      #   [3,4]     | "[3,4]"   | null
-      #   {x:22}    | "{x:22}"  | null
+      #   ------------|-----------|------------
+      #   null        | "null"    | null
+      #   undefined   | ""        | null
+      #   "ABC"       | "ABC"     | ABC
+      #   [3,4]       | "[3,4]"   | null
+      #   {x:22}      | "{x:22}"  | null
       if (type != TYPE_STRING) return null
       return object->(as String)
 
@@ -273,7 +280,7 @@ class Variant [compound]
           if (index < 0 or index >= list.count) return undefined
           return list[index]
 
-        case TYPE_STRING
+        case TYPE_STRING, TYPE_FILE
           local st = object->(as String)
           if (index < 0 or index >= st.count) return undefined
           return st[index]
@@ -298,11 +305,11 @@ class Variant [compound]
 
     method contains( value:Variant )->Logical
       which (type)
-        case TYPE_STRING
+        case TYPE_STRING, TYPE_FILE
           which (value.type)
-            case TYPE_CHARACTER: return object->(as String).contains( value.character )
-            case TYPE_STRING:    return object->(as String).contains( value.object->(as String) )
-            others:              return false
+            case TYPE_CHARACTER:         return object->(as String).contains( value.character )
+            case TYPE_STRING, TYPE_FILE: return object->(as String).contains( value.object->(as String) )
+            others:                      return false
           endWhich
         case TYPE_LIST
           return object->(as Variant[]).contains( value )
@@ -314,7 +321,7 @@ class Variant [compound]
 
     method count->Int
       which (type)
-        case TYPE_STRING
+        case TYPE_STRING, TYPE_FILE
           return object->(as String).count
         case TYPE_LIST
           return object->(as Variant[]).count
@@ -357,7 +364,7 @@ class Variant [compound]
           if (list.count == 0) return undefined
           return list[0]
 
-        case TYPE_STRING
+        case TYPE_STRING, TYPE_FILE
           local st = object->(as String)
           if (st.count == 0) return undefined
           return st[0]
@@ -425,6 +432,7 @@ class Variant [compound]
         case TYPE_STRING:    return object->(as String).hashcode
         case TYPE_LIST:      return object->(as Variant[]).hashcode
         case TYPE_TABLE:     return object->(as [Variant:Variant]).hashcode
+        case TYPE_FILE:      return object->(as String).hashcode
         others:
           Global.error.print( "[Variant.hashcode()] Undefined type $"(type) )
           return 0
@@ -438,7 +446,7 @@ class Variant [compound]
 
     method is_collection->Logical
       which (type)
-        case TYPE_STRING, TYPE_LIST, TYPE_TABLE
+        case TYPE_STRING, TYPE_LIST, TYPE_TABLE, TYPE_FILE
           return true
         others
           return false
@@ -467,6 +475,9 @@ class Variant [compound]
 
     method is_empty->Logical
       return (count == 0)
+
+    method is_file->Logical
+      return (type == TYPE_FILE)
 
     method is_geometry->Logical
       return (type >= TYPE_ANCHOR and type <= TYPE_XYZW)
@@ -548,7 +559,7 @@ class Variant [compound]
           if (list.count == 0) return undefined
           return list[list.count-1]
 
-        case TYPE_STRING
+        case TYPE_STRING, TYPE_FILE
           local st = object->(as String)
           if (st.count == 0) return undefined
           return st[st.count-1]
@@ -570,11 +581,11 @@ class Variant [compound]
 
     method locate( value:Variant, i1=null:Int? )->Int?
       which (type)
-        case TYPE_STRING
+        case TYPE_STRING, TYPE_FILE
           which (value.type)
-            case TYPE_CHARACTER: return object->(as String).locate( value.character, i1 )
-            case TYPE_STRING:    return object->(as String).locate( value.object->(as String), i1 )
-            others:              return null
+            case TYPE_CHARACTER:         return object->(as String).locate( value.character, i1 )
+            case TYPE_STRING, TYPE_FILE: return object->(as String).locate( value.object->(as String), i1 )
+            others:                      return null
           endWhich
         case TYPE_LIST
           return object->(as Variant[]).locate( value, i1 )
@@ -584,11 +595,11 @@ class Variant [compound]
 
     method locate_last( value:Variant, i1=null:Int? )->Int?
       which (type)
-        case TYPE_STRING
+        case TYPE_STRING, TYPE_FILE
           which (value.type)
-            case TYPE_CHARACTER: return object->(as String).locate_last( value.character, i1 )
-            case TYPE_STRING:    return object->(as String).locate_last( value.object->(as String), i1 )
-            others:              return null
+            case TYPE_CHARACTER:         return object->(as String).locate_last( value.character, i1 )
+            case TYPE_STRING, TYPE_FILE: return object->(as String).locate_last( value.object->(as String), i1 )
+            others:                      return null
           endWhich
         case TYPE_LIST
           return object->(as Variant[]).locate_last( value, i1 )
@@ -612,6 +623,11 @@ class Variant [compound]
         if (type == TYPE_REAL   or other.type == TYPE_REAL)   return (real   <> other.real  ).sign
         if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (real32 <> other.real32).sign
         return (int64 <> other.int64).sign
+      endIf
+
+      if (type >= TYPE_FIRST_STRINGLIKE and type <= TYPE_LAST_STRINGLIKE and
+          other.type >= TYPE_FIRST_STRINGLIKE and other.type <= TYPE_LAST_STRINGLIKE)
+        return object->(as String) <> other.object->(as String)
       endIf
 
       if (type != other.type) return type <> other.type
@@ -640,7 +656,7 @@ class Variant [compound]
         case TYPE_OBJECT
           if (object == other.object) return 0
           return object.object_id <> other.object.object_id
-        case TYPE_STRING
+        case TYPE_STRING, TYPE_FILE
           return object->(as String) <> other.object->(as String)
         case TYPE_LIST
           if (object->(as Variant[]) == other.object->(as Variant[])) return 0
@@ -691,6 +707,7 @@ class Variant [compound]
         case TYPE_XYZ:       return Variant( a.xyz       + b.xyz )
         case TYPE_XYZW:      return Variant( a.xyzw      + b.xyzw )
         case TYPE_STRING:    return Variant( a->String   + b->String )
+        case TYPE_FILE:      return Variant( File(a->String + b->String) )
         others
           return undefined
       endWhich
@@ -717,8 +734,14 @@ class Variant [compound]
       endWhich
 
     method operator*( other:Variant )->Variant
-      if (this.type == TYPE_STRING and other.is_number) return Variant( this->String * other->Int )
-      if (this.is_number and other.type == TYPE_STRING) return Variant( other->String * this->Int )
+      if (other.is_number)
+        if (this.type == TYPE_STRING) return Variant( this->String * other->Int )
+        if (this.type == TYPE_FILE)   return Variant( File(this->String * other->Int) )
+      endIf
+      if (this.is_number)
+        if (other.type == TYPE_STRING) return Variant( other->String * this->Int )
+        if (other.type == TYPE_FILE)   return Variant( File(other->String * this->Int) )
+      endIf
 
       local (a,b) = to_compatible_values( other )
       which (a.type)
@@ -742,7 +765,14 @@ class Variant [compound]
       endWhich
 
     method operator/( other:Variant )->Variant
-      if (type == TYPE_STRING and other.type == TYPE_STRING) return Variant( this->String / other->String )
+      if (type == TYPE_STRING)
+        if (other.type == TYPE_STRING) return Variant( this->String / other->String )
+        if (other.type == TYPE_FILE)   return Variant( File(this->String / other->String) )
+      elseIf (type == TYPE_FILE)
+        if (other.type == TYPE_STRING or other.type == TYPE_FILE)
+          return Variant( File(this->String / other->String) )
+        endIf
+      endIf
 
       local (a,b) = to_compatible_values( other )
       which (a.type)
@@ -874,6 +904,7 @@ class Variant [compound]
         case TYPE_BYTE:      byte.print_to( buffer )
         case TYPE_CHARACTER: character.print_to( buffer )
         case TYPE_COLOR:     color.print_to( buffer )
+        case TYPE_FILE:      buffer.print( object->(as String) )
         case TYPE_INT32:     int32.print_to( buffer )
         case TYPE_INT:       integer.print_to( buffer )
         case TYPE_INT64:     int64.print_to( buffer )
@@ -1010,6 +1041,7 @@ class Variant [compound]
         case TYPE_RADIANS:   return radians.value->Byte
         case TYPE_OBJECT:    return (object->String->Int)?
         case TYPE_STRING:    return (object->String->Int)?
+        case TYPE_FILE:      return (object->String->Int)?
         others:              return 0
       endWhich
 
@@ -1026,7 +1058,7 @@ class Variant [compound]
         case TYPE_REAL64:    return real64->Character
         case TYPE_DEGREES:   return degrees.value->Character
         case TYPE_RADIANS:   return radians.value->Character
-        case TYPE_OBJECT, TYPE_STRING
+        case TYPE_OBJECT, TYPE_STRING, TYPE_FILE
           local st = object->String
           if (st and st.count) return st[0]
           else                 return 0
@@ -1062,8 +1094,12 @@ class Variant [compound]
         case TYPE_REAL64:    return Degrees(real64->Real)
         case TYPE_OBJECT:    return Degrees(object->String->Real)
         case TYPE_STRING:    return Degrees(object->String->Real)
+        case TYPE_FILE:      return Degrees(object->String->Real)
         others:              return Degrees(0)
       endWhich
+
+    method to->File
+      return File( this->String )
 
     method to->Line
       which (type)
@@ -1095,6 +1131,7 @@ class Variant [compound]
         case TYPE_RADIANS:   return radians.value->Int32
         case TYPE_OBJECT:    return object->String->Int32
         case TYPE_STRING:    return object->String->Int32
+        case TYPE_FILE:      return object->String->Int32
         others:              return 0
       endWhich
 
@@ -1113,6 +1150,7 @@ class Variant [compound]
         case TYPE_RADIANS:   return radians.value->Int
         case TYPE_OBJECT:    return object->String->Int
         case TYPE_STRING:    return object->String->Int
+        case TYPE_FILE:      return object->String->Int
         others:              return 0
       endWhich
 
@@ -1131,6 +1169,7 @@ class Variant [compound]
         case TYPE_RADIANS:   return radians.value->Int64
         case TYPE_OBJECT:    return object->String->Int64
         case TYPE_STRING:    return object->String->Int64
+        case TYPE_FILE:      return object->String->Int64
         others:              return 0
       endWhich
 
@@ -1157,6 +1196,7 @@ class Variant [compound]
         case TYPE_LINE:      return line.a != line.b;
         case TYPE_OBJECT:    return true
         case TYPE_STRING:    return true
+        case TYPE_FILE:      return true
         case TYPE_LIST:      return true
         case TYPE_TABLE:     return true
         others:              return false
@@ -1164,8 +1204,8 @@ class Variant [compound]
 
     method to->Object
       which (type)
-        case TYPE_OBJECT, TYPE_STRING: return object
-        others:                        return null
+        case TYPE_OBJECT, TYPE_STRING, TYPE_FILE: return object
+        others:                                   return null
       endWhich
 
     method to->Radians
@@ -1183,6 +1223,7 @@ class Variant [compound]
         case TYPE_REAL64:    return Radians(real64->Real)
         case TYPE_OBJECT:    return Radians(object->String->Real)
         case TYPE_STRING:    return Radians(object->String->Real)
+        case TYPE_FILE:      return Radians(object->String->Real)
         others:              return Radians(0)
       endWhich
 
@@ -1201,6 +1242,7 @@ class Variant [compound]
         case TYPE_RADIANS:   return radians.value->Real32
         case TYPE_OBJECT:    return object->String->Real32
         case TYPE_STRING:    return object->String->Real32
+        case TYPE_FILE:      return object->String->Real32
         others:              return 0
       endWhich
 
@@ -1219,6 +1261,7 @@ class Variant [compound]
         case TYPE_RADIANS:   return radians.value->Real
         case TYPE_OBJECT:    return object->String->Real
         case TYPE_STRING:    return object->String->Real
+        case TYPE_FILE:      return object->String->Real
         others:              return 0
       endWhich
 
@@ -1237,6 +1280,7 @@ class Variant [compound]
         case TYPE_RADIANS:   return radians.value->Real64
         case TYPE_OBJECT:    return object->String->Real64
         case TYPE_STRING:    return object->String->Real64
+        case TYPE_FILE:      return object->String->Real64
         others:              return 0
       endWhich
 
@@ -1323,6 +1367,7 @@ class Variant [compound]
 
     method to_compatible_values( other:Variant )->(Variant,Variant)
       if (type == other.type) return (this,other)
+      if (type == TYPE_FILE or other.type == TYPE_FILE) return (Variant(this->File),Variant(other->File))
       if (type == TYPE_STRING or other.type == TYPE_STRING) return (Variant(this->String),Variant(other->String))
       if (type == TYPE_UNDEFINED or other.type == TYPE_UNDEFINED) return (undefined,undefined)
 
@@ -1416,6 +1461,8 @@ class Variant [compound]
         case TYPE_CIRCLE
           builder.[ print("[["), print(circle.position.x), print(','), print(circle.position.y) ]
           builder.[ print("],"), print(circle.radius), print("]") ]
+        case TYPE_FILE
+          write_json_string( object->(as String), builder )
         case TYPE_LINE
           builder.[ print("[["), print(line.a.x), print(','), print(line.a.y), print("],[") ]
           builder.[ print(line.b.x), print(','), print(line.b.y), print("]]") ]
