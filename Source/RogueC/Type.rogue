@@ -1084,7 +1084,7 @@ class Type : Cmd
 
       inherit_methods
 
-      if (not is_aspect)
+      if (not is_aspect and this is not Program.type_NativeProperty)
         # module_name()->String
         local m = Method( t, this, "module_name" )
         m.attributes.omit_doc = (this is not Program.type_Object)
