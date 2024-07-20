@@ -10,19 +10,19 @@
 
 class Time( total_ms:Int64 ) [compound]
   GLOBAL METHODS
-    method create( hour:Int32, minute:Int32, second=0:Int32, millisecond=0:Int32 )->Time
+    method create( hour:Int, minute:Int, second=0:Int, millisecond=0:Int )->Time
       return Time( (hour*3600 + minute*60 + second) * 1000 + millisecond )
 
     method create( text:String )->Time
       local st = text.to_lowercase
       local parts = st.before_first('.').before_first(' ').split(':')
-      local h, m, s, ms : Int32
+      local h, m, s, ms : Int
       if (parts and parts.count >= 2 and parts.count <= 4)
-        h = parts[0]->Int32
-        m = parts[1]->Int32
+        h = parts[0]->Int
+        m = parts[1]->Int
         if (parts.count >= 3)
-          s = parts[2]->Int32
-          if (parts.count == 4) ms = parts[3]->Int32
+          s = parts[2]->Int
+          if (parts.count == 4) ms = parts[3]->Int
         endIf
       else
         println( "Unsupported time format: " + text )
@@ -30,7 +30,7 @@ class Time( total_ms:Int64 ) [compound]
       endIf
       if (ms == 0)
         local ms_string = st.extract_string( "*.$(I)*" )
-        if (ms_string) ms = ms_string->Int32
+        if (ms_string) ms = ms_string->Int
       endIf
       if (st.contains("am") or st.contains("a.m."))
         if (h == 12) h = 0
@@ -46,11 +46,11 @@ class Time( total_ms:Int64 ) [compound]
       return from_timestamp( Timestamp.now )
 
   METHODS
-    method days->Int32
-      return Int32(total_ms / (24*3600000))
+    method days->Int
+      return Int(total_ms / (24*3600000))
 
-    method hour->Int32
-      return Int32(total_ms / 3600000)
+    method hour->Int
+      return Int(total_ms / 3600000)
 
     method is_am->Logical
       return hour < 12
@@ -58,14 +58,14 @@ class Time( total_ms:Int64 ) [compound]
     method is_pm->Logical
       return hour >= 12
 
-    method minute->Int32
-      return Int32(total_ms % 3600000) / 60000
+    method minute->Int
+      return Int(total_ms % 3600000) / 60000
 
-    method second->Int32
-      return Int32(total_ms % 60000) / 1000
+    method second->Int
+      return Int(total_ms % 60000) / 1000
 
-    method millisecond->Int32
-      return Int32(total_ms % 1000)
+    method millisecond->Int
+      return Int(total_ms % 1000)
 
     method operator+( other:Time )->Time
       return Time( total_ms + other.total_ms )
@@ -150,7 +150,7 @@ class Time( total_ms:Int64 ) [compound]
     method total_minutes->Real
       return total_ms / 60000.0
 
-    method _replace_hours_12( text:String, find:String, h:Int32, fmt:String )->String
+    method _replace_hours_12( text:String, find:String, h:Int, fmt:String )->String
       if (not text.contains(find)) return text
       if (h == 0)      return text.replacing( find, 12.format(fmt) )
       elseIf (h <= 12) return text.replacing( find, h.format(fmt) )
