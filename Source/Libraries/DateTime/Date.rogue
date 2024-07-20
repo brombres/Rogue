@@ -50,7 +50,7 @@
 #   2020.03.15 - Created by Brom Bresenham
 #==============================================================================
 
-class Date( year:Int32, month:Int32, day:Int32 ) [compound]
+class Date( year:Int, month:Int, day:Int ) [compound]
   # Uses algorithms from:
   #   http://www.herongyang.com/year/Program-Gregorian-Calendar-Algorithm.html
   #
@@ -85,10 +85,10 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
           date.extract_strings("$(I)/$(I)/$(I)",parts) or
           date.extract_strings("$(I)-$(I)-$(I)",parts))
         # 2018.10.27, 2018-10-27, 2018/10/27
-        local a  = parts[0]->Int32
-        local b  = parts[1]->Int32
-        local c  = parts[2]->Int32
-        local y, m, d : Int32
+        local a  = parts[0]->Int
+        local b  = parts[1]->Int
+        local c  = parts[2]->Int
+        local y, m, d : Int
         if (a >= 100)
           # YYYY-MM-DD
           y = a
@@ -113,17 +113,17 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
         # August 29 2019
         # Aug 29 2019
         local m  = month_name_to_index( parts[0]->String )
-        local d  = parts[1]->Int32
-        local y  = parts[2]->Int32
+        local d  = parts[1]->Int
+        local y  = parts[2]->Int
         return Date.ymd( y, m, d )
 
       elseIf (date.extract_strings("$(I) $, $(I)",parts) or
           date.extract_strings("$(I) $ $(I)",parts))
         # 29 August, 2019
         # 29 August 2019
-        local d  = parts[0]->Int32
+        local d  = parts[0]->Int
         local m  = month_name_to_index( parts[1]->String )
-        local y  = parts[2]->Int32
+        local y  = parts[2]->Int
         return Date.ymd( y, m, d )
 
       else
@@ -131,33 +131,33 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
         return Date.ymd(2000,1,1)
       endIf
 
-    method day_of_year( year:Int32, month:Int32, day:Int32 )->Int32
+    method day_of_year( year:Int, month:Int, day:Int )->Int
       local n = 0
       forEach (m in 1..<month) n += days_in_month( year, m )
       n += day
       return n
 
-    method days_in_month( year:Int32, month:Int32 )->Int32
+    method days_in_month( year:Int, month:Int )->Int
       local n = standard_days_in_month[ month-1 ]
       if (month==2 and is_leap_year(year)) return n + 1
       return n
 
-    method days_in_year( year:Int32 )->Int32
+    method days_in_year( year:Int )->Int
       local n = 0
       n += days_in_month( year, (forEach in 1..12) )
       return n
 
-    method is_leap_year( year:Int32 )->Logical
+    method is_leap_year( year:Int )->Logical
       if (year % 400 == 0) return true
       if (year % 100 == 0) return false
       if (year %   4 == 0) return true
       return false
 
-    method mdy( month:Int32, day:Int32, year:Int32 )->Date
+    method mdy( month:Int, day:Int, year:Int )->Date
       if (year < 100) year += (Timestamp.now->Date.year / 100) * 100
       return Date( year, month, day )
 
-    method month_name_to_index( month_name:String )->Int32
+    method month_name_to_index( month_name:String )->Int
       #January->1, December->12
       # Accepts partial month names e.g. "Jan"
       if (month_name.count >= 3)
@@ -194,7 +194,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
     method today->Date
       return Timestamp.now->Date
 
-    method ymd( year:Int32, month:Int32, day:Int32 )->Date
+    method ymd( year:Int, month:Int, day:Int )->Date
       if (year < 100) year += (Timestamp.now->Date.year / 100) * 100
       return Date( year, month, day )
 
@@ -207,7 +207,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
     standard_days_in_month = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ]
 
   METHODS
-    method day_of_week->Int32
+    method day_of_week->Int
       # Returns a value 0..6
       local d = 0                    # 0001.01.01 is Monday, so base is Sunday
       local y = year
@@ -221,20 +221,20 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
       d = d + day_of_year(y,month,day)
       return d % 7
 
-    method day_of_year->Int32
+    method day_of_year->Int
       # Returns a day 0..364/365
       local n = 0
       forEach (m in 1..<month) n += days_in_month( year, m )
       n += (day - 1)
       return n
 
-    method days_in_year->Int32
+    method days_in_year->Int
       return days_in_year( year )
 
     method day_name->String
       return day_names[ day_of_week ]
 
-    method days_in_month->Int32
+    method days_in_month->Int
       return days_in_month( year, month )
 
     method decremented->Date
@@ -267,7 +267,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
     method month_name->String
       return month_names[ month.clamped(1,month_names.count) - 1 ]
 
-    method operator+( days:Int32 )->Date
+    method operator+( days:Int )->Date
       if (days < 0) return this - (-days)
       local date = this
 
@@ -317,7 +317,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
       return Date( y, m, d ) + interval.days
 
 
-    method operator-( days:Int32 )->Date
+    method operator-( days:Int )->Date
       if (days < 0) return this + (-days)
       local date = this
       local delta = date.day_of_year + 1
@@ -347,7 +347,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
 
       return date
 
-    method operator-( other:Date )->Int32
+    method operator-( other:Date )->Int
       # Returns the number of days between the two dates
       local b = this
       local a = other
@@ -411,15 +411,15 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
 
 endClass
 
-class DateInterval( years:Int32, months:Int32, days:Int32 ) [compound]
+class DateInterval( years:Int, months:Int, days:Int ) [compound]
   GLOBAL METHODS
-    method days( n:Int32 )->DateInterval
+    method days( n:Int )->DateInterval
       return DateInterval( 0, 0, n )
 
-    method months( n:Int32 )->DateInterval
+    method months( n:Int )->DateInterval
       return DateInterval( 0, n, 0 )
 
-    method years( n:Int32 )->DateInterval
+    method years( n:Int )->DateInterval
       return DateInterval( n, 0, 0 )
 
   METHODS

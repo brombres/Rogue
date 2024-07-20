@@ -33,7 +33,7 @@ class Timestamp( value=System.time:Real64 ) [compound]
     method create( date:Date, time:Time )->Timestamp
       return Timestamp( date.year, date.month, date.day, time.hour, time.minute, time.second, time.millisecond )
 
-    method create( year:Int32, month:Int32, day:Int32, hour=12:Int32, minute=0:Int32, second=0:Int32, millisecond=0:Int32 )->Timestamp
+    method create( year:Int, month:Int, day:Int, hour=12:Int, minute=0:Int, second=0:Int, millisecond=0:Int )->Timestamp
       # A year earlier than 1970 will result a date of 1969-12-31 on Mac at least.
       # Therefore take the opportunity to adjust years < 100 to be prefixed with the current century,
       # e.g. 19 -> 2019.
@@ -59,32 +59,32 @@ class Timestamp( value=System.time:Real64 ) [compound]
 
       if (date.extract_strings("$(I)-$(I)-$(I)T$(I):$(I):$(I)",parts))
         # 2018-10-27T10:49
-        local y  = parts[0]->Int32
-        local m  = parts[1]->Int32
-        local d  = parts[2]->Int32
-        local hh = parts[3]->Int32
-        local mm = parts[4]->Int32
-        local ss = parts[5]->Int32
+        local y  = parts[0]->Int
+        local m  = parts[1]->Int
+        local d  = parts[2]->Int
+        local hh = parts[3]->Int
+        local mm = parts[4]->Int
+        local ss = parts[5]->Int
         return Timestamp( y, m, d, hh, mm, ss )
 
       elseIf (date.extract_strings("$ $ $(I) $(I):$(I):$(I) $ $(I)",parts))
         # Sat Oct 27 10:46:30 PDT 2018
-        local y  = parts[7]->Int32
+        local y  = parts[7]->Int
         local m  = month_name_to_index( parts[1] )
-        local d  = parts[2]->Int32
-        local hh = parts[3]->Int32
-        local mm = parts[4]->Int32
-        local ss = parts[5]->Int32
+        local d  = parts[2]->Int
+        local hh = parts[3]->Int
+        local mm = parts[4]->Int
+        local ss = parts[5]->Int
         return Timestamp( y, m, d, hh, mm, ss )
 
       elseIf (date.extract_strings("$(I).$(I).$(I) $(I):$(I):$(I)*",parts))
         # 2018.10.27 11:18:00[.000][AM]
-        local y  = parts[0]->Int32
-        local m  = parts[1]->Int32
-        local d  = parts[2]->Int32
-        local hh = parts[3]->Int32
-        local mm = parts[4]->Int32
-        local ss = parts[5]->Int32
+        local y  = parts[0]->Int
+        local m  = parts[1]->Int
+        local d  = parts[2]->Int
+        local hh = parts[3]->Int
+        local mm = parts[4]->Int
+        local ss = parts[5]->Int
         local is_am = date.ends_with("am") or date.ends_with("AM")
         local is_pm = date.ends_with("pm") or date.ends_with("PM")
         local is_12 = is_am or is_pm
@@ -98,7 +98,7 @@ class Timestamp( value=System.time:Real64 ) [compound]
         endIf
         local ms = 0
         if (date[date.count-4] == '.')
-          ms = date.after_last( '.' )->Int32
+          ms = date.after_last( '.' )->Int
           date = date.leftmost( -4 )
         endIf
         return Timestamp( y, m, d, hh, mm, ss, ms )
@@ -107,10 +107,10 @@ class Timestamp( value=System.time:Real64 ) [compound]
           date.extract_strings("$(I)/$(I)/$(I)",parts) or
           date.extract_strings("$(I)-$(I)-$(I)",parts))
         # 2018.10.27, 2018-10-27, 2018/10/27
-        local a  = parts[0]->Int32
-        local b  = parts[1]->Int32
-        local c  = parts[2]->Int32
-        local y, m, d : Int32
+        local a  = parts[0]->Int
+        local b  = parts[1]->Int
+        local c  = parts[2]->Int
+        local y, m, d : Int
         if (a >= 100)
           # YYYY-MM-DD
           y = a
@@ -134,17 +134,17 @@ class Timestamp( value=System.time:Real64 ) [compound]
         # August 29, 2019
         # August 29 2019
         local m  = month_name_to_index( parts[0]->String )
-        local d  = parts[1]->Int32
-        local y  = parts[2]->Int32
+        local d  = parts[1]->Int
+        local y  = parts[2]->Int
         return Timestamp.ymd( y, m, d )
 
       elseIf (date.extract_strings("$(I) $, $(I)",parts) or
           date.extract_strings("$(I) $ $(I)",parts))
         # 29 August, 2019
         # 29 August 2019
-        local d  = parts[0]->Int32
+        local d  = parts[0]->Int
         local m  = month_name_to_index( parts[1]->String )
-        local y  = parts[2]->Int32
+        local y  = parts[2]->Int
         return Timestamp.ymd( y, m, d )
 
       else
@@ -152,10 +152,10 @@ class Timestamp( value=System.time:Real64 ) [compound]
         return Timestamp.ymd( 2000, 1, 1 )
       endIf
 
-    method gmt_time_zone_offset->Int32
+    method gmt_time_zone_offset->Int
       # From:
       # https://stackoverflow.com/a/44063597/135791
-      local result : Int32
+      local result : Int
       native@|    time_t gmt, rawtime = time(NULL);
              |    struct tm *ptm;
              |
@@ -172,7 +172,7 @@ class Timestamp( value=System.time:Real64 ) [compound]
              |    $result = ((int)difftime(rawtime, gmt)) / 3600;
       return result
 
-    method month_name_to_index( month_name:String )->Int32
+    method month_name_to_index( month_name:String )->Int
       # January->1, December->12
       # Accepts partial month names e.g. "Jan"
       if (month_name.count >= 3)
@@ -209,7 +209,7 @@ class Timestamp( value=System.time:Real64 ) [compound]
     method now->Timestamp
       return Timestamp()
 
-    method ymd( year:Int32, month:Int32, day:Int32 )->Timestamp
+    method ymd( year:Int, month:Int, day:Int )->Timestamp
       # Use hour 12 instead of hour 0 as a default so that time change won't mess up the result of adding 24 hours to date
       return Timestamp( year, month, day, &hour=12 )
 
@@ -220,15 +220,15 @@ class Timestamp( value=System.time:Real64 ) [compound]
     weekday_names = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ]
 
   METHODS
-    method year->Int32
-      local result : Int32
+    method year->Int
+      local result : Int
       native @|time_t cur_seconds = (time_t)(int)$value;
               |struct tm* date = localtime( &cur_seconds );
               |$result = (%Ns%RogueInt32) date->tm_year + 1900;
       return result
 
-    method day->Int32
-      local result : Int32
+    method day->Int
+      local result : Int
       native @|time_t cur_seconds = (time_t)(int)$value;
               |struct tm* date = localtime( &cur_seconds );
               |$result = (%Ns%RogueInt32) date->tm_mday;
@@ -237,25 +237,25 @@ class Timestamp( value=System.time:Real64 ) [compound]
     method hashcode->Int
       return value->Int
 
-    method hour->Int32
-      local result : Int32
+    method hour->Int
+      local result : Int
       native @|time_t cur_seconds = (time_t)(int)$value;
               |struct tm* date = localtime( &cur_seconds );
               |$result = (%Ns%RogueInt32) date->tm_hour;
       return result
 
-    method millisecond->Int32
-      return ((value * 1000.0) % 1000.0)->Int32
+    method millisecond->Int
+      return ((value * 1000.0) % 1000.0)->Int
 
-    method minute->Int32
-      local result : Int32
+    method minute->Int
+      local result : Int
       native @|time_t cur_seconds = (time_t)(int)$value;
               |struct tm* date = localtime( &cur_seconds );
               |$result = (%Ns%RogueInt32) date->tm_min;
       return result
 
-    method month->Int32
-      local result : Int32
+    method month->Int
+      local result : Int
       native @|time_t cur_seconds = (time_t)(int)$value;
               |struct tm* date = localtime( &cur_seconds );
               |$result = (%Ns%RogueInt32) date->tm_mon + 1;
@@ -264,10 +264,10 @@ class Timestamp( value=System.time:Real64 ) [compound]
     method month_name->String
       return month_names[ month.clamped(1,month_names.count) - 1 ]
 
-    method second->Int32
-      return (value % 60.0)->Int32
+    method second->Int
+      return (value % 60.0)->Int
 
-    method hour12->Int32
+    method hour12->Int
       local h = hour
       if (h == 0) return 12
       if (h <= 12) return h
@@ -300,7 +300,7 @@ class Timestamp( value=System.time:Real64 ) [compound]
     method to->String
       return this->String( &ymd, &hms )
 
-    method to->String( &ymd, &hms, &ms, &format=24:Int32, &mdy )
+    method to->String( &ymd, &hms, &ms, &format=24:Int, &mdy )
       if (mdy)
         return "$ $, $" (month_names[month-1], day, year)
       endIf
@@ -342,8 +342,8 @@ class Timestamp( value=System.time:Real64 ) [compound]
     method to->Time
       return Time( hour, minute, second, millisecond )
 
-    method weekday->Int32
-      local result : Int32
+    method weekday->Int
+      local result : Int
       native @|time_t cur_seconds = (time_t)(int)$value;
               |struct tm* date = localtime( &cur_seconds );
               |$result = (%Ns%RogueInt32) date->tm_wday;
