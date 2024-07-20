@@ -711,7 +711,7 @@ augment
           builder.[ print("_"), print(p.type.c_sig_name) ]
         endForEach
       endIf
-      c_name = builder
+      c_name = Program.unique_c_name( builder )
       return @c_name
 
     method Method.c_name->String
@@ -725,7 +725,7 @@ augment
           builder.[ print("_"), print(p.type.c_sig_name) ]
         endForEach
       endIf
-      c_name = builder
+      c_name = Program.unique_c_name( builder )
       return @c_name
 
 endAugment

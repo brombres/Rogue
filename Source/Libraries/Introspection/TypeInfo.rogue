@@ -76,7 +76,7 @@ class TypeInfo
 
     method create_object->Object
       local result : Object
-      native @|$result = %Ns%Rogue_create_object( %Ns%Rogue_types[$index] );
+      native @|$result = (%Ns%RogueObject*) %Ns%Rogue_create_object( %Ns%Rogue_types[$index], 1 );
       return result
 
     method create_object<<$AsType>>->$AsType
