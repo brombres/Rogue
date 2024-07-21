@@ -363,13 +363,13 @@ class RogueC
                |  rogue [OPTIONS] <filepath>
                |
                |OPTIONS
-               |  --api, --api=[Module::]ClassName, --api="Filename.rogue"
+               |  --api, --api=Module[::ClassName], --api="Filename.rogue"
                |    --api
                |      All routines and classes in the files specified on the command line are
                |      marked [essential api], ensuring those routines, classes, and methods are
                |      available to introspection.
-               |    --api=[Module::]ClassName, --api="Module::*", --api="*::*", --api="*"
-               |      Marks the specified class or classes as [essential api].
+               |    --api=Module, --api="Module::ClassName", --api="*"
+               |      Marks the specified class or module classes as [essential api].
                |    --api="Filename.rogue"
                |      The specified file is included and its routines and classes are marked
                |      [essential api].

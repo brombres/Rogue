@@ -288,8 +288,8 @@ class Module
                 contingent
                   if (pattern.contains("::"))
                     necessary (FilePattern(pattern).matches("$::$"(name,template.name)))
-                  else
-                    necessary (FilePattern(pattern).matches(template.name))
+                  elseIf (pattern != "*")
+                    necessary (FilePattern(pattern).matches(name))
                   endIf
                 satisfied
                   template.attributes.is_api = true
