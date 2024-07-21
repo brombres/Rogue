@@ -120,6 +120,7 @@ KEYWORD_XOR               xor
 ----------------------------------------------------------------------
 tokens Symbols
 ----------------------------------------------------------------------
+META_API              $api            [meta]
 META_DEFAULT_VALUE    $defaultValue   [meta]
 META_DEFINE           $define         [meta]
 META_ELSE_IF          $elseIf         [meta structural]
@@ -3462,7 +3463,14 @@ parser
   produceNull
 
 - process_another
-  on "$define"
+  on "$api"
+    savePosition
+    while (hasAnother and not nextIs(EOL)) read
+    call store_api_pattern
+    must_consume_eols
+    return
+
+  elseOn "$define"
     call mark_token
     on IDENTIFIER
       buffer = ""
