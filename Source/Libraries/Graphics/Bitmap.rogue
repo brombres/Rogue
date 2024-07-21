@@ -307,7 +307,7 @@ class Bitmap
       local sz  = subset_bounds.size
       crop( pos.x, pos.y, width-(pos.x+sz.x), height-(pos.y+sz.y) )
 
-    method extract( bounds:IntBox )->Bitmap
+    method extract( subset_bounds:IntBox )->Bitmap
       return cloned.[ crop(subset_bounds) ]
 
     method cropped( delta:Int, pad_color=Color(0):Color )->Bitmap
