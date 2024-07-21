@@ -30,7 +30,5 @@ module Graphics
 uses Geometry [export]
 
 $include Graphics/Bitmap
-$include Graphics/BitmapFont
 $include Graphics/Color
-$include Graphics/FreeType
 $include Graphics/HSV

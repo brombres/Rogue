@@ -6,6 +6,8 @@
 #===============================================================================
 module Graphics
 
+$include Graphics/BitmapFont
+
 class FreeTypeFace
   # Example
   #
