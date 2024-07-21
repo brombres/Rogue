@@ -13,6 +13,7 @@ class CGenerator : Visitor
 
     cur_line           : Int32
     current_statements : Statements
+    this_statement     : Cmd
 
   METHODS
     method init( writer )
@@ -419,7 +420,11 @@ class CGenerator : Visitor
     method on_visit_node( cmd:CallDynamicMethod )
       local info = cmd.info
 
-      #print_cast( info.return_type )
+      local needs_cast = (cmd is not this_statement)
+      if (needs_cast)
+        writer.print '('
+        print_cast( info.return_type )
+      endIf
 
       if (cmd.context.type.is_aspect or info.attributes.is_abstract)
         local group = Program.dynamic_methods[info.dynamic_signature].methods
@@ -455,6 +460,8 @@ class CGenerator : Visitor
         endForEach
         writer.print " )"
       endIf
+
+      if (needs_cast) writer.print ')'
 
     method on_visit_node( cmd:CallMethodPointer )
       writer.print "(("
@@ -498,7 +505,11 @@ class CGenerator : Visitor
     method on_visit_node( cmd:CallThisDynamicMethod )
       local info = cmd.info
 
-      #print_cast( info.return_type )
+      local needs_cast = (cmd is not this_statement)
+      if (needs_cast)
+        writer.print '('
+        print_cast( info.return_type )
+      endIf
 
       #if (info.c_dynamic_signature == "type_name___RogueObject")
       #println StackTrace()
@@ -538,6 +549,8 @@ class CGenerator : Visitor
         endIf
         writer.print " )"
       endIf
+
+      if (needs_cast) writer.print ')'
 
     method on_visit_node( cmd:CallThisStaticMethod )
       local context_is_mutating = this_procedure.attributes.is_mutating
@@ -1435,7 +1448,9 @@ class CGenerator : Visitor
               endIf
             endIf
           endIf
-          visit( statement )
+          temporarily this_statement = statement
+            visit( statement )
+          endTemporarily
           if (statement.needs_semicolon) writer.println( ';' )
         endForEach
         if (cmd.count) writer.println_indent( '}', -2 )
