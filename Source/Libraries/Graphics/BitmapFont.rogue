@@ -1,5 +1,7 @@
 module Graphics
 
+$include Graphics/FreeType
+
 class BitmapFont
   PROPERTIES
     atlas      : Bitmap  # Font strip
