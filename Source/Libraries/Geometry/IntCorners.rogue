@@ -1,0 +1,14 @@
+module Geometry
+
+class IntCorners( top_left:IntXY, bottom_right:IntXY ) [compound]
+  GLOBAL METHODS
+    method create( bounds:IntBox )->IntCorners
+      return IntCorners( bounds.position, bounds.position+bounds.size )
+
+  METHODS
+    method hashcode->Int
+      return top_left.hashcode ~ bottom_right.hashcode
+
+    method to->IntBox
+      return IntBox( top_left, bottom_right-top_left )
+endClass

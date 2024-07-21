@@ -2,7 +2,7 @@ module Geometry
 
 class IntBox( position:IntXY, size:IntXY ) [essential compound]
   GLOBAL METHODS
-    method create( corners:Corners )->IntBox
+    method create( corners:IntCorners )->IntBox
       return corners->IntBox
 
     method create( x:Int, y:Int, width:Int, height:Int )->IntBox
