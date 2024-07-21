@@ -888,6 +888,17 @@ class Parser : ParserCore, Poolable
       mod.templates[aspect_name] = Template( augment_t, mod, aspect_name, Token[], tokens, attributes )
       return 0
 
+    method store_api_pattern->Int
+      local pos = _saved_positions.remove_last
+      _cmd_stack.discard_from( pos.cmd_stack_count )
+      local i1 = pos.position
+      local limit = _position
+      local pattern = String()
+      forEach (i in i1..<limit) pattern.print( _tokens[i]->String )
+      Program.api_patterns.add( pattern )
+
+      return 0
+
     method parse_doc_comment->Int
       if (disable_output) return 0
 
