@@ -74,6 +74,19 @@ class TypeInfo
       data_index = read_methods( data_index, global_methods, &is_global )
       data_index = read_methods( data_index, methods )
 
+    method base_class->TypeInfo
+      if (base_type_count) return base_type(0)
+      else                 return null
+
+    method base_type( i:Int )->TypeInfo
+      local base_type_index : Int
+      native @|$base_type_index = %Ns%Rogue_types[$index]->base_type_indices[$i];
+      return TypeInfo[ base_type_index ]
+
+    method base_type_count->Int
+      local result = native( "%Ns%Rogue_types[$index]->base_type_count" )->Int
+      return result
+
     method create_object->Object
       local result : Object
       native @|$result = (%Ns%RogueObject*) %Ns%Rogue_create_object( %Ns%Rogue_types[$index], 1 );

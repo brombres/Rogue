@@ -25,6 +25,17 @@ augment TypeID
     method attributes->Int32
       return this->TypeInfo.attributes
 
+    method base_class->TypeInfo
+      if (base_type_count) return base_type(0)
+      else                 return null
+
+    method base_type( i:Int )->TypeInfo
+      return this->TypeInfo.base_type( i )
+
+    method base_type_count->Int
+      local result = native( "%Ns%Rogue_types[$index]->base_type_count" )->Int
+      return result
+
     method class_data_index->Int32
       return this->TypeInfo.class_data_index
 
