@@ -511,9 +511,6 @@ class CGenerator : Visitor
         print_cast( info.return_type )
       endIf
 
-      #if (info.c_dynamic_signature == "type_name___RogueObject")
-      #println StackTrace()
-      #endIf
       if (this_type.is_aspect or info.attributes.is_abstract)
         local group = Program.dynamic_methods[info.dynamic_signature].methods
         assert group
@@ -1736,33 +1733,34 @@ augment
       endIf
 
     method Type.generate_c_class_structs( writer:CWriter )
-      if (this.is_object or this.is_compound)
+      if (not this.is_primitive)
         writer.print   "struct "
         writer.print   this.c_name
         writer.println
         writer.println '{'
         writer.indent  += 2
-        if (this.is_object)
+        if (this.is_object or this.is_aspect)
           writer.println "%Ns%RogueRuntimeType* __type;"
           writer.println "%Ns%RogueInt32 __refcount;"
         elseIf (this.properties.is_empty)
           writer.println "int dummy;"
         endIf
-        forEach (p in this.properties)
-          if (not p.attributes.is_faux)
-            if (p.is_native)
-              #writer.println p.native_expression
-              local gen = CGenerator( writer ).[ this_module=module_context, this_type=this ]
-              writer.println gen.native_replacements( p.t, p.native_expression )
-            else
-              writer.print   p.type.c_name
-              if (p.type.is_reference) writer.print '*'
-              writer.print   ' '
-              writer.print   p.c_name
-              writer.println ';'
+        if (not this.is_aspect)
+          forEach (p in this.properties)
+            if (not p.attributes.is_faux)
+              if (p.is_native)
+                local gen = CGenerator( writer ).[ this_module=module_context, this_type=this ]
+                writer.println gen.native_replacements( p.t, p.native_expression )
+              else
+                writer.print   p.type.c_name
+                if (p.type.is_reference) writer.print '*'
+                writer.print   ' '
+                writer.print   p.c_name
+                writer.println ';'
+              endIf
             endIf
-          endIf
-        endForEach
+          endForEach
+        endIf
         writer.indent  -= 2
         writer.println "};"
         writer.println
@@ -1776,7 +1774,7 @@ augment
     method Type.generate_c_class_typedefs( writer:CWriter )
       local any_output = false
 
-      if (this.is_object or this.is_compound)
+      if (not this.is_primitive)
         writer.print   "typedef struct "
         writer.print   this.c_name
         writer.print   ' '
@@ -1785,12 +1783,10 @@ augment
         any_output = true
       endIf
 
-      if (not this.is_aspect)
-        writer.print "extern %Ns%RogueRuntimeType Type"
-        writer.print this.c_name
-        writer.println ";"
-        any_output = true
-      endIf
+      writer.print "extern %Ns%RogueRuntimeType Type"
+      writer.print this.c_name
+      writer.println ";"
+      any_output = true
 
       if (any_output) writer.println
 
