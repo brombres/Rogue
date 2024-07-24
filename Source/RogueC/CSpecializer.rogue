@@ -660,9 +660,9 @@ augment Type
     method c_name->String
       if (@c_name) return @c_name
 
-      if (is_aspect)
-        @c_name = "RogueObject"
-      elseIf (attributes.is_tuple)
+      #if (is_aspect)
+      #  @c_name = "RogueObject"
+      if (attributes.is_tuple)
         @c_name = Program.unique_c_name( "$Tuple$"(module_context.c_name,Program.to_c_name(name)) )
       elseIf (name.begins_with('['))
         # [KeyType:ValueType] Table
@@ -678,11 +678,12 @@ augment Type
 
     method c_sig_name->String
       if (@c_sig_name) return @c_sig_name
-      if (is_aspect)
-        @c_sig_name = Program.namespace_capitalized + Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
-      else
-        @c_sig_name = c_name
-      endIf
+      #if (is_aspect)
+      #  @c_sig_name = Program.namespace_capitalized + Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
+      #else
+      #  @c_sig_name = c_name
+      #endIf
+      @c_sig_name = c_name
       return @c_sig_name
 
 endAugment
