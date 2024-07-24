@@ -37,7 +37,6 @@ class PropertyInfo( id:Int32, name:String, type_index:Int32, is_global:Logical )
       # <Compiler will insert generated code here>
 
     method set_property( id:Int32, context:Variant, new_value:Variant ) [essential]
-      local result : Variant
       # <Compiler will insert generated code here>
 endClass
 
