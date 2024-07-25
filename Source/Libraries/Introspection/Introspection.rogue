@@ -22,9 +22,6 @@ augment TypeID
       return TypeInfo[ index ]
 
   METHODS # Forwarding
-    method attributes->Int32
-      return this->TypeInfo.attributes
-
     method base_class->TypeInfo
       if (base_type_count) return base_type(0)
       else                 return null
@@ -71,21 +68,6 @@ augment TypeID
 
     method instance_of( ancestor:TypeInfo )->Logical
       return this->TypeInfo.instance_of( ancestor )
-
-    method is_aspect->Logical
-      return this->TypeInfo.is_aspect
-
-    method is_compound->Logical
-      return this->TypeInfo.is_compound
-
-    method is_enum->Logical
-      return this->TypeInfo.is_enum
-
-    method is_object->Logical
-      return this->TypeInfo.is_object
-
-    method is_primitive->Logical
-      return this->TypeInfo.is_primitive
 
     method methods->MethodInfo[]
       return this->TypeInfo.methods

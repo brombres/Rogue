@@ -2116,6 +2116,14 @@ augment
           c_writer.print   ", "
           c_writer.print   "0, "   # type_info
 
+          if (type.attributes.is_singleton)
+            c_writer.print "(void*)&"
+            c_writer.print type.c_name
+            c_writer.print "_singleton,"
+          else
+            c_writer.print   "0, "   # singleton
+          endIf
+
           local m_init_object = type.methods["init_object()"]
           if (m_init_object)
             c_writer.print   ''(%Ns%RogueFn_Object)''
