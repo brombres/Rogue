@@ -168,6 +168,11 @@ class TypeInfo
       if (not @scoped_name) @scoped_name = "$::$"(module_name,name)
       return @scoped_name
 
+    method set_singleton( new_value:Variant )
+      if (not (is_singleton and is_object)) return
+      local object = new_value->Object
+      native @|*((RogueObject**)(%Ns%Rogue_types[$index]->singleton)) = $object;
+
     method singleton->Variant
       if (not (is_singleton and is_object)) return undefined
       local object : Object
