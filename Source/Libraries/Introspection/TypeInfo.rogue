@@ -58,10 +58,10 @@ class TypeInfo
     module_name       : String
     name              : String
     scoped_name       : String
-    index             : Int32
-    attributes        : Int32
+    index             : Int
+    attributes        : Int
 
-    class_data_index : Int32
+    class_data_index  : Int32
     global_properties = PropertyInfo[]
     properties        = PropertyInfo[]
     global_methods    = MethodInfo[]
@@ -70,10 +70,10 @@ class TypeInfo
   METHODS
     method init [essential]
       local data_index = class_data_index
-      data_index = read_properties( data_index, global_properties, &is_global )
-      data_index = read_properties( data_index, properties )
-      data_index = read_methods( data_index, global_methods, &is_global )
-      data_index = read_methods( data_index, methods )
+      data_index = .read_properties( data_index, global_properties, &is_global )
+      data_index = .read_properties( data_index, properties )
+      data_index = .read_methods( data_index, global_methods, &is_global )
+      data_index = .read_methods( data_index, methods )
 
     method base_class->TypeInfo
       if (base_type_count) return base_type(0)
@@ -112,26 +112,6 @@ class TypeInfo
        @|  }
         |}
       return false
-
-    method read_properties( data_index:Int32, list:PropertyInfo[], &is_global )->Int32
-      local n = native("%Ns%Rogue_type_data[$data_index]")->Int32;
-      loop n
-        local property_id   = native("%Ns%Rogue_type_data[++$data_index]")->Int32
-        local property_name = native("%Ns%Rogue_string_table[ %Ns%Rogue_type_data[++$data_index] ]")->String
-        local property_type_index = native("%Ns%Rogue_type_data[++$data_index]")->Int32
-        list.add( PropertyInfo(property_id,property_name,property_type_index,&=is_global) )
-      endLoop
-      ++data_index
-      return data_index
-
-    method read_methods( data_index:Int32, list:MethodInfo[], &is_global )->Int32
-      local n = native("%Ns%Rogue_type_data[$data_index]")->Int32;
-      ++data_index
-      loop n
-        list.add( MethodInfo(native("%Ns%Rogue_type_data[$data_index]")->Int32, &=is_global) )
-        ++data_index
-      endLoop
-      return data_index
 
     method find_global_method( name_or_sig:String, arg_count=null:Int32? )->MethodInfo
       return find_method( global_methods, name_or_sig, arg_count )
@@ -181,12 +161,42 @@ class TypeInfo
     method is_primitive->Logical
       return (attributes & native("%NS%ROGUE_TYPE_PRIMITIVE")->Int32)
 
+    method is_singleton->Logical
+      return (attributes & native("%NS%ROGUE_TYPE_SINGLETON")->Int32)
+
     method scoped_name->String
       if (not @scoped_name) @scoped_name = "$::$"(module_name,name)
       return @scoped_name
 
+    method singleton->Variant
+      if (not (is_singleton and is_object)) return undefined
+      local object : Object
+      native @|$object = *((RogueObject**)(%Ns%Rogue_types[$index]->singleton));
+      return object
+
     method to->String
       return name
+
+    method .read_properties( data_index:Int32, list:PropertyInfo[], &is_global )->Int32
+      local n = native("%Ns%Rogue_type_data[$data_index]")->Int32;
+      loop n
+        local property_id   = native("%Ns%Rogue_type_data[++$data_index]")->Int32
+        local property_name = native("%Ns%Rogue_string_table[ %Ns%Rogue_type_data[++$data_index] ]")->String
+        local property_type_index = native("%Ns%Rogue_type_data[++$data_index]")->Int32
+        list.add( PropertyInfo(property_id,property_name,property_type_index,&=is_global) )
+      endLoop
+      ++data_index
+      return data_index
+
+    method .read_methods( data_index:Int32, list:MethodInfo[], &is_global )->Int32
+      local n = native("%Ns%Rogue_type_data[$data_index]")->Int32;
+      ++data_index
+      loop n
+        list.add( MethodInfo(native("%Ns%Rogue_type_data[$data_index]")->Int32, &=is_global) )
+        ++data_index
+      endLoop
+      return data_index
+
 endClass
 
 

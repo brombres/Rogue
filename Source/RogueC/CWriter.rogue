@@ -155,7 +155,7 @@ class CWriter : BufferedPrintWriter
         println "#define %NS%ROGUE_TYPE_ENUM      $" (Attribute.ENUM)
         println "#define %NS%ROGUE_TYPE_OBJECT    $" (Attribute.OBJECT)
         println "#define %NS%ROGUE_TYPE_ASPECT    $" (Attribute.ASPECT)
-        println "#define %NS%ROGUE_TYPE_MUTATING  $" (Attribute.MUTATING)
+        println "#define %NS%ROGUE_TYPE_SINGLETON $" (Attribute.SINGLETON)
 
         println ...
           @|
@@ -225,18 +225,19 @@ class CWriter : BufferedPrintWriter
            |{
            |  const char*        name;
            |  %Ns%RogueString*   name_object;
-           |  %Ns%RogueInt     index;
-           |  %Ns%RogueInt     module_name_index;
-           |  %Ns%RogueInt     class_data_index;
+           |  %Ns%RogueInt       index;
+           |  %Ns%RogueInt       module_name_index;
+           |  %Ns%RogueInt       class_data_index;
            |  %Ns%RogueInt64     attributes;
            |  void**             vtable;
            |  void**             local_pointer_stack; // Objects + compounds with embedded refs
-           |  %Ns%RogueInt     local_pointer_capacity;
-           |  %Ns%RogueInt     local_pointer_count;
-           |  %Ns%RogueInt     size;
-           |  %Ns%RogueInt*    base_type_indices;
-           |  %Ns%RogueInt     base_type_count;
+           |  %Ns%RogueInt       local_pointer_capacity;
+           |  %Ns%RogueInt       local_pointer_count;
+           |  %Ns%RogueInt       size;
+           |  %Ns%RogueInt*      base_type_indices;
+           |  %Ns%RogueInt       base_type_count;
            |  %Ns%RogueObject*   type_info;
+           |  void*              singleton;
            |  %Ns%RogueFn_Object fn_init_object;
            |  %Ns%RogueFn_Object fn_init;
            |  %Ns%RogueFn_Object fn_gc_trace;

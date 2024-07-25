@@ -1,5 +1,8 @@
 class TypeID( index:Int )
   METHODS
+    method attributes->Int
+      return native( "%Ns%Rogue_types[$index]->attributes" )->Int
+
     method instance_of( ancestor:TypeID )->Logical
       local ancestor_id = ancestor.index
       if (index == ancestor_id) return true
@@ -17,6 +20,24 @@ class TypeID( index:Int )
         |}
       return false
 
+    method is_aspect->Logical
+      return (attributes & native("%NS%ROGUE_TYPE_ASPECT")->Int32)
+
+    method is_compound->Logical
+      return (attributes & native("%NS%ROGUE_TYPE_COMPOUND")->Int32)
+
+    method is_enum->Logical
+      return (attributes & native("%NS%ROGUE_TYPE_ENUM")->Int32)
+
+    method is_object->Logical
+      return (attributes & native("%NS%ROGUE_TYPE_OBJECT")->Int32)
+
+    method is_primitive->Logical
+      return (attributes & native("%NS%ROGUE_TYPE_PRIMITIVE")->Int32)
+
+    method is_singleton->Logical
+      return (attributes & native("%NS%ROGUE_TYPE_SINGLETON")->Int32)
+
     method module_context_name->String
       local result : String
       native @|$result = %Ns%Rogue_string_table[ %Ns%Rogue_types[$index]->module_name_index ];
@@ -30,6 +51,12 @@ class TypeID( index:Int )
       endIf
       native @|$result = %Ns%Rogue_types[$index]->name_object;
       return result
+
+    method singleton->Variant
+      if (not (is_singleton and is_object)) return undefined
+      local object : Object
+      native @|$object = *((RogueObject**)(%Ns%Rogue_types[$index]->singleton));
+      return object
 
     method to->String
       return name
