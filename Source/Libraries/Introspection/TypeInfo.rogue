@@ -57,6 +57,7 @@ class TypeInfo
   PROPERTIES
     module_name       : String
     name              : String
+    scoped_name       : String
     index             : Int32
     attributes        : Int32
 
@@ -179,6 +180,10 @@ class TypeInfo
 
     method is_primitive->Logical
       return (attributes & native("%NS%ROGUE_TYPE_PRIMITIVE")->Int32)
+
+    method scoped_name->String
+      if (not @scoped_name) @scoped_name = "$::$"(module_name,name)
+      return @scoped_name
 
     method to->String
       return name
