@@ -42,13 +42,32 @@ class Variant [compound]
     TYPE_NULL      = 30
 
     # Object types
-    TYPE_OBJECT    = 40
-    TYPE_STRING    = 41
-    TYPE_FILE      = 42
+    TYPE_OBJECT           = 40
+    TYPE_STRING           = 41
+    TYPE_FILE             = 42
     TYPE_FIRST_STRINGLIKE = 41
     TYPE_LAST_STRINGLIKE  = 42
-    TYPE_LIST      = 50
-    TYPE_TABLE     = 51
+
+    TYPE_VARIANT_LIST     = 50
+    TYPE_BYTE_LIST        = 51
+    TYPE_CHARACTER_LIST   = 52
+    TYPE_INT_LIST         = 53
+    TYPE_INT32_LIST       = 54
+    TYPE_INT64_LIST       = 55
+    TYPE_LOGICAL_LIST     = 56
+    TYPE_OBJECT_LIST      = 57
+    TYPE_REAL_LIST        = 58
+    TYPE_REAL32_LIST      = 59
+    TYPE_REAL64_LIST      = 60
+    TYPE_STRING_LIST      = 61
+    TYPE_XY_LIST          = 62
+    TYPE_XYZ_LIST         = 63
+    TYPE_XYZW_LIST        = 64
+
+    TYPE_FIRST_LIST       = 50
+    TYPE_LAST_LIST        = 64
+
+    TYPE_TABLE            = 70
 
   NATIVE
     nativeHeader
@@ -78,11 +97,27 @@ class Variant [compound]
        |
        |#define %NS%ROGUE_VARIANT_TYPE_NULL      30
        |
-       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    40
-       |#define %NS%ROGUE_VARIANT_TYPE_STRING    41
-       |#define %NS%ROGUE_VARIANT_TYPE_FILE      42
-       |#define %NS%ROGUE_VARIANT_TYPE_LIST      50
-       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     51
+       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT         40
+       |#define %NS%ROGUE_VARIANT_TYPE_STRING         41
+       |#define %NS%ROGUE_VARIANT_TYPE_FILE           42
+       |
+       |#define %NS%ROGUE_VARIANT_TYPE_VARIANT_LIST   50
+       |#define %NS%ROGUE_VARIANT_TYPE_BYTE_LIST      51
+       |#define %NS%ROGUE_VARIANT_TYPE_CHARACTER_LIST 52
+       |#define %NS%ROGUE_VARIANT_TYPE_INT_LIST       53
+       |#define %NS%ROGUE_VARIANT_TYPE_INT32_LIST     54
+       |#define %NS%ROGUE_VARIANT_TYPE_INT64_LIST     55
+       |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL_LIST   56
+       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT_LIST    57
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL_LIST      58
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL32_LIST    59
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL64_LIST    60
+       |#define %NS%ROGUE_VARIANT_TYPE_STRING_LIST    61
+       |#define %NS%ROGUE_VARIANT_TYPE_XY_LIST        62
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZ_LIST       63
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZW_LIST      64
+       |
+       |#define %NS%ROGUE_VARIANT_TYPE_TABLE          70
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -218,7 +253,63 @@ class Variant [compound]
       else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
 
     method create( value:Variant[] )->Variant
-      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_VARIANT_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:Byte[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_BYTE_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:Character[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_CHARACTER_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:Int[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_INT_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:Int32[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_INT32_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:Int64[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_INT64_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:Logical[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_LOGICAL_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:Object[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_OBJECT_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:Real[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_REAL_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:Real32[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_REAL32_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:Real64[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_REAL64_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:String[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_STRING_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:XY[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_XY_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:XYZ[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_XYZ_LIST, (%Ns%RogueObject*)$value }" )->Variant
+      else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
+
+    method create( value:XYZW[] )->Variant
+      if (value) return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_XYZW_LIST, (%Ns%RogueObject*)$value }" )->Variant
       else       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_NULL }" )->Variant  # null value
 
     method create( value:[Variant:Variant] )->Variant
@@ -228,7 +319,7 @@ class Variant [compound]
     method create_list->Variant
       # Convenience syntax: @[] is equivalent to Variant.create_list()
       local data = Variant[]
-      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_LIST, (%Ns%RogueObject*)$data }" )->Variant
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_VARIANT_LIST, (%Ns%RogueObject*)$data }" )->Variant
 
     method create_table->Variant
       # Convenience syntax: @{} is equivalent to Variant.create_table()
@@ -238,21 +329,90 @@ class Variant [compound]
   METHODS
     method add( value:Variant )
       which (type)
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           object->(as Variant[]).add( value )
+        case TYPE_BYTE_LIST
+          object->(as Byte[]).add( value )
+        case TYPE_CHARACTER_LIST
+          object->(as Character[]).add( value )
+        case TYPE_INT_LIST
+          object->(as Int[]).add( value )
+        case TYPE_INT32_LIST
+          object->(as Int32[]).add( value )
+        case TYPE_INT64_LIST
+          object->(as Int64[]).add( value )
+        case TYPE_LOGICAL_LIST
+          object->(as Logical[]).add( value )
+        case TYPE_OBJECT_LIST
+          object->(as Object[]).add( value )
+        case TYPE_REAL_LIST
+          object->(as Real[]).add( value )
+        case TYPE_REAL32_LIST
+          object->(as Real32[]).add( value )
+        case TYPE_REAL64_LIST
+          object->(as Real64[]).add( value )
+        case TYPE_STRING_LIST
+          object->(as String[]).add( value )
+        case TYPE_XY_LIST
+          object->(as XY[]).add( value )
+        case TYPE_XYZ_LIST
+          object->(as XYZ[]).add( value )
+        case TYPE_XYZW_LIST
+          object->(as XYZW[]).add( value )
       endWhich
 
     method add_all( value:Variant )
       which (type)
-        case TYPE_LIST
-          local list = object->(as Variant[])
-          list.reserve( value.count )
+        case TYPE_VARIANT_LIST
+          local list = object->(as Variant[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_BYTE_LIST
+          local list = object->(as Byte[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_CHARACTER_LIST
+          local list = object->(as Character[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_INT_LIST
+          local list = object->(as Int[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_INT32_LIST
+          local list = object->(as Int32[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_INT64_LIST
+          local list = object->(as Int64[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_LOGICAL_LIST
+          local list = object->(as Logical[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_OBJECT_LIST
+          local list = object->(as Object[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_REAL_LIST
+          local list = object->(as Real[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_REAL32_LIST
+          local list = object->(as Real32[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_REAL64_LIST
+          local list = object->(as Real64[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_STRING_LIST
+          local list = object->(as String[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_XY_LIST
+          local list = object->(as XY[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_XYZ_LIST
+          local list = object->(as XYZ[]).[ reserve(value.count) ]
+          list.add( forEach in value )
+        case TYPE_XYZW_LIST
+          local list = object->(as XYZW[]).[ reserve(value.count) ]
           list.add( forEach in value )
       endWhich
 
     method as_list->Variant[]
       # If this value .is_list, returns the backing Variant[] list; otherwise returns null.
-      if (type != TYPE_LIST) return null
+      if (type != TYPE_VARIANT_LIST) return null
       return object->(as Variant[])
 
     method as_string->String
@@ -275,8 +435,64 @@ class Variant [compound]
 
     method at( index:Int )->Variant
       which (type)
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           local list = object->(as Variant[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_BYTE_LIST
+          local list = object->(as Byte[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_CHARACTER_LIST
+          local list = object->(as Character[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_INT_LIST
+          local list = object->(as Int[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_INT32_LIST
+          local list = object->(as Int32[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_INT64_LIST
+          local list = object->(as Int64[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_LOGICAL_LIST
+          local list = object->(as Logical[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_OBJECT_LIST
+          local list = object->(as Object[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_REAL_LIST
+          local list = object->(as Real[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_REAL32_LIST
+          local list = object->(as Real32[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_REAL64_LIST
+          local list = object->(as Real64[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_STRING_LIST
+          local list = object->(as String[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_XY_LIST
+          local list = object->(as XY[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_XYZ_LIST
+          local list = object->(as XYZ[])
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+        case TYPE_XYZW_LIST
+          local list = object->(as XYZW[])
           if (index < 0 or index >= list.count) return undefined
           return list[index]
 
@@ -297,8 +513,36 @@ class Variant [compound]
 
     method clear
       which (type)
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           object->(as Variant[]).clear
+        case TYPE_BYTE_LIST
+          object->(as Byte[]).clear
+        case TYPE_CHARACTER_LIST
+          object->(as Character[]).clear
+        case TYPE_INT_LIST
+          object->(as Int[]).clear
+        case TYPE_INT32_LIST
+          object->(as Int32[]).clear
+        case TYPE_INT64_LIST
+          object->(as Int64[]).clear
+        case TYPE_LOGICAL_LIST
+          object->(as Logical[]).clear
+        case TYPE_OBJECT_LIST
+          object->(as Object[]).clear
+        case TYPE_REAL_LIST
+          object->(as Real[]).clear
+        case TYPE_REAL32_LIST
+          object->(as Real32[]).clear
+        case TYPE_REAL64_LIST
+          object->(as Real64[]).clear
+        case TYPE_STRING_LIST
+          object->(as String[]).clear
+        case TYPE_XY_LIST
+          object->(as XY[]).clear
+        case TYPE_XYZ_LIST
+          object->(as XYZ[]).clear
+        case TYPE_XYZW_LIST
+          object->(as XYZW[]).clear
         case TYPE_TABLE
           object->(as [Variant:Variant]).clear
       endWhich
@@ -311,8 +555,36 @@ class Variant [compound]
             case TYPE_STRING, TYPE_FILE: return object->(as String).contains( value.object->(as String) )
             others:                      return false
           endWhich
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           return object->(as Variant[]).contains( value )
+        case TYPE_BYTE_LIST
+          return object->(as Byte[]).contains( value->Byte )
+        case TYPE_CHARACTER_LIST
+          return object->(as Character[]).contains( value->Character )
+        case TYPE_INT_LIST
+          return object->(as Int[]).contains( value->Int )
+        case TYPE_INT32_LIST
+          return object->(as Int32[]).contains( value->Int32 )
+        case TYPE_INT64_LIST
+          return object->(as Int64[]).contains( value->Int64 )
+        case TYPE_LOGICAL_LIST
+          return object->(as Logical[]).contains( value->Logical )
+        case TYPE_OBJECT_LIST
+          return object->(as Object[]).contains( value->Object )
+        case TYPE_REAL_LIST
+          return object->(as Real[]).contains( value->Real )
+        case TYPE_REAL32_LIST
+          return object->(as Real32[]).contains( value->Real32 )
+        case TYPE_REAL64_LIST
+          return object->(as Real64[]).contains( value->Real64 )
+        case TYPE_STRING_LIST
+          return object->(as String[]).contains( value->String )
+        case TYPE_XY_LIST
+          return object->(as XY[]).contains( value->XY )
+        case TYPE_XYZ_LIST
+          return object->(as XYZ[]).contains( value->XYZ )
+        case TYPE_XYZW_LIST
+          return object->(as XYZW[]).contains( value->XYZW )
         case TYPE_TABLE
           return object->(as [Variant:Variant]).contains( value->String )
         others
@@ -323,8 +595,36 @@ class Variant [compound]
       which (type)
         case TYPE_STRING, TYPE_FILE
           return object->(as String).count
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           return object->(as Variant[]).count
+        case TYPE_BYTE_LIST
+          return object->(as Byte[]).count
+        case TYPE_CHARACTER_LIST
+          return object->(as Character[]).count
+        case TYPE_INT_LIST
+          return object->(as Int[]).count
+        case TYPE_INT32_LIST
+          return object->(as Int32[]).count
+        case TYPE_INT64_LIST
+          return object->(as Int64[]).count
+        case TYPE_LOGICAL_LIST
+          return object->(as Logical[]).count
+        case TYPE_OBJECT_LIST
+          return object->(as Object[]).count
+        case TYPE_REAL_LIST
+          return object->(as Real[]).count
+        case TYPE_REAL32_LIST
+          return object->(as Real32[]).count
+        case TYPE_REAL64_LIST
+          return object->(as Real64[]).count
+        case TYPE_STRING_LIST
+          return object->(as String[]).count
+        case TYPE_XY_LIST
+          return object->(as XY[]).count
+        case TYPE_XYZ_LIST
+          return object->(as XYZ[]).count
+        case TYPE_XYZW_LIST
+          return object->(as XYZW[]).count
         case TYPE_TABLE
           return object->(as [Variant:Variant]).count
         case TYPE_UNDEFINED
@@ -359,11 +659,6 @@ class Variant [compound]
 
     method first->Variant
       which (type)
-        case TYPE_LIST
-          local list = object->(as Variant[])
-          if (list.count == 0) return undefined
-          return list[0]
-
         case TYPE_STRING, TYPE_FILE
           local st = object->(as String)
           if (st.count == 0) return undefined
@@ -375,7 +670,7 @@ class Variant [compound]
           return table.at(0)
 
         others
-          return this
+          return at(0)
       endWhich
 
     method first( query:Function(Variant)->Logical )->Variant
@@ -428,29 +723,48 @@ class Variant [compound]
         case TYPE_CIRCLE:    return circle.hashcode
         case TYPE_TRIANGLE:  return triangle.hashcode
         case TYPE_LINE:      return line.hashcode
-        case TYPE_OBJECT:    return object.hashcode
-        case TYPE_STRING:    return object->(as String).hashcode
-        case TYPE_LIST:      return object->(as Variant[]).hashcode
-        case TYPE_TABLE:     return object->(as [Variant:Variant]).hashcode
-        case TYPE_FILE:      return object->(as String).hashcode
-        others:
+        others
+          if (object) return object.hashcode
           Global.error.print( "[Variant.hashcode()] Undefined type $"(type) )
           return 0
       endWhich
 
     method insert( value:Variant, before_index=0:Int )
       which (type)
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           object->(as Variant[]).insert( value, before_index )
+        case TYPE_BYTE_LIST
+          object->(as Byte[]).insert( value->Byte, before_index )
+        case TYPE_CHARACTER_LIST
+          object->(as Character[]).insert( value->Character, before_index )
+        case TYPE_INT_LIST
+          object->(as Int[]).insert( value->Int, before_index )
+        case TYPE_INT32_LIST
+          object->(as Int32[]).insert( value->Int32, before_index )
+        case TYPE_INT64_LIST
+          object->(as Int64[]).insert( value->Int64, before_index )
+        case TYPE_LOGICAL_LIST
+          object->(as Logical[]).insert( value->Logical, before_index )
+        case TYPE_OBJECT_LIST
+          object->(as Object[]).insert( value->Object, before_index )
+        case TYPE_REAL_LIST
+          object->(as Real[]).insert( value->Real, before_index )
+        case TYPE_REAL32_LIST
+          object->(as Real32[]).insert( value->Real32, before_index )
+        case TYPE_REAL64_LIST
+          object->(as Real64[]).insert( value->Real64, before_index )
+        case TYPE_STRING_LIST
+          object->(as String[]).insert( value->String, before_index )
+        case TYPE_XY_LIST
+          object->(as XY[]).insert( value->XY, before_index )
+        case TYPE_XYZ_LIST
+          object->(as XYZ[]).insert( value->XYZ, before_index )
+        case TYPE_XYZW_LIST
+          object->(as XYZW[]).insert( value->XYZW, before_index )
       endWhich
 
     method is_collection->Logical
-      which (type)
-        case TYPE_STRING, TYPE_LIST, TYPE_TABLE, TYPE_FILE
-          return true
-        others
-          return false
-      endWhich
+      return type > TYPE_OBJECT
 
     method is_anchor->Logical
       return (type == TYPE_ANCHOR)
@@ -501,7 +815,52 @@ class Variant [compound]
       return (type == TYPE_LOGICAL)
 
     method is_list->Logical
-      return (type == TYPE_LIST)
+      return (type >= TYPE_FIRST_LIST and type <= TYPE_LAST_LIST)
+
+    method is_variant_list->Logical
+      return type == TYPE_VARIANT_LIST
+
+    method is_byte_list->Logical
+      return type == TYPE_BYTE_LIST
+
+    method is_character_list->Logical
+      return type == TYPE_CHARACTER_LIST
+
+    method is_int_list->Logical
+      return type == TYPE_INT_LIST
+
+    method is_int32_list->Logical
+      return type == TYPE_INT32_LIST
+
+    method is_int64_list->Logical
+      return type == TYPE_INT64_LIST
+
+    method is_logical_list->Logical
+      return type == TYPE_LOGICAL_LIST
+
+    method is_object_list->Logical
+      return type == TYPE_OBJECT_LIST
+
+    method is_real_list->Logical
+      return type == TYPE_REAL_LIST
+
+    method is_real32_list->Logical
+      return type == TYPE_REAL32_LIST
+
+    method is_real64_list->Logical
+      return type == TYPE_REAL64_LIST
+
+    method is_string_list->Logical
+      return type == TYPE_STRING_LIST
+
+    method is_xy_list->Logical
+      return type == TYPE_XY_LIST
+
+    method is_xyz_list->Logical
+      return type == TYPE_XYZ_LIST
+
+    method is_xyzw_list->Logical
+      return type == TYPE_XYZW_LIST
 
     method is_null->Logical
       return (type == TYPE_NULL)
@@ -554,11 +913,6 @@ class Variant [compound]
 
     method last->Variant
       which (type)
-        case TYPE_LIST
-          local list = object->(as Variant[])
-          if (list.count == 0) return undefined
-          return list[list.count-1]
-
         case TYPE_STRING, TYPE_FILE
           local st = object->(as String)
           if (st.count == 0) return undefined
@@ -570,7 +924,7 @@ class Variant [compound]
           return table.at( table.count-1 )
 
         others
-          return this
+          return at(count-1)
       endWhich
 
     method last( query:Function(Variant)->Logical )->Variant
@@ -587,8 +941,36 @@ class Variant [compound]
             case TYPE_STRING, TYPE_FILE: return object->(as String).locate( value.object->(as String), i1 )
             others:                      return null
           endWhich
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           return object->(as Variant[]).locate( value, i1 )
+        case TYPE_BYTE_LIST
+          return object->(as Byte[]).locate( value->Byte, i1 )
+        case TYPE_CHARACTER_LIST
+          return object->(as Character[]).locate( value->Character, i1 )
+        case TYPE_INT_LIST
+          return object->(as Int[]).locate( value->Int, i1 )
+        case TYPE_INT32_LIST
+          return object->(as Int32[]).locate( value->Int32, i1 )
+        case TYPE_INT64_LIST
+          return object->(as Int64[]).locate( value->Int64, i1 )
+        case TYPE_LOGICAL_LIST
+          return object->(as Logical[]).locate( value->Logical, i1 )
+        case TYPE_OBJECT_LIST
+          return object->(as Object[]).locate( value->Object, i1 )
+        case TYPE_REAL_LIST
+          return object->(as Real[]).locate( value->Real, i1 )
+        case TYPE_REAL32_LIST
+          return object->(as Real32[]).locate( value->Real32, i1 )
+        case TYPE_REAL64_LIST
+          return object->(as Real64[]).locate( value->Real64, i1 )
+        case TYPE_STRING_LIST
+          return object->(as String[]).locate( value->String, i1 )
+        case TYPE_XY_LIST
+          return object->(as XY[]).locate( value->XY, i1 )
+        case TYPE_XYZ_LIST
+          return object->(as XYZ[]).locate( value->XYZ, i1 )
+        case TYPE_XYZW_LIST
+          return object->(as XYZW[]).locate( value->XYZW, i1 )
         others
           return null
       endWhich
@@ -601,8 +983,36 @@ class Variant [compound]
             case TYPE_STRING, TYPE_FILE: return object->(as String).locate_last( value.object->(as String), i1 )
             others:                      return null
           endWhich
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           return object->(as Variant[]).locate_last( value, i1 )
+        case TYPE_BYTE_LIST
+          return object->(as Byte[]).locate_last( value->Byte, i1 )
+        case TYPE_CHARACTER_LIST
+          return object->(as Character[]).locate_last( value->Character, i1 )
+        case TYPE_INT_LIST
+          return object->(as Int[]).locate_last( value->Int, i1 )
+        case TYPE_INT32_LIST
+          return object->(as Int32[]).locate_last( value->Int32, i1 )
+        case TYPE_INT64_LIST
+          return object->(as Int64[]).locate_last( value->Int64, i1 )
+        case TYPE_LOGICAL_LIST
+          return object->(as Logical[]).locate_last( value->Logical, i1 )
+        case TYPE_OBJECT_LIST
+          return object->(as Object[]).locate_last( value->Object, i1 )
+        case TYPE_REAL_LIST
+          return object->(as Real[]).locate_last( value->Real, i1 )
+        case TYPE_REAL32_LIST
+          return object->(as Real32[]).locate_last( value->Real32, i1 )
+        case TYPE_REAL64_LIST
+          return object->(as Real64[]).locate_last( value->Real64, i1 )
+        case TYPE_STRING_LIST
+          return object->(as String[]).locate_last( value->String, i1 )
+        case TYPE_XY_LIST
+          return object->(as XY[]).locate_last( value->XY, i1 )
+        case TYPE_XYZ_LIST
+          return object->(as XYZ[]).locate_last( value->XYZ, i1 )
+        case TYPE_XYZW_LIST
+          return object->(as XYZW[]).locate_last( value->XYZW, i1 )
         others
           return null
       endWhich
@@ -658,8 +1068,50 @@ class Variant [compound]
           return object.object_id <> other.object.object_id
         case TYPE_STRING, TYPE_FILE
           return object->(as String) <> other.object->(as String)
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           if (object->(as Variant[]) == other.object->(as Variant[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_BYTE_LIST
+          if (object->(as Byte[]) == other.object->(as Byte[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_CHARACTER_LIST
+          if (object->(as Character[]) == other.object->(as Character[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_INT_LIST
+          if (object->(as Int[]) == other.object->(as Int[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_INT32_LIST
+          if (object->(as Int32[]) == other.object->(as Int32[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_INT64_LIST
+          if (object->(as Int64[]) == other.object->(as Int64[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_LOGICAL_LIST
+          if (object->(as Logical[]) == other.object->(as Logical[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_OBJECT_LIST
+          if (object->(as Object[]) == other.object->(as Object[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_REAL_LIST
+          if (object->(as Real[]) == other.object->(as Real[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_REAL32_LIST
+          if (object->(as Real32[]) == other.object->(as Real32[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_REAL64_LIST
+          if (object->(as Real64[]) == other.object->(as Real64[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_STRING_LIST
+          if (object->(as String[]) == other.object->(as String[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_XY_LIST
+          if (object->(as XY[]) == other.object->(as XY[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_XYZ_LIST
+          if (object->(as XYZ[]) == other.object->(as XYZ[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_XYZW_LIST
+          if (object->(as XYZW[]) == other.object->(as XYZW[])) return 0
           return object.object_id <> other.object.object_id
         case TYPE_TABLE
           if (object->(as [Variant:Variant]) == other.object->(as [Variant:Variant])) return 0
@@ -922,19 +1374,48 @@ class Variant [compound]
         case TYPE_CIRCLE:    circle.print_to( buffer )
         case TYPE_TRIANGLE:  triangle.print_to( buffer )
         case TYPE_LINE:      line.print_to( buffer )
-        case TYPE_OBJECT:    object.print_to( buffer )
         case TYPE_STRING:    buffer.print( object->(as String) )
-        case TYPE_LIST:      object->(as Variant[]).print_to( buffer )
-        case TYPE_TABLE:     object->(as [Variant:Variant]).print_to( buffer )
         others
-          Global.error.print( "[Variant.print_to()] Undefined type $"(type) )
-          buffer.print "undefined"
+          if (object)
+            object.print_to( buffer )
+          else
+            Global.error.print( "[Variant.print_to()] Undefined type $"(type) )
+            buffer.print "undefined"
+          endIf
       endWhich
 
     method remove( value:Variant )->Variant
       which (type)
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           return object->(as Variant[]).remove( value )
+        case TYPE_BYTE_LIST
+          return object->(as Byte[]).remove( value->Byte )
+        case TYPE_CHARACTER_LIST
+          return object->(as Character[]).remove( value->Character )
+        case TYPE_INT_LIST
+          return object->(as Int[]).remove( value->Int )
+        case TYPE_INT32_LIST
+          return object->(as Int32[]).remove( value->Int32 )
+        case TYPE_INT64_LIST
+          return object->(as Int64[]).remove( value->Int64 )
+        case TYPE_LOGICAL_LIST
+          return object->(as Logical[]).remove( value->Logical )
+        case TYPE_OBJECT_LIST
+          return object->(as Object[]).remove( value->Object )
+        case TYPE_REAL_LIST
+          return object->(as Real[]).remove( value->Real )
+        case TYPE_REAL32_LIST
+          return object->(as Real32[]).remove( value->Real32 )
+        case TYPE_REAL64_LIST
+          return object->(as Real64[]).remove( value->Real64 )
+        case TYPE_STRING_LIST
+          return object->(as String[]).remove( value->String )
+        case TYPE_XY_LIST
+          return object->(as XY[]).remove( value->XY )
+        case TYPE_XYZ_LIST
+          return object->(as XYZ[]).remove( value->XYZ )
+        case TYPE_XYZW_LIST
+          return object->(as XYZW[]).remove( value->XYZW )
         case TYPE_TABLE
           return object->(as [Variant:Variant]).remove( value )
         others
@@ -943,8 +1424,36 @@ class Variant [compound]
 
     method remove_at( index:Int )->Variant
       which (type)
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           return object->(as Variant[]).remove_at( index )
+        case TYPE_BYTE_LIST
+          return object->(as Byte[]).remove_at( index )
+        case TYPE_CHARACTER_LIST
+          return object->(as Character[]).remove_at( index )
+        case TYPE_INT_LIST
+          return object->(as Int[]).remove_at( index )
+        case TYPE_INT32_LIST
+          return object->(as Int32[]).remove_at( index )
+        case TYPE_INT64_LIST
+          return object->(as Int64[]).remove_at( index )
+        case TYPE_LOGICAL_LIST
+          return object->(as Logical[]).remove_at( index )
+        case TYPE_OBJECT_LIST
+          return object->(as Object[]).remove_at( index )
+        case TYPE_REAL_LIST
+          return object->(as Real[]).remove_at( index )
+        case TYPE_REAL32_LIST
+          return object->(as Real32[]).remove_at( index )
+        case TYPE_REAL64_LIST
+          return object->(as Real64[]).remove_at( index )
+        case TYPE_STRING_LIST
+          return object->(as String[]).remove_at( index )
+        case TYPE_XY_LIST
+          return object->(as XY[]).remove_at( index )
+        case TYPE_XYZ_LIST
+          return object->(as XYZ[]).remove_at( index )
+        case TYPE_XYZW_LIST
+          return object->(as XYZW[]).remove_at( index )
         case TYPE_TABLE
           return object->(as [Variant:Variant]).remove_at( index )
         others
@@ -954,8 +1463,36 @@ class Variant [compound]
     method remove_first->Variant
       if (count == 0) return undefined
       which (type)
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           return object->(as Variant[]).remove_at( 0 )
+        case TYPE_BYTE_LIST
+          return object->(as Byte[]).remove_at( 0 )
+        case TYPE_CHARACTER_LIST
+          return object->(as Character[]).remove_at( 0 )
+        case TYPE_INT_LIST
+          return object->(as Int[]).remove_at( 0 )
+        case TYPE_INT32_LIST
+          return object->(as Int32[]).remove_at( 0 )
+        case TYPE_INT64_LIST
+          return object->(as Int64[]).remove_at( 0 )
+        case TYPE_LOGICAL_LIST
+          return object->(as Logical[]).remove_at( 0 )
+        case TYPE_OBJECT_LIST
+          return object->(as Object[]).remove_at( 0 )
+        case TYPE_REAL_LIST
+          return object->(as Real[]).remove_at( 0 )
+        case TYPE_REAL32_LIST
+          return object->(as Real32[]).remove_at( 0 )
+        case TYPE_REAL64_LIST
+          return object->(as Real64[]).remove_at( 0 )
+        case TYPE_STRING_LIST
+          return object->(as String[]).remove_at( 0 )
+        case TYPE_XY_LIST
+          return object->(as XY[]).remove_at( 0 )
+        case TYPE_XYZ_LIST
+          return object->(as XYZ[]).remove_at( 0 )
+        case TYPE_XYZW_LIST
+          return object->(as XYZW[]).remove_at( 0 )
         case TYPE_TABLE
           return object->(as [Variant:Variant]).remove_at( 0 )
         others
@@ -966,8 +1503,36 @@ class Variant [compound]
       local n = count
       if (n == 0) return undefined
       which (type)
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           return object->(as Variant[]).remove_at( n-1 )
+        case TYPE_BYTE_LIST
+          return object->(as Byte[]).remove_at( n-1 )
+        case TYPE_CHARACTER_LIST
+          return object->(as Character[]).remove_at( n-1 )
+        case TYPE_INT_LIST
+          return object->(as Int[]).remove_at( n-1 )
+        case TYPE_INT32_LIST
+          return object->(as Int32[]).remove_at( n-1 )
+        case TYPE_INT64_LIST
+          return object->(as Int64[]).remove_at( n-1 )
+        case TYPE_LOGICAL_LIST
+          return object->(as Logical[]).remove_at( n-1 )
+        case TYPE_OBJECT_LIST
+          return object->(as Object[]).remove_at( n-1 )
+        case TYPE_REAL_LIST
+          return object->(as Real[]).remove_at( n-1 )
+        case TYPE_REAL32_LIST
+          return object->(as Real32[]).remove_at( n-1 )
+        case TYPE_REAL64_LIST
+          return object->(as Real64[]).remove_at( n-1 )
+        case TYPE_STRING_LIST
+          return object->(as String[]).remove_at( n-1 )
+        case TYPE_XY_LIST
+          return object->(as XY[]).remove_at( n-1 )
+        case TYPE_XYZ_LIST
+          return object->(as XYZ[]).remove_at( n-1 )
+        case TYPE_XYZW_LIST
+          return object->(as XYZW[]).remove_at( n-1 )
         case TYPE_TABLE
           return object->(as [Variant:Variant]).remove_at( n-1 )
         others
@@ -976,10 +1541,66 @@ class Variant [compound]
 
     method set( index:Int, value:Variant )
       which (type)
-        case TYPE_LIST
+        case TYPE_VARIANT_LIST
           local list = object->(as Variant[])
           if (index < 0 or index >= list.count) return
           list[index] = value
+        case TYPE_BYTE_LIST
+          local list = object->(as Byte[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->Byte
+        case TYPE_CHARACTER_LIST
+          local list = object->(as Character[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->Character
+        case TYPE_INT_LIST
+          local list = object->(as Int[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->Int
+        case TYPE_INT32_LIST
+          local list = object->(as Int32[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->Int32
+        case TYPE_INT64_LIST
+          local list = object->(as Int64[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->Int64
+        case TYPE_LOGICAL_LIST
+          local list = object->(as Logical[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->Logical
+        case TYPE_OBJECT_LIST
+          local list = object->(as Object[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->Object
+        case TYPE_REAL_LIST
+          local list = object->(as Real[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->Real
+        case TYPE_REAL32_LIST
+          local list = object->(as Real32[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->Real32
+        case TYPE_REAL64_LIST
+          local list = object->(as Real64[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->Real64
+        case TYPE_STRING_LIST
+          local list = object->(as String[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->String
+        case TYPE_XY_LIST
+          local list = object->(as XY[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->XY
+        case TYPE_XYZ_LIST
+          local list = object->(as XYZ[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->XYZ
+        case TYPE_XYZW_LIST
+          local list = object->(as XYZW[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value->XYZW
         case TYPE_TABLE
           set( Variant(index), value )
       endWhich
@@ -1001,9 +1622,36 @@ class Variant [compound]
       # 'compare_fn' should return true if the first parameter should be positioned before the second parameter.
       # The values passed will be keys for a Variant Table or elements for a Variant List.
       which (type)
-        case TYPE_LIST
-          local list = object->(as Variant[])
-          list.sort( compare_fn )
+        case TYPE_VARIANT_LIST
+          object->(as Variant[]).sort( compare_fn )
+        case TYPE_BYTE_LIST
+          object->(as Byte[]).sort( compare_fn )
+        case TYPE_CHARACTER_LIST
+          object->(as Character[]).sort( compare_fn )
+        case TYPE_INT_LIST
+          object->(as Int[]).sort( compare_fn )
+        case TYPE_INT32_LIST
+          object->(as Int32[]).sort( compare_fn )
+        case TYPE_INT64_LIST
+          object->(as Int64[]).sort( compare_fn )
+        case TYPE_LOGICAL_LIST
+          object->(as Logical[]).sort( compare_fn )
+        case TYPE_OBJECT_LIST
+          object->(as Object[]).sort( compare_fn )
+        case TYPE_REAL_LIST
+          object->(as Real[]).sort( compare_fn )
+        case TYPE_REAL32_LIST
+          object->(as Real32[]).sort( compare_fn )
+        case TYPE_REAL64_LIST
+          object->(as Real64[]).sort( compare_fn )
+        case TYPE_STRING_LIST
+          object->(as String[]).sort( compare_fn )
+        case TYPE_XY_LIST
+          object->(as XY[]).sort( compare_fn )
+        case TYPE_XYZ_LIST
+          object->(as XYZ[]).sort( compare_fn )
+        case TYPE_XYZW_LIST
+          object->(as XYZW[]).sort( compare_fn )
         case TYPE_TABLE
           local table = object->(as [Variant:Variant])
           table.sort( (a,b) => compare_fn(a.key,b.key) )
@@ -1194,12 +1842,8 @@ class Variant [compound]
         case TYPE_QUAD32:    return quad32.a? or quad32.b? or quad32.c? or quad32.d?
         case TYPE_CIRCLE:    return circle.radius?
         case TYPE_LINE:      return line.a != line.b;
-        case TYPE_OBJECT:    return true
-        case TYPE_STRING:    return true
-        case TYPE_FILE:      return true
-        case TYPE_LIST:      return true
-        case TYPE_TABLE:     return true
-        others:              return false
+        others
+          return (type >= TYPE_OBJECT)
       endWhich
 
     method to->Object
@@ -1336,6 +1980,66 @@ class Variant [compound]
         case TYPE_REAL64:          return XYZW(real64,real64,real64)
         others:                    return $defaultValue<<XYZW>>
       endWhich
+
+    method to->Variant[]
+      if (is_variant_list) return object->(as Variant[])
+      else                 return to_list<<Variant>>
+
+    method to->Byte[]
+      if (is_byte_list) return object->(as Byte[])
+      else              return to_list<<Byte>>
+
+    method to->Character[]
+      if (is_character_list) return object->(as Character[])
+      else                   return to_list<<Character>>
+
+    method to->Int[]
+      if (is_int_list) return object->(as Int[])
+      else             return to_list<<Int>>
+
+    method to->Int32[]
+      if (is_int32_list) return object->(as Int32[])
+      else               return to_list<<Int32>>
+
+    method to->Int64[]
+      if (is_int64_list) return object->(as Int64[])
+      else               return to_list<<Int64>>
+
+    method to->Logical[]
+      if (is_logical_list) return object->(as Logical[])
+      else                 return to_list<<Logical>>
+
+    method to->Object[]
+      if (is_object_list) return object->(as Object[])
+      else                return to_list<<Object>>
+
+    method to->Real[]
+      if (is_real_list) return object->(as Real[])
+      else              return to_list<<Real>>
+
+    method to->Real32[]
+      if (is_real32_list) return object->(as Real32[])
+      else                return to_list<<Real32>>
+
+    method to->Real64[]
+      if (is_real64_list) return object->(as Real64[])
+      else                return to_list<<Real64>>
+
+    method to->String[]
+      if (is_string_list) return object->(as String[])
+      else                return to_list<<String>>
+
+    method to->XY[]
+      if (is_xy_list) return object->(as XY[])
+      else            return to_list<<XY>>
+
+    method to->XYZ[]
+      if (is_xyz_list) return object->(as XYZ[])
+      else             return to_list<<XYZ>>
+
+    method to->XYZW[]
+      if (is_xyzw_list) return object->(as XYZW[])
+      else              return to_list<<XYZW>>
 
     method to<<$Type>>->$Type
       if ($isReference<<$Type>>)
@@ -1479,23 +2183,6 @@ class Variant [compound]
           object.write_json( builder, &=formatted, &=omit_commas )
         case TYPE_STRING
           write_json_string( object->(as String), builder )
-        case TYPE_LIST
-          if (count)
-            builder.print '['
-            if (formatted) builder.indent+=2; builder.println
-            forEach (item at i in object->(as Variant[]))
-              if (i)
-                if (omit_commas) builder.print ' '
-                else             builder.print ','
-                if (formatted) builder.println
-              endIf
-              item.write_json( builder, &=formatted, &=omit_commas )
-            endForEach
-            if (formatted) builder.indent-=2; builder.println
-            builder.print ']'
-          else
-            builder.print "[]"
-          endIf
         case TYPE_TABLE
           if (count)
             builder.print '{'
@@ -1514,6 +2201,23 @@ class Variant [compound]
             builder.print '}'
           else
             builder.print "{}"
+          endIf
+        others
+          if (is_list and count)
+            builder.print '['
+            if (formatted) builder.indent+=2; builder.println
+            forEach (item at i in this)
+              if (i)
+                if (omit_commas) builder.print ' '
+                else             builder.print ','
+                if (formatted) builder.println
+              endIf
+              item.write_json( builder, &=formatted, &=omit_commas )
+            endForEach
+            if (formatted) builder.indent-=2; builder.println
+            builder.print ']'
+          else
+            builder.print "[]"
           endIf
       endWhich
 
