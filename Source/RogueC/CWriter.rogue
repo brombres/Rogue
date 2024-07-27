@@ -252,12 +252,12 @@ class CWriter : BufferedPrintWriter
            |  %Ns%RogueInt line;
            |} %Ns%RogueCallFrame;
            |
-           |typedef struct %Ns%RogueObjectList
+           |typedef struct %Ns%RogueMMObjectList
            |{
            |  %Ns%RogueObject** data;
            |  %Ns%RogueInt    count;
            |  %Ns%RogueInt    capacity;
-           |} %Ns%RogueObjectList;
+           |} %Ns%RogueMMObjectList;
            |
            |//------------------------------------------------------------------------------
            |// Runtime
@@ -286,7 +286,7 @@ class CWriter : BufferedPrintWriter
            |void  %Ns%Rogue_call_stack_push( const char* procedure, const char* filename, %Ns%RogueInt line );
            |void  %Ns%Rogue_call_stack_pop(void);
            |void  %Ns%RogueRuntimeType_local_pointer_stack_add( %Ns%RogueRuntimeType* type, void* local_pointer );
-           |void  %Ns%RogueObjectList_add( %Ns%RogueObjectList* list, void* obj );
+           |void  %Ns%RogueMMObjectList_add( %Ns%RogueMMObjectList* list, void* obj );
            |
            |struct %Ns%RogueObject;
            |
@@ -298,8 +298,8 @@ class CWriter : BufferedPrintWriter
            |
            |extern %Ns%RogueInt %Ns%RogueMM_bytes_allocated_since_gc;
            |extern %Ns%RogueInt %Ns%RogueMM_gc_request;  // 0:none, !0:requested
-           |extern %Ns%RogueObjectList %Ns%RogueMM_objects;
-           |extern %Ns%RogueObjectList %Ns%RogueMM_objects_requiring_cleanup;
+           |extern %Ns%RogueMMObjectList %Ns%RogueMM_objects;
+           |extern %Ns%RogueMMObjectList %Ns%RogueMM_objects_requiring_cleanup;
            |
            |struct %Ns%RogueWeakReference;
            |extern struct %Ns%RogueWeakReference* %Ns%RogueMM_weak_references;
@@ -336,8 +336,8 @@ class CWriter : BufferedPrintWriter
              |  memset( obj, 0, type->size );
              |  obj->__type = type;
              |
-             |  if (type->fn_on_cleanup) %Ns%RogueObjectList_add( &%Ns%RogueMM_objects_requiring_cleanup, obj );
-             |  else                     %Ns%RogueObjectList_add( &%Ns%RogueMM_objects, obj );
+             |  if (type->fn_on_cleanup) %Ns%RogueMMObjectList_add( &%Ns%RogueMM_objects_requiring_cleanup, obj );
+             |  else                     %Ns%RogueMMObjectList_add( &%Ns%RogueMM_objects, obj );
              |  %Ns%RogueMM_bytes_allocated_since_gc += type->size;
              |
              |  if (initialize) %Ns%Rogue_init_object( type, obj );
@@ -501,7 +501,7 @@ class CWriter : BufferedPrintWriter
              |  type->local_pointer_stack[ type->local_pointer_count++ ] = local_pointer;
              |}
              |
-             |void %Ns%RogueObjectList_add( %Ns%RogueObjectList* list, void* obj )
+             |void %Ns%RogueMMObjectList_add( %Ns%RogueMMObjectList* list, void* obj )
              |{
              |  if (list->count == list->capacity)
              |  {
@@ -529,8 +529,8 @@ class CWriter : BufferedPrintWriter
              |
              |%Ns%RogueInt            %Ns%RogueMM_bytes_allocated_since_gc  = 0;
              |%Ns%RogueInt            %Ns%RogueMM_gc_request                = 0;
-             |%Ns%RogueObjectList     %Ns%RogueMM_objects                   = {0};
-             |%Ns%RogueObjectList     %Ns%RogueMM_objects_requiring_cleanup = {0};
+             |%Ns%RogueMMObjectList   %Ns%RogueMM_objects                   = {0};
+             |%Ns%RogueMMObjectList   %Ns%RogueMM_objects_requiring_cleanup = {0};
              |%Ns%RogueWeakReference* %Ns%RogueMM_weak_references = 0;
              |
              |void* %Ns%Rogue_as( void* obj, %Ns%RogueInt recast_type_id )

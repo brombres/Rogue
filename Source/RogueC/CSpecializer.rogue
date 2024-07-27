@@ -530,9 +530,9 @@ augment Program
   METHODS
     method init [append]
       # Reserve these type names that are already used by the C runtime. Any Rogue class named
-      # e.g. "Rogue::ObjectList" will become "RogueObjectList2" etc.
+      # e.g. "Rogue::CallFrame" will become "RogueCallFrame2" etc.
       unique_c_names.add( "RogueCallFrame" )
-      unique_c_names.add( "RogueObjectList" )
+      unique_c_names.add( "RogueMMObjectList" )
 
     method to_c_name( name:String )->String
       name = name.replacing( "[]", "List" )
