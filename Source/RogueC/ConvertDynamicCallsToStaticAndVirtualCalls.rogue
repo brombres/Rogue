@@ -53,7 +53,8 @@ class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor [singleton]
       local info = cmd.info
 
       contingent
-        if (this_type.is_aspect or info.attributes.is_abstract)
+        if (this_type.is_aspect or info.type_context.is_aspect or
+            info.attributes.is_abstract)
           local group = Program.dynamic_methods[info.dynamic_signature].methods
           assert group
           necessary (group and group.count == 1 and not group.first.attributes.is_placeholder)
