@@ -21,6 +21,9 @@ class Random [singleton]
     method init
       reset( Rogue::System.time_ms )
 
+    method hashcode->Int
+      return seed.hashcode ~ state.hashcode ~ stream.hashcode
+
     method init( seed:Int64, stream=0x14057b7e_f767814f:Int64 )
       # Constructs a Random generator with the specified seed and optional stream parameter.
       # 'stream' defaults to 0x14057b7e_f767814f. If you pass an explicit value, note that
