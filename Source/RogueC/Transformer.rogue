@@ -57,11 +57,11 @@ class Transformer : Visitor
           if (cmd_foreach)
             cmd_foreach.statements = statements
           else
-            local cmd_if = outer_cmd->(as IfConditionalContext)
-            if (cmd_if)
+            if local cmd_if = outer_cmd->(as IfConditionalContext)
               cmd_if.statements = statements
             else
-              assert false
+              trace
+              throw outer_cmd.t.error( "[INTERNAL] Unhandled inline command '$'."(outer_cmd.type_name) )
             endIf
           endIf
         endWhile

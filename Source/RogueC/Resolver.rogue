@@ -1944,6 +1944,8 @@ class Resolver : Poolable, Visitor
           type_context = this_type  # may be null
           local v = find_local( name )
           if (v)
+            assert v.type
+            v.type.organize
             if (args) return resolve_access( t, GetLocal(t,v), "call", args, &=suppress_error )
             else      return validate( GetLocal(t,v) )
           endIf
@@ -3057,6 +3059,8 @@ augment
 
       local v = resolver.find_local( name )
       if (v)
+        v.type.organize
+
         # TargetType.operator+(target:TargetType,operand:OperandType)
         local context = GetLocal(t,v)
         local args = Args(t,context,operand)
@@ -3147,6 +3151,8 @@ augment
 
       local v = resolver.find_local( name )
       if (v)
+        v.type.organize
+
         # TargetType.operator+(target:TargetType,operand:OperandType)
         local context = GetLocal(t,v)
         local args = Args(t,context,operand)
@@ -3241,6 +3247,8 @@ augment
 
       local v = resolver.find_local( name )
       if (v)
+        v.type.organize
+
         # TargetType.operator%(target:TargetType,operand:OperandType)
         local context = GetLocal(t,v)
         local args = Args(t,context,operand)
@@ -3561,7 +3569,10 @@ augment
     method Access.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       if (not args)
         local v = resolver.find_local( name )
-        if (v) return resolver.validate( SetLocal(t,v,new_value) )
+        if (v)
+          v.type.organize
+          return resolver.validate( SetLocal(t,v,new_value) )
+        endIf
 
         local type = resolver.this_module.find_type( t, name, &extended_search )
         if (type and type.attributes.is_singleton)
@@ -4452,6 +4463,7 @@ augment
 
       local v = resolver.find_local( name )
       if (v)
+        v.type.organize
         return resolver.validate( $OpLocal(t,v) )
       endIf
 
@@ -4537,6 +4549,7 @@ augment
     method DirectAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
       local v = resolver.find_local( name )
       if (v)
+        v.type.organize
         return resolver.validate( $OpLocal(t,v) )
       endIf
 

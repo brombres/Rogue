@@ -512,6 +512,8 @@ augment
         if (type is Program.type_Character) return LiteralLogical( cmd.t, cmd->(as LiteralCharacter).value? )
       endIf
 
+      type.organize
+
       if (type.is_primitive) return Logicalized(cmd.t,cmd)
       if (type.attributes.is_optional) return resolver.visit( ContextAccess(cmd.t,cmd,"exists",null) )
 
