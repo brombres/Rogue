@@ -801,22 +801,30 @@ class CGenerator : Visitor
         if (Program.gc_auto)
           forEach (p in this_procedure.parameters)
             if (not p.is_anchored)
-              if (p.type.is_reference)
-                writer.print   "%Ns%RogueRuntimeType_local_pointer_stack_add( &Type%Ns%RogueObject, &"
-                writer.print   p.c_name
-                writer.println " );"
-              elseIf (p.type.contains_reference)
-                writer.print   "%Ns%RogueRuntimeType_local_pointer_stack_add( &Type"
-                writer.print   p.type.c_name
-                writer.print   ", &"
-                writer.print   p.c_name
-                writer.println " );"
-              endIf
+              .generate_add_to_local_pointer_stack( p )
             endIf
+          endForEach
+          writer.println
+
+          forEach (v in this_procedure.locals from this_procedure.parameters.count)
+            .generate_add_to_local_pointer_stack( v )
           endForEach
         endIf
 
         writer.println
+      endIf
+
+    method .generate_add_to_local_pointer_stack( v:Local )
+      if (v.type.is_reference)
+        writer.print   "%Ns%RogueRuntimeType_local_pointer_stack_add( &Type%Ns%RogueObject, &"
+        writer.print   v.c_name
+        writer.println " );"
+      elseIf (v.type.contains_reference)
+        writer.print   "%Ns%RogueRuntimeType_local_pointer_stack_add( &Type"
+        writer.print   v.type.c_name
+        writer.print   ", &"
+        writer.print   v.c_name
+        writer.println " );"
       endIf
 
     method on_leave( cmd:ControlStructure )
@@ -1198,8 +1206,6 @@ class CGenerator : Visitor
       cmd.type = visit(cmd.type)->(as Type)
 
     method on_visit_node( cmd:LocalDeclaration )
-      local needs_semicolon = false
-
       local v = cmd.info
       if (Program.gc_auto)
         # In auto-gc variables have already been declared but we need to reinitialize locals (that
@@ -1208,7 +1214,7 @@ class CGenerator : Visitor
           writer.print( v.c_name )
           writer.print( " = " )
           writer.write_default_value( v.type )
-          needs_semicolon = true
+          writer.println ';'
         endIf
       else
         writer.[ print(v.type.c_ref_name), print(' ') ]
@@ -1218,26 +1224,6 @@ class CGenerator : Visitor
           writer.write_default_value( v.type )
         endIf
         writer.println ";"
-      endIf
-
-      if (Program.gc_auto)
-        if (v.type.is_reference)
-          if (needs_semicolon) writer.println ';'
-          writer.print   "%Ns%RogueRuntimeType_local_pointer_stack_add( &Type%Ns%RogueObject, &"
-          writer.print   v.c_name
-          writer.print   " )"
-          writer.println ";"
-        elseIf (v.type.contains_reference)
-          if (needs_semicolon) writer.println ';'
-          writer.print   "%Ns%RogueRuntimeType_local_pointer_stack_add( &Type"
-          writer.print   v.type.c_name
-          writer.print   ", &"
-          writer.print   v.c_name
-          writer.print   " )"
-          writer.println ";"
-        elseIf (needs_semicolon)
-          writer.println ';'
-        endIf
       endIf
 
     method on_visit_node( cmd:LogicalAnd )
