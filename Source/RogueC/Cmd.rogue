@@ -1279,7 +1279,8 @@ class If : Conditional
     cmd_else : Cmd
 
   METHODS
-    method init( t, condition, statements:Cmd, cmd_else, control_type=ControlType.IF:ControlType )
+    method init( t, condition, statements=null:Statements, cmd_else=null, control_type=ControlType.IF:ControlType )
+      ensure<<statements>>( t )
       prior.init( t, condition, statements, control_type )
 
     method init( existing:If )
@@ -3685,7 +3686,8 @@ class GlobalMethodTemplate : Cmd
         m.type_context   = type_context
         m.attributes.omit_doc = omit_doc
         m.organize
-        Transformer().visit( m )
+        TransformInlineForEach().visit( m )
+        TransformConditionalAccess().visit( m )
 
         type_context.global_method_template_instances.add( name )
         return m
@@ -3749,7 +3751,8 @@ class MethodTemplate : Cmd
           (forEach in type_context.extended_types).inject_inherited_method( m )
         endIf
 
-        Transformer().visit( m )
+        TransformInlineForEach().visit( m )
+        TransformConditionalAccess().visit( m )
 
         if (type_context.is_resolved)
           m.resolve
@@ -4862,40 +4865,6 @@ class TypeIndex : Cmd
 
 endClass
 
-class ConditionalContext : Cmd
-  PROPERTIES
-    context : Cmd
-
-  METHODS
-    method init( t, context )
-
-    method init( existing:ConditionalContext )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-
-    method description->String
-      return "ConditionalContext($)" (%context)
-
-endClass
-
-class IfConditionalContext : Cmd
-  PROPERTIES
-    conditional_context : ConditionalContext
-    statements          : Cmd
-
-  METHODS
-    method init( t, conditional_context, statements )
-
-    method init( existing:IfConditionalContext )
-      prior.init( existing )
-      if (existing.conditional_context) conditional_context = existing.conditional_context.cloned
-      if (existing.statements) statements = existing.statements.cloned
-
-    method description->String
-      return "IfConditionalContext($,$)" (%conditional_context,%statements)
-
-endClass
-
 class VariantList : Cmd
   PROPERTIES
     args : Cmd
@@ -5221,5 +5190,52 @@ class LiteralRealNumber : LiteralPrimitive
   METHODS
     method description->String
       return "LiteralRealNumber"
+
+endClass
+
+class ConditionalContext : Cmd
+  PROPERTIES
+    context  : Cmd
+    original : Cmd
+
+  METHODS
+    method init( t, context )
+      original = context
+
+    method init( existing:ConditionalContext )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      original = existing.original
+
+    method description->String
+      return "ConditionalContext($)" (%context)
+
+endClass
+
+class ConditionalAccess : Cmd
+  PROPERTIES
+    context       : ConditionalContext
+    access        : Cmd
+    nesting_depth : Int
+    v_result      : Local
+    #statements    : Statements
+
+  METHODS
+    method init( t, context, access )
+
+    method init( existing:ConditionalAccess )
+      prior.init( existing )
+
+      # context and access are not cloned in order to preserve their interlinked
+      # structure
+      context = existing.context
+      access = existing.access
+
+      nesting_depth = existing.nesting_depth
+      v_result = existing.v_result
+      #if (existing.statements) statements = existing.statements.cloned
+
+    method description->String
+      return "ConditionalAccess($,$)" (%context,%access)
 
 endClass

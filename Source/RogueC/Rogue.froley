@@ -2279,14 +2279,6 @@ parser
     produce AccessAndAssign(operand)
   endOn
 
-  while (nextIs("?."))
-    on "?."
-      consume_eols
-      create ConditionalContext(context)
-      member_access
-    endOn
-  endWhile
-
   if (hasAnother and not nextHasAttribute(structural) and not nextIs(EOL))
     args
     call store_statement_args
@@ -2789,8 +2781,15 @@ parser
       access_inner
     else
       member_access
+      access_inner
     endIf
-
+  elseOn "?."
+    consume_eols
+    create ConditionalContext(context)
+    duplicate
+    member_access
+    create ConditionalAccess(context:ConditionalContext,access)
+    access_inner
   elseOn "->"
     if (nextIs('('))
       savePosition
@@ -2900,7 +2899,6 @@ parser
       create ContextAccess(context,name:String,args)
     endIf
   endOn
-  access_inner
 
 - context_block_command
   create ContextBlockContext
@@ -3828,6 +3826,7 @@ parser
   create CreateObject(of_type:Type,info:Local)
   create CreateCompound(of_type:Type,args:Args)
   create DefaultArg(operand):Unary
+  #create DefaultValueOfCmdType(cmd)
   create DummyInitialValue
   create ExplicitCast(operand,to_type:Type)
   create EnumValue(of_type:Type,name:String)
@@ -3836,7 +3835,6 @@ parser
   create Escape
   create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
   create FunctionReturnValue(operand)
-  create IfConditionalContext(conditional_context:ConditionalContext,statements)
   create InlineAssignment(info:Local,value)
   create IntrospectionGetObjectProperty(info:Property,context)
   create Iterator(control,condition,statements,upkeep):Conditional
