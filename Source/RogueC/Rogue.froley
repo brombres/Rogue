@@ -166,7 +166,6 @@ SYMBOL_COLON                 :   [structural]
 SYMBOL_COLON_COLON           ::
 SYMBOL_COMMA                 ,   [structural]
 SYMBOL_COMPARE               <>
-SYMBOL_QUESTION_DOT          ?.
 SYMBOL_DOTDOT                ..
 SYMBOL_DOTDOTLT              ..<
 SYMBOL_DOTDOTGT              ..>
@@ -189,6 +188,7 @@ SYMBOL_LTLT                  <<
 SYMBOL_MINUS                 -
 SYMBOL_MINUS_MINUS           --
 SYMBOL_NE                    !=
+SYMBOL_OPERATOR_QUESTION     operator?
 SYMBOL_OPEN_CURLY            {
 SYMBOL_OPEN_SQUARE           [
 SYMBOL_OPEN_SQUARE_GT        [>
@@ -199,6 +199,11 @@ SYMBOL_PLUS                  +
 SYMBOL_PLUS_PLUS             ++
 SYMBOL_QUESTION              ?
 SYMBOL_QUESTION_COLON        ?:
+SYMBOL_QUESTION_2SLASH       ?//
+SYMBOL_QUESTION_ARROW        ?->
+SYMBOL_QUESTION_DOT          ?.
+SYMBOL_QUESTION_DOT_SQUARE   ?.[
+SYMBOL_QUESTION_SQUARE       ?[
 SYMBOL_RIGHT_SHIFT           :>>:
 SYMBOL_RIGHT_SHIFT_EQUALS    :>>:=
 SYMBOL_RIGHT_SHIFT_X         :>>>:
@@ -350,6 +355,9 @@ scanner
           endMatch
         endIf
       endIf
+    case "operator"
+      if (consume '?') produce SYMBOL_OPERATOR_QUESTION
+      else             produce IDENTIFIER
     others
       produce IDENTIFIER
   endMatch
@@ -772,6 +780,12 @@ parser
   endOn
 
 - procedure_name
+  on 'operator?'
+    # 'operator?' is a special case because otherwise 'operator?->Logical'
+    # would be parsed as 'operator' '?->' 'Logical'
+    produce Identifier(name="operator?":String)
+  endOn
+
   on @"operator"
     on "?"      -> Identifier(name="operator?":String)
     on "+"      -> Identifier(name="operator+":String)
@@ -2816,6 +2830,30 @@ parser
       create ConvertToType(operand,to_type:Type)
     endIf
     access_inner
+  elseOn "?->"
+    create ConditionalContext(context)
+    duplicate
+    if (nextIs('('))
+      savePosition
+      consume '('
+      on @"as"
+        syntaxError "'as' allows null context; no conditional access is required (write 'context->(as Type)' instead of 'context?->(as Type)')."
+      elseOnOthers
+        restorePosition
+      endOn
+    else
+      consume_eols
+    endIf
+
+    type
+    if (nextIs('('))
+      args
+      create ConvertToTypeWithArgs( operand, to_type:Type, args )
+    else
+      create ConvertToType(operand,to_type:Type)
+    endIf
+    create ConditionalAccess(context:ConditionalContext,access)
+    access_inner
   elseOn '['
     consume_eols
     savePosition
@@ -2839,6 +2877,32 @@ parser
       create ListIndexedAccess(context,args)
     endIf
     access_inner
+  elseOn '?['
+    consume_eols
+    create ConditionalContext(context)
+    duplicate
+    savePosition
+    expression
+    consume_eols
+    if (consume(']'))
+      discardPosition
+      create IndexedAccess(context,index)
+    else
+      restorePosition
+      beginList
+      expression
+      consume_eols
+      while (not consume(']'))
+        consume(',')
+        consume_eols
+        expression
+        consume_eols
+      endWhile
+      createList
+      create ListIndexedAccess(context,args)
+    endIf
+    create ConditionalAccess(context:ConditionalContext,access)
+    access_inner
   elseOn "//"
     consume_eols
     on IDENTIFIER
@@ -2848,8 +2912,22 @@ parser
     endOn
     create IndexedAccess(context,index)
     access_inner
+  elseOn "?//"
+    create ConditionalContext(context)
+    duplicate
+    consume_eols
+    on IDENTIFIER
+      create LiteralString(value=content):Literal
+    elseOnOthers
+      identifier # throws an error
+    endOn
+    create IndexedAccess(context,index)
+    create ConditionalAccess(context:ConditionalContext,access)
+    access_inner
   elseOn ".["
     context_block
+  elseOn "?.["
+    conditional_context_block
   elseOn "=>"
     consume_eols
     identifier
@@ -2883,6 +2961,27 @@ parser
     createList
     create ContextBlock(context,commands)
     access_inner
+
+- conditional_context_block
+  consume_eols
+  if (consume(']'))
+    access_inner
+    return
+  endIf
+  create ConditionalContext(context)
+  duplicate
+  beginList
+    context_block_command
+    consume_eols
+    while (consume(',') or (hasAnother and not nextIs(']')))
+      context_block_command
+      consume_eols
+    endWhile
+    mustConsume ']'
+  createList
+  create ContextBlock(context,commands)
+  create ConditionalAccess(context:ConditionalContext,access)
+  access_inner
 
 - member_access
   on '@'
