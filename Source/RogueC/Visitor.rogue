@@ -9,7 +9,7 @@ class Visitor
   #   CALL                       OVERLOADABLE METHOD
   #   --------------------       -----------------------------------------
   #   visit(cmd)->Cmd         -> on_visit(cmd:CmdType)->Cmd
-  #     visit_node(cmd)    ->   on_visit_node(cmd:CmdType)
+  #     visit_node(cmd)       ->   on_visit_node(cmd:CmdType)
   #       visit_children(cmd) ->     on_visit_children(cmd:CmdType)
   #     validate(cmd)->Cmd    ->   on_validate(cmd:CmdType)->Cmd
   #
@@ -684,13 +684,6 @@ class Visitor
     method on_visit_children( cmd:TypeIndex )
       cmd.of_type = visit(cmd.of_type)->(as Type)
 
-    method on_visit_children( cmd:ConditionalContext )
-      cmd.context = visit(cmd.context)
-
-    method on_visit_children( cmd:IfConditionalContext )
-      cmd.conditional_context = visit(cmd.conditional_context)->(as ConditionalContext)
-      cmd.statements = visit(cmd.statements)
-
     method on_visit_children( cmd:VariantList )
       cmd.args = visit(cmd.args)
 
@@ -750,6 +743,14 @@ class Visitor
 
     method on_visit_children( cmd:LiteralReal64 )
       #cmd.value = visit(cmd.value)->(as Real)
+
+    method on_visit_children( cmd:ConditionalContext )
+      cmd.context = visit(cmd.context)
+      cmd.original = visit(cmd.original)
+
+    method on_visit_children( cmd:ConditionalAccess )
+      cmd.context = visit(cmd.context)->(as ConditionalContext)
+      cmd.access = visit(cmd.access)
 
 endClass
 

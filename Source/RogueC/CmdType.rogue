@@ -381,8 +381,8 @@ augment
     method Cmd.is_simple->Logical
       return false
 
-    method Access.is_simple->Logical
-      return args is null or args.count == 0
+    method ConditionalContext.is_simple->Logical
+      return context.is_simple
 
     method ContextDirectAccess.is_simple->Logical
       return context.is_simple
@@ -610,6 +610,12 @@ augment
     method CallProcedure.type->Type
       if (result_discarded) return null
       return info.return_type
+
+    method ConditionalAccess.type->Type
+      return access.type
+
+    method ConditionalContext.type->Type
+      return original.type
 
     method ContextBlock.type->Type
       return context.type

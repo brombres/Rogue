@@ -492,9 +492,6 @@ class Resolver : Poolable, Visitor
       if (result) return result
       return cmd  # resolved primitive comparison
 
-    method on_visit( cmd:ConditionalContext )->Cmd
-      return visit( cmd.context )
-
     method on_visit( cmd:ContextAccess )->Cmd
       visit( cmd.args )
       local result = resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
@@ -781,20 +778,6 @@ class Resolver : Poolable, Visitor
       pop_scope
 
       return cmd
-
-    method on_visit( cmd:IfConditionalContext )->Cmd
-      local cmd_if = If( cmd.t, null, cmd.statements, null )
-      local context = visit( cmd.conditional_context.context )
-      local context_type = context.require_type
-      if (context.is_simple)
-        cmd_if.condition = context.cloned
-      else
-        local v_context = add_local( cmd.t, "conditional_context", context_type, DummyInitialValue )
-        insert( SetLocal(v_context,context) )
-        cmd_if.condition = GetLocal( v_context )
-        cmd.conditional_context.context = GetLocal( v_context )
-      endIf
-      return visit( cmd_if )
 
     method on_visit( cmd:IfLocal )->Cmd
       local expression = visit( cmd.expression )
@@ -1105,6 +1088,21 @@ class Resolver : Poolable, Visitor
 
       return visit( ContextBlock(t, TypeAccess(t,table_type,Args(t)), build_list) )
 
+    method on_visit( cmd:LocalDeclaration )->Cmd
+      if (not cmd.info.@type)
+        .resolve_local_type( cmd.info )
+      endIf
+      return cmd
+
+    method .resolve_local_type( v:Local )
+      if (v.initial_value)
+        v.initial_value = visit( v.initial_value ).require_value
+        if (v.@type) v.initial_value = visit( v.initial_value.resolve_conversion_to(v.@type, this) )
+        else         v.type = v.initial_value.type
+      elseIf (not v.@type)
+        throw v.t.error( "Local variable declarations must have an initial value assignment or an assigned ': Type'." )
+      endIf
+
     method on_visit( cmd:LocalDeclarations )->Cmd
       if (cmd.@type)
         # local a, b=x, c : Type
@@ -1117,13 +1115,7 @@ class Resolver : Poolable, Visitor
         # Infer any missing types.
         forEach (v in cmd.declarations)
           block v = v->(as Local)
-            if (v.initial_value)
-              v.initial_value = visit( v.initial_value ).require_value
-              if (v.@type) v.initial_value = visit( v.initial_value.resolve_conversion_to(v.@type, this) )
-              else         v.type = v.initial_value.type
-            elseIf (not v.@type)
-              throw v.t.error( "Local variable declarations must have an initial value assignment or an assigned ': Type'." )
-            endIf
+            .resolve_local_type( v )
           endBlock
         endForEach
       endIf

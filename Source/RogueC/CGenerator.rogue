@@ -626,6 +626,12 @@ class CGenerator : Visitor
       endForEach
       writer.print "))"
 
+    method on_visit_node( cmd:ConditionalAccess )
+      writer.write_default_value( cmd.access.require_type )
+
+    method on_visit_node( cmd:ConditionalContext )
+      visit( cmd.context )
+
     method on_visit_node( cmd:ConvertToByte )
       writer.print "((%Ns%RogueByte)"
       print_parenthesized( cmd.operand )

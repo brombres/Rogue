@@ -1653,7 +1653,8 @@ class Type : Cmd
       # Add object methods to dynamic method table
       forEach (m in methods.values) m.dynamic_signature  # Each method adds itself
 
-      Transformer().visit_type( this )
+      TransformInlineForEach().visit_type( this )
+      TransformConditionalAccess().visit_type( this )
 
       if (not is_aspect)
         forEach (pattern in Program.api_patterns)
