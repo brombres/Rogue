@@ -96,8 +96,9 @@ class Resolver : Poolable, Visitor
         endTemporarily
       endIf
 
-    method add_local( v:Local )->Local
-      insert( LocalDeclaration(v.t,v) )
+    method add_local( v:Local, &skip_resolve )->Local
+      if (skip_resolve) current_statements.write( LocalDeclaration(v.t,v) )
+      else              insert( LocalDeclaration(v.t,v) )
       v.index = this_procedure.locals.count + this_procedure.parameters.count
       this_procedure.locals.add( v )
       assert control_stack.count
@@ -105,9 +106,9 @@ class Resolver : Poolable, Visitor
       visible_locals.add( v )
       return v
 
-    method add_local( t:Token, base:String, type:Type, initial_value=null:Cmd )->Local
+    method add_local( t:Token, base:String, type:Type, initial_value=null:Cmd, &skip_resolve )->Local
       local v = Local( t, autoname(base), initial_value, type )
-      add_local( v )
+      add_local( v, &=skip_resolve )
       return v
 
     method auto_local( t:Token, base:String, type:Type )->Local
@@ -491,6 +492,16 @@ class Resolver : Poolable, Visitor
       local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
       if (result) return result
       return cmd  # resolved primitive comparison
+
+    method on_visit( cmd:ConditionalAccess )->Cmd
+      local statements = Statements( cmd.t )
+      local result : Cmd
+      temporarily current_statements = statements.list.rewriter
+        result = cmd.resolve_conditional_access( this ).cmd
+        current_statements.finish
+      endTemporarily
+      insert( statements )
+      return result
 
     method on_visit( cmd:ContextAccess )->Cmd
       visit( cmd.args )
@@ -1411,16 +1422,6 @@ class Resolver : Poolable, Visitor
       local result = cmd.resolve_operand_or( this, statements ).cmd
       insert( statements )
       return result
-
-      #{
-      visit_children( cmd )
-      local left_type = cmd.left.require_type
-      local right_type = cmd.right.require_type
-      local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
-      if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, this, &coerce )
-      if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, this, &coerce )
-      return cmd.left
-      }#
 
     method on_visit_node( cmd:Procedure )
       cmd.is_resolved = true
@@ -4679,8 +4680,7 @@ augment
       (left,v_result,statements) = this.left.resolve_operand_or( resolver, outer_statements )
       local left_type = left.require_type
 
-      local existing_result = v_result?
-      if (not existing_result)
+      if (not v_result)
         v_result = resolver.add_local( t, "operand_or_result", left_type, DummyInitialValue )
         statements = outer_statements
         statements.add( SetLocal(v_result, left, &initial_assignment) )
@@ -4697,4 +4697,59 @@ augment
 
       statements.add( cmd_if )
       return (cmd:GetLocal(v_result),v_result:v_result,statements:cmd_if.statements->(as Statements))
+endAugment
+
+augment
+  METHODS
+    method Cmd.resolve_conditional_access( resolver:Resolver )->(cmd:Cmd,v_context:Local,statements:Statements)
+      return (cmd:resolver.visit(this),v_context:null,statements:null)
+
+    method ConditionalContext.resolve_conditional_access( resolver:Resolver )->(cmd:Cmd,v_context:Local,statements:Statements)
+      local context : Cmd
+      local statements : Statements
+
+      if (not v_context)
+        (context,v_context,statements) = this.context.resolve_conditional_access( resolver )
+
+        if (not v_context)
+          local context_type = context.require_type
+          v_context = resolver.add_local( t, "conditional_context", context_type, DummyInitialValue )
+          resolver.current_statements.write( SetLocal(v_context, context, &initial_assignment) )
+        endIf
+
+        this.context = GetLocal( v_context )
+      endIf
+
+      return (context:this.context,v_context:v_context,statements:statements)
+
+    method ConditionalAccess.resolve_conditional_access( resolver:Resolver )->(cmd:Cmd,v_context:Local,statements:Statements)
+      if (not v_result)
+        v_result = resolver.add_local( t, "conditional_result", null, DummyInitialValue, &skip_resolve )
+        local cmd_set_local = SetLocal( v_result, null, &initial_assignment )
+        resolver.current_statements.write( cmd_set_local )
+
+        local v_context : Local
+        local statements : Statements
+
+        local result = this.context.resolve_conditional_access( resolver )
+        v_context = result.v_context
+        statements = result.statements
+
+        cmd_if = If( t, GetLocal(v_context) )
+        local access : Cmd
+        local access_type : Type
+        temporarily resolver.current_statements = cmd_if.statements->(as Statements).list.rewriter
+          access = resolver.visit( this.access )
+          access_type = access.require_type
+          v_result.type = access_type
+          cmd_set_local.new_value = DefaultValue( t, access_type )
+          resolver.current_statements.write( SetLocal( v_result, access ) )
+          resolver.current_statements.finish
+        endTemporarily
+
+        if (statements) statements.add( cmd_if )
+        else            resolver.current_statements.write( cmd_if )
+      endIf
+
+      return (cmd:GetLocal(v_result),v_context:v_result,statements:cmd_if.statements->(as Statements))
 endAugment

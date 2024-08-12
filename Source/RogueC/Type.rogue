@@ -1654,7 +1654,6 @@ class Type : Cmd
       forEach (m in methods.values) m.dynamic_signature  # Each method adds itself
 
       TransformInlineForEach().visit_type( this )
-      TransformConditionalAccess().visit_type( this )
 
       if (not is_aspect)
         forEach (pattern in Program.api_patterns)

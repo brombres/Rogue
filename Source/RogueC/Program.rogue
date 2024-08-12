@@ -385,7 +385,6 @@ class Program [singleton]
 
       Analytics.tranform.start
       apply( TransformInlineForEach() )
-      apply( TransformConditionalAccess() )
       Analytics.tranform.stop
 
       if local type_Routine = find_type( "Rogue::Routine" )

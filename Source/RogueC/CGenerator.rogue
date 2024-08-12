@@ -626,9 +626,6 @@ class CGenerator : Visitor
       endForEach
       writer.print "))"
 
-    method on_visit_node( cmd:ConditionalAccess )
-      writer.write_default_value( cmd.access.require_type )
-
     method on_visit_node( cmd:ConditionalContext )
       visit( cmd.context )
 

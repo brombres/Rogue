@@ -52,7 +52,6 @@ $include ResolveUsedElements
 $include Scanner
 $include ScopeVisitor
 $include Template
-$include TransformConditionalAccess
 $include TransformInlineForEach
 $include Type
 $include TypeOrganizer
