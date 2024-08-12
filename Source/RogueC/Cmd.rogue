@@ -3687,7 +3687,6 @@ class GlobalMethodTemplate : Cmd
         m.attributes.omit_doc = omit_doc
         m.organize
         TransformInlineForEach().visit( m )
-        TransformConditionalAccess().visit( m )
 
         type_context.global_method_template_instances.add( name )
         return m
@@ -3752,7 +3751,6 @@ class MethodTemplate : Cmd
         endIf
 
         TransformInlineForEach().visit( m )
-        TransformConditionalAccess().visit( m )
 
         if (type_context.is_resolved)
           m.resolve
@@ -5195,8 +5193,9 @@ endClass
 
 class ConditionalContext : Cmd
   PROPERTIES
-    context  : Cmd
-    original : Cmd
+    context   : Cmd
+    original  : Cmd
+    v_context : Local
 
   METHODS
     method init( t, context )
@@ -5206,6 +5205,7 @@ class ConditionalContext : Cmd
       prior.init( existing )
       if (existing.context) context = existing.context.cloned
       original = existing.original
+      v_context = existing.v_context
 
     method description->String
       return "ConditionalContext($)" (%context)
@@ -5216,9 +5216,8 @@ class ConditionalAccess : Cmd
   PROPERTIES
     context       : ConditionalContext
     access        : Cmd
-    nesting_depth : Int
     v_result      : Local
-    #statements    : Statements
+    cmd_if        : If
 
   METHODS
     method init( t, context, access )
@@ -5230,10 +5229,8 @@ class ConditionalAccess : Cmd
       # structure
       context = existing.context
       access = existing.access
-
-      nesting_depth = existing.nesting_depth
       v_result = existing.v_result
-      #if (existing.statements) statements = existing.statements.cloned
+      cmd_if = existing.cmd_if
 
     method description->String
       return "ConditionalAccess($,$)" (%context,%access)
