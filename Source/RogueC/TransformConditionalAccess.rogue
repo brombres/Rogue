@@ -3,30 +3,18 @@ module RogueC
 class TransformConditionalAccess : ScopeVisitor
   PROPERTIES
     inline_stack       = Cmd[]
-    autoname_index     = 0
     current_statements : ListRewriter<<Cmd>>
     current_statement  : Cmd
-    conditional_access_nesting_count : Int
+    nesting_depth : Int
 
   METHODS
-    method create_local( t:Token, base_name:String, type:Type, initial_value=null:Cmd )->Local
-      local v = Local( t, autoname(base_name), initial_value, type )
-      v.index = this_procedure.locals.count + this_procedure.parameters.count
-      this_procedure.locals.add( v )
-      return v
-
-    method autoname( base_name:String )->String
-      local result = "_auto_$_$"(base_name,autoname_index)
-      ++autoname_index
-      return result
-
     method on_visit( cmd:ConditionalAccess )->Cmd
-      cmd.nesting_depth = conditional_access_nesting_count
+      cmd.nesting_depth = nesting_depth
 
-      ++conditional_access_nesting_count
+      ++nesting_depth
       cmd.context = visit( cmd.context )->(as ConditionalContext)
       cmd.access = visit( cmd.access )
-      --conditional_access_nesting_count
+      --nesting_depth
 
       inline_stack.add( cmd )
 
@@ -42,8 +30,6 @@ class TransformConditionalAccess : ScopeVisitor
       cmd.context = visit( cmd.context )
       return cmd
 
-    method on_visit_node( cmd:Procedure )
-      autoname_index = 0
       visit_children( cmd )
 
     method on_visit_children( cmd:Statements )
@@ -129,14 +115,5 @@ class TransformConditionalAccess : ScopeVisitor
 
         endForEach
       endTemporarily
-
-    method .is_simple( cmd:Cmd )->Logical
-      if local access = cmd->(as Access)
-        if (access.args) return false
-        return (find_local(access.name))
-      else
-        return cmd.is_simple
-      endIf
-
 
 endClass

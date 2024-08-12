@@ -4,8 +4,20 @@ class ScopeVisitor : Visitor
   PROPERTIES
     visible_locals     = String[]
     visible_locals_fp  = Int32[]
+    autoname_index     = 0
 
   METHODS
+    method autoname( base_name:String )->String
+      local result = "_auto_$_$"(base_name,autoname_index)
+      ++autoname_index
+      return result
+
+    method create_local( t:Token, base_name:String, type:Type, initial_value=null:Cmd )->Local
+      local v = Local( t, autoname(base_name), initial_value, type )
+      v.index = this_procedure.locals.count + this_procedure.parameters.count
+      this_procedure.locals.add( v )
+      return v
+
     method find_local( name:String )->String
       forEach (v in visible_locals step -1)
         if (v == name) return v
@@ -34,6 +46,7 @@ class ScopeVisitor : Visitor
       return cmd
 
     method on_visit( cmd:Procedure )->Cmd
+      autoname_index = 0
       this_procedure = cmd
 
       visible_locals_fp.add( visible_locals.count )
@@ -123,4 +136,13 @@ class ScopeVisitor : Visitor
     method push_scope( cmd:ControlStructure )
       visible_locals_fp.add( visible_locals.count )
       visible_locals.add( forEach in cmd.locals )
+
+    method .is_simple( cmd:Cmd )->Logical
+      if local access = cmd->(as Access)
+        if (access.args) return false
+        return (find_local(access.name))
+      else
+        return cmd.is_simple
+      endIf
+
 endClass
