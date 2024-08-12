@@ -1406,6 +1406,22 @@ class Resolver : Poolable, Visitor
       # No op-and-assign operator method available
       return cmd.dispatch_resolve_op_and_assign( cmd, this )
 
+    method on_visit( cmd:OperandOr )->Cmd
+      local statements = Statements( cmd.t )
+      local result = cmd.resolve_operand_or( this, statements ).cmd
+      insert( statements )
+      return result
+
+      #{
+      visit_children( cmd )
+      local left_type = cmd.left.require_type
+      local right_type = cmd.right.require_type
+      local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
+      if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, this, &coerce )
+      if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, this, &coerce )
+      return cmd.left
+      }#
+
     method on_visit_node( cmd:Procedure )
       cmd.is_resolved = true
       autoname_index = 0
@@ -4211,6 +4227,7 @@ augment
       endIf
 
       if (cmd.symbol is null)
+        trace
         throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
 
       else
@@ -4325,6 +4342,7 @@ augment
         return cmd.dispatch_resolve_stepper( resolver )
 
       elseIf (cmd.symbol is null)
+        trace
         throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
 
       else
@@ -4373,6 +4391,7 @@ augment
         return cmd
 
       elseIf (cmd.symbol is null)
+        trace
         throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
 
       else
@@ -4646,4 +4665,36 @@ augment
       tuple_type.organize
       return resolver.validate( CreateCompound(this.t, tuple_type, args) )
 
+endAugment
+
+augment
+  METHODS
+    method Cmd.resolve_operand_or( resolver:Resolver, outer_statements:Statements )->(cmd:Cmd,v_result:Local,statements:Statements)
+      return (cmd:resolver.visit(this),v_result:null,statements:null)
+
+    method OperandOr.resolve_operand_or( resolver:Resolver, outer_statements:Statements )->(cmd:Cmd,v_result:Local,statements:Statements)
+      local left : Cmd
+      local v_result : Local
+      local statements : Statements
+      (left,v_result,statements) = this.left.resolve_operand_or( resolver, outer_statements )
+      local left_type = left.require_type
+
+      local existing_result = v_result?
+      if (not existing_result)
+        v_result = resolver.add_local( t, "operand_or_result", left_type, DummyInitialValue )
+        statements = outer_statements
+        statements.add( SetLocal(v_result, left, &initial_assignment) )
+      endIf
+
+      local cmd_if = If( t, LogicalNot( t, GetLocal(v_result) ) )
+      temporarily resolver.current_statements = cmd_if.statements->(as Statements).list.rewriter
+        local right = resolver.visit( right )
+        local right_type = right.require_type
+        v_result.type = common_op_type( t, left_type, right_type )
+        resolver.current_statements.write( SetLocal(v_result, right) )
+        resolver.current_statements.finish
+      endTemporarily
+
+      statements.add( cmd_if )
+      return (cmd:GetLocal(v_result),v_result:v_result,statements:cmd_if.statements->(as Statements))
 endAugment

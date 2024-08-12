@@ -1722,9 +1722,9 @@ parser
   endOn
 
 - inline_which_case
-  expression
+  inline_which_expression
   consume_eols
-  if (consume(':')) expression; consume_eols
+  if (consume(':')) inline_which_expression; consume_eols
   else              createNull
   produce InlineWhichCase(condition,value)
 
@@ -2669,6 +2669,12 @@ parser
   endIf
 
 - expression
+  operand_or
+
+- operand_or [binary]
+  on "||" -> OperandOr
+
+- inline_which_expression
   logical_xor
 
 - logical_xor [binary]

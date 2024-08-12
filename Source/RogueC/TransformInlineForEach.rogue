@@ -5,7 +5,6 @@ class TransformInlineForEach : Visitor
     inline_stack       = Cmd[]
     autoname_index     = 0
     current_statements : ListRewriter<<Cmd>>
-    conditional_access_nesting_count : Int
 
   METHODS
     method autoname( base_name:String )->String
