@@ -1417,6 +1417,9 @@ class Resolver : Poolable, Visitor
       # No op-and-assign operator method available
       return cmd.dispatch_resolve_op_and_assign( cmd, this )
 
+    method on_visit( cmd:OperandAnd )->Cmd
+      return cmd.resolve_operand_and( this )
+
     method on_visit( cmd:OperandOr )->Cmd
       local statements = Statements( cmd.t )
       local result = cmd.resolve_operand_or( this, statements ).cmd
@@ -4666,6 +4669,28 @@ augment
       tuple_type.organize
       return resolver.validate( CreateCompound(this.t, tuple_type, args) )
 
+endAugment
+
+augment
+  METHODS
+    method Cmd.resolve_operand_and( resolver:Resolver, depth=0:Int )->Cmd
+      return resolver.visit(this)
+
+    method OperandAnd.resolve_operand_and( resolver:Resolver, depth=0:Int )->Cmd
+      if (depth)
+        return resolver.visit( LogicalAnd( t, left, right ) )
+      else
+        local left = left.resolve_operand_and( resolver, depth+1 )
+        local right = resolver.visit( right )
+        local right_type = right.require_type
+        local v_result = resolver.add_local( t, "operand_and_result", right_type, DummyInitialValue )
+        resolver.insert( SetLocal(v_result, DefaultValue(t,right_type), &initial_assignment) )
+
+        local cmd_if = If( t, left )
+        cmd_if.statements.add( SetLocal(v_result, right) )
+        resolver.insert( cmd_if )
+        return resolver.validate( GetLocal(v_result) )
+      endIf
 endAugment
 
 augment

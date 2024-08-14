@@ -170,6 +170,7 @@ SYMBOL_DOTDOT                ..
 SYMBOL_DOTDOTLT              ..<
 SYMBOL_DOTDOTGT              ..>
 SYMBOL_DOT_OPEN_SQUARE       .[
+SYMBOL_DOUBLE_AMPERSAND      &&
 SYMBOL_DOUBLE_VERTICAL_BAR   ||  [structural]
 SYMBOL_EMPTY_SQUARE_BRACKETS []
 SYMBOL_VARIANT_LIST            @[
@@ -2671,11 +2672,14 @@ parser
 - expression
   operand_or
 
-- operand_or [binary]
-  on "||" -> OperandOr
-
 - inline_which_expression
-  logical_xor
+  operand_and
+
+- operand_or [binary]
+  on '||' -> OperandOr
+
+- operand_and [binary]
+  on '&&' -> OperandAnd
 
 - logical_xor [binary]
   on "xor" -> LogicalXor
