@@ -5250,3 +5250,10 @@ class OperandOr : Binary
       return "OperandOr($,$)" (%left,%right)
 
 endClass
+
+class OperandAnd : Binary
+  METHODS
+    method description->String
+      return "OperandAnd($,$)" (%left,%right)
+
+endClass
