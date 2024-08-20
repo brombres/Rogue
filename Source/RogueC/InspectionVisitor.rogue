@@ -994,11 +994,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.optional_type)
       return result
 
-    method on_visit_children( cmd:CallPriorMethod )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.args)
-      return result
-
     method on_visit_children( cmd:CallbackFunction )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.context)
@@ -1087,13 +1082,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.command)
       return result
 
-    method on_visit_children( cmd:CallPriorTemplatedMethod )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.template_args)
-      if (result?) return result
-      result = visit(cmd.args)
-      return result
-
     #method on_visit_children( cmd:Statements )->$ReturnType
 
     method on_visit_children( cmd:CallVirtualMethod )->$ReturnType
@@ -1158,6 +1146,22 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.context)
       if (result?) return result
       result = visit(cmd.access)
+      return result
+
+    method on_visit_children( cmd:CallPriorMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type_context)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:CallPriorTemplatedMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type_context)
+      if (result?) return result
+      result = visit(cmd.template_args)
+      if (result?) return result
+      result = visit(cmd.args)
       return result
 
 endClass
