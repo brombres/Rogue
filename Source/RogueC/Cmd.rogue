@@ -4672,19 +4672,21 @@ endClass
 
 class CallPriorMethod : Cmd
   PROPERTIES
+    type_context : Type
     name : String
     args : Args
 
   METHODS
-    method init( t, name, args )
+    method init( t, type_context, name, args )
 
     method init( existing:CallPriorMethod )
       prior.init( existing )
       name = existing.name
       if (existing.args) args = existing.args.cloned
+      type_context = existing.type_context
 
     method description->String
-      return "CallPriorMethod($,$)" (%name,%args)
+      return "CallPriorMethod($,$,$)" (%type_context,%name,%args)
 
 endClass
 
@@ -5004,21 +5006,23 @@ endClass
 
 class CallPriorTemplatedMethod : Cmd
   PROPERTIES
+    type_context  : Type
     name          : String
     template_args : TemplateArgs
     args          : Args
 
   METHODS
-    method init( t, name, template_args, args )
+    method init( t, type_context, name, template_args, args )
 
     method init( existing:CallPriorTemplatedMethod )
       prior.init( existing )
       name = existing.name
       if (existing.template_args) template_args = existing.template_args.cloned
       if (existing.args) args = existing.args.cloned
+      type_context = existing.type_context
 
     method description->String
-      return "CallPriorTemplatedMethod($,$,$)" (%name,%template_args,%args)
+      return "CallPriorTemplatedMethod($,$,$,$)" (%type_context,%name,%template_args,%args)
 
 endClass
 

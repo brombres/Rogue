@@ -356,32 +356,41 @@ class Resolver : Poolable, Visitor
 
     method on_visit( cmd:CallPriorMethod )->Cmd
       if (not this_type.base_class)
-        throw cmd.t.error( "Invalid prior call - $ is not an extended class."(this_type) )
+        throw cmd.t.error( "Invalid prior call - type context $ is not an extended class."(this_type) )
       endIf
 
       local args = which{ cmd.args || Args(cmd.t) }
+      local prior_m : Procedure
 
-      local m = find_method( cmd.t, this_type.base_class, null, cmd.name, args )
-      local prior_m = m
-      if (prior_m.type_context is this_type) prior_m = prior_m.overridden_method
-      if (not prior_m) throw cmd.t.error( "Invalid prior call - $ has no prior definition."(m) )
+      if (cmd.type_context)
+        cmd.type_context.organize
+        if (not this_type.instance_of(cmd.type_context))
+          throw cmd.t.error( "Invalid prior call - type context $ is not instanceOf $."(this_type,cmd.type_context) )
+        endIf
+        prior_m = find_method( cmd.t, cmd.type_context, null, cmd.name, args )
+      else
+        local m = find_method( cmd.t, this_type.base_class, null, cmd.name, args )
+        prior_m = m
+        if (prior_m.type_context is this_type) prior_m = prior_m.overridden_method
+        if (not prior_m) throw cmd.t.error( "Invalid prior call - $ has no prior definition."(m) )
 
-      if (not prior_m)
-        if (cmd.name == "init")
-          # Initializers are a special case.
-          local base_type = this_type.base_class
-          while (base_type and not prior_m)
-            prior_m = find_method( cmd.t, base_type, null, "init", args, &suppress_error )
-            base_type .= base_class
-          endWhile
+        if (not prior_m)
+          if (cmd.name == "init")
+            # Initializers are a special case.
+            local base_type = this_type.base_class
+            while (base_type and not prior_m)
+              prior_m = find_method( cmd.t, base_type, null, "init", args, &suppress_error )
+              base_type .= base_class
+            endWhile
 
-          if (not prior_m)
-            throw cmd.t.error( "Invalid prior call - no ancestor of $ defines a compatible initializer."(this_type) )
+            if (not prior_m)
+              throw cmd.t.error( "Invalid prior call - no ancestor of type context $ defines a compatible initializer."(this_type) )
+            endIf
+
+          else
+            throw cmd.t.error( "Invalid prior call - $ does not override any base class methods. " ...
+                "Note that any incorporated aspect methods cannot be called with 'prior'."(m) )
           endIf
-
-        else
-          throw cmd.t.error( "Invalid prior call - $ does not override any base class methods. " ...
-              "Note that any incorporated aspect methods cannot be called with 'prior'."(m) )
         endIf
       endIf
 

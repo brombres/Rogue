@@ -3108,18 +3108,21 @@ parser
   on "pi"                 -> LiteralPi:Literal
 
   on "prior"
+    if (consume("<<")) type; mustConsume '>>'
+    else               createNull
+
     mustConsume '.'
     identifier
     if (nextIs("<<"))
       template_args
       if (nextIs('(')) access_args
       else             createNull
-      create CallPriorTemplatedMethod( name:String, template_args:TemplateArgs, args:Args )
+      create CallPriorTemplatedMethod( type_context:Type, name:String, template_args:TemplateArgs, args:Args )
       access_inner
     else
       if (nextIs('(')) access_args
       else             createNull
-      create CallPriorMethod( name:String, args:Args )
+      create CallPriorMethod( type_context:Type, name:String, args:Args )
       access_inner
     endIf
     return
