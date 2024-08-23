@@ -718,8 +718,11 @@ class Local : Cmd
       attributes = existing.attributes.cloned
 
     method description->String
-      return "Local($,$)" (%name,%type)
-      #return "Local($,$,$)" (%name,%initial_value,%type)
+      if (initial_value and initial_value is not DummyInitialValue)
+        return "Local($,$,$)" (%name,%type,%initial_value)
+      else
+        return "Local($,$)" (%name,%type)
+      endIf
 
 endClass
 

@@ -152,6 +152,9 @@ class CSpecializer : Visitor
       endIf
       return on_visit( cmd->(as CallProcedure) )
 
+    method on_visit_children( cmd:ConditionalContext )
+      cmd.context = visit(cmd.context)
+
     method on_visit( cmd:ControlStructure )->Cmd
       control_stack.add( cmd )
       visit_node( cmd )
