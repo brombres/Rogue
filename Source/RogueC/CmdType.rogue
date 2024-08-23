@@ -569,6 +569,7 @@ augment
     method BitShiftLeft.symbol->String:          return ":<<:"
     method BitShiftRight.symbol->String:         return ":>>:"
     method BitShiftRightX.symbol->String:        return ":>>>:"
+    method OperandAnd.symbol->String:             return "||"
     method OperandOr.symbol->String:             return "||"
     method OpAndAssign.symbol->String:           return null
     method AddAndAssign.symbol->String:          return "+="
@@ -831,6 +832,12 @@ augment
 
     method LiteralUndefined.type->Type
       return Program.type_Variant
+
+    method OperandAnd.type->Type
+      local left_type = left.type
+      local right_type = right.type
+      if (left_type is right_type) return left_type
+      return null
 
     method OperandOr.type->Type
       local left_type = left.type
