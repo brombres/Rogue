@@ -2121,6 +2121,10 @@ class Resolver : Poolable, Visitor
       return null  # never reached
 
     method resolve_call( t:Token, context:Cmd, m:Procedure, args=null:Cmd )->Cmd
+      if local default_arg_context = context->(as DefaultArg)
+        context = default_arg_context.operand
+      endIf
+
       if (not args)
         args = CmdList(t)
       else
