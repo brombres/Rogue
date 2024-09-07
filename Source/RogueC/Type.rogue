@@ -451,11 +451,11 @@ class Type : Cmd
 
       if (name == "Routine")
         forEach (m in global_methods)
-          if (not m.attributes.omit_doc and m.t.filepath.begins_with(Program.doc_root)) return true
+          if (not m.attributes.omit_doc and Program.doc_root_prefix(m.t.filepath)) return true
         endForEach
       endIf
 
-      if (not t.filepath.begins_with(Program.doc_root)) return false
+      if (not Program.doc_root_prefix(t.filepath)) return false
 
       if (name.begins_with("_Doc_Gen_"))
         if (not type_template) return false  # this was a dummy type used to generate another type template

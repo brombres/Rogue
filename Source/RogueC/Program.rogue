@@ -21,7 +21,7 @@ class Program [singleton]
     generate_main     = false
     generate_doc      = false
     no_stdlib         = false
-    doc_root          : String
+    doc_roots         : String[]
     output_filepath   : String
     stack_trace       = false
     int_bits          : Int # Set with --int=[32|64] compile option
@@ -204,6 +204,12 @@ class Program [singleton]
 
     method description->String
       return "Program"
+
+    method doc_root_prefix( filepath:String )->String
+      forEach (doc_root in doc_roots)
+        if (filepath.begins_with(doc_root)) return doc_root
+      endForEach
+      return null
 
     method find_type( name:String )->Type
       block
@@ -490,8 +496,8 @@ class Program [singleton]
             "attributes":  []
           }
 
-          if (type.t.filepath.begins_with(Program.doc_root))
-            type_info//filepath = type.t.filepath.after_first( Program.doc_root )
+          if local doc_root = doc_root_prefix( type.t.filepath )
+            type_info//filepath = type.t.filepath.after_first( doc_root )
           else
             type_info//filepath = File(filepath).filename
           endIf
@@ -573,7 +579,8 @@ class Program [singleton]
             forEach (m in type.global_methods)
               if (m.attributes.omit_doc) nextIteration
               if (augmented_type and type.base_class is Program.type_Object and not m.attributes.augmented) nextIteration
-              if (is_routine and not m.t.filepath.begins_with(Program.doc_root)) nextIteration
+
+              if (is_routine and not doc_root_prefix(m.t.filepath)) nextIteration
 
               local m_info =
               @{
@@ -588,7 +595,9 @@ class Program [singleton]
                 m_info//doc_return_type = doc_name(m.return_type.doc_type.scoped_name)
               endIf
 
-              if (is_routine) m_info//filepath = m.t.filepath.after_first( Program.doc_root )
+              if (is_routine)
+                m_info//filepath = m.t.filepath.after_first( doc_root_prefix(m.t.filepath) )
+              endIf
 
               local params = m_info//parameters
               forEach (p in m.parameters)
