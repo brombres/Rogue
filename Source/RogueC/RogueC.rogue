@@ -179,21 +179,25 @@ class RogueC
       endIf
 
       if (Program.generate_doc)
-        if (command//options//doc == Variant(true))
-          # Include all Standard Library files to generate the docs from.
-          Program.doc_root = libraries_folder.abs.filepath + '/'
-          Program.include( "Standard" )
-          Program.include( forEach in Files(libraries_folder,"**/*.rogue"), &api=api_includes )
-        else
-          local doc_path = File( command//options//doc->String )
-          Program.doc_root = doc_path.abs.filepath
-          if (doc_path.is_folder)
-            Program.doc_root += '/'
-            Program.include( forEach in Files(doc_path,"**/*.rogue"), &api=api_includes )
+        ensure<<Program.doc_roots>>
+        forEach (doc_root in command//options//doc)
+          if (doc_root == Variant(true))
+            # Include all Standard Library files to generate the docs from.
+            Program.doc_roots.add( libraries_folder.abs.filepath + '/' )
+            Program.include( "Standard" )
+            Program.include( forEach in Files(libraries_folder,"**/*.rogue"), &api=api_includes )
           else
-            Program.include( doc_path.filepath, &api=api_includes )
+            local doc_path = File( doc_root )
+            local doc_filepath = doc_path.abs.filepath
+            if (doc_path.is_folder)
+              doc_filepath += '/'
+              Program.include( forEach in Files(doc_path,"**/*.rogue"), &api=api_includes )
+            else
+              Program.include( doc_path.filepath, &api=api_includes )
+            endIf
+            Program.doc_roots.add( doc_filepath )
           endIf
-        endIf
+        endForEach
       endIf
 
       forEach (option in command//options//api)
@@ -246,7 +250,7 @@ class RogueC
         option( "--api=", &optional, &multi )
         option( "--debug" )
         option( "--define=", &alias="-D", &multi )
-        option( "--doc=", &optional )
+        option( "--doc=", &optional, &multi )
         option( "--gc=" )
         option( "--gc-threshold=" )
         option( "--help",       &aliases=["-h","-?"] )
