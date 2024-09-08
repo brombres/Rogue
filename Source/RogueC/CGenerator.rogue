@@ -809,7 +809,7 @@ class CGenerator : Visitor
           endForEach
           writer.println
 
-          forEach (v in this_procedure.locals from this_procedure.parameters.count)
+          forEach (v in this_procedure.locals)
             .generate_add_to_local_pointer_stack( v )
           endForEach
         endIf
