@@ -431,23 +431,23 @@ function! GetRogueIndent( line_num )
   let s:indnt = indent( s:prev_line_num )
 
   " anything that starts with one of these keywords should go on column 0
-  if s:this_codeline =~# '^\s*\(class\|augment\|endClass\|endAugment\)'
+  if s:this_codeline =~# '^\s*\(\<class\>\|\<augment\>\|\<endClass\>\|\<endAugment\>\)'
     return 0
   endif
 
-  if s:this_codeline =~# '^\s*\(CLASS\|GLOBAL\|DEFINITIONS\|CATEGORIES\|ENUMERATE\|PROPERTIES\|METHODS\|STATES\)'
+  if s:this_codeline =~# '^\s*\(\<CLASS\>\|\<GLOBAL\>\|\<DEFINITIONS\>\|\<CATEGORIES\>\|\<ENUMERATE\>\|\<PROPERTIES\>\|\<METHODS\>\|\<STATES\>\)'
     return 2
   endif
 
-  if s:prev_codeline =~# '^\s*\(class\|augment\)\>'
+  if s:prev_codeline =~# '^\s*\(\<class\>\|\<augment\>\)\>'
     return 2
   endif
 
-  if s:prev_codeline =~# '^\s*\(endClass\|endAugment\)\>'
+  if s:prev_codeline =~# '^\s*\(\<endClass\>\|\<endAugment\>\)\>'
     return 0
   endif
 
-  if s:prev_codeline =~# '^\s*\(CLASS\|GLOBAL\|DEFINITIONS\|CATEGORIES\|ENUMERATE\|PROPERTIES\|METHODS\)'
+  if s:prev_codeline =~# '^\s*\(\<CLASS\>\|\<GLOBAL\>\|\<DEFINITIONS\>\|\<CATEGORIES\>\|\<ENUMERATE\>\|\<PROPERTIES\>\|\<METHODS\>\)'
     return 4
   endif
 
@@ -457,7 +457,7 @@ function! GetRogueIndent( line_num )
     endif
   endif
 
-  if s:this_codeline =~# '^\s*\(method \)'
+  if s:this_codeline =~# '^\s*\(\<method \)'
     if (IsInSTATES(a:line_num-1))
       return 6
     else
@@ -465,7 +465,7 @@ function! GetRogueIndent( line_num )
     endif
   endif
 
-  if s:prev_codeline =~# '^\s*\(method \)'
+  if s:prev_codeline =~# '^\s*\(\<method \)'
     if (IsInSTATES(a:line_num-1))
       return 8
     else
@@ -473,15 +473,15 @@ function! GetRogueIndent( line_num )
     endif
   endif
 
-  if s:this_codeline =~ '\C^\s*\(routine \)'
+  if s:this_codeline =~ '\C^\s*\(\<routine \)'
     return 0
   endif
 
-  if s:this_codeline =~ '\C^\s*\(endRoutine\)'
+  if s:this_codeline =~ '\C^\s*\(\<endRoutine\)'
     return 0
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(routine \)'
+  if s:prev_codeline =~ '\C^\s*\(\<routine \)'
     return 2
   endif
 
@@ -500,27 +500,27 @@ function! GetRogueIndent( line_num )
     endif
   endif
 
-  if s:this_codeline =~# '^\s*endWhich'
+  if s:this_codeline =~# '^\s*\<endWhich\>'
     return FindIndentOfPrevWhich(a:line_num-1)
   endif
 
-  if s:prev_codeline =~ '\C^\s*which'
+  if s:prev_codeline =~ '\C^\s*\<which\>'
     return s:indnt + s:sw
   endif
 
-  if s:this_codeline =~ '\C^\s*\(case\|others\)'
+  if s:this_codeline =~ '\C^\s*\(\<case\>\|\<others\>\)'
     return FindIndentForCase(a:line_num-1)
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(case\|others\)'
+  if s:prev_codeline =~ '\C^\s*\(\<case\>\|\<others\>\)'
       return s:indnt + s:sw
   endif
 
-  if s:this_codeline =~ '\C^\s*\(endIf\)\>'
+  if s:this_codeline =~ '\C^\s*\(\<endIf\>\)\>'
       return FindIndentOfPrevIf(a:line_num-1)
   endif
 
-  if s:this_codeline =~ '\C^\s*\(else\|elseIf\)\>'
+  if s:this_codeline =~ '\C^\s*\(\<else\>\|\<elseIf\>\)\>'
     "echo('This line is conditional')
     if IsSingleLineCond(s:this_codeline)>0
       "If this is a single line conditional we need to see if previous line was...
@@ -539,47 +539,47 @@ function! GetRogueIndent( line_num )
     endif
   endif
 
-  if s:this_codeline =~ '\C^\s*\(endTry\|catch\)\>'
+  if s:this_codeline =~ '\C^\s*\(\<endTry\>\|\<catch\>\)\>'
     return FindIndentOfPrevTry(a:line_num-1)
   endif
 
-  if s:this_codeline =~ '\C^\s*\(endUse\)\>'
+  if s:this_codeline =~ '\C^\s*\(\<endUse\>\)\>'
     return FindIndentOfPrevUse(a:line_num-1)
   endif
 
-  if s:this_codeline =~ '\C^\s*\(endForEach\)\>'
+  if s:this_codeline =~ '\C^\s*\(\<endForEach\>\)\>'
     return FindIndentOfPrevForEach(a:line_num-1)
   endif
 
-  if s:this_codeline =~ '\C^\s*\(endWhile\)\>'
+  if s:this_codeline =~ '\C^\s*\(\<endWhile\>\)\>'
     return FindIndentOfPrevWhile(a:line_num-1)
   endif
 
-  if s:this_codeline =~ '\C^\s*\(endContingent\|satisfied\|unsatisfied\)\>'
+  if s:this_codeline =~ '\C^\s*\(\<endContingent\>\|\<satisfied\>\|\<unsatisfied\>\)\>'
     return FindIndentOfPrevContingent(a:line_num-1)
   endif
 
-  if s:this_codeline =~ '\C^\s*\(endBlock\)\>'
+  if s:this_codeline =~ '\C^\s*\(\<endBlock\>\)\>'
     return FindIndentOfPrevBlock(a:line_num-1)
   endif
 
-  if s:this_codeline =~ '\C^\s*\(endTemporarily\)\>'
+  if s:this_codeline =~ '\C^\s*\(\<endTemporarily\>\)\>'
     return FindIndentOfPrevTemporarily(a:line_num-1)
   endif
 
-  if s:this_codeline =~ '\C^\s*\(endLoop\)\>'
+  if s:this_codeline =~ '\C^\s*\(\<endLoop\>\)\>'
     return FindIndentOfPrevLoop(a:line_num-1)
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(try\|catch\)\>'
+  if s:prev_codeline =~ '\C^\s*\(\<try\>\|\<catch\>\)\>'
     return s:indnt + s:sw
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(use\)\>'
+  if s:prev_codeline =~ '\C^\s*\(\<use\>\)\>'
     return s:indnt + s:sw
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(block\|if\|while\|forEach\|loop\|else\|elseIf\|try\|catch\|use\)\>'
+  if s:prev_codeline =~ '\C^\s*\(\<block\>\|\<if\>\|\<while\>\|\<forEach\>\|\<loop\>\|\<else\>\|\<elseIf\>\|\<try\>\|\<catch\>\|\<use\>\)\>'
       "echo('Previous is conditional')
     if IsSingleLineCond(s:prev_codeline)>0
       "echo('Prev is Single line cond')
@@ -590,12 +590,12 @@ function! GetRogueIndent( line_num )
     endif
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(temporarily\)\>'
+  if s:prev_codeline =~ '\C^\s*\(\<temporarily\>\)\>'
       return s:indnt + s:sw
     endif
   endif
 
-  if s:prev_codeline =~ '^\s*\<\(contingent\|satisfied\|unsatisfied\)\>'
+  if s:prev_codeline =~ '^\s*\<\(\<contingent\>\|\<satisfied\>\|\<unsatisfied\>\)\>'
     return s:indnt + s:sw
   endif
 
