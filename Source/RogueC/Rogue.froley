@@ -3116,7 +3116,7 @@ parser
     else               createNull
 
     mustConsume '.'
-    identifier
+    procedure_name
     if (nextIs("<<"))
       template_args
       if (nextIs('(')) access_args
