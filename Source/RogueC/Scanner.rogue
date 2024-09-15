@@ -14,7 +14,7 @@ class Scanner : ScannerCore, Poolable
     uses_Scanner       : Logical
     uses_Set           : Logical
     uses_Table         : Logical
-    uses_Variant         : Logical
+    uses_Variant       : Logical
 
   PROPERTIES
     beginning_of_line : ScannerLocation

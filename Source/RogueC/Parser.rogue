@@ -43,9 +43,6 @@ class Parser : ParserCore, Poolable
       prior.init( _tokens )
 
     method reset
-      on_return_to_pool
-
-    method on_return_to_pool
       _list_starts.clear
       _list_tokens.clear
       _saved_positions.clear
@@ -73,6 +70,9 @@ class Parser : ParserCore, Poolable
       generic_fn_args_used  = 0
 
       if (local_macros) local_macros.clear
+
+    method on_return_to_pool
+      reset
 
     method create_rogue_version_string->Int
       processed_tokens.add( _cur_t.cloned(TokenType.STRING,VERSION.after_any('v')) )
