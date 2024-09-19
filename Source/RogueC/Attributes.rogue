@@ -50,6 +50,7 @@ class Attribute
     AUGMENTED          = (Int64(1):<<:45)
     REPLACE            = (Int64(1):<<:46)
     INTERNAL_ID        = (Int64(1):<<:47)
+    DELETED            = (Int64(1):<<:48)
 endClass
 
 class Attributes : CmdList
@@ -101,6 +102,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE<< augmented,            Attribute.AUGMENTED >>
   ROGUE_ATTRIBUTE<< is_replace,           Attribute.REPLACE >>
   ROGUE_ATTRIBUTE<< is_internal_id,       Attribute.INTERNAL_ID >>
+  ROGUE_ATTRIBUTE<< deleted,              Attribute.DELETED >>
 
   PROPERTIES
     flags : Int64

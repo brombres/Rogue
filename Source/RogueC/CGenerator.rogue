@@ -766,6 +766,7 @@ class CGenerator : Visitor
         # Declare all local variables.
         if (this_procedure.locals.count)
           forEach (v in this_procedure.locals)
+            if (v.attributes.deleted) nextIteration
             writer.[ print(v.type.c_ref_name), print(' ') ]
             writer.print( v.c_name )
             writer.print( " = " )
@@ -1210,6 +1211,8 @@ class CGenerator : Visitor
 
     method on_visit_node( cmd:LocalDeclaration )
       local v = cmd.info
+      if (v.attributes.deleted) return
+
       if (Program.gc_auto)
         # In auto-gc variables have already been declared but we need to reinitialize locals (that
         # don't have an explicit initial value) at this point of original declaration to prevent logic bugs.
