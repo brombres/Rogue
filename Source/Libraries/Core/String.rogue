@@ -321,6 +321,8 @@ class String : Poolable PrintWriter
       is_ascii = true
 
     method clipped( &left=0:Int, &right=0:Int )->String
+      # Removes the specified number of characters from the left and/or right sides of this string
+      # and returns the result.
       return from( left, count-(right+1) )
 
     method compare_to( other:String, &ignore_case )->Int

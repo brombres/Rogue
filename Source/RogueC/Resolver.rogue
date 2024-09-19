@@ -4761,10 +4761,14 @@ augment
       return (context:this.context,v_context:v_context,statements:statements)
 
     method ConditionalAccess.resolve_conditional_access( resolver:Resolver )->(cmd:Cmd,v_context:Local,statements:Statements)
+      local access_type : Type
+      local access : Cmd
+
       if (not v_result)
         v_result = resolver.add_local( t, "conditional_result", null, DummyInitialValue, &skip_resolve )
         local cmd_set_local = SetLocal( v_result, null, &initial_assignment )
-        resolver.current_statements.write( cmd_set_local )
+        local cmd_set_local_statements = Statements( cmd_set_local )
+        resolver.current_statements.write( cmd_set_local_statements )
 
         local v_context : Local
         local statements : Statements
@@ -4774,14 +4778,20 @@ augment
         statements = result.statements
 
         cmd_if = If( t, GetLocal(v_context) )
-        local access : Cmd
-        local access_type : Type
         temporarily resolver.current_statements = cmd_if.statements->(as Statements).list.rewriter
           access = resolver.visit( this.access )
-          access_type = access.require_type
-          v_result.type = access_type
-          cmd_set_local.new_value = DefaultValue( t, access_type )
-          resolver.current_statements.write( SetLocal( v_result, access ) )
+          access_type = access.type
+          if (access_type)
+            v_result.type = access_type
+            cmd_set_local.new_value = DefaultValue( t, access_type )
+            resolver.current_statements.write( SetLocal( v_result, access ) )
+          else
+            v_result.type = Program.type_Logical
+            v_result.attributes.deleted = true
+            v_result = null
+            cmd_set_local_statements.clear
+            resolver.current_statements.write( access )
+          endIf
           resolver.current_statements.finish
         endTemporarily
 
@@ -4789,5 +4799,9 @@ augment
         else            resolver.current_statements.write( cmd_if )
       endIf
 
-      return (cmd:GetLocal(v_result),v_context:v_result,statements:cmd_if.statements->(as Statements))
+      if (v_result)
+        return (cmd:GetLocal(v_result),v_context:v_result,statements:cmd_if.statements->(as Statements))
+      else
+        return (cmd:Statements(t),v_context:v_result,statements:cmd_if.statements->(as Statements))
+      endIf
 endAugment
