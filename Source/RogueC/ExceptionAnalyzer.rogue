@@ -42,7 +42,7 @@ class ExceptionAnalyzer : InspectionVisitor
       local throws : ExceptionTypes
       throws |= (forEach in group).throws
       (forEach in group).throws = throws
-      #@trace reference_m, %throws
+      reference_m.throws = throws
 
     method on_visit_node( cmd:CallProcedure )
       if (cmd.info.throws)
@@ -80,11 +80,11 @@ class ExceptionAnalyzer : InspectionVisitor
       cmd.is_analyzed = true
       back_propagate_thrown_exception( cmd.exception.type )
 
-    method on_visit( cmd:Try )->Cmd
+    method on_visit( cmd:Try )->Logical
       control_stack.add( cmd )
       visit( cmd.statements )
       control_stack.remove_last
       visit( cmd.catches )
-      return cmd
+      return false
 
 endClass
