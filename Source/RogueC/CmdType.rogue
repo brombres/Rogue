@@ -158,12 +158,12 @@ augment
           endIf
         endIf
 
-        # See if this_type has a to->TargetType method ( to<<Type>>->Type )
-        local type_arg = TemplateArgs( cmd.t, target_type )
-        local result = resolver.resolve_call( t, this_type, cmd, type_arg->String("to"), null, &suppress_error )
-        if (result) return result
-
         if (not limit_conversions)
+          # See if this_type has a to->TargetType method ( to<<Type>>->Type )
+          local type_arg = TemplateArgs( cmd.t, target_type )
+          local result = resolver.resolve_call( t, this_type, cmd, type_arg->String("to"), null, &suppress_error )
+          if (result) return result
+
           # Look for a TargetType(cmd) constructor.
           local exact_arg_types = not (this_type.is_reference and (target_type.is_reference or target_type is Program.@type_Variant))
           result = resolver.resolve_type_access( t, target_type, Args(t,cmd), &suppress_error, &=exact_arg_types, &limit_conversions )
