@@ -189,10 +189,6 @@ class Visitor
       cmd.starting_index = visit(cmd.starting_index)
       cmd.step_size = visit(cmd.step_size)
 
-    method on_visit_children( cmd:ForEachControl )
-      cmd.optional_at = visit(cmd.optional_at)->(as ForEachAt)
-      cmd.collection = visit(cmd.collection)->(as ForEachCollection)
-
     method on_visit_children( cmd:Conditional )
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
@@ -753,6 +749,11 @@ class Visitor
       cmd.type_context = visit(cmd.type_context)->(as Type)
       cmd.template_args = visit(cmd.template_args)->(as TemplateArgs)
       cmd.args = visit(cmd.args)->(as Args)
+
+    method on_visit_children( cmd:ForEachControl )
+      cmd.optional_as = visit(cmd.optional_as)->(as Type)
+      cmd.optional_at = visit(cmd.optional_at)->(as ForEachAt)
+      cmd.collection = visit(cmd.collection)->(as ForEachCollection)
 
 endClass
 

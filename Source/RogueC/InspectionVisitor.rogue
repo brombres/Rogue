@@ -318,13 +318,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.step_size)
       return result
 
-    method on_visit_children( cmd:ForEachControl )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.optional_at)
-      if (result?) return result
-      result = visit(cmd.collection)
-      return result
-
     method on_visit_children( cmd:GetGlobalProperty )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.info)
@@ -1162,6 +1155,15 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.template_args)
       if (result?) return result
       result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:ForEachControl )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.optional_as)
+      if (result?) return result
+      result = visit(cmd.optional_at)
+      if (result?) return result
+      result = visit(cmd.collection)
       return result
 
 endClass

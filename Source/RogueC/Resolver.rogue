@@ -3837,18 +3837,20 @@ augment
       local collection_type = cmd_collection.data.require_type
       collection_type.organize
 
-      if (collection_type.instance_of(Program.type_TableType))
+      local is_table = collection_type.instance_of( Program.type_TableType )
+
+      if (is_table)
         # forEach (value in table)
         #   ->
         # forEach (entry in table.entries)
-        #   local value = entry.value
+        #   local value = entry.value [->(as optional_as)]
         #   ...
         #
         # forEach (value at key in table)
         #   ->
         # forEach (entry in table.entries)
         #   local key = entry.key
-        #   local value = entry.value
+        #   local value = entry.value [->(as optional_as)]
         #   ...
         local entry_type = collection_type.properties//first_entry.type
         local key_type   = entry_type.properties//key.type
@@ -3862,9 +3864,18 @@ augment
         cmd_control.name = entry_name
 
         local t = cmd_control.t
-        cmd_iterator.statements.insert(
-          SetLocal( v_value, ContextAccess(t,Access(t,entry_name),"value"), &initial_assignment )
-        )
+        block
+          local cmd_get_value = ContextAccess(t,Access(t,entry_name),"value") : Cmd
+          if (cmd_control.optional_as)
+            cmd_get_value = As( t, cmd_get_value, cmd_control.optional_as )
+            cmd_iterator.statements.insert(
+              If( t, LogicalNot(t, GetLocal(v_value)), Statements(NextIteration(t)) )
+            )
+          endIf
+          cmd_iterator.statements.insert(
+            SetLocal( v_value, cmd_get_value, &initial_assignment )
+          )
+        endBlock
 
         if (cmd_control.optional_at)
           t = cmd_control.optional_at.t
@@ -3930,13 +3941,17 @@ augment
 
         if (cmd_control.name)
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
-          cmd_iterator.statements.insert(
-            SetLocal( v_cur,
+          local cmd_get_value =
               resolver.resolve_call( cmd_collection.t, cmd_get_collection, m_get,
-              Args(cmd_collection.t,GetLocal(v_index)) ),
-              &initial_assignment
+              Args(cmd_collection.t,GetLocal(v_index)) ) : Cmd
+          if (not is_table and cmd_control.optional_as)
+            cmd_get_value = As( cmd_control.t, cmd_get_value, cmd_control.optional_as )
+            cmd_iterator.statements.insert(
+              If( cmd_control.t, LogicalNot(cmd_control.t, GetLocal(v_cur)), Statements(NextIteration(cmd_control.t)) )
             )
-          )
+          endIf
+
+          cmd_iterator.statements.insert( SetLocal( v_cur, cmd_get_value, &initial_assignment ) )
         endIf
         return
       endIf
@@ -3979,9 +3994,16 @@ augment
 
         if (cmd_control.name)
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
-          cmd_iterator.statements.insert(
-            SetLocal( v_cur, ContextAccess( cmd_control.t, GetLocal(v_next), "value" ), &initial_assignment )
-          )
+
+          local cmd_get_value = ContextAccess( cmd_control.t, GetLocal(v_next), "value" ) : Cmd
+          if (not is_table and cmd_control.optional_as)
+            cmd_get_value = As( cmd_control.t, cmd_get_value, cmd_control.optional_as )
+            cmd_iterator.statements.insert(
+              If( cmd_control.t, LogicalNot(cmd_control.t, GetLocal(v_cur)), Statements(NextIteration(cmd_control.t)) )
+            )
+          endIf
+
+          cmd_iterator.statements.insert( SetLocal( v_cur, cmd_get_value, &initial_assignment ) )
         endIf
 
         return
@@ -4021,9 +4043,16 @@ augment
         if (cmd_control.name)
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
           assert resolver.control_stack.last is cmd_iterator
-          cmd_iterator.statements.insert(
-          SetLocal( v_cur, resolver.resolve_call( cmd_control.t, cmd_get_collection, m_read ), &initial_assignment )
-          )
+
+          local cmd_get_value = resolver.resolve_call( cmd_control.t, cmd_get_collection, m_read ) : Cmd
+          if (not is_table and cmd_control.optional_as)
+            cmd_get_value = As( cmd_control.t, cmd_get_value, cmd_control.optional_as )
+            cmd_iterator.statements.insert(
+              If( cmd_control.t, LogicalNot(cmd_control.t, GetLocal(v_cur)), Statements(NextIteration(cmd_control.t)) )
+            )
+          endIf
+
+          cmd_iterator.statements.insert( SetLocal( v_cur, cmd_get_value, &initial_assignment ) )
         endIf
 
         return
@@ -4072,7 +4101,7 @@ augment
         local data = resolver.visit( ContextAccess(cmd_collection.data.t, cmd_collection.data, "keys") )
         local collection = ForEachCollection( cmd_collection.t, cmd_collection.name, data, cmd_collection.starting_index,
                                               cmd_collection.step_size )
-        local control = ForEachInControl( cmd_control.t, cmd_control.name, null, collection )
+        local control = ForEachInControl( cmd_control.t, cmd_control.name, null, null, collection )
         convert_foreach_in( resolver, cmd_foreach, control, collection, cmd_iterator )
         return
       endIf
