@@ -1390,7 +1390,7 @@ class Type : Cmd
           m.return_type = this
           m.statements.add(
             ForEach( t,
-              ForEachInControl( t, "category", null,
+            ForEachInControl( t, "category", null, null,
                 ForEachCollection(t,null,Access(t,"categories"),null,null) ),
               Statements( t,
                 If( t, CompareEQ(t,Access(t,"name"),Access(t,"category")),
