@@ -1536,11 +1536,11 @@ class Type : Cmd
         endBlock
 
         if (attributes.bitflags)
-          # Each CATEGORY gets .is_category()->Logical and .set_is_category(setting:Logical) methods.
+          # Each CATEGORY_NAME gets .category_name()->Logical and .set_category_name(setting:Logical) methods.
           forEach (category in categories)
-            # .is_category()->Logical
+            # .category_name()->Logical
             block
-              local m_name = "is_" + category.name.to_lowercase
+              local m_name = category.name.to_lowercase
               local m = methods[ "$()"(m_name) ]
               if (not m)
                 m = Method( t, this, m_name )
@@ -1557,9 +1557,9 @@ class Type : Cmd
               endIf
             endBlock
 
-            # .set_is_category(Logical)->Logical
+            # .set_category_name(Logical)
             block
-              local m_name = "set_is_" + category.name.to_lowercase
+              local m_name = "set_" + category.name.to_lowercase
               local m = methods[ "$(Rogue::Logical)"(m_name) ]
               if (not m)
                 m = Method( t, this, m_name )
