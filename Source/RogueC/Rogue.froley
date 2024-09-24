@@ -1496,15 +1496,16 @@ parser
   savePosition
   onPeek IDENTIFIER
     identifier
+    forEach_optional_as
     forEach_optional_at
     if (consume(@"in"))
       forEach_collection
       discardPosition
-      produce ForEachInControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+      produce ForEachInControl(name:String,optional_as:Type,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
     elseIf (consume(@"of"))
       forEach_collection
       discardPosition
-      produce ForEachOfControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+      produce ForEachOfControl(name:String,optional_as:Type,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
     endIf
   endOn
 
@@ -1512,20 +1513,22 @@ parser
   restorePosition
 
   createNull  # identifier
+  createNull  # optional_as
   createNull  # optional_at
   forEach_collection
-  produce ForEachInControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+  produce ForEachInControl(name:String,optional_as:Type,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
 
 - inline_forEach
   on "forEach"
     createNull  # name
+    forEach_optional_as
     createNull  # optional_at
     if (consume(@"in"))
       forEach_collection
-      create ForEachInControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+      create ForEachInControl(name:String,optional_as:Type,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
     elseIf (consume(@"of"))
       forEach_collection
-      create ForEachOfControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+      create ForEachOfControl(name:String,optional_as:Type,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
     else
       syntaxError "Expected 'in' or 'of'."
     endIf
@@ -1537,6 +1540,10 @@ parser
   if (not consume(@"at")) produceNull
   identifier
   produce ForEachAt(name:String)
+
+- forEach_optional_as
+  if (not consume(@"as")) produceNull
+  type
 
 - forEach_collection
   savePosition
@@ -3945,7 +3952,7 @@ parser
   create EnumValueDef(value)
   create EmptyCompound(of_type:Type)
   create Escape
-  create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
+  create ForEachControl(name:String,optional_as:Type,optional_at:ForEachAt,collection:ForEachCollection)
   create FunctionReturnValue(operand)
   create InlineAssignment(info:Local,value)
   create IntrospectionGetObjectProperty(info:Property,context)

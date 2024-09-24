@@ -1193,20 +1193,22 @@ endClass
 class ForEachControl : Cmd
   PROPERTIES
     name        : String
+    optional_as : Type
     optional_at : ForEachAt
     collection  : ForEachCollection
 
   METHODS
-    method init( t, name, optional_at, collection )
+    method init( t, name, optional_as, optional_at, collection )
 
     method init( existing:ForEachControl )
       prior.init( existing )
       name = existing.name
+      if (existing.optional_as) optional_as = existing.optional_as.cloned
       if (existing.optional_at) optional_at = existing.optional_at.cloned
       if (existing.collection) collection = existing.collection.cloned
 
     method description->String
-      return "ForEachControl($,$,$)" (%name,%optional_at,%collection)
+      return "ForEachControl($,$,$,$)" (%name,%optional_as,%optional_at,%collection)
 
 endClass
 
@@ -1219,6 +1221,12 @@ endClass
 
 class ForEachOfControl : ForEachControl
   METHODS
+    method init( t, name, optional_as, optional_at, collection )
+      if (optional_as) throw t.error( "An 'as' clause cannot be used with forEach-of." )
+
+    method init( existing:ForEachOfControl )
+      prior.init( existing )
+
     method description->String
       return "ForEachOfControl($,$,$)" (%name,%optional_at,%collection)
 
