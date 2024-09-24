@@ -2,7 +2,8 @@ uses Collection/Node
 
 enum EntityAttributes [bitflags]
   CATEGORIES
-    NEEDS_UPDATE
+    NEEDS_LAYOUT
+    NEEDS_REDRAW
 endEnum
 
 class Entity : Node<<Entity>>
