@@ -475,13 +475,13 @@ class File( filepath:String ) [compound]
         &files, &folders, &unsorted, &recursive )->String[]
       # Use the filepattern '**' for a recursive listing.
       local options : FileListingOption
-      options.is_ignore_hidden = ignore_hidden
-      options.is_absolute      = absolute
-      options.is_omit_path     = omit_path
-      options.is_files         = files
-      options.is_folders       = folders
-      options.is_unsorted      = unsorted
-      options.is_recursive     = recursive
+      options.ignore_hidden = ignore_hidden
+      options.absolute      = absolute
+      options.omit_path     = omit_path
+      options.files         = files
+      options.folders       = folders
+      options.unsorted      = unsorted
+      options.recursive     = recursive
       return FileListing( this, filepattern, options ).filepaths
 
     method listing( pattern:String, &ignore_hidden, &absolute, &omit_path,
