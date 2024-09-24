@@ -1,0 +1,9 @@
+uses Collection/Node
+
+enum EntityAttributes [bitflags]
+  CATEGORIES
+    NEEDS_UPDATE
+endEnum
+
+class Entity : Node<<Entity>>
+endClass
