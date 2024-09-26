@@ -1,0 +1,15 @@
+class UIComponent : Entity
+  PROPERTIES
+    horizontal_layout_mode : LayoutMode
+    vertical_layout_mode   : LayoutMode
+
+  METHODS
+    method on_update_size
+      noAction
+
+    method update_layout
+
+    method update_size( available_size:XY, &limited )
+      (forEach as UIComponent in children).update_size
+      on_update_size
+endClass

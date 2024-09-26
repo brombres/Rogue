@@ -1,1 +1,3 @@
 $include Entity
+$include UI/LayoutMode
+$include UI/UIComponent
