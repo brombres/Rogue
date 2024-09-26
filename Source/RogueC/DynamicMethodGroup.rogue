@@ -16,4 +16,7 @@ class DynamicMethodGroup
 
     method mark_uncollected
       (forEach in methods).attributes.is_collected = false
+
+    method to->String
+      return methods->String
 endClass
