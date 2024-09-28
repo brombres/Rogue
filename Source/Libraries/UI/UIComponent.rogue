@@ -1,16 +1,133 @@
 class UIComponent : Entity
   PROPERTIES
+    anchor        = Anchor.TOP_LEFT : Anchor
     layout_mode   : LayoutModeXY
     layout_size   : XY
     layout_params : ParameterNames
     parameters    : Variant
 
   METHODS
+    method on( e:KeyEvent )
+      noAction
+
+    method on( e:PointerEvent )
+      noAction
+
+    method on( e:ScrollEvent )
+      noAction
+
+    method on( e:TextEvent )
+      noAction
+
+    method on_end( e:KeyEvent )
+      noAction
+
+    method on_end( e:PointerEvent )
+      noAction
+
+    method on_end( e:ScrollEvent )
+      noAction
+
+    method on_end( e:TextEvent )
+      noAction
+
     method on_draw
       noAction
 
     method on_update_size
       noAction
+
+    $localMacro DISPATCH_LOGIC
+      # Send input events to children in reverse order because the top layer comes last
+      local next_entity = next
+      local next_component = next_entity->(as UIComponent)
+      while (next_entity and not next_component)
+        next_entity = next_entity.next
+        next_component = next_entity->(as UIComponent)
+      endWhile
+      if (next_component)
+        next_component.dispatch( e )
+        if (e.is_consumed) return
+      endIf
+
+      handle( e )
+    $endLocalMacro
+
+    method dispatch( e:KeyEvent )
+      DISPATCH_LOGIC
+
+    method dispatch( e:PointerEvent )
+      # Send input events to children in reverse order because the top layer comes last
+      if (next) next.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+
+    method dispatch( e:ScrollEvent )
+      # Send input events to children in reverse order because the top layer comes last
+      if (next) next.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+
+    method dispatch( e:TextEvent )
+      # Send input events to children in reverse order because the top layer comes last
+      if (next) next.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+
+    method handle( e:KeyEvent )
+      if (attributes.hidden or attributes.input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (first_child)
+        forEach (child as UIComponent in children)
+          child.dispatch( e )
+          if (e.is_consumed) return
+          escapeForEach
+        endForEach
+      endIf
+
+      on_end( e )
+
+    method handle( e:PointerEvent )
+      if (attributes.hidden or attributes.input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (first_child)
+        first_child.dispatch( e )
+        if (e.is_consumed) return
+      endIf
+
+      on_end( e )
+
+    method handle( e:ScrollEvent )
+      if (attributes.hidden or attributes.input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (first_child)
+        first_child.dispatch( e )
+        if (e.is_consumed) return
+      endIf
+
+      on_end( e )
+
+    method handle( e:TextEvent )
+      if (attributes.hidden or attributes.input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (first_child)
+        first_child.dispatch( e )
+        if (e.is_consumed) return
+      endIf
+
+      on_end( e )
 
     method update_layout( available_size:XY )
 

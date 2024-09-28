@@ -1,0 +1,8 @@
+enum EntityAttributes [bitflags]
+  CATEGORIES
+    HIDDEN
+    INPUT_DISABLED
+    NEEDS_LAYOUT
+    NEEDS_REDRAW
+endEnum
+

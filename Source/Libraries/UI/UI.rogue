@@ -15,8 +15,85 @@ class UI : UIComponent [singleton]
     keyboard_focus : UIComponent
 
   METHODS
+    method handle( e:KeyEvent )
+      temporarily UI = this
+        on( e )
+        if (e.is_consumed) return
+
+        if (keyboard_focus)
+          if (not keyboard_focus.attributes.hidden and not keyboard_focus.attributes.input_disabled)
+            keyboard_focus.handle( e )
+          else
+            keyboard_focus.release_keyboard_focus
+            first_child?.dispatch( e )
+          endIf
+        else
+          first_child?.dispatch( e )
+        endIf
+        if (e.is_consumed) return
+
+        on_end( e )
+      endTemporarily
+
+    method handle( e:PointerEvent )
+      temporarily UI = this
+        UI = this
+
+        on( e )
+        if (e.is_consumed) return
+
+        if (pointer_focus)
+          if (not pointer_focus.attributes.hidden and not pointer_focus.attributes.input_disabled)
+            pointer_focus.handle( e )
+          else
+            pointer_focus.release_pointer_focus
+            first_child?.dispatch( e )
+          endIf
+        else
+          first_child?.dispatch( e )
+        endIf
+        if (e.is_consumed) return
+
+        on_end( e )
+      endTemporarily
+
+    method handle( e:ScrollEvent )
+      temporarily UI = this
+        UI = this
+
+        on( e )
+        if (e.is_consumed) return
+
+        if (pointer_focus)
+          pointer_focus.handle( e )
+        else
+          first_child?.dispatch( e )
+        endIf
+        if (e.is_consumed) return
+
+        on_end( e )
+      endTemporarily
+
+    method handle( e:TextEvent )
+      temporarily UI = this
+        UI = this
+
+        on( e )
+        if (e.is_consumed) return
+
+        if (keyboard_focus)
+          keyboard_focus.handle( e )
+        else
+          first_child?.dispatch( e )
+        endIf
+        if (e.is_consumed) return
+
+        on_end( e )
+      endTemporarily
+
     method update( bounds:Box )
       update_layout( bounds )
+      update
 
     method update_layout( bounds:Box )
       position = bounds.position

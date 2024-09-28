@@ -3,11 +3,7 @@ uses Control/Action
 uses Geometry
 uses Math/Quaternion
 
-enum EntityAttributes [bitflags]
-  CATEGORIES
-    NEEDS_LAYOUT
-    NEEDS_REDRAW
-endEnum
+$include Entity/EntityAttributes
 
 class Entity : Node<<Entity>>
   PROPERTIES
@@ -19,6 +15,7 @@ class Entity : Node<<Entity>>
     size       : XYZ
     scale      = XYZ(1,1,1)
     rotation   = Quaternion()
+    anchor     = Anchor.CENTER : Anchor
 
   METHODS
     method init
@@ -30,6 +27,15 @@ class Entity : Node<<Entity>>
     method init_object
       id = next_id
       ++next_id
+
+    method bounds->Box
+      return Box( position.xy, size.xy ).relative_to( anchor )
+
+    method draw
+      on_draw
+
+    method on_draw
+      noAction
 
     method on_update
       noAction
