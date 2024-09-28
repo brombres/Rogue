@@ -51,19 +51,20 @@ class Program [singleton]
     type_Real         : Type
     type_Real64       : Type
 
-    type_null            : Type
-    type_GenericFn       : Type
-    type_Global          : Type
-    type_ListType        : Type
-    type_Math            : Type
-    type_Object          : Type
-    type_String          : Type
-    type_Variant         : Type
-    type_Exception       : Type
-    type_TypeID          : Type
-    type_TableType       : Type
-    type_TypeInfo        : Type
-    type_NativeProperty  : Type
+    type_null              : Type
+    type_GenericFn         : Type
+    type_Global            : Type
+    type_ListType          : Type
+    type_Math              : Type
+    type_Object            : Type
+    type_String            : Type
+    type_Variant           : Type
+    type_Exception         : Type
+    type_TypeID            : Type
+    type_TableType         : Type
+    type_TypeInfo          : Type
+    type_NativeProperty    : Type
+    type_IteratorPreferred : Type
 
     is_modified          : Logical
     is_organizing        : Logical
@@ -133,6 +134,7 @@ class Program [singleton]
       type_TableType = Type( t, "TableType", Attribute.ASPECT )
       type_Exception = Type( t, "Exception", Attribute.OBJECT )
       type_TypeID    = Type( t, "TypeID", Attribute.COMPOUND )
+      type_IteratorPreferred = Type( t, "IteratorPreferred", Attribute.ASPECT )
 
       type_NativeProperty = Type( t, "RogueCNativeProperty", Attribute.PRIMITIVE )
       type_NativeProperty.attributes.is_defined = true
