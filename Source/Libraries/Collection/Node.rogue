@@ -10,7 +10,7 @@
 #   More Complex Cmd node example with multimethod-style visitor
 #     https://gist.github.com/AbePralle/43ca8f8a74a4ef5a5fd001ad0e62f1d2
 #==============================================================================
-class Node<<$ExtendedNodeType>>
+class Node<<$ExtendedNodeType>> : IteratorPreferred
   PROPERTIES
     parent      : $ExtendedNodeType
     first_child : $ExtendedNodeType
