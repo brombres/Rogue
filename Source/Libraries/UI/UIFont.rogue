@@ -1,5 +1,3 @@
-module UI
-
 class UIFont [abstract]
   PROPERTIES
     name   : String
@@ -12,26 +10,26 @@ class UIFont [abstract]
 
     method cloned->UIFont [abstract]
 
-    method draw( text:String, position:IntXY )           [abstract]
+    method draw( text:String, position:XY )           [abstract]
 
-    method draw( text:String, position:IntXY, anchor:Anchor )
+    method draw( text:String, position:XY, anchor:Anchor )
       if (anchor != Anchor.TOP_LEFT)
-        position = IntBox(position,measure(text)).relative_to( anchor ).position
+        position = Box(position,measure(text)).relative_to( anchor ).position
       endIf
       draw( text, position )
 
-    method draw( text:String, bounds:IntBox, anchor=Anchor.CENTER:Anchor  )
+    method draw( text:String, bounds:Box, anchor=Anchor.CENTER:Anchor  )
       local text_size = measure( text )
-      local position  = IntBox(text_size).positioned_within(
+      local position  = Box(text_size).positioned_within(
         bounds, anchor ).position
       draw( text, position )
 
     method draw( text:String, container:UIComponent )
       draw( text, container.display_bounds, container.alignment )
 
-    method height->Int                              [abstract]
+    method height->Int                  [abstract]
 
-    method measure( ch:Character )->XY            [abstract]
+    method measure( ch:Character )->XY  [abstract]
 
     method measure( text:String, i1=0:Int, count=-1:Int )->XY
       if (count == -1) count = text.count - i1

@@ -1,3 +1,28 @@
 $include Entity
+$include UI/Event
 $include UI/LayoutMode
+$include UI/ParameterNames
 $include UI/UIComponent
+$include UI/UIFont
+
+class UI : UIComponent [singleton]
+  PROPERTIES
+    default_font   : UIFont
+
+    clip           : Box?
+
+    pointer_focus  : UIComponent
+    keyboard_focus : UIComponent
+
+  METHODS
+    method update( bounds:Box )
+      update_layout( bounds )
+
+    method update_layout( bounds:Box )
+      position = bounds.position
+      size = bounds.size
+
+      forEach (child as UIComponent in children)
+        child.update_layout( bounds.size )
+      endForEach
+endClass

@@ -1,5 +1,3 @@
-module UI
-
 class Keyboard [singleton]
   DEFINITIONS
     SHIFT_MODIFIER_FLAG   = 1

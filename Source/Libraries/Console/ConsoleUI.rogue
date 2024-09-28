@@ -6,6 +6,7 @@ $include Console/ConsoleUIFont
 $include Console/ConsoleUICanvas
 
 uses Utility/Epilog
+uses Utility/Timer
 
 class ConsoleUI : UI
   GLOBAL PROPERTIES

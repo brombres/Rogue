@@ -1,5 +1,4 @@
 $include UI/Keyboard
-uses UI
 
 class Event
   PROPERTIES

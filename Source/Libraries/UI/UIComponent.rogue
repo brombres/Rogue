@@ -1,13 +1,18 @@
 class UIComponent : Entity
   PROPERTIES
-    horizontal_layout_mode : LayoutMode
-    vertical_layout_mode   : LayoutMode
+    layout_mode   : LayoutModeXY
+    layout_size   : XY
+    layout_params : ParameterNames
+    parameters    : Variant
 
   METHODS
+    method on_draw
+      noAction
+
     method on_update_size
       noAction
 
-    method update_layout
+    method update_layout( available_size:XY )
 
     method update_size( available_size:XY, &limited )
       (forEach as UIComponent in children).update_size

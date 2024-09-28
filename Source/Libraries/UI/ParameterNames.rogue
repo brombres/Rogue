@@ -1,0 +1,2 @@
+class ParameterNames( x:String, y:String ) [compound]
+endClass
