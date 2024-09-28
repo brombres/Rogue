@@ -3887,175 +3887,177 @@ augment
         endIf
       endIf
 
-      local has_count = collection_type.methods.contains("count()")
-      if (not has_count) has_count = collection_type.properties.contains("count")
+      if (not collection_type.instance_of(Program.type_IteratorPreferred))
+        local has_count = collection_type.methods.contains("count()")
+        if (not has_count) has_count = collection_type.properties.contains("count")
 
-      local m_get = collection_type.find_method( Resolver.index_getters )
+        local m_get = collection_type.find_method( Resolver.index_getters )
 
-      if (has_count and m_get)
-        local down_to = false
-        if (cmd_collection.step_size)
-          cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
+        if (has_count and m_get)
+          local down_to = false
+          if (cmd_collection.step_size)
+            cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
 
-          if local cmd_step = cmd_collection.step_size.coerce_to_LiteralInt
-            if (cmd_step.value < 0) down_to = true
-          else
-            throw cmd_collection.step_size.t.error( "Step size must be a literal integer." )
+            if local cmd_step = cmd_collection.step_size.coerce_to_LiteralInt
+              if (cmd_step.value < 0) down_to = true
+            else
+              throw cmd_collection.step_size.t.error( "Step size must be a literal integer." )
+            endIf
           endIf
-        endIf
 
-        local v_index_name = which{ cmd_control.optional_at:cmd_control.optional_at.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
-        if (cmd_collection.starting_index)
-          resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
-        else
+          local v_index_name = which{ cmd_control.optional_at:cmd_control.optional_at.name || resolver.autoname("index") }
+          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
+          if (cmd_collection.starting_index)
+            resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
+          else
+            if (down_to)
+              local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt(t,1) )
+              resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
+            else
+              resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
+            endIf
+          endIf
+
+          if (cmd_collection.step_size)
+            cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size) )
+          elseIf (down_to)
+            cmd_iterator.upkeep.add( Decrement(t, Access(t,v_index.name)) )
+          else
+            cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
+          endIf
+
+          if (not m_get.return_type)
+            throw cmd_collection.t.error( "$.$ must return a value."(m_get.type_context,m_get.signature) )
+          endIf
+
+          PREPARE_COLLECTION<<cmd_get_collection>>
+
           if (down_to)
-            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt(t,1) )
-            resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
+            cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt(t,0) )
           else
+            local v_count = resolver.add_local( t, "count", Program.type_Int )
+            resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection.cloned,"count"),&initial_assignment) )
+            cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
+          endIf
+
+          if (cmd_control.name)
+            local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
+            local cmd_get_value =
+                resolver.resolve_call( cmd_collection.t, cmd_get_collection, m_get,
+                Args(cmd_collection.t,GetLocal(v_index)) ) : Cmd
+            if (not is_table and cmd_control.optional_as)
+              cmd_get_value = As( cmd_control.t, cmd_get_value, cmd_control.optional_as )
+              cmd_iterator.statements.insert(
+                If( cmd_control.t, LogicalNot(cmd_control.t, GetLocal(v_cur)), Statements(NextIteration(cmd_control.t)) )
+              )
+            endIf
+
+            cmd_iterator.statements.insert( SetLocal( v_cur, cmd_get_value, &initial_assignment ) )
+          endIf
+          return
+        endIf
+
+        local m_read_another = collection_type.methods[ "read_another()" ]
+        if (m_read_another)
+          # Standard/Collection implements read-another protocol.
+          if (not m_read_another.return_type or not m_read_another.return_type.attributes.is_optional)
+            throw cmd_collection.t.error( "$.$ must return an optional value."(m_read_another.type_context,m_read_another.signature) )
+          endIf
+
+          if (cmd_collection.starting_index)
+            throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-in that uses the read-another protocol." )
+          endIf
+
+          if (cmd_collection.step_size)
+            throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has_another protocol." )
+          endIf
+
+          if (cmd_control.optional_at)
+            local v_index_name = cmd_control.optional_at.name
+            local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
             resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
-          endIf
-        endIf
-
-        if (cmd_collection.step_size)
-          cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size) )
-        elseIf (down_to)
-          cmd_iterator.upkeep.add( Decrement(t, Access(t,v_index.name)) )
-        else
-          cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
-        endIf
-
-        if (not m_get.return_type)
-          throw cmd_collection.t.error( "$.$ must return a value."(m_get.type_context,m_get.signature) )
-        endIf
-
-        PREPARE_COLLECTION<<cmd_get_collection>>
-
-        if (down_to)
-          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt(t,0) )
-        else
-          local v_count = resolver.add_local( t, "count", Program.type_Int )
-          resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection.cloned,"count"),&initial_assignment) )
-          cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
-        endIf
-
-        if (cmd_control.name)
-          local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
-          local cmd_get_value =
-              resolver.resolve_call( cmd_collection.t, cmd_get_collection, m_get,
-              Args(cmd_collection.t,GetLocal(v_index)) ) : Cmd
-          if (not is_table and cmd_control.optional_as)
-            cmd_get_value = As( cmd_control.t, cmd_get_value, cmd_control.optional_as )
-            cmd_iterator.statements.insert(
-              If( cmd_control.t, LogicalNot(cmd_control.t, GetLocal(v_cur)), Statements(NextIteration(cmd_control.t)) )
-            )
+            cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
           endIf
 
-          cmd_iterator.statements.insert( SetLocal( v_cur, cmd_get_value, &initial_assignment ) )
-        endIf
-        return
-      endIf
+          PREPARE_COLLECTION<<cmd_get_collection>>
 
-      local m_read_another = collection_type.methods[ "read_another()" ]
-      if (m_read_another)
-        # Standard/Collection implements read-another protocol.
-        if (not m_read_another.return_type or not m_read_another.return_type.attributes.is_optional)
-          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read_another.type_context,m_read_another.signature) )
-        endIf
+          local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
+          resolver.insert(
+            SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection.cloned, m_read_another), &initial_assignment )
+          )
+          cmd_iterator.upkeep.add(
+            SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection, m_read_another) )
+          )
 
-        if (cmd_collection.starting_index)
-          throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-in that uses the read-another protocol." )
-        endIf
+          cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_next), "exists" )
+          local cur_type = m_read_another.return_type.properties//value.type
+          assert cur_type
 
-        if (cmd_collection.step_size)
-          throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has_another protocol." )
-        endIf
+          if (cmd_control.name)
+            local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
 
-        if (cmd_control.optional_at)
-          local v_index_name = cmd_control.optional_at.name
-          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
-          resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
-          cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
-        endIf
+            local cmd_get_value = ContextAccess( cmd_control.t, GetLocal(v_next), "value" ) : Cmd
+            if (not is_table and cmd_control.optional_as)
+              cmd_get_value = As( cmd_control.t, cmd_get_value, cmd_control.optional_as )
+              cmd_iterator.statements.insert(
+                If( cmd_control.t, LogicalNot(cmd_control.t, GetLocal(v_cur)), Statements(NextIteration(cmd_control.t)) )
+              )
+            endIf
 
-        PREPARE_COLLECTION<<cmd_get_collection>>
-
-        local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
-        resolver.insert(
-          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection.cloned, m_read_another), &initial_assignment )
-        )
-        cmd_iterator.upkeep.add(
-          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection, m_read_another) )
-        )
-
-        cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_next), "exists" )
-        local cur_type = m_read_another.return_type.properties//value.type
-        assert cur_type
-
-        if (cmd_control.name)
-          local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
-
-          local cmd_get_value = ContextAccess( cmd_control.t, GetLocal(v_next), "value" ) : Cmd
-          if (not is_table and cmd_control.optional_as)
-            cmd_get_value = As( cmd_control.t, cmd_get_value, cmd_control.optional_as )
-            cmd_iterator.statements.insert(
-              If( cmd_control.t, LogicalNot(cmd_control.t, GetLocal(v_cur)), Statements(NextIteration(cmd_control.t)) )
-            )
+            cmd_iterator.statements.insert( SetLocal( v_cur, cmd_get_value, &initial_assignment ) )
           endIf
 
-          cmd_iterator.statements.insert( SetLocal( v_cur, cmd_get_value, &initial_assignment ) )
+          return
         endIf
 
-        return
-      endIf
-
-      local has_has_another = collection_type.methods.contains( "has_another()" )
-      if (not has_has_another) has_has_another = collection_type.properties.contains( "has_another" )
-      local m_read = collection_type.methods[ "read()" ]
-      if (has_has_another and m_read)
-        # Standard/Collection implements has-another protocol.
-        if (not m_read.return_type)
-          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read.type_context,m_read.signature) )
-        endIf
-
-        if (cmd_collection.starting_index)
-          throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-in that uses the has-another protocol." )
-        endIf
-
-        if (cmd_collection.step_size)
-          throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has-another protocol." )
-        endIf
-
-        if (cmd_control.optional_at)
-          local v_index_name = cmd_control.optional_at.name
-          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
-          resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
-          cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
-        endIf
-
-        PREPARE_COLLECTION<<cmd_get_collection>>
-
-        cmd_iterator.condition = ContextAccess( cmd_control.t, cmd_get_collection.cloned, "has_another" )
-
-        local cur_type = m_read.return_type
-        assert cur_type
-
-        if (cmd_control.name)
-          local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
-          assert resolver.control_stack.last is cmd_iterator
-
-          local cmd_get_value = resolver.resolve_call( cmd_control.t, cmd_get_collection, m_read ) : Cmd
-          if (not is_table and cmd_control.optional_as)
-            cmd_get_value = As( cmd_control.t, cmd_get_value, cmd_control.optional_as )
-            cmd_iterator.statements.insert(
-              If( cmd_control.t, LogicalNot(cmd_control.t, GetLocal(v_cur)), Statements(NextIteration(cmd_control.t)) )
-            )
+        local has_has_another = collection_type.methods.contains( "has_another()" )
+        if (not has_has_another) has_has_another = collection_type.properties.contains( "has_another" )
+        local m_read = collection_type.methods[ "read()" ]
+        if (has_has_another and m_read)
+          # Standard/Collection implements has-another protocol.
+          if (not m_read.return_type)
+            throw cmd_collection.t.error( "$.$ must return an optional value."(m_read.type_context,m_read.signature) )
           endIf
 
-          cmd_iterator.statements.insert( SetLocal( v_cur, cmd_get_value, &initial_assignment ) )
-        endIf
+          if (cmd_collection.starting_index)
+            throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-in that uses the has-another protocol." )
+          endIf
 
-        return
+          if (cmd_collection.step_size)
+            throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has-another protocol." )
+          endIf
+
+          if (cmd_control.optional_at)
+            local v_index_name = cmd_control.optional_at.name
+            local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
+            resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
+            cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
+          endIf
+
+          PREPARE_COLLECTION<<cmd_get_collection>>
+
+          cmd_iterator.condition = ContextAccess( cmd_control.t, cmd_get_collection.cloned, "has_another" )
+
+          local cur_type = m_read.return_type
+          assert cur_type
+
+          if (cmd_control.name)
+            local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
+            assert resolver.control_stack.last is cmd_iterator
+
+            local cmd_get_value = resolver.resolve_call( cmd_control.t, cmd_get_collection, m_read ) : Cmd
+            if (not is_table and cmd_control.optional_as)
+              cmd_get_value = As( cmd_control.t, cmd_get_value, cmd_control.optional_as )
+              cmd_iterator.statements.insert(
+                If( cmd_control.t, LogicalNot(cmd_control.t, GetLocal(v_cur)), Statements(NextIteration(cmd_control.t)) )
+              )
+            endIf
+
+            cmd_iterator.statements.insert( SetLocal( v_cur, cmd_get_value, &initial_assignment ) )
+          endIf
+
+          return
+        endIf
       endIf
 
       if (collection_type.methods.contains("iterator()") or collection_type.global_methods.contains("iterator()"))
@@ -4106,124 +4108,126 @@ augment
         return
       endIf
 
-      local has_count = collection_type.methods.contains("count()")
-      if (not has_count) has_count = collection_type.properties.contains("count")
+      if (not collection_type.instance_of(Program.type_IteratorPreferred))
+        local has_count = collection_type.methods.contains("count()")
+        if (not has_count) has_count = collection_type.properties.contains("count")
 
-      # forEach-of doesn't use get/at but if it's not there we need to use a different protocol.
-      local m_get = collection_type.find_method( Resolver.index_getters )
+        # forEach-of doesn't use get/at but if it's not there we need to use a different protocol.
+        local m_get = collection_type.find_method( Resolver.index_getters )
 
-      if (has_count and m_get)
-        # Standard/Collection implements count/at or count/get protocol
-        local down_to = false
-        if (cmd_collection.step_size)
-          cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
-          if local cmd_step = cmd_collection.step_size.coerce_to_LiteralInt
-            if (cmd_step.value < 0) down_to = true
-          else
-            throw cmd_collection.step_size.t.error( "Step size must be a literal integer." )
+        if (has_count and m_get)
+          # Standard/Collection implements count/at or count/get protocol
+          local down_to = false
+          if (cmd_collection.step_size)
+            cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
+            if local cmd_step = cmd_collection.step_size.coerce_to_LiteralInt
+              if (cmd_step.value < 0) down_to = true
+            else
+              throw cmd_collection.step_size.t.error( "Step size must be a literal integer." )
+            endIf
           endIf
-        endIf
 
-        local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
-        if (cmd_collection.starting_index)
-          resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
-        else
+          local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
+          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
+          if (cmd_collection.starting_index)
+            resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
+          else
+            if (down_to)
+              local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt(t,1) )
+              resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
+            else
+              resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
+            endIf
+          endIf
+
+          if (cmd_collection.step_size)
+            cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size) )
+          elseIf (down_to)
+            cmd_iterator.upkeep.add( Decrement(t, Access(t,v_index.name)) )
+          else
+            cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
+          endIf
+
+          PREPARE_COLLECTION<<cmd_get_collection>>
+
           if (down_to)
-            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt(t,1) )
-            resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
+            cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt(t,0) )
           else
-            resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
+            local v_count = resolver.add_local( t, "count", Program.type_Int )
+            resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection,"count"),&initial_assignment) )
+            cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
           endIf
+
+          return
         endIf
 
-        if (cmd_collection.step_size)
-          cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size) )
-        elseIf (down_to)
-          cmd_iterator.upkeep.add( Decrement(t, Access(t,v_index.name)) )
-        else
+        local m_read_another = collection_type.methods[ "read_another()" ]
+        if (m_read_another)
+          # Standard/Collection implements read-another protocol.
+          if (not m_read_another.return_type or not m_read_another.return_type.attributes.is_optional)
+            throw cmd_collection.t.error( "$.read_another() must return an optional value."(m_read_another.type_context) )
+          endIf
+
+          if (cmd_collection.starting_index)
+            throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-of that uses the read-another protocol." )
+          endIf
+
+          if (cmd_collection.step_size)
+            throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-of that uses the has_another protocol." )
+          endIf
+
+          local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
+          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
+          resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
+
+          PREPARE_COLLECTION<<cmd_get_collection>>
+
+          local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
+          resolver.insert(
+            SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection.cloned, m_read_another), &initial_assignment )
+          )
+          cmd_iterator.upkeep.add(
+            SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection, m_read_another) )
+          )
+
+          cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_next), "exists" )
+
+          return
         endIf
 
-        PREPARE_COLLECTION<<cmd_get_collection>>
+        local has_has_another = collection_type.methods.contains( "has_another()" )
+        if (not has_has_another) has_has_another = collection_type.properties.contains( "has_another" )
+        local m_read = collection_type.methods[ "read()" ]
+        if (has_has_another and m_read)
+          # Standard/Collection implements has-another protocol.
+          if (not m_read.return_type)
+            throw cmd_collection.t.error( "$.$ must return an optional value."(m_read.type_context,m_read.signature) )
+          endIf
 
-        if (down_to)
-          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt(t,0) )
-        else
-          local v_count = resolver.add_local( t, "count", Program.type_Int )
-          resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection,"count"),&initial_assignment) )
-          cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
+          if (cmd_collection.starting_index)
+            throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-in that uses the has-another protocol." )
+          endIf
+
+          if (cmd_collection.step_size)
+            throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has-another protocol." )
+          endIf
+
+          local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
+          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
+          resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
+          cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
+
+          PREPARE_COLLECTION<<cmd_get_collection>>
+
+          cmd_iterator.condition = ContextAccess( cmd_control.t, cmd_get_collection.cloned, "has_another" )
+
+          cmd_iterator.statements.insert(
+            resolver.resolve_call( cmd_control.t, cmd_get_collection, m_read )
+          )
+
+          return
         endIf
-
-        return
-      endIf
-
-      local m_read_another = collection_type.methods[ "read_another()" ]
-      if (m_read_another)
-        # Standard/Collection implements read-another protocol.
-        if (not m_read_another.return_type or not m_read_another.return_type.attributes.is_optional)
-          throw cmd_collection.t.error( "$.read_another() must return an optional value."(m_read_another.type_context) )
-        endIf
-
-        if (cmd_collection.starting_index)
-          throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-of that uses the read-another protocol." )
-        endIf
-
-        if (cmd_collection.step_size)
-          throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-of that uses the has_another protocol." )
-        endIf
-
-        local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
-        resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
-        cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
-
-        PREPARE_COLLECTION<<cmd_get_collection>>
-
-        local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
-        resolver.insert(
-          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection.cloned, m_read_another), &initial_assignment )
-        )
-        cmd_iterator.upkeep.add(
-          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection, m_read_another) )
-        )
-
-        cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_next), "exists" )
-
-        return
-      endIf
-
-      local has_has_another = collection_type.methods.contains( "has_another()" )
-      if (not has_has_another) has_has_another = collection_type.properties.contains( "has_another" )
-      local m_read = collection_type.methods[ "read()" ]
-      if (has_has_another and m_read)
-        # Standard/Collection implements has-another protocol.
-        if (not m_read.return_type)
-          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read.type_context,m_read.signature) )
-        endIf
-
-        if (cmd_collection.starting_index)
-          throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-in that uses the has-another protocol." )
-        endIf
-
-        if (cmd_collection.step_size)
-          throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has-another protocol." )
-        endIf
-
-        local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
-        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int) )
-        resolver.insert( SetLocal(v_index,LiteralInt(t,0),&initial_assignment) )
-        cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
-
-        PREPARE_COLLECTION<<cmd_get_collection>>
-
-        cmd_iterator.condition = ContextAccess( cmd_control.t, cmd_get_collection.cloned, "has_another" )
-
-        cmd_iterator.statements.insert(
-          resolver.resolve_call( cmd_control.t, cmd_get_collection, m_read )
-        )
-
-        return
       endIf
 
       if (collection_type.methods.contains("iterator()") or collection_type.global_methods.contains("iterator()"))

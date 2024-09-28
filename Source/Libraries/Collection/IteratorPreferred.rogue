@@ -1,0 +1,5 @@
+class IteratorPreferred [aspect]
+  # Signals the compiler that when an object with this aspect is being
+  # iterated over in a forEach, .iterator() or .reader() should be used
+  # instead of .count/.get().
+endClass
