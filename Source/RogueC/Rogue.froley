@@ -2082,10 +2082,12 @@ parser
   # Produces a list of TokenLists
   beginList
 
-  mustConsume '<<'
-  consume_eols
-  if (consume('>>')) produceList Args
-  consume_eols
+  if (consume('<<'))
+    consume_eols
+    if (consume('>>')) produceList Args
+  else
+    produceList Args
+  endIf
 
   while (hasAnother and not nextHasAttribute(structural))
     savePosition
@@ -2099,7 +2101,7 @@ parser
   endWhile
   mustConsume '>>'
 
-  produceList
+  produceList Args
 
 - macro_arg
   while (hasAnother and not nextIs(',') and not nextIs('>>'))
@@ -3662,14 +3664,15 @@ parser
     identifier   # macro name
 
     # placeholders
-    mustConsume '<<'
     beginList
-      placeholder
-      while (consume(','))
+      if (consume('<<'))
         placeholder
-      endWhile
+        while (consume(','))
+          placeholder
+        endWhile
+        mustConsume '>>'
+      endIf
     createList Placeholders
-    mustConsume '>>'
 
     if (nextIs(EOL))
       consume_eols
@@ -3688,7 +3691,7 @@ parser
       consume_eols
     endIf
 
-    call define_macro
+    call define_local_macro
     return
 
   elseOn "$lowercase"
@@ -3706,14 +3709,15 @@ parser
     identifier   # macro name
 
     # placeholders
-    mustConsume '<<'
     beginList
-      placeholder
-      while (consume(','))
+      if (consume('<<'))
         placeholder
-      endWhile
+        while (consume(','))
+          placeholder
+        endWhile
+        mustConsume '>>'
+      endIf
     createList Placeholders
-    mustConsume '>>'
 
     if (nextIs(EOL))
       consume_eols
