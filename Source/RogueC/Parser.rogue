@@ -268,7 +268,7 @@ class Parser : ParserCore, Poolable
       macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
       return 0
 
-    method define_local_macro
+    method define_local_macro->Int
       assert _cmd_stack.count >= 3
       local tokens = _cmd_stack.remove_last->(as TokenList).tokens
       local placeholders = _cmd_stack.remove_last->(as Placeholders)
@@ -297,6 +297,7 @@ class Parser : ParserCore, Poolable
       endForEach
 
       macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
+      return 0
 
     method define_native_type->Int
       # EXAMPLE: nativeType<<"char*">> RogueCString
@@ -454,10 +455,8 @@ class Parser : ParserCore, Poolable
         return 0
       endIf
 
-      if (_next_t.type == TokenType.SYMBOL_LTLT)
-        if (expand_macro(Program.macros[_cur_t.content])) return 0
-        if (local_macros and expand_macro(local_macros[_cur_t->String])) return 0
-      endIf
+      if (expand_macro(Program.macros[_cur_t.content])) return 0
+      if (local_macros and expand_macro(local_macros[_cur_t->String])) return 0
 
       processed_tokens.add( _cur_t )
       return 0
