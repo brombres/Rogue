@@ -4,6 +4,8 @@ $include UI/LayoutMode
 $include UI/ParameterNames
 $include UI/UIComponent
 $include UI/UIFont
+$include UI/UIHBox
+#$include UI/UIVBox
 
 class UI : UIComponent [singleton]
   PROPERTIES
@@ -13,6 +15,8 @@ class UI : UIComponent [singleton]
 
     pointer_focus  : UIComponent
     keyboard_focus : UIComponent
+
+    parameters     : Variant
 
   METHODS
     method handle( e:KeyEvent )
@@ -98,7 +102,8 @@ class UI : UIComponent [singleton]
     method update_layout( bounds:Box )
       position = bounds.position
       update_size
-      update_layout_x( bounds.size )
-      update_layout_y( bounds.size )
+      update_layout_width( bounds.size )
+      update_layout_height( bounds.size )
+      perform_layout( position )
 
 endClass

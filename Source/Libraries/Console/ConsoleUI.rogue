@@ -24,14 +24,14 @@ class ConsoleUI : UI
     keep_active_timer    = Timer(1.0)
 
   METHODS
-    method init
-      prior.init( Console.size )
+    #method init
+    #  prior.init( Console.size )
 
-    method init( size:IntXY )
-      prior.init( size )
+    #method init( size:IntXY )
+    #  prior.init( size )
 
-    method init( bounds:Box )
-      prior.init( bounds )
+    #method init( bounds:Box )
+    #  prior.init( bounds )
 
     method init_object
       if (not bold_font)

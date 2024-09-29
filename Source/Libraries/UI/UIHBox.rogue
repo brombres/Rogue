@@ -1,0 +1,16 @@
+class UIHBox : UIComponent
+  METHODS
+    method update_child_layout_heights( available_size:XY )
+      (forEach as UIComponent in children).update_layout_height( available_size )
+
+    method update_child_layout_widths( available_size:XY )
+      (forEach as UIComponent in children).update_layout_width( available_size )
+endClass
+
+class UIGeneratedHBox : UIHBox
+  # Special subclass for operator overrides
+  METHODS
+    method operator+( rhs:UIComponent )->UIComponent [override]
+      add( rhs )
+      return this
+endClass
