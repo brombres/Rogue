@@ -54,7 +54,6 @@ class Entity : Node<<Entity>>
     method set_position( pos:XY )
       @position = XYZ( pos, @position.z )
 
-      #{
     method set_rotation( @rotation )
       noAction
 
@@ -74,7 +73,6 @@ class Entity : Node<<Entity>>
 
     method set_size( sz:XY )
       @size = XYZ( sz, @size.z )
-      }#
 
     method to->String
       if (@name) return @name

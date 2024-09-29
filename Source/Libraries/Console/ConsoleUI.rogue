@@ -1,5 +1,3 @@
-module UI
-
 uses UI [export]
 
 $include Console/ConsoleUIFont
@@ -32,7 +30,7 @@ class ConsoleUI : UI
     method init( size:IntXY )
       prior.init( size )
 
-    method init( bounds:IntBox )
+    method init( bounds:Box )
       prior.init( bounds )
 
     method init_object
@@ -55,7 +53,6 @@ class ConsoleUI : UI
 
     method handle( e:KeyEvent )
       keep_active( 0.5 )
-Epilog.println("HANDLE "+e);
       prior.handle( e )
 
     method handle( e:PointerEvent )
@@ -180,7 +177,7 @@ Epilog.println("HANDLE "+e);
       try
         is_running = true
         while (is_running)
-          update( IntBox(Console.width,Console.height) )
+          update( Box(Console.width,Console.height) )
           draw
 
           if (attributes.needs_redraw) keep_active( 1.0 )
@@ -207,9 +204,9 @@ Epilog.println("HANDLE "+e);
       ConsoleUICanvas.clip = @clip
 
     method update
-      local cur_ms = System.execution_time_ms
-      dt = ((cur_ms - last_update_ms) / 1000.0).clamped_high(1.0)
-      last_update_ms = cur_ms
+      #local cur_ms = System.execution_time_ms
+      #dt = ((cur_ms - last_update_ms) / 1000.0).clamped_high(1.0)
+      #last_update_ms = cur_ms
 
       prior.update
 endClass

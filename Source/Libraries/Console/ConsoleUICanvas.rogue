@@ -1,5 +1,3 @@
-module UI
-
 uses Console/TextCanvas
 
 class ConsoleUICanvas : TextCanvas [singleton]

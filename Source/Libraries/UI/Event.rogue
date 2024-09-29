@@ -1,4 +1,5 @@
 $include UI/Keyboard
+$include UI/Pointer
 
 class Event
   PROPERTIES
@@ -73,28 +74,35 @@ class KeyEvent : Event
     method to->String
       local buffer = String()
       which (keycode)
-         case    1: buffer.print( "[LeftArrow] " )
-         case    2: buffer.print( "[UpArrow] " )
-         case    3: buffer.print( "[RightArrow] " )
-         case    4: buffer.print( "[DownArrow] " )
-         case    8: buffer.print( "[Backspace] " )
-         case '\t': buffer.print( "[Tab] " )
-         case '\n': buffer.print( "[Enter] " )
-         case   27: buffer.print( "[Escape] " )
-         case   32: buffer.print( "[Space] " )
-         case  127: buffer.print( "[Delete] " )
+         case    1: buffer.print( "[LeftArrow]" )
+         case    2: buffer.print( "[UpArrow]" )
+         case    3: buffer.print( "[RightArrow]" )
+         case    4: buffer.print( "[DownArrow]" )
+         case    8: buffer.print( "[Backspace]" )
+         case '\t': buffer.print( "[Tab]" )
+         case '\n': buffer.print( "[Enter]" )
+         case   27: buffer.print( "[Escape]" )
+         case   32: buffer.print( "[Space]" )
+         case  127: buffer.print( "[Delete]" )
          others
-           buffer.[ print("(Keycode "), print(Int(keycode)), print(") ") ]
+           if local ch = unicode
+             if (ch >= 32 and ch != 127)
+               buffer.print "'$'"(ch)
+             endIf
+           endIf
+
+           buffer .= appending( "(Keycode " )
+           buffer.[ print(Int(keycode)), print(")") ]
        endWhich
 
        if (is_press)
-         if (is_repeat) buffer.print( "pressed (repeating)" )
-         else           buffer.print( "pressed" )
+         if (is_repeat) buffer .= appending( "pressed (repeating)" )
+         else           buffer .= appending( "pressed" )
        else
-         buffer.print( "released" )
+         buffer .= appending( "released" )
        endIf
 
-        if (is_consumed) buffer.print( " (consumed)" )
+       if (is_consumed) buffer .= appending( "(consumed)" )
 
        return buffer
 

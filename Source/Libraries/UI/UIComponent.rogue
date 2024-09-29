@@ -2,7 +2,7 @@ class UIComponent : Entity
   PROPERTIES
     anchor        = Anchor.TOP_LEFT : Anchor
     layout_mode   : LayoutModeXY
-    layout_size   : XY
+    layout_xy     : XY
     layout_params : ParameterNames
     parameters    : Variant
 
@@ -31,48 +31,50 @@ class UIComponent : Entity
     method on_end( e:TextEvent )
       noAction
 
+    method on_end_draw
+      noAction
+
     method on_draw
+      noAction
+
+    method on_release_keyboard_focus
+      noAction
+
+    method on_release_pointer_focus
       noAction
 
     method on_update_size
       noAction
 
-    $localMacro DISPATCH_LOGIC
+    $localMacro DISPATCH_EVENT
       # Send input events to children in reverse order because the top layer comes last
-      local next_entity = next
-      local next_component = next_entity->(as UIComponent)
-      while (next_entity and not next_component)
-        next_entity = next_entity.next
-        next_component = next_entity->(as UIComponent)
-      endWhile
-      if (next_component)
-        next_component.dispatch( e )
-        if (e.is_consumed) return
-      endIf
-
+      next_component?.dispatch( e )
+      if (e.is_consumed) return
       handle( e )
     $endLocalMacro
 
     method dispatch( e:KeyEvent )
-      DISPATCH_LOGIC
+      DISPATCH_EVENT
 
     method dispatch( e:PointerEvent )
-      # Send input events to children in reverse order because the top layer comes last
-      if (next) next.dispatch( e )
-      if (e.is_consumed) return
-      handle( e )
+      DISPATCH_EVENT
 
     method dispatch( e:ScrollEvent )
-      # Send input events to children in reverse order because the top layer comes last
-      if (next) next.dispatch( e )
-      if (e.is_consumed) return
-      handle( e )
+      DISPATCH_EVENT
 
     method dispatch( e:TextEvent )
-      # Send input events to children in reverse order because the top layer comes last
-      if (next) next.dispatch( e )
-      if (e.is_consumed) return
-      handle( e )
+      DISPATCH_EVENT
+
+    method draw
+      on_draw
+      (forEach as UIComponent in children).draw
+      on_end_draw
+
+    method first_child_component->UIComponent
+      forEach (child as UIComponent in children)
+        return child
+      endForEach
+      return null
 
     method handle( e:KeyEvent )
       if (attributes.hidden or attributes.input_disabled) return
@@ -80,13 +82,8 @@ class UIComponent : Entity
       on( e )
       if (e.is_consumed) return
 
-      if (first_child)
-        forEach (child as UIComponent in children)
-          child.dispatch( e )
-          if (e.is_consumed) return
-          escapeForEach
-        endForEach
-      endIf
+      first_child_component?.dispatch( e )
+      if (e.is_consumed) return
 
       on_end( e )
 
@@ -96,10 +93,8 @@ class UIComponent : Entity
       on( e )
       if (e.is_consumed) return
 
-      if (first_child)
-        first_child.dispatch( e )
-        if (e.is_consumed) return
-      endIf
+      first_child_component?.dispatch( e )
+      if (e.is_consumed) return
 
       on_end( e )
 
@@ -109,10 +104,8 @@ class UIComponent : Entity
       on( e )
       if (e.is_consumed) return
 
-      if (first_child)
-        first_child.dispatch( e )
-        if (e.is_consumed) return
-      endIf
+      first_child_component?.dispatch( e )
+      if (e.is_consumed) return
 
       on_end( e )
 
@@ -122,16 +115,116 @@ class UIComponent : Entity
       on( e )
       if (e.is_consumed) return
 
-      if (first_child)
-        first_child.dispatch( e )
-        if (e.is_consumed) return
-      endIf
+      first_child_component?.dispatch( e )
+      if (e.is_consumed) return
 
       on_end( e )
 
-    method update_layout( available_size:XY )
+    method next_component->UIComponent
+      local next_entity = next
+      local next_component = next_entity->(as UIComponent)
+      while (next_entity and not next_component)
+        next_entity = next_entity.next
+        next_component = next_entity->(as UIComponent)
+      endWhile
+      return next_component
 
-    method update_size( available_size:XY, &limited )
+    method release_keyboard_focus
+      if (UI.keyboard_focus is this)
+        UI.keyboard_focus = null
+        on_release_keyboard_focus
+      endIf
+
+    method release_pointer_focus
+      if (UI.pointer_focus is this)
+        UI.pointer_focus = null
+        on_release_pointer_focus
+      endIf
+
+    method resolve_size( available_size:XY, &limited )->XY
+      size = available_size
+
+      if (not limited or layout_mode.x == LayoutMode.SHRINK_TO_FIT or layout_mode.y == LayoutMode.SHRINK_TO_FIT)
+        (forEach as UIComponent in children).resolve_size( available_size )
+      endIf
+
+      return size.xy
+
+    method update_layout_x( available_size:XY, &limited )->Real
+      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT)
+        local w = 0.0
+        w = w.or_larger( (forEach as UIComponent in children).update_layout_x( XY(0,available_size.y), &=limited ) )
+        size.x = w
+        return w
+      else
+        which (layout_mode.x)
+          case EXPAND_TO_FILL
+            size.x = available_size.x
+          case ASPECT_FIT
+            local fit_x = ((available_size.y / (layout_xy.y || 1.0)) * layout_xy.x).floor
+            if (layout_mode.y == LayoutMode.ASPECT_FILL or fit_x <= available_size.x)
+              size.x = fit_x
+            else
+              size.x = available_size.x
+            endIf
+          case ASPECT_FILL
+            if (layout_mode.y != LayoutMode.ASPECT_FIT)
+              local scale_x = (available_size.x / (layout_xy.x || 1.0))
+              local scale_y = (available_size.y / (layout_xy.y || 1.0))
+              size.x = (scale_x.or_larger(scale_y) * layout_xy.x).floor
+            endIf
+          case PROPORTIONAL
+            size.x = (available_size.x * layout_xy.x).floor
+          case FIXED_SIZE
+            size.x = layout_xy.x
+          #case PARAMETER
+        endWhich
+
+        if (not limited)
+          (forEach as UIComponent in children).update_layout_x( XY(size.x,available_size.y) )
+        endIf
+
+        return size.x
+      endIf
+
+    method update_layout_y( available_size:XY, &limited )->Real
+      if (layout_mode.y == LayoutMode.SHRINK_TO_FIT)
+        local h = 0.0
+        h = h.or_larger( (forEach as UIComponent in children).update_layout_y( XY(available_size.x,0), &=limited ) )
+        size.y = h
+        return h
+      else
+        which (layout_mode.y)
+          case EXPAND_TO_FILL
+            size.y = available_size.y
+          case ASPECT_FIT
+            local fit_y = ((available_size.x / (layout_xy.x || 1.0)) * layout_xy.y).floor
+            if (layout_mode.x == LayoutMode.ASPECT_FILL or fit_y <= available_size.y)
+              size.y = fit_y
+            else
+              size.y = available_size.y
+            endIf
+          case ASPECT_FILL
+            if (layout_mode.x != LayoutMode.ASPECT_FIT)
+              local scale_x = (available_size.x / (layout_xy.x || 1.0))
+              local scale_y = (available_size.y / (layout_xy.y || 1.0))
+              size.y = (scale_x.or_larger(scale_y) * layout_xy.y).floor
+            endIf
+          case PROPORTIONAL
+            size.y = (available_size.y * layout_xy.y).floor
+          case FIXED_SIZE
+            size.y = layout_xy.y
+          #case PARAMETER
+        endWhich
+
+        if (not limited)
+          (forEach as UIComponent in children).update_layout_y( XY(available_size.x,size.y) )
+        endIf
+
+        return size.x
+      endIf
+
+    method update_size
       (forEach as UIComponent in children).update_size
       on_update_size
 endClass

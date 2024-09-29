@@ -25,10 +25,10 @@ class UI : UIComponent [singleton]
             keyboard_focus.handle( e )
           else
             keyboard_focus.release_keyboard_focus
-            first_child?.dispatch( e )
+            first_child_component?.dispatch( e )
           endIf
         else
-          first_child?.dispatch( e )
+          first_child_component?.dispatch( e )
         endIf
         if (e.is_consumed) return
 
@@ -47,10 +47,10 @@ class UI : UIComponent [singleton]
             pointer_focus.handle( e )
           else
             pointer_focus.release_pointer_focus
-            first_child?.dispatch( e )
+            first_child_component?.dispatch( e )
           endIf
         else
-          first_child?.dispatch( e )
+          first_child_component?.dispatch( e )
         endIf
         if (e.is_consumed) return
 
@@ -67,7 +67,7 @@ class UI : UIComponent [singleton]
         if (pointer_focus)
           pointer_focus.handle( e )
         else
-          first_child?.dispatch( e )
+          first_child_component?.dispatch( e )
         endIf
         if (e.is_consumed) return
 
@@ -84,7 +84,7 @@ class UI : UIComponent [singleton]
         if (keyboard_focus)
           keyboard_focus.handle( e )
         else
-          first_child?.dispatch( e )
+          first_child_component?.dispatch( e )
         endIf
         if (e.is_consumed) return
 
@@ -97,9 +97,8 @@ class UI : UIComponent [singleton]
 
     method update_layout( bounds:Box )
       position = bounds.position
-      size = bounds.size
+      update_size
+      update_layout_x( bounds.size )
+      update_layout_y( bounds.size )
 
-      forEach (child as UIComponent in children)
-        child.update_layout( bounds.size )
-      endForEach
 endClass
