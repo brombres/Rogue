@@ -1,12 +1,13 @@
 class UIComponent : Entity
   PROPERTIES
     anchor        = Anchor.TOP_LEFT : Anchor
+    alignment     : Anchor?
     layout_mode   : LayoutModeXY
     layout_size   : XY
     weight        = XY(1,1)
     layout_params : ParameterNames
 
-  METHODS
+  METHODS # Overrides
     method init
       noAction
 
@@ -52,6 +53,21 @@ class UIComponent : Entity
     method on_update_size
       noAction
 
+  METHODS # Public API
+    method align( @alignment )
+      noAction
+
+    method alignment->Anchor
+      if local result = @alignment
+        return result
+      else
+        if local parent_component = parent->(as UIComponent)
+          return parent_component.alignment
+        else
+          return Anchor.CENTER
+        endIf
+      endIf
+
     $localMacro DISPATCH_EVENT
       # Send input events to children in reverse order because the top layer comes last
       next_component?.dispatch( e )
@@ -81,6 +97,17 @@ class UIComponent : Entity
         return child
       endForEach
       return null
+
+    method fixed_size( layout_size )
+      layout_mode = LayoutModeXY( LayoutMode.FIXED_SIZE, LayoutMode.FIXED_SIZE )
+
+    method fixed_height( h:Real )
+      layout_size.y = h
+      layout_mode.y = LayoutMode.FIXED_SIZE
+
+    method fixed_width( w:Real )
+      layout_size.x = w
+      layout_mode.x = LayoutMode.FIXED_SIZE
 
     method handle( e:KeyEvent )
       if (attributes.hidden or attributes.input_disabled) return
@@ -138,14 +165,17 @@ class UIComponent : Entity
     method operator+( rhs:UIComponent )->UIComponent
       return UIGeneratedHBox( this ).[ add(rhs) ]
 
-    #method operator/( rhs:UIComponent )->UIComponent
-    #  return UIGeneratedVBox( this ).[ add(rhs) ]
+    method operator/( rhs:UIComponent )->UIComponent
+      return UIGeneratedVBox( this ).[ add(rhs) ]
 
-    #method operator|( rhs:UIComponent )->UIComponent
-    #  return UIGeneratedStack( this ).[ add(rhs) ]
+    method operator|( rhs:UIComponent )->UIComponent
+      return UIGeneratedStack( this ).[ add(rhs) ]
 
     method perform_layout( position )
-      (forEach as UIComponent in children).perform_layout( position )
+      localize bounds
+      forEach (component as UIComponent in children)
+        component.perform_layout( component.bounds.positioned_within(bounds,alignment).position )
+      endForEach
 
     method proportional( layout_size )
       layout_mode = LayoutModeXY( LayoutMode.PROPORTIONAL, LayoutMode.PROPORTIONAL )
@@ -229,19 +259,33 @@ class UIComponent : Entity
         #case PARAMETER
       endWhich
 
-      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT or layout_mode.y == LayoutMode.SHRINK_TO_FIT)
-        return update_shrink_to_fit_layout( sz, &=limited )
-      endIf
-
       size = sz
 
-      if (not limited) resolve_child_layout_sizes
+      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT or layout_mode.y == LayoutMode.SHRINK_TO_FIT)
+        local shrunk_size = update_shrink_to_fit_layout( sz, &=limited )
+        if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) sz.x = shrunk_size.x
+        if (layout_mode.y == LayoutMode.SHRINK_TO_FIT) sz.y = shrunk_size.y
+        size = sz
+      endIf
+
+      if (not limited)
+        resolve_child_layout_sizes
+      endIf
 
       return sz
 
     method set_structure_modified( setting:Logical ) [override]
       prior.set_structure_modified( setting )
       if (setting) request_layout
+
+    method shrink_to_fit
+      layout_mode = LayoutModeXY( LayoutMode.SHRINK_TO_FIT, LayoutMode.SHRINK_TO_FIT )
+
+    method shrink_to_fit_height
+      layout_mode.y = LayoutMode.SHRINK_TO_FIT
+
+    method shrink_to_fit_width
+      layout_mode.x = LayoutMode.SHRINK_TO_FIT
 
     method resolve_child_layout_sizes
       local available_size = size.xy
@@ -257,4 +301,12 @@ class UIComponent : Entity
     method update_size
       (forEach as UIComponent in children).update_size
       on_update_size
+endClass
+
+class UIGeneratedStack : UIComponent
+  # Special subclass for operator overrides
+  METHODS
+    method operator|( rhs:UIComponent )->UIComponent [override]
+      add( rhs )
+      return this
 endClass
