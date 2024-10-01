@@ -1,10 +1,43 @@
 class UIHBox : UIComponent
   METHODS
-    method update_child_layout_heights( available_size:XY )
-      (forEach as UIComponent in children).update_layout_height( available_size )
+    method perform_layout( position )
+      local w = 0.0
+      local h = 0.0
+      forEach (component as UIComponent in children)
+        local sz = component.size.xy
+        w += sz.x
+        h .= or_larger( sz.y )
+      endForEach
 
-    method update_child_layout_widths( available_size:XY )
-      (forEach as UIComponent in children).update_layout_width( available_size )
+      local pos = position
+      pos.x = Box(XY(w,h)).positioned_within( bounds, anchor ).position.x
+      forEach (component as UIComponent in children)
+        component.position = component.bounds.positioned_within( Box(pos,component.size.x,size.y), anchor ).position
+        pos.x += component.size.x
+      endForEach
+
+    method resolve_child_layout_sizes [override]
+      local available_size = size.xy
+      use info_list = WorkList<<UIComponentSizeInfo>>
+        local total_weight : Real
+        forEach (component as UIComponent in children)
+          local min_size = component.resolve_layout_size( XY.zero, &limited )
+          local max_size = component.resolve_layout_size( available_size, &limited )
+          if (min_size != max_size and component.weight)
+            total_weight += component.weight.x
+            info_list.add( UIComponentSizeInfo(component, &=min_size, &=max_size) )
+          endIf
+        endForEach
+
+        local remaining_width = available_size.x
+        local remaining_count = info_list.count
+        forEach (info in info_list)
+          local w = remaining_width
+          if (remaining_count > 1) w *= info.component.weight.x / total_weight
+          info.component.size = XY( w, available_size.y )
+          --remaining_count
+        endForEach
+      endUse
 endClass
 
 class UIGeneratedHBox : UIHBox

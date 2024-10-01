@@ -180,7 +180,7 @@ class ConsoleUI : UI
           update( Box(Console.width,Console.height) )
           draw
 
-          if (attributes.needs_redraw) keep_active( 1.0 )
+          if (needs_redraw) keep_active( 1.0 )
 
           System.sleep( 1.0/60.0 )
         endWhile

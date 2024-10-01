@@ -3,6 +3,7 @@ class UIComponent : Entity
     anchor        = Anchor.TOP_LEFT : Anchor
     layout_mode   : LayoutModeXY
     layout_size   : XY
+    weight        = XY(1,1)
     layout_params : ParameterNames
 
   METHODS
@@ -169,91 +170,89 @@ class UIComponent : Entity
         on_release_pointer_focus
       endIf
 
-    method update_child_layout_heights( available_size:XY )
-      (forEach as UIComponent in children).update_layout_height( available_size )
+    method request_layout
+      UI.needs_layout = true
 
-    method update_child_layout_widths( available_size:XY )
-      (forEach as UIComponent in children).update_layout_width( available_size )
+    method request_redraw
+      UI.needs_redraw = true
 
-    method update_shrink_to_fit_layout_height( available_size:XY, &limited )->Real
-      local h = 0.0
-      h = h.or_larger( (forEach as UIComponent in children).update_layout_height( XY(available_size.x,0), &=limited ) )
-      size.y = h
-      return h
+    method resolve_layout_size( available_size:XY, &limited )->XY
+      local sz = available_size
 
-    method update_shrink_to_fit_layout_width( available_size:XY, &limited )->Real
-      local w = 0.0
-      w = w.or_larger( (forEach as UIComponent in children).update_layout_width( XY(0,available_size.y), &=limited ) )
-      size.x = w
-      return w
+      which (layout_mode.x)
+        case EXPAND_TO_FILL
+          noAction
+        case SHRINK_TO_FIT
+          sz.x = 0
+        case ASPECT_FIT
+          local fit_x = ((available_size.y / (layout_size.y || 1.0)) * layout_size.x).floor
+          if (layout_mode.y == LayoutMode.ASPECT_FILL or fit_x <= available_size.x)
+            sz.x = fit_x
+          else
+            sz.x = available_size.x
+          endIf
+        case ASPECT_FILL
+          if (layout_mode.y != LayoutMode.ASPECT_FIT)
+            local scale_x = (available_size.x / (layout_size.x || 1.0))
+            local scale_y = (available_size.y / (layout_size.y || 1.0))
+            sz.x = (scale_x.or_larger(scale_y) * layout_size.x).floor
+          endIf
+        case PROPORTIONAL
+          sz.x = (available_size.x * layout_size.x).floor
+        case FIXED_SIZE
+          sz.x = layout_size.x
+        #case PARAMETER
+      endWhich
 
-    method update_layout_height( available_size:XY, &limited )->Real
-      if (layout_mode.y == LayoutMode.SHRINK_TO_FIT)
-        return update_shrink_to_fit_layout_height( available_size, &=limited )
-      else
-        which (layout_mode.y)
-          case EXPAND_TO_FILL
-            size.y = available_size.y
-          case ASPECT_FIT
-            local fit_y = ((available_size.x / (layout_size.x || 1.0)) * layout_size.y).floor
-            if (layout_mode.x == LayoutMode.ASPECT_FILL or fit_y <= available_size.y)
-              size.y = fit_y
-            else
-              size.y = available_size.y
-            endIf
-          case ASPECT_FILL
-            if (layout_mode.x != LayoutMode.ASPECT_FIT)
-              local scale_x = (available_size.x / (layout_size.x || 1.0))
-              local scale_y = (available_size.y / (layout_size.y || 1.0))
-              size.y = (scale_x.or_larger(scale_y) * layout_size.y).floor
-            endIf
-          case PROPORTIONAL
-            size.y = (available_size.y * layout_size.y).floor
-          case FIXED_SIZE
-            size.y = layout_size.y
-          #case PARAMETER
-        endWhich
+      which (layout_mode.y)
+        case EXPAND_TO_FILL
+          sz.y = available_size.y
+        case SHRINK_TO_FIT
+          sz.y = 0
+        case ASPECT_FIT
+          local fit_y = ((available_size.x / (layout_size.x || 1.0)) * layout_size.y).floor
+          if (layout_mode.x == LayoutMode.ASPECT_FILL or fit_y <= available_size.y)
+            sz.y = fit_y
+          else
+            sz.y = available_size.y
+          endIf
+        case ASPECT_FILL
+          if (layout_mode.x != LayoutMode.ASPECT_FIT)
+            local scale_x = (available_size.x / (layout_size.x || 1.0))
+            local scale_y = (available_size.y / (layout_size.y || 1.0))
+            sz.y = (scale_x.or_larger(scale_y) * layout_size.y).floor
+          endIf
+        case PROPORTIONAL
+          sz.y = (available_size.y * layout_size.y).floor
+        case FIXED_SIZE
+          sz.y = layout_size.y
+        #case PARAMETER
+      endWhich
 
-        if (not limited)
-          update_child_layout_heights( XY(available_size.x,size.y) )
-        endIf
-
-        return size.x
+      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT or layout_mode.y == LayoutMode.SHRINK_TO_FIT)
+        return update_shrink_to_fit_layout( sz, &=limited )
       endIf
 
-    method update_layout_width( available_size:XY, &limited )->Real
-      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT)
-        return update_shrink_to_fit_layout_width( available_size, &=limited )
-      else
-        which (layout_mode.x)
-          case EXPAND_TO_FILL
-            size.x = available_size.x
-          case ASPECT_FIT
-            local fit_x = ((available_size.y / (layout_size.y || 1.0)) * layout_size.x).floor
-            if (layout_mode.y == LayoutMode.ASPECT_FILL or fit_x <= available_size.x)
-              size.x = fit_x
-            else
-              size.x = available_size.x
-            endIf
-          case ASPECT_FILL
-            if (layout_mode.y != LayoutMode.ASPECT_FIT)
-              local scale_x = (available_size.x / (layout_size.x || 1.0))
-              local scale_y = (available_size.y / (layout_size.y || 1.0))
-              size.x = (scale_x.or_larger(scale_y) * layout_size.x).floor
-            endIf
-          case PROPORTIONAL
-            size.x = (available_size.x * layout_size.x).floor
-          case FIXED_SIZE
-            size.x = layout_size.x
-          #case PARAMETER
-        endWhich
+      size = sz
 
-        if (not limited)
-          update_child_layout_widths( XY(size.x,available_size.y) )
-        endIf
+      if (not limited) resolve_child_layout_sizes
 
-        return size.x
-      endIf
+      return sz
+
+    method set_structure_modified( setting:Logical ) [override]
+      prior.set_structure_modified( setting )
+      if (setting) request_layout
+
+    method resolve_child_layout_sizes
+      local available_size = size.xy
+      (forEach as UIComponent in children).resolve_layout_size( available_size )
+
+    method update_shrink_to_fit_layout( available_size:XY, &limited )->XY
+      local sz : XY
+      sz = sz.or_larger( (forEach as UIComponent in children).resolve_layout_size( available_size, &=limited ) )
+      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) size.x = sz.x
+      if (layout_mode.y == LayoutMode.SHRINK_TO_FIT) size.y = sz.y
+      return size.xy
 
     method update_size
       (forEach as UIComponent in children).update_size

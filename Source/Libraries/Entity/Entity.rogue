@@ -40,14 +40,6 @@ class Entity : Node<<Entity>>
     method on_update
       noAction
 
-    method request_layout
-      if (parent) parent.request_layout
-      else        attributes.needs_layout = true
-
-    method request_redraw
-      if (parent) parent.request_redraw
-      else        attributes.needs_redraw = true
-
     method set_position( @position )
       noAction
 

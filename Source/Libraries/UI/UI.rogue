@@ -3,6 +3,7 @@ $include UI/Event
 $include UI/LayoutMode
 $include UI/ParameterNames
 $include UI/UIComponent
+$include UI/UIComponentSizeInfo
 $include UI/UIFont
 $include UI/UIHBox
 #$include UI/UIVBox
@@ -18,7 +19,13 @@ class UI : UIComponent [singleton]
 
     parameters     : Variant
 
+    needs_layout   = true
+    needs_redraw   = true
+
   METHODS
+    method init_object
+      UI = this
+
     method handle( e:KeyEvent )
       temporarily UI = this
         on( e )
@@ -96,14 +103,17 @@ class UI : UIComponent [singleton]
       endTemporarily
 
     method update( bounds:Box )
-      update_layout( bounds )
-      update
+      temporarily UI = this
+        update_layout( bounds )
+        update
+      endTemporarily
 
     method update_layout( bounds:Box )
-      position = bounds.position
-      update_size
-      update_layout_width( bounds.size )
-      update_layout_height( bounds.size )
-      perform_layout( position )
+      temporarily UI = this
+        position = bounds.position
+        update_size
+        resolve_layout_size( bounds.size )
+        perform_layout( position )
+      endTemporarily
 
 endClass
