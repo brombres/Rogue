@@ -571,7 +571,7 @@ class CurrentCharacterStyle
       current = current.bg( color )
 
     method bg( color:ANSIColor )
-      current = current.bg( color.index:<<:CharacterStyle.BG_SHIFT )
+      current = current.bg( (color.index + 1):<<:CharacterStyle.BG_SHIFT )
 
     method bg( color:Int )
       current = current.bg( color )
@@ -619,7 +619,7 @@ class CurrentCharacterStyle
       current = current.fg( color )
 
     method fg( color:ANSIColor )
-      current = current.fg( color.index:<<:CharacterStyle.FG_SHIFT )
+      current = current.fg( (color.index + 1):<<:CharacterStyle.FG_SHIFT )
 
     method fg( color:Int )
       current = current.fg( color )
