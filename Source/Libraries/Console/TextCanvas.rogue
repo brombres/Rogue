@@ -227,6 +227,18 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method draw( pattern:String )
       draw( IntBox(width,height), pattern )
 
+    method draw_frame( bounds:IntBox, &thick )
+      # Draws a box-character frame, e.g.:
+      # ┌───────┐ ┏━━━━━━┓
+      # │Default│ ┃&thick┃
+      # │(thin) │ ┗━━━━━━┛
+      # └───────┘
+      if (thick)
+        draw( bounds, "\[250f]\[2501]\[2513]\[2503].\[2503]\[2517]\[2501]\[251b]" )
+      else
+        draw( bounds, "\[250c]\[2500]\[2510]\[2502].\[2502]\[2514]\[2500]\[2518]" )
+      endIf
+
     method expand( n:Int )
       expand( n, n, n, n )
 
@@ -558,6 +570,9 @@ class CurrentCharacterStyle
     method bg( color:Color )
       current = current.bg( color )
 
+    method bg( color:ANSIColor )
+      current = current.bg( color.index:<<:CharacterStyle.BG_SHIFT )
+
     method bg( color:Int )
       current = current.bg( color )
 
@@ -602,6 +617,9 @@ class CurrentCharacterStyle
 
     method fg( color:Color )
       current = current.fg( color )
+
+    method fg( color:ANSIColor )
+      current = current.fg( color.index:<<:CharacterStyle.FG_SHIFT )
 
     method fg( color:Int )
       current = current.fg( color )
@@ -901,7 +919,7 @@ class CharacterStyle( flags:Int, fg=Color(0):Color, bg=Color(0):Color ) [compoun
       return CharacterStyle( flags|TRUECOLOR, fg, bg )
 
     method fg( color:Int )->CharacterStyle
-      return CharacterStyle( (flags & !FG_MASK) | color, fg, bg )
+      return CharacterStyle( (flags & !(FG_MASK|TRUECOLOR)) | color, fg, bg )
 
     method operator+( flag:Int )->CharacterStyle
       return CharacterStyle( flags | flag, fg, bg )

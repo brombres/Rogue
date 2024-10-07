@@ -84,7 +84,6 @@ class ANSIColorLookup : Byte[] [singleton]
     method init( color_mode:Int )
       # color_mode
       #   COLOR_240, COLOR_16, GRAY_24, or GRAY_4
-      #   Windows is limited to COLOR_16 and GRAY_4
       prior.init( 16*16*16 )
       configure( color_mode )
 
