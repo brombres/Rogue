@@ -10,7 +10,9 @@ class UIFont [abstract]
 
     method cloned->UIFont [abstract]
 
-    method draw( text:String, position:XY )           [abstract]
+    method draw( text:UIText ) [abstract]
+
+    method draw( text:String, position:XY )  [abstract]
 
     method draw( text:String, position:XY, anchor:Anchor )
       if (anchor != Anchor.TOP_LEFT)
@@ -27,7 +29,7 @@ class UIFont [abstract]
     method draw( text:String, container:UIComponent )
       draw( text, container.display_bounds, container.alignment )
 
-    method height->Int                  [abstract]
+    method height->Real                 [abstract]
 
     method measure( ch:Character )->XY  [abstract]
 

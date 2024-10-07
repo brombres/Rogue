@@ -1,5 +1,6 @@
 uses Console/TextCanvas
 
 class ConsoleUICanvas : TextCanvas [singleton]
+  # All console UI drawing commands should draw characters to this singleon.
 endClass
 

@@ -1,18 +1,24 @@
 module UI
 
+uses Graphics
+uses Console/ANSIColor
+uses Console/ANSIRGB
+
 class ConsoleUIFont : UIFont [singleton]
   PROPERTIES
-    is_bold      : Logical
-    is_inverse   : Logical
-    is_underline : Logical
-    color        : Int?
-    bg_color     : Int?
+    #is_bold      : Logical
+    #is_inverse   : Logical
+    #is_underline : Logical
+    #color        : Int?
+    #bg_color     : Int?
 
   METHODS
     method init
       prior.init( "ConsoleUIFont" )
 
     method cloned->ConsoleUIFont
+      return this
+      #{
       return ConsoleUIFont().[
         bold      = is_bold
         inverse   = is_inverse
@@ -20,22 +26,31 @@ class ConsoleUIFont : UIFont [singleton]
         color     = color
         bg_color  = bg_color
       ]
+      }#
+
+    method draw( text:UIText ) [override]
+      local color = text.color
+      if (color) ConsoleUICanvas.style.fg_light_yellow #( ANSIRGB(color.value)->ANSIColor )
+
+      draw( text.value, text.display_position )
+
+      if (color) ConsoleUICanvas.style.fg_default
 
     method draw( text:String, position:XY ) [override]
       ConsoleUICanvas.set_cursor( position )
-      if (is_bold)      ConsoleUICanvas.style.bold
-      if (is_inverse)   ConsoleUICanvas.style.inverse
-      if (is_underline) ConsoleUICanvas.style.underline
-      if (color)    ConsoleUICanvas.style.fg( color.value )
-      if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
+      #if (is_bold)      ConsoleUICanvas.style.bold
+      #if (is_inverse)   ConsoleUICanvas.style.inverse
+      #if (is_underline) ConsoleUICanvas.style.underline
+      #if (color)    ConsoleUICanvas.style.fg( color.value )
+      #if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
       ConsoleUICanvas.print text
-      if (color)    ConsoleUICanvas.style.fg_default
-      if (bg_color) ConsoleUICanvas.style.bg_default
-      if (is_bold)      ConsoleUICanvas.style.bold_off
-      if (is_inverse)   ConsoleUICanvas.style.inverse_off
-      if (is_underline) ConsoleUICanvas.style.underline_off
+      #if (color)    ConsoleUICanvas.style.fg_default
+      #if (bg_color) ConsoleUICanvas.style.bg_default
+      #if (is_bold)      ConsoleUICanvas.style.bold_off
+      #if (is_inverse)   ConsoleUICanvas.style.inverse_off
+      #if (is_underline) ConsoleUICanvas.style.underline_off
 
-    method height->Int
+    method height->Real
       return 1
 
     method measure( ch:Character )->XY
@@ -47,8 +62,8 @@ class ConsoleUIFont : UIFont [singleton]
           else         return XY(1,1)
       endWhich
 
-    method set_bold( is_bold )
-    method set_inverse( is_inverse )
-    method set_underline( is_underline )
+    #method set_bold( is_bold )
+    #method set_inverse( is_inverse )
+    #method set_underline( is_underline )
 endClass
 

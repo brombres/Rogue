@@ -1,0 +1,14 @@
+class UIText( value:String ) : UIComponent
+  METHODS
+    method on_draw [override]
+      font?.draw( this )
+
+    method on_update_size [override]
+      if (not attributes.modified) return
+      attributes.modified = false
+
+      fixed_size( font?.measure(value || "") )
+
+    method set_value( @value )
+      attributes.modified = true
+endClass

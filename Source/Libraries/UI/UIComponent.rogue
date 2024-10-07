@@ -68,12 +68,50 @@ class UIComponent : Entity
         endIf
       endIf
 
+    method aspect_fill( layout_size )
+      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FILL, LayoutMode.ASPECT_FILL )
+
+    method aspect_fill_height( layout_size )
+      layout_mode.y = LayoutMode.ASPECT_FILL
+
+    method aspect_fill_width( layout_size )
+      layout_size.x = w
+      layout_mode.x = LayoutMode.ASPECT_FILL
+
+    method aspect_fit( layout_size )
+      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FIT, LayoutMode.ASPECT_FIT )
+
+    method aspect_fit_height( layout_size )
+      layout_mode.y = LayoutMode.ASPECT_FIT
+
+    method aspect_fit_width( layout_size )
+      layout_size.x = w
+      layout_mode.x = LayoutMode.ASPECT_FIT
+
     $localMacro DISPATCH_EVENT
       # Send input events to children in reverse order because the top layer comes last
       next_component?.dispatch( e )
       if (e.is_consumed) return
       handle( e )
     $endLocalMacro
+
+    method collect_child_display_components( list:UIComponent[] )
+      # Collect child components that need to be laid out, skipping any meta-components.
+      (forEach as UIComponent in children).collect_display_components( list )
+
+    method collect_display_components( list:UIComponent[] )
+      if (is_display_component)
+        list.add( this )
+      else
+        collect_child_display_components( list )
+      endIf
+
+    method color->Color?
+      return parent->(as UIComponent)?.color
+
+    method is_display_component->Logical
+      # If false, this component is considered an informational meta-component.
+      return true
 
     method dispatch( e:KeyEvent )
       DISPATCH_EVENT
@@ -87,9 +125,20 @@ class UIComponent : Entity
     method dispatch( e:TextEvent )
       DISPATCH_EVENT
 
+    method display_bounds->Box
+      return Box( display_position, size )
+
+    method display_position->XY
+      if local parent_component = parent->(as UIComponent)
+        return parent_component.display_position + position
+      endIf
+
     method draw
       on_draw
-      (forEach as UIComponent in children).draw
+      use components = WorkList<<UIComponent>>
+        collect_child_display_components( components )
+        (forEach in components).draw
+      endUse
       on_end_draw
 
     method first_child_component->UIComponent
@@ -108,6 +157,9 @@ class UIComponent : Entity
     method fixed_width( w:Real )
       layout_size.x = w
       layout_mode.x = LayoutMode.FIXED_SIZE
+
+    method font->UIFont
+      return parent->(as UIComponent)?.font
 
     method handle( e:KeyEvent )
       if (attributes.hidden or attributes.input_disabled) return
@@ -173,9 +225,12 @@ class UIComponent : Entity
 
     method perform_layout( position )
       localize bounds
-      forEach (component as UIComponent in children)
-        component.perform_layout( component.bounds.positioned_within(bounds,alignment).position )
-      endForEach
+      use components = WorkList<<UIComponent>>
+        collect_child_display_components( components )
+        forEach (component in components)
+          component.perform_layout( component.bounds.positioned_within(bounds,alignment).position )
+        endForEach
+      endUse
 
     method proportional( layout_size )
       layout_mode = LayoutModeXY( LayoutMode.PROPORTIONAL, LayoutMode.PROPORTIONAL )
@@ -262,7 +317,7 @@ class UIComponent : Entity
       size = sz
 
       if (layout_mode.x == LayoutMode.SHRINK_TO_FIT or layout_mode.y == LayoutMode.SHRINK_TO_FIT)
-        local shrunk_size = update_shrink_to_fit_layout( sz, &=limited )
+        local shrunk_size = resolve_shrink_to_fit_layout_size( sz, &=limited )
         if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) sz.x = shrunk_size.x
         if (layout_mode.y == LayoutMode.SHRINK_TO_FIT) sz.y = shrunk_size.y
         size = sz
@@ -289,17 +344,26 @@ class UIComponent : Entity
 
     method resolve_child_layout_sizes
       local available_size = size.xy
-      (forEach as UIComponent in children).resolve_layout_size( available_size )
+      use components = WorkList<<UIComponent>>
+        collect_child_display_components( components )
+        (forEach in components).resolve_layout_size( available_size )
+      endUse
 
-    method update_shrink_to_fit_layout( available_size:XY, &limited )->XY
+    method resolve_shrink_to_fit_layout_size( available_size:XY, &limited )->XY
       local sz : XY
-      sz = sz.or_larger( (forEach as UIComponent in children).resolve_layout_size( available_size, &=limited ) )
+      use components = WorkList<<UIComponent>>
+        collect_child_display_components( components )
+        sz = sz.or_larger( (forEach in components).resolve_layout_size( available_size, &=limited ) )
+      endUse
       if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) size.x = sz.x
       if (layout_mode.y == LayoutMode.SHRINK_TO_FIT) size.y = sz.y
       return size.xy
 
     method update_size
-      (forEach as UIComponent in children).update_size
+      use components = WorkList<<UIComponent>>
+        collect_child_display_components( components )
+        (forEach in components).update_size
+      endUse
       on_update_size
 endClass
 

@@ -1,0 +1,5 @@
+class UIMetaComponent : UIComponent
+  METHODS
+    method is_display_component->Logical
+      return false
+endClass

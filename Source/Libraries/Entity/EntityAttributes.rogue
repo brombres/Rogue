@@ -2,5 +2,6 @@ enum EntityAttributes [bitflags]
   CATEGORIES
     HIDDEN
     INPUT_DISABLED
+    MODIFIED
 endEnum
 

@@ -5,7 +5,11 @@ $include UI/ParameterNames
 $include UI/UIComponent
 $include UI/UIComponentSizeInfo
 $include UI/UIFont
+$include UI/UIMetaComponent
 $include UI/UIHBox
+$include UI/UIHFlow
+$include UI/UIText
+$include UI/UITextStyle
 $include UI/UIVBox
 
 class UI : UIComponent [singleton]
@@ -30,6 +34,9 @@ class UI : UIComponent [singleton]
       temporarily UI = this
         prior.draw
       endTemporarily
+
+    method font->UIFont
+      return default_font
 
     method handle( e:KeyEvent )
       temporarily UI = this

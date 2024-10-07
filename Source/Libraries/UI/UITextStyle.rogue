@@ -1,0 +1,12 @@
+class UITextStyle : UIMetaComponent
+  PROPERTIES
+    color : Color?
+
+  METHODS
+    method init( component:UIComponent, color )
+      add( component )
+
+    method color->Color? [override]
+      if (@color) return @color
+      return prior.color
+endClass

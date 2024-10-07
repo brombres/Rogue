@@ -8,9 +8,9 @@ uses Utility/Timer
 
 class ConsoleUI : UI
   GLOBAL PROPERTIES
-    bold_font      : ConsoleUIFont
-    inverse_font   : ConsoleUIFont
-    underline_font : ConsoleUIFont
+    #bold_font      : ConsoleUIFont
+    #inverse_font   : ConsoleUIFont
+    #underline_font : ConsoleUIFont
 
   PROPERTIES
     last_update_ms       : Int
@@ -34,14 +34,11 @@ class ConsoleUI : UI
     #  prior.init( bounds )
 
     method init_object
-      if (not bold_font)
-        bold_font = default_font.cloned.[ bold=true ]
-        inverse_font = default_font.cloned.[ inverse=true ]
-        underline_font = default_font.cloned.[ underline=true ]
-      endIf
-
-    method default_font->ConsoleUIFont
-      return ConsoleUIFont
+      #if (not bold_font)
+      #  bold_font = default_font.cloned.[ bold=true ]
+      #  inverse_font = default_font.cloned.[ inverse=true ]
+      #  underline_font = default_font.cloned.[ underline=true ]
+      #endIf
 
     method drag_threshold->Int
       return 1
@@ -50,6 +47,9 @@ class ConsoleUI : UI
       prior.draw
       ConsoleUICanvas.display(0,0)
       Console.set_cursor( 0, bounds.y2 )
+
+    method font->ConsoleUIFont [override]
+      return ConsoleUIFont
 
     method handle( e:KeyEvent )
       keep_active( 0.5 )

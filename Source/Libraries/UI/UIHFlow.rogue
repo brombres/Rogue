@@ -1,0 +1,62 @@
+class UIHFlow : UIComponent
+  PROPERTIES
+    layout_finished : Logical
+    layout_cursor   : XY
+    max_width       : Real
+    line_height     : Real
+
+  METHODS
+    method on_update_size
+      layout_finished = false
+
+    method perform_layout( position )
+      if (layout_finished) return
+
+      layout_cursor = XY(0,0)
+      line_height   = 0
+
+      local available_width = size.x
+
+      localize bounds
+      use components = WorkList<<UIComponent>>
+        collect_child_display_components( components )
+
+        forEach (component in components)
+          local w = component.size.x
+          if (layout_cursor.x + w >= available_width and layout_cursor.x > 0)
+            layout_cursor.x = 0
+            layout_cursor.y += line_height
+            line_height = 0
+          endIf
+          component.perform_layout( layout_cursor )
+          layout_cursor.x += w
+          max_width   .= or_larger( w )
+          line_height .= or_larger( component.size.y )
+        endForEach
+      endUse
+
+      # Leave cursor as min size to enclose content
+      layout_cursor.x = max_width
+      layout_cursor.y += line_height
+
+      layout_finished = true
+
+    method resolve_child_layout_sizes [override]
+      if (layout_finished) return
+      local available_size = size.xy
+      use components = WorkList<<UIComponent>>
+        collect_child_display_components( components )
+        (forEach in components).resolve_layout_size( available_size )
+      endUse
+
+    method resolve_shrink_to_fit_layout_size( available_size:XY, &limited )->XY
+      resolve_child_layout_sizes
+
+      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) size.x = available_size.x
+      perform_layout( XY.zero )
+
+      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) size.x = layout_cursor.x
+      if (layout_mode.y == LayoutMode.SHRINK_TO_FIT) size.y = layout_cursor.y
+      return layout_cursor
+
+endClass
