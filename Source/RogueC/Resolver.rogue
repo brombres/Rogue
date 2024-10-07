@@ -1881,13 +1881,12 @@ class Resolver : Poolable, Visitor
 
         if (is_enum)
           # Detect duplicate case values from alternate names and auto-generated code.
-          local used_cases = Logical[]
+          local used_cases = @{}
           forEach (cmd_case in cmd.cases)
             forEach (arg in cmd_case.args)
               local n = arg->(as LiteralInteger)
               if (n)
-                used_cases.expand_to_include( n->Int )
-                if (used_cases[n->Int])
+                if (used_cases.contains(n->Int))
                   throw arg.t.error( "Illegal duplicate category value - each enum category must have a unique value. Use DEFINITIONS to support alternate names, e.g. 'CATEGORIES / WHITE, GRAY', 'DEFINITIONS / GREY=GRAY'." )
                 else
                   used_cases[n->Int] = true
