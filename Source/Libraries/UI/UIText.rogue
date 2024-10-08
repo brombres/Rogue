@@ -1,5 +1,14 @@
 class UIText( value:String ) : UIComponent
+  PROPERTIES
+    style : UITextStyle
+
   METHODS
+    method bg_color->Color?
+      return style?.bg_color || prior.bg_color
+
+    method color->Color?
+      return style?.color || prior.color
+
     method on_draw [override]
       font?.draw( this )
 
@@ -8,6 +17,14 @@ class UIText( value:String ) : UIComponent
       attributes.modified = false
 
       fixed_size( font?.measure(value || "") )
+
+    method set_bg_color( color:Color )
+      ensure<<style>>
+      style.bg_color = color
+
+    method set_color( color:Color )
+      ensure<<style>>
+      style.color = color
 
     method set_value( @value )
       attributes.modified = true

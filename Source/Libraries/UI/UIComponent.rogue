@@ -88,6 +88,9 @@ class UIComponent : Entity
       layout_size.x = w
       layout_mode.x = LayoutMode.ASPECT_FIT
 
+    method bg_color->Color?
+      return parent->(as UIComponent)?.bg_color
+
     $localMacro DISPATCH_EVENT
       # Send input events to children in reverse order because the top layer comes last
       next_component?.dispatch( e )
