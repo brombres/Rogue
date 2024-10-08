@@ -30,11 +30,14 @@ class ConsoleUIFont : UIFont [singleton]
 
     method draw( text:UIText ) [override]
       local color = text.color
-      if (color) ConsoleUICanvas.style.fg_light_yellow #( ANSIRGB(color.value)->ANSIColor )
+      local bg_color = text.bg_color
+      if (color)    ConsoleUICanvas.style.fg( color.value )
+      if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
 
       draw( text.value, text.display_position )
 
-      if (color) ConsoleUICanvas.style.fg_default
+      if (color)    ConsoleUICanvas.style.fg_default
+      if (bg_color) ConsoleUICanvas.style.bg_default
 
     method draw( text:String, position:XY ) [override]
       ConsoleUICanvas.set_cursor( position )

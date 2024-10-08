@@ -548,8 +548,16 @@ endClass
 
 class StyledCharacter( value=' ':Character, style=CharacterStyle.NONE:CharacterStyle ) [compound]
   GLOBAL METHODS
+    method create( value:Character, color:Color, &fg, &bg )->StyledCharacter
+      if (bg)
+        return StyledCharacter( value, CharacterStyle(CharacterStyle.TRUECOLOR_BG,&bg=color) )
+      endIf
+      if (fg or not bg)
+        return StyledCharacter( value, CharacterStyle(CharacterStyle.TRUECOLOR_FG,&fg=color) )
+      endIf
+
     method create( value:Character, fg:Color, bg:Color )->StyledCharacter
-      return StyledCharacter( value, CharacterStyle(CharacterStyle.TRUECOLOR,fg,bg) )
+      return StyledCharacter( value, CharacterStyle(CharacterStyle.TRUECOLOR_FG|TRUECOLOR_BG,fg,bg) )
 
   METHODS
     method operator==( other:StyledCharacter )->Logical
@@ -736,10 +744,10 @@ class CharacterStyle( flags:Int, fg=Color(0):Color, bg=Color(0):Color ) [compoun
   DEFINITIONS
     NONE                 = CharacterStyle(0)
 
-    FG_MASK              = 0b000000000_111111111_0000000
-    BG_MASK              = 0b111111111_000000000_0000000
-    FG_SHIFT             = 7
-    BG_SHIFT             = 16
+    FG_MASK              = 0b000000000_111111111_00000000
+    BG_MASK              = 0b111111111_000000000_00000000
+    FG_SHIFT             = 8
+    BG_SHIFT             = 17
 
     BOLD                 = (1 :<<: 0)
     DIM                  = (1 :<<: 1)
@@ -747,46 +755,47 @@ class CharacterStyle( flags:Int, fg=Color(0):Color, bg=Color(0):Color ) [compoun
     BLINK                = (1 :<<: 3)
     INVERSE              = (1 :<<: 4)
     HIDDEN               = (1 :<<: 5)
-    TRUECOLOR            = (1 :<<: 6)
+    TRUECOLOR_FG         = (1 :<<: 6)
+    TRUECOLOR_BG         = (1 :<<: 7)
 
-    FG_DEFAULT           = (0  :<<: 7)
-    FG_BLACK             = (1  :<<: 7)
-    FG_RED               = (2  :<<: 7)
-    FG_GREEN             = (3  :<<: 7)
-    FG_YELLOW            = (4  :<<: 7)
-    FG_BLUE              = (5  :<<: 7)
-    FG_MAGENTA           = (6  :<<: 7)
-    FG_CYAN              = (7  :<<: 7)
-    FG_LIGHT_GRAY        = (8  :<<: 7)
-    FG_DARK_GRAY         = (9  :<<: 7)
-    FG_LIGHT_RED         = (10 :<<: 7)
-    FG_LIGHT_GREEN       = (11 :<<: 7)
-    FG_LIGHT_YELLOW      = (12 :<<: 7)
-    FG_LIGHT_BLUE        = (13 :<<: 7)
-    FG_LIGHT_MAGENTA     = (14 :<<: 7)
-    FG_LIGHT_CYAN        = (15 :<<: 7)
-    FG_WHITE             = (16 :<<: 7)
-    FG_EXTENDED          = (17 :<<: 7)
+    FG_DEFAULT           = (0  :<<: 8)
+    FG_BLACK             = (1  :<<: 8)
+    FG_RED               = (2  :<<: 8)
+    FG_GREEN             = (3  :<<: 8)
+    FG_YELLOW            = (4  :<<: 8)
+    FG_BLUE              = (5  :<<: 8)
+    FG_MAGENTA           = (6  :<<: 8)
+    FG_CYAN              = (7  :<<: 8)
+    FG_LIGHT_GRAY        = (8  :<<: 8)
+    FG_DARK_GRAY         = (9  :<<: 8)
+    FG_LIGHT_RED         = (10 :<<: 8)
+    FG_LIGHT_GREEN       = (11 :<<: 8)
+    FG_LIGHT_YELLOW      = (12 :<<: 8)
+    FG_LIGHT_BLUE        = (13 :<<: 8)
+    FG_LIGHT_MAGENTA     = (14 :<<: 8)
+    FG_LIGHT_CYAN        = (15 :<<: 8)
+    FG_WHITE             = (16 :<<: 8)
+    FG_EXTENDED          = (17 :<<: 8)
     # (17..256) :<<: 6 - extended 256 fg colors
 
-    BG_DEFAULT           = (0  :<<: 16)
-    BG_BLACK             = (1  :<<: 16)
-    BG_RED               = (2  :<<: 16)
-    BG_GREEN             = (3  :<<: 16)
-    BG_YELLOW            = (4  :<<: 16)
-    BG_BLUE              = (5  :<<: 16)
-    BG_MAGENTA           = (6  :<<: 16)
-    BG_CYAN              = (7  :<<: 16)
-    BG_LIGHT_GRAY        = (8  :<<: 16)
-    BG_DARK_GRAY         = (9  :<<: 16)
-    BG_LIGHT_RED         = (10 :<<: 16)
-    BG_LIGHT_GREEN       = (11 :<<: 16)
-    BG_LIGHT_YELLOW      = (12 :<<: 16)
-    BG_LIGHT_BLUE        = (13 :<<: 16)
-    BG_LIGHT_MAGENTA     = (14 :<<: 16)
-    BG_LIGHT_CYAN        = (15 :<<: 16)
-    BG_WHITE             = (16 :<<: 16)
-    BG_EXTENDED          = (17 :<<: 16)
+    BG_DEFAULT           = (0  :<<: 17)
+    BG_BLACK             = (1  :<<: 17)
+    BG_RED               = (2  :<<: 17)
+    BG_GREEN             = (3  :<<: 17)
+    BG_YELLOW            = (4  :<<: 17)
+    BG_BLUE              = (5  :<<: 17)
+    BG_MAGENTA           = (6  :<<: 17)
+    BG_CYAN              = (7  :<<: 17)
+    BG_LIGHT_GRAY        = (8  :<<: 17)
+    BG_DARK_GRAY         = (9  :<<: 17)
+    BG_LIGHT_RED         = (10 :<<: 17)
+    BG_LIGHT_GREEN       = (11 :<<: 17)
+    BG_LIGHT_YELLOW      = (12 :<<: 17)
+    BG_LIGHT_BLUE        = (13 :<<: 17)
+    BG_LIGHT_MAGENTA     = (14 :<<: 17)
+    BG_LIGHT_CYAN        = (15 :<<: 17)
+    BG_WHITE             = (16 :<<: 17)
+    BG_EXTENDED          = (17 :<<: 17)
     # (17..256) :<<: 6 - extended 256 bg colors
 
   GLOBAL PROPERTIES
@@ -862,12 +871,26 @@ class CharacterStyle( flags:Int, fg=Color(0):Color, bg=Color(0):Color ) [compoun
             else                    ConsoleStyle.set<<HIDDEN_OFF>>( output )
           endIf
 
-          if (new_flags & TRUECOLOR)
-            ConsoleStyle.colors( new_style.fg, new_style.bg, output )
-            diff &= !(FG_MASK | BG_MASK)  # don't apply 256-color values
-          elseIf ((diff & TRUECOLOR) and is_truecolor_supported)
-            # TRUECOLOR mode changed, so make sure to apply 256-color values
-            diff |= (FG_MASK | BG_MASK)
+          if (new_flags & TRUECOLOR_FG)
+            if (new_flags & TRUECOLOR_BG)
+              ConsoleStyle.colors( new_style.fg, new_style.bg, output )
+              diff &= !(FG_MASK | BG_MASK)  # don't apply 256-color values
+            else
+              ConsoleStyle.fg_color( new_style.fg, output )
+              diff &= !FG_MASK  # don't apply 256-color values
+            endIf
+          elseIf (new_flags & TRUECOLOR_BG)
+            ConsoleStyle.bg_color( new_style.bg, output )
+            diff &= !BG_MASK  # don't apply 256-color values
+          else
+            if ((diff & TRUECOLOR_FG) and is_truecolor_supported)
+              # TRUECOLOR_FG mode changed, so make sure to apply 256-color value
+              diff |= FG_MASK
+            endIf
+            if ((diff & TRUECOLOR_BG) and is_truecolor_supported)
+              # TRUECOLOR_BG mode changed, so make sure to apply 256-color value
+              diff |= BG_MASK
+            endIf
           endIf
 
           if (diff & FG_MASK)
@@ -889,37 +912,38 @@ class CharacterStyle( flags:Int, fg=Color(0):Color, bg=Color(0):Color ) [compoun
           endIf
 
         else
-          # No flags changed but if we're in truecolor mode then check
+          # No flags changed but if we're in a truecolor mode then check
           # for altered colors
-          if ((new_flags & TRUECOLOR) and is_truecolor_supported)
+          if ((new_flags & TRUECOLOR_FG) and is_truecolor_supported)
             if (new_style.fg.argb != this.fg.argb)
-              if (new_style.bg.argb != this.bg.argb)
-                ConsoleStyle.colors( new_style.fg, new_style.bg, output )
-              else
-                ConsoleStyle.fg_color( new_style.fg, output )
-              endIf
-            elseIf (new_style.bg.argb != this.bg.argb)
+              ConsoleStyle.fg_color( new_style.fg, output )
+            endIf
+          endIf
+
+          if ((new_flags & TRUECOLOR_BG) and is_truecolor_supported)
+            if (new_style.bg.argb != this.bg.argb)
               ConsoleStyle.bg_color( new_style.bg, output )
             endIf
           endIf
+
         endIf
       endBlock
       return new_style
 
     method bg( bg:Color )->CharacterStyle
-      return CharacterStyle( flags|TRUECOLOR, fg, bg )
+      return CharacterStyle( flags|TRUECOLOR_BG, fg, bg )
 
     method bg( color:Int )->CharacterStyle
-      return CharacterStyle( (flags & !BG_MASK) | color, fg, bg )
+      return CharacterStyle( (flags & !(BG_MASK|TRUECOLOR_BG)) | color, fg, bg )
 
     method colors( fg:Color, bg:Color )->CharacterStyle
-      return CharacterStyle( flags|TRUECOLOR, fg, bg )
+      return CharacterStyle( flags|TRUECOLOR_FG|TRUECOLOR_BG, fg, bg )
 
     method fg( fg:Color )->CharacterStyle
-      return CharacterStyle( flags|TRUECOLOR, fg, bg )
+      return CharacterStyle( flags|TRUECOLOR_FG, fg, bg )
 
     method fg( color:Int )->CharacterStyle
-      return CharacterStyle( (flags & !(FG_MASK|TRUECOLOR)) | color, fg, bg )
+      return CharacterStyle( (flags & !(FG_MASK|TRUECOLOR_FG)) | color, fg, bg )
 
     method operator+( flag:Int )->CharacterStyle
       return CharacterStyle( flags | flag, fg, bg )
