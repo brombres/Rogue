@@ -658,6 +658,9 @@ parser
   endOn
 
   on "module"
+    deprecation_warning = "'module' is deprecated - use 'library' instead."
+    call print_deprecation_warning
+
     call parse_library_id
     library_attributes
     produce DefineLibrary(name:String,attributes:Attributes)
@@ -3755,6 +3758,9 @@ parser
     return
 
   elseOn "module"
+    deprecation_warning = "'module' is deprecated - use 'library' instead."
+    call print_deprecation_warning
+
     savePosition
     call parse_library_id # adjusts Program.current_library
     restorePosition
@@ -3795,6 +3801,9 @@ parser
     return
 
   elseOn "$thisModule"
+    deprecation_warning = "'$thisModule' is deprecated - use '$thisLibrary' instead."
+    call print_deprecation_warning
+
     call write_this_library_id
     return
 

@@ -994,6 +994,11 @@ class Parser : ParserCore, Poolable
         endIf
       endIf
 
+    method print_deprecation_warning->Int
+      if (disable_output) return 0
+      Program.print_warning( _cur_t, deprecation_warning )
+      return 1
+
     method print_stack_top
       if (_cmd_stack.count)
         if (_cmd_stack.last is null)
