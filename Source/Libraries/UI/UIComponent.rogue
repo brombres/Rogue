@@ -144,6 +144,9 @@ class UIComponent : Entity
       endUse
       on_end_draw
 
+    method find_h_split( max_width:Real )->Real?
+      return null
+
     method first_child_component->UIComponent
       forEach (child as UIComponent in children)
         return child
@@ -207,6 +210,12 @@ class UIComponent : Entity
       if (e.is_consumed) return
 
       on_end( e )
+
+    method is_br->Logical
+      return false
+
+    method is_space->Logical
+      return false
 
     method next_component->UIComponent
       local next_entity = next
@@ -344,6 +353,9 @@ class UIComponent : Entity
 
     method shrink_to_fit_width
       layout_mode.x = LayoutMode.SHRINK_TO_FIT
+
+    method split_h( split_position:Real, components:UIComponent[], component_i:Int )
+      noAction
 
     method resolve_child_layout_sizes
       local available_size = size.xy
