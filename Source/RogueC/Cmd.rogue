@@ -1,5 +1,5 @@
 # Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
-module RogueC
+library RogueC
 
 class Cmd( t:Token )
   GLOBAL METHODS
@@ -1438,7 +1438,7 @@ class AttributeExport : Cmd
       return "AttributeExport"
 endClass
 
-class DefineModule : Cmd
+class DefineLibrary : Cmd
   PROPERTIES
     name       : String
     attributes : Attributes
@@ -1446,18 +1446,18 @@ class DefineModule : Cmd
   METHODS
     method init( t, name, attributes )
 
-    method init( existing:DefineModule )
+    method init( existing:DefineLibrary )
       prior.init( existing )
       name = existing.name
       if (existing.attributes) attributes = existing.attributes.cloned
 
     method description->String
-      return "DefineModule($,$)" (%name,%attributes)
+      return "DefineLibrary($,$)" (%name,%attributes)
 
 endClass
 
 
-class ModuleQualifiedID : Cmd
+class LibraryQualifiedID : Cmd
   PROPERTIES
     context : Cmd
     name    : String
@@ -1465,13 +1465,13 @@ class ModuleQualifiedID : Cmd
   METHODS
     method init( t, context, name )
 
-    method init( existing:ModuleQualifiedID )
+    method init( existing:LibraryQualifiedID )
       prior.init( existing )
       if (existing.context) context = existing.context.cloned
       name = existing.name
 
     method description->String
-      return "ModuleQualifiedID($,$)" (%context,%name)
+      return "LibraryQualifiedID($,$)" (%context,%name)
 
     method to->String
       return "$::$"(context->String,name)
@@ -1614,7 +1614,7 @@ endClass
 class GlobalMethod : Procedure
   METHODS
     method init( t:Token, type_context, name:String )
-      prior.init( t, type_context.module_context, name, null, null, null, null, null )
+      prior.init( t, type_context.library_context, name, null, null, null, null, null )
 
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
         attributes=null:Attributes, doc=null:String, body=null:LocalScope )
@@ -1654,12 +1654,12 @@ class Method : Procedure
         attributes:Attributes, doc:String, source_tokens, body:LocalScope )
       init( t, null, name, parameters, return_type, attributes, doc, body )
 
-    method init( t:Token, module_context:Module, name:String, parameters=null:Parameters, return_type=null:Type,
+    method init( t:Token, library_context:Library, name:String, parameters=null:Parameters, return_type=null:Type,
         attributes=null:Attributes, doc=null:String, body=null:LocalScope )
-      prior.init( t, module_context, name, parameters, return_type, attributes, doc, body )
+      prior.init( t, library_context, name, parameters, return_type, attributes, doc, body )
 
     method init( t:Token, type_context, name:String )
-      prior.init( t, type_context.module_context, name, null, null, null, null, null )
+      prior.init( t, type_context.library_context, name, null, null, null, null, null )
 
     method init( existing:Method )
       prior.init( existing )
@@ -1689,7 +1689,7 @@ class Method : Procedure
           tokens = specialized_tokens
         endContingent
 
-        temporarily Program.current_module = this.module_context
+        temporarily Program.current_library = this.library_context
           body.statements = Parser(tokens).parse( Parser.ip_multi_line_statements )
           statements = body.statements
         endTemporarily
@@ -1699,7 +1699,7 @@ class Method : Procedure
       if (is_organized) return
 
       use organizer = ObjectPool<<MethodOrganizer>>
-        temporarily organizer.this_module=module_context, organizer.this_type=@type_context
+        temporarily organizer.this_library=library_context, organizer.this_type=@type_context
           prior.organize( &=skip_add_to_type )
         endTemporarily
       endUse
@@ -2109,7 +2109,7 @@ class TemplateArgs : CmdList
         if (token_list.tokens.contains($.type == RogueC::TokenType.STRING)) return null
 
         token_string.print((forEach in token_list.tokens)->String)
-        local type_entry = Program.current_module.type_arg_lookup.find( token_string )
+        local type_entry = Program.current_library.type_arg_lookup.find( token_string )
         if (type_entry)
           if (type_entry.value)
             # This token string has already been identified as a type
@@ -2120,7 +2120,7 @@ class TemplateArgs : CmdList
           endIf
         else
           # Determine if this token string represents a type and, if so, create lookup table entry
-          local type = Program.current_module.find_type( t, token_string, &extended_search )
+          local type = Program.current_library.find_type( t, token_string, &extended_search )
           if (not type)
             try
               type = Parser( token_list.tokens ).parse( Parser.ip_type )->(as Type)
@@ -2134,7 +2134,7 @@ class TemplateArgs : CmdList
             token_string.clear
             token_string.print((forEach in token_list.tokens)->String)
           endIf
-          Program.current_module.type_arg_lookup[token_string.cloned] = type
+          Program.current_library.type_arg_lookup[token_string.cloned] = type
           return type
         endIf
       endUse
@@ -3689,11 +3689,11 @@ class GlobalMethodTemplate : Cmd
       local replacements = Template.replacements( placeholders, template_args )
       local tokens = Template.make_replacements( type_context, token_list, replacements )
 
-      temporarily Program.current_module = type_context.module_context
+      temporarily Program.current_library = type_context.library_context
         local parser = Parser( tokens )
         parser._cmd_stack.add( Identifier(t,name) )
         local m = parser.parse( Parser.ip_global_method_template_instance )->(as GlobalMethod)
-        m.module_context = type_context.module_context
+        m.library_context = type_context.library_context
         m.type_context   = type_context
         m.attributes.omit_doc = omit_doc
         m.organize
@@ -3726,7 +3726,7 @@ class MethodTemplate : Cmd
       return "MethodTemplate($,$)" (%name,%placeholders)
 
     method instantiate( template_args:TemplateArgs )->Procedure
-      temporarily Program.current_module = type_context.module_context
+      temporarily Program.current_library = type_context.library_context
         local placeholders = Token[]
         forEach (p in this.placeholders)
           placeholders.add( p.t )
@@ -3740,7 +3740,7 @@ class MethodTemplate : Cmd
         type_context.method_template_instances.add( name )
 
         local m = parser.parse( Parser.ip_method_template_instance )->(as Method)
-        m.module_context = type_context.module_context
+        m.library_context = type_context.library_context
         m.type_context   = type_context
         m.attributes.omit_doc = omit_doc
         m.method_template = this
@@ -3774,7 +3774,7 @@ endClass
 
 class TemplatedAccess : Cmd
   PROPERTIES
-    module_context : Module
+    library_context : Library
     type_context   : Type
     name           : String
     type_args      : TemplateArgs
@@ -3784,14 +3784,14 @@ class TemplatedAccess : Cmd
     method init( t, name, type_args, args )
 
     method init( t, type_context, name, type_args, args )
-      module_context = type_context.module_context
+      library_context = type_context.library_context
 
     method init( existing:TemplatedAccess )
       prior.init( existing )
       name = existing.name
       if (existing.type_args) type_args = existing.type_args.cloned
       if (existing.args) args = existing.args.cloned
-      module_context = existing.module_context
+      library_context = existing.library_context
       type_context = existing.type_context
 
     method description->String
@@ -3840,21 +3840,21 @@ class FunctionType : Type
       builder.print ')'
       if (return_type)
         builder.print "->"
-        builder.print return_type.module_context
+        builder.print return_type.library_context
         builder.print "::"
         builder.print return_type
       endIf
       builder.print ')'
       local name = builder
 
-      local type = Program.default_module.find_type( t, name )->(as FunctionType)
+      local type = Program.default_library.find_type( t, name )->(as FunctionType)
       if (type) return type
       type = FunctionType( t, name, Attribute.OBJECT|Attribute.ABSTRACT, param_types, return_type )
       return type
 
   METHODS
     method init( t, name:String, attributes:Int64, param_types, return_type )
-      prior.init( t, Program.default_module, name, attributes )
+      prior.init( t, Program.default_library, name, attributes )
       this.attributes.is_defined = true
 
       local m_call = Method( t, this, "call" )
@@ -3883,10 +3883,10 @@ class FunctionDefinition : Cmd
 
     fn_type     : Type
     base_type   : Type
-    mod         : Module
+    lib         : Library
 
   METHODS
-    method init( t, parameters, return_type, with_values, statements, mod=Program.current_module )
+    method init( t, parameters, return_type, with_values, statements, lib=Program.current_library )
 
     method init( existing:FunctionDefinition )
       prior.init( existing )
@@ -3896,7 +3896,7 @@ class FunctionDefinition : Cmd
       if (existing.statements)  statements  = existing.statements.cloned
       if (existing.fn_type)     fn_type     = existing.fn_type.cloned
       if (existing.base_type)   base_type   = existing.base_type.cloned
-      mod = existing.mod
+      lib = existing.lib
 
     method description->String
       return "FunctionDefinition($,$,$,$)" (%parameters,%return_type,%with_values,%statements)
@@ -3916,7 +3916,7 @@ class FunctionDefinition : Cmd
       endForEach
 
       base_type = FunctionType( t, param_types, return_type )
-      fn_type = Type( t, mod, "Function_$"(mod.types.count), Attribute.OBJECT|Attribute.SINGLETON )
+      fn_type = Type( t, lib, "Function_$"(lib.types.count), Attribute.OBJECT|Attribute.SINGLETON )
       fn_type.base_class = base_type
       fn_type.attributes.is_defined = true
 
@@ -4853,7 +4853,7 @@ class GetTypeInfo : Cmd
       return "GetTypeInfo($)" (%of_type)
 
     method type->Type
-      return Program.default_module.must_find_type( t, "TypeInfo" )
+      return Program.default_library.must_find_type( t, "TypeInfo" )
 
 endClass
 

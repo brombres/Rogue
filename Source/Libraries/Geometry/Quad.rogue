@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
   GLOBAL METHODS

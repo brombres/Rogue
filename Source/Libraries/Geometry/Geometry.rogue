@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 $include Geometry/Anchor
 $include Geometry/Box

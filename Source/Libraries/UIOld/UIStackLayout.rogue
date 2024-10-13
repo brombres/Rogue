@@ -1,4 +1,4 @@
-module UI
+library UI
 
 class UIStackLayout : UILayout
   # Base class UIComponent implements stack layout, so this class just formalizes

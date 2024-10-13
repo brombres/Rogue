@@ -1,4 +1,4 @@
-module UI
+library UI
 
 class UIFiller : UIComponent
   GLOBAL METHODS

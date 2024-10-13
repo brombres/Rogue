@@ -50,7 +50,7 @@ class System [essential]
       native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
                  use buffer = ObjectPool<<UTF16String>>
                    buffer.data.reserve( 4096 )
-                   local n = native( "GetModuleFileNameW( NULL, $buffer->data->as_wchars, 2048 )" )->Int32
+                   local n = native( "GetLibraryFileNameW( NULL, $buffer->data->as_wchars, 2048 )" )->Int32
                    if (n)
                      buffer.data.count = (n+1)*2  # include the null terminator bytes
                      executable_filepath = buffer->String

@@ -4,7 +4,7 @@
 #   #$ LIBRARIES(Linux) = freetype2(libfreetype6-dev)
 #   #$ CC_LINK(macOS)   = -lbz2
 #===============================================================================
-module Graphics
+library Graphics
 
 $include Graphics/BitmapFont
 

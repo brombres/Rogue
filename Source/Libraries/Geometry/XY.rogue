@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 class XY( x:Real, y:Real ) [compound]
   DEFINITIONS

@@ -1,8 +1,8 @@
-module RogueC
+library RogueC
 
 class PropertyOrganizer : Visitor
   METHODS
-    method init( this_module )
+    method init( this_library )
 
     method visit( this_type, class_def:Cmd )
       # Called when instantiating a template

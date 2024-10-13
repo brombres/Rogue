@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class ExceptionType( index:Int ) [compound]
   METHODS

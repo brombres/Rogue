@@ -25,7 +25,7 @@
 #   If you are not using Rogo then you will need to install libpng and libjpeg
 #   manually and pass the appropriate flags to roguec or the C++ compiler.
 #==============================================================================
-module Graphics
+library Graphics
 
 class Bitmap
   GLOBAL PROPERTIES

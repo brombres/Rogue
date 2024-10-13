@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 class Triangle( a:XY, b:XY, c:XY ) [compound]
   # [a,b,c] should be defined in clockwise order to ensure visibility

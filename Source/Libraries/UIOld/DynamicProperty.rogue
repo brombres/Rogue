@@ -1,4 +1,4 @@
-module UI
+library UI
 
 $macro ENTITY_PROPERTY<<$EntityType,$name,$Type,$default_value,$PropertyType>>
   augment

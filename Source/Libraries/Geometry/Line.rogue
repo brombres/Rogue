@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 class Line( a:XY, b:XY ) [compound]
   GLOBAL METHODS

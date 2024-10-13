@@ -72,12 +72,13 @@ KEYWORD_IMPORT            import
 KEYWORD_INSTANCE_OF       instanceOf
 KEYWORD_IS                is
 KEYWORD_IS_TYPE           isType
+KEYWORD_LIBRARY           library     [structural]
 KEYWORD_LOCAL             local
 KEYWORD_LOCALIZE          localize
 KEYWORD_LOOP              loop
 KEYWORD_METHOD            method      [structural]
 KEYWORD_METHODS           METHODS     [structural]
-KEYWORD_MODULE            module      [structural]
+KEYWORD_MODULE            module       [structural]
 KEYWORD_NATIVE_SECTION    NATIVE      [structural]
 KEYWORD_NATIVE            native
 KEYWORD_NATIVE_HEADER     nativeHeader
@@ -149,6 +150,7 @@ META_ROGUE_VERSION    $rogueVersion   [meta]
 META_SOURCE_FILEPATH  $sourceFilepath [meta]
 META_SOURCE_LINE      $sourceLine     [meta]
 META_TARGET           $target         [meta]
+META_THIS_LIBRARY     $thisLibrary    [meta]
 META_THIS_MODULE      $thisModule     [meta]
 META_UPPERCASE        $uppercase      [meta]
 
@@ -649,10 +651,16 @@ parser
   endOn
 
 
+  on "library"
+    call parse_library_id
+    library_attributes
+    produce DefineLibrary(name:String,attributes:Attributes)
+  endOn
+
   on "module"
-    call parse_module_id
-    module_attributes
-    produce DefineModule(name:String,attributes:Attributes)
+    call parse_library_id
+    library_attributes
+    produce DefineLibrary(name:String,attributes:Attributes)
   endOn
 
   on "nativeType"
@@ -709,7 +717,7 @@ parser
     uses_attributes
 
     disable_output = saved_setting
-    call on_uses_module
+    call on_uses_library
     return
   endOn
 
@@ -1118,7 +1126,7 @@ parser
   on "::"
     create Identifier(name="Rogue":String)
     identifier
-    create ModuleQualifiedID(context,name:String)
+    create LibraryQualifiedID(context,name:String)
     discardPosition
   elseOn '.'
     restorePosition
@@ -1133,11 +1141,11 @@ parser
     on "::"
       if (nextIs('.'))
         internal_id
-        create ModuleQualifiedID(context,name:String)
+        create LibraryQualifiedID(context,name:String)
         return
       else
         identifier
-        create ModuleQualifiedID(context,name:String)
+        create LibraryQualifiedID(context,name:String)
       endIf
     endOn
   endWhile
@@ -1172,21 +1180,21 @@ parser
   endOn
   syntaxError "Literal string expected."
 
-- module_attributes
+- library_attributes
   beginList
     on '['
       while (hasAnother and not nextIs(']'))
-        module_attribute
+        library_attribute
         consume ','
       endWhile
       mustConsume(']')
     endOn
   produceList Attributes
 
-- module_attribute
+- library_attribute
   on @"api"       -> AttributeAPI
   on @"essential" -> AttributeEssential
-  syntaxError "Illegal module attribute. Expected one or more of [api essential]."
+  syntaxError "Illegal library attribute. Expected one or more of [api essential]."
 
 - class_attributes
   beginList
@@ -2617,7 +2625,7 @@ parser
 
   expression
 
-- module_path
+- library_path
   beginList
     identifier
     while (consume('/'))
@@ -2644,9 +2652,9 @@ parser
   endIf
   syntaxError "Illegal 'uses' attribute. Expected any of [export noInclude]."
 
-#- import_module_by_path_or_filepath
+#- import_library_by_path_or_filepath
 #  on STRING
-#    produce ImportModuleByFilepath(filepath=content)
+#    produce ImportLibraryByFilepath(filepath=content)
 #  endOn
 #
 #  beginList
@@ -2656,7 +2664,7 @@ parser
 #    endWhile
 #  createList
 #
-#  produce ImportModuleByPath(segments)
+#  produce ImportLibraryByPath(segments)
 
 - access_args
   if (not nextIs('(')) produceNull
@@ -3739,9 +3747,16 @@ parser
     call define_macro
     return
 
+  elseOn "library"
+    savePosition
+    call parse_library_id # adjusts Program.current_library
+    restorePosition
+    call rewrite_cur_token
+    return
+
   elseOn "module"
     savePosition
-    call parse_module_id # adjusts Program.current_module
+    call parse_library_id # adjusts Program.current_library
     restorePosition
     call rewrite_cur_token
     return
@@ -3775,8 +3790,12 @@ parser
     endOn
     return
 
+  elseOn "$thisLibrary"
+    call write_this_library_id
+    return
+
   elseOn "$thisModule"
-    call write_this_module_id
+    call write_this_library_id
     return
 
   elseOn "$string"

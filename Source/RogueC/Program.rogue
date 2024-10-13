@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class Program [singleton]
   PROPERTIES
@@ -37,9 +37,9 @@ class Program [singleton]
     split_line_count     : Int?
     generated_file_count : Int
 
-    modules           = [String:Module]
-    default_module    : Module
-    current_module    : Module
+    libraries           = [String:Library]
+    default_library    : Library
+    current_library    : Library
 
     type_Logical      : Type
     type_Byte         : Type
@@ -107,8 +107,8 @@ class Program [singleton]
   METHODS
     method init
       Program = this  # update singleton reference
-      default_module = get_module( t, "Rogue" )
-      current_module = default_module
+      default_library = get_library( t, "Rogue" )
+      current_library = default_library
 
       type_Logical   = TypeLogical( t )
       type_Byte      = TypeByte( t )
@@ -150,10 +150,10 @@ class Program [singleton]
       type_Real.attributes.is_essential      = true
       type_String.attributes.is_essential    = true
 
-    method add_include_search_path( path:String, &library )
+    method add_include_search_path( path:String, &is_library )
       path = File( path ).abs
       if (not include_search_paths.contains(path) and File(path).exists)
-        include_search_paths[path] = library
+        include_search_paths[path] = is_library
       endIf
 
     method apply( visitor:InspectionVisitor )
@@ -162,8 +162,8 @@ class Program [singleton]
       while (is_modified)
         is_modified = false
 
-        forEach (m in modules)
-          temporarily visitor.this_module = m
+        forEach (m in libraries)
+          temporarily visitor.this_library = m
             visitor.visit( m )
           endTemporarily
         endForEach
@@ -175,20 +175,20 @@ class Program [singleton]
       while (is_modified)
         is_modified = false
 
-        forEach (m in modules)
-          temporarily visitor.this_module = m
+        forEach (m in libraries)
+          temporarily visitor.this_library = m
             visitor.visit( m )
           endTemporarily
         endForEach
       endWhile
 
-    method check_include_hints( t:Token, mod:Module, name:String )
+    method check_include_hints( t:Token, lib:Library, name:String )
       #{
       name .= before_first('<')
 
       local fix : String
 
-      if (mod is Program.default_module)
+      if (lib is Program.default_library)
         which (name)
           case "Date", "Time", "Timestamp", "TimeInterval": fix = "uses Standard/DateTime"
           case "File":  fix = "uses Standard/FileIO"
@@ -215,24 +215,24 @@ class Program [singleton]
 
     method find_type( name:String )->Type
       block
-        local (mod,type_name) = default_module.split_module_and_type( t, name, &suppress_error )
+        local (lib,type_name) = default_library.split_library_and_type( t, name, &suppress_error )
         if (not type_name) return null
-        if (mod) return mod.find_type( t, type_name )
+        if (lib) return lib.find_type( t, type_name )
       endBlock
 
-      forEach (mod in modules)
-        local type = mod.find_type( t, name )
+      forEach (lib in libraries)
+        local type = lib.find_type( t, name )
         if (type) return type
       endForEach
 
       return null
 
-    method get_module( t:Token, name:String )->Module
-      local m = modules[ name ]
+    method get_library( t:Token, name:String )->Library
+      local m = libraries[ name ]
       if (m) return m
 
-      m = Module( t, name )
-      modules[ name ] = m
+      m = Library( t, name )
+      libraries[ name ] = m
       return m
 
     method find_include( t:Token, filepath:String, &api, &include_folder )->String
@@ -263,7 +263,7 @@ class Program [singleton]
     method include( filepath:String, &api )
       include( t, filepath, &=api )
 
-    method include( t:Token, filepath:String, &api, &is_optional, &include_folder, &library )
+    method include( t:Token, filepath:String, &api, &is_optional, &include_folder, &is_library )
       local found = find_include( t, filepath, &=api, &=include_folder )
       if (not found)
         block
@@ -287,7 +287,7 @@ class Program [singleton]
       if (found)
         local folder = File( found ).folder
         if (String.exists(folder))
-          add_include_search_path( folder, &=library )
+          add_include_search_path( folder, &=is_library )
         endIf
         filepath = found
       elseIf (is_optional)
@@ -307,7 +307,7 @@ class Program [singleton]
 
       included_files[ filepath ] = IncludedFile(null,null,false) # placeholder
 
-      temporarily current_module = Program.default_module
+      temporarily current_library = Program.default_library
         Analytics.tokenization.start
         local tokens = Scanner( File(filepath) ).tokenize
         Analytics.tokenization.stop
@@ -356,12 +356,12 @@ class Program [singleton]
       is_organizing = false
 
     method organize
-      (forEach in modules.values).collect_used_modules
+      (forEach in libraries.values).collect_used_libraries
 
       # We've collected all class templates.
       Analytics.ensure_definitions.start
-      forEach (mod in modules.values)
-        forEach (type in mod.types)
+      forEach (lib in libraries.values)
+        forEach (type in lib.types)
           type.ensure_definition
         endForEach
       endForEach
@@ -371,9 +371,9 @@ class Program [singleton]
       Analytics.main_parse.start
       forEach (included_file in included_files)
         local file_tokens = included_file.tokens
-        temporarily current_module = Program.default_module
+        temporarily current_library = Program.default_library
           local elements = Parser(file_tokens).[ is_api=included_file.is_api].parse
-          temporarily current_module = Program.default_module # Parser might have changed the current_module
+          temporarily current_library = Program.default_library # Parser might have changed the current_library
             if (elements)
               local collector = Collector()
               collector.visit( forEach in elements )
@@ -388,7 +388,7 @@ class Program [singleton]
       Analytics.instantiate_essential.stop
 
       Analytics.organize_methods.start
-      (forEach in modules).organize_methods
+      (forEach in libraries).organize_methods
       Analytics.organize_methods.stop
 
       Analytics.tranform.start
@@ -439,8 +439,8 @@ class Program [singleton]
       Analytics.finalize.stop
 
     method instantiate_doc_method_templates
-      forEach (mod in modules)
-        forEach (type in mod.types)
+      forEach (lib in libraries)
+        forEach (type in lib.types)
           type.instantiate_doc_method_templates
         endForEach
       endForEach
@@ -449,8 +449,8 @@ class Program [singleton]
       block any_changes = true
         while (any_changes)
           any_changes = false
-          forEach (mod in modules)
-            if (mod.instantiate_essential_and_api_types) any_changes = true
+          forEach (lib in libraries)
+            if (lib.instantiate_essential_and_api_types) any_changes = true
           endForEach
         endWhile
       endBlock
@@ -482,18 +482,18 @@ class Program [singleton]
       local (filepath,ext) = File(output_filepath).split_filepath_and_extension
       if (not String.exists(ext) or ext != "json") output_filepath = filepath + ".json"
 
-      local doc = @{ modules:[] }
+      local doc = @{ libraries:[] }
 
-      forEach (mod in Program.modules)
-        local module_info = @{ name:mod.name, types:[] }
+      forEach (lib in Program.libraries)
+        local library_info = @{ name:lib.name, types:[] }
 
-        forEach (type in mod.types)
+        forEach (type in lib.types)
           if (not type.documentable) nextIteration
 
           local type_info =
           @{
             "scoped_name": doc_name(type.scoped_name)
-            "module":      doc_name(type.module_context.name)
+            "library":      doc_name(type.library_context.name)
             "name":        doc_name(type.name)
             "attributes":  []
           }
@@ -682,11 +682,11 @@ class Program [singleton]
             if (methods.count) type_info//methods = methods
           endIf
 
-          if (type.name != "Routine" or type_info//global_methods.count) module_info//types.add( type_info )
+          if (type.name != "Routine" or type_info//global_methods.count) library_info//types.add( type_info )
 
         endForEach
 
-        if (module_info//types.count) doc//modules.add( module_info )
+        if (library_info//types.count) doc//libraries.add( library_info )
       endForEach
 
       println "Writing documentation metadata to " + output_filepath
@@ -726,12 +726,12 @@ class Program [singleton]
     method type_TypeInfo->Type
       if (@type_TypeInfo) return @type_TypeInfo
       Program.include( t, "Introspection" )
-      type_TypeInfo = default_module.must_find_type( t, "TypeInfo" )
+      type_TypeInfo = default_library.must_find_type( t, "TypeInfo" )
       return @type_TypeInfo
 
     method type_Variant->Type
       if (@type_Variant) return @type_Variant
-      type_Variant = default_module.must_find_type( t, "Variant" )
+      type_Variant = default_library.must_find_type( t, "Variant" )
       return @type_Variant
 
 endClass
