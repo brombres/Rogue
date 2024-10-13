@@ -603,7 +603,7 @@ class Parser : ParserCore, Poolable
           filepath = qualified_filepath
         endIf
 
-        Program.include( marked_token, filepath, &is_optional, &library )
+        Program.include( marked_token, filepath, &is_optional, &is_library )
       endIf
       return 0
 

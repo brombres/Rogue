@@ -150,10 +150,10 @@ class Program [singleton]
       type_Real.attributes.is_essential      = true
       type_String.attributes.is_essential    = true
 
-    method add_include_search_path( path:String, &library )
+    method add_include_search_path( path:String, &is_library )
       path = File( path ).abs
       if (not include_search_paths.contains(path) and File(path).exists)
-        include_search_paths[path] = library
+        include_search_paths[path] = is_library
       endIf
 
     method apply( visitor:InspectionVisitor )
@@ -263,7 +263,7 @@ class Program [singleton]
     method include( filepath:String, &api )
       include( t, filepath, &=api )
 
-    method include( t:Token, filepath:String, &api, &is_optional, &include_folder, &library )
+    method include( t:Token, filepath:String, &api, &is_optional, &include_folder, &is_library )
       local found = find_include( t, filepath, &=api, &=include_folder )
       if (not found)
         block
@@ -287,7 +287,7 @@ class Program [singleton]
       if (found)
         local folder = File( found ).folder
         if (String.exists(folder))
-          add_include_search_path( folder, &=library )
+          add_include_search_path( folder, &=is_library )
         endIf
         filepath = found
       elseIf (is_optional)
