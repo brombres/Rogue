@@ -1,10 +1,10 @@
-module RogueC
+library RogueC
 
 uses Utility/WorkList
 
 class Procedure : Cmd
   PROPERTIES
-    module_context    : Module
+    library_context    : Library
     type_context      : Type
     name              : String
     base_name         : String   # without any <<template-args>>
@@ -46,7 +46,7 @@ class Procedure : Cmd
         attributes=null:Attributes, doc=null:String, body=null:LocalScope )
       init( t, null, name, parameters, return_type, attributes, doc, body )
 
-    method init( t, module_context, name, parameters=null, return_type=null,
+    method init( t, library_context, name, parameters=null, return_type=null,
         attributes=null, doc=null, body=null )
       if (name.begins_with('.'))
         name = '_' + name.unleft(1)
@@ -79,7 +79,7 @@ class Procedure : Cmd
       if (existing.attributes)  attributes  = existing.attributes.cloned
       if (existing.body)        body  = existing.body.cloned
       if (body) statements = body.statements
-      module_context = existing.module_context
+      library_context = existing.library_context
       signature = existing.signature
       is_organized = existing.is_organized
       is_resolved  = existing.is_resolved
@@ -196,7 +196,7 @@ class Procedure : Cmd
           if (type_context.is_reference)
             builder.print "Rogue::Object"
           else
-            builder.print type_context.module_context
+            builder.print type_context.library_context
             builder.print "::"
             builder.print type_context.name
           endIf
@@ -207,14 +207,14 @@ class Procedure : Cmd
           if (p.type.is_reference)
             builder.print("Rogue::Object")
           else
-            builder.print( p.type.module_context.name )
+            builder.print( p.type.library_context.name )
             builder.print("::")
             builder.print( p.type.name )
           endIf
           ++i
         endForEach
         builder.print ')'
-        if (return_type) builder.[ print("->"), print(return_type.module_context), print("::"), print(return_type) ]
+        if (return_type) builder.[ print("->"), print(return_type.library_context), print("::"), print(return_type) ]
         if (is_global)
           if (attributes.is_mutating) builder.print("[global mutating]")
           else                        builder.print("[global]")
@@ -237,7 +237,7 @@ class Procedure : Cmd
           return_type.ensure_definition
           return_type.organize_type
           if (return_type.is_reference) return_type = Program.type_Object
-          dynamic_signature = "$->$::$"(@dynamic_signature,return_type.module_context,return_type)
+          dynamic_signature = "$->$::$"(@dynamic_signature,return_type.library_context,return_type)
         endIf
 
         local m = this->(as Method)
@@ -270,7 +270,7 @@ class Procedure : Cmd
       if (is_organized) return
       is_organized = true
 
-      if (not module_context) module_context = Program.current_module
+      if (not library_context) library_context = Program.current_library
 
       if (not type_context or not type_context.is_aspect)
         if (attributes.is_append) throw t.error( "Attribute [append] is only valid for aspect methods." )
@@ -332,7 +332,7 @@ class Procedure : Cmd
               endIf
             endIf
             assert p.type
-            builder.[ print(p.type.module_context.name), print("::"), print(p.type.name) ]
+            builder.[ print(p.type.library_context.name), print("::"), print(p.type.name) ]
           endBlock
         endForEach
         builder.print ')'
@@ -361,7 +361,7 @@ class Procedure : Cmd
       endIf
 
       use organizer = ObjectPool<<MethodOrganizer>>
-        temporarily organizer.this_module=module_context, organizer.this_type=type_context, organizer.this_procedure=this
+        temporarily organizer.this_library=library_context, organizer.this_type=type_context, organizer.this_procedure=this
           organizer.visit_children( this )
         endTemporarily
       endUse
@@ -387,7 +387,7 @@ class Procedure : Cmd
       if (is_resolved) return
 
       use resolver = ObjectPool<<Resolver>>
-        resolver.visit( module_context, this )
+        resolver.visit( library_context, this )
       endUse
 
 endClass

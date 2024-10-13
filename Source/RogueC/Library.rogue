@@ -1,11 +1,11 @@
-module RogueC
+library RogueC
 
-class Module
+class Library
   PROPERTIES
     t    : Token
     name : String
 
-    used_modules      = UsedModule[]
+    used_libraries      = UsedLibrary[]
     implicit_context  = Type[]
     global_statements : Statements
     templates         = [String:Template]
@@ -26,53 +26,53 @@ class Module
   METHODS
     method init( t, name )
       attributes = Attributes(t)
-      Program.modules[ name ] = this
+      Program.libraries[ name ] = this
       ensure<<global_statements>>(t)
 
       if (name != "Rogue")
-        uses_module( Program.default_module )
+        uses_library( Program.default_library )
       endIf
 
-      # Each module gets a Routine class to store routines as GLOBAL METHODS.
+      # Each library gets a Routine class to store routines as GLOBAL METHODS.
       local tokens = Token[]
       tokens.add( t.cloned(TokenType.EOL,"") )
       tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )
       local new_template = Template( t, this, "Routine", &placeholders=Token[], tokens, Attribute.OBJECT )
       templates["Routine<<0>>"] = new_template
 
-    method collect_used_modules
-      # Ensure we have a flat list of all modules we should search for types in.
+    method collect_used_libraries
+      # Ensure we have a flat list of all libraries we should search for types in.
       temporarily attributes.is_visiting = true
-        forEach (used_m in used_modules)
-          used_m.m.collect_exported_modules( this )
+        forEach (used_m in used_libraries)
+          used_m.m.collect_exported_libraries( this )
         endForEach
       endTemporarily
 
-      (forEach in used_modules).m.attributes.is_collected = false
+      (forEach in used_libraries).m.attributes.is_collected = false
 
-      # Every module has type Rogue::Global as an implicit context.
+      # Every library has type Rogue::Global as an implicit context.
       implicit_context.add( Program.type_Global )
 
-      # Add each class ModuleName::Routine to list of implicit contexts if it exists.
-      # Each routine is converted in to a global method of its module's Routine class.
-      local type_Routine = Type( t, Program.default_module, "Routine" )
+      # Add each class LibraryName::Routine to list of implicit contexts if it exists.
+      # Each routine is converted in to a global method of its library's Routine class.
+      local type_Routine = Type( t, Program.default_library, "Routine" )
       type_Routine.ensure_definition
       implicit_context.add( type_Routine )
-      forEach (used_m in used_modules)
+      forEach (used_m in used_libraries)
         type_Routine = Type( t, used_m.m, "Routine" )
         type_Routine.ensure_definition
         implicit_context.add( type_Routine )
       endForEach
 
-    method collect_exported_modules( target:Module )
+    method collect_exported_libraries( target:Library )
       if (attributes.is_visiting or attributes.is_collected) return
       attributes.is_collected = true
 
       temporarily attributes.is_visiting = true
-        forEach (used_m in used_modules)
+        forEach (used_m in used_libraries)
           if (used_m.is_exported)
-            target.uses_module( used_m.m )
-            used_m.m.collect_exported_modules( target )
+            target.uses_library( used_m.m )
+            used_m.m.collect_exported_libraries( target )
           endIf
         endForEach
       endTemporarily
@@ -83,7 +83,7 @@ class Module
         local type_name = placeholder_t.content.replacing( "$", "_Doc_Gen_" )
         placeholder_t = placeholder_t.cloned( TokenType.IDENTIFIER, type_name )
         local type = types[ type_name ]
-        if (not type) type = Type( placeholder_t, Program.default_module, type_name, Attribute.OBJECT|Attribute.DEFINED )
+        if (not type) type = Type( placeholder_t, Program.default_library, type_name, Attribute.OBJECT|Attribute.DEFINED )
         return (t:placeholder_t,type:type)
       else
         # Unknown token parameter
@@ -98,13 +98,13 @@ class Module
     method find_template( t:Token, template_name:String, type_name:String, &extended_search )->Template
       # template_name: e.g. List<<1>>
       # type_name:     e.g. Int32[]
-      local mod : Module
-      (mod,template_name) = split_module_and_type( t, template_name )
-      if (mod is null) mod = split_module_and_type( t, type_name )._1
+      local lib : Library
+      (lib,template_name) = split_library_and_type( t, template_name )
+      if (lib is null) lib = split_library_and_type( t, type_name )._1
 
-      if (mod)
-        # Explicit module given
-        local result = mod.templates[ template_name ]
+      if (lib)
+        # Explicit library given
+        local result = lib.templates[ template_name ]
         if (result) return result
 
       else
@@ -112,7 +112,7 @@ class Module
         if (result) return result
 
         if (extended_search)
-          forEach (used_m in used_modules)
+          forEach (used_m in used_libraries)
             result = used_m.m.templates[ template_name ]
             if (result) return result
           endForEach
@@ -125,33 +125,33 @@ class Module
       local result = find_template( t, template_name, type_name, &=extended_search )
       if (result) return result
 
-      local (mod,type) = split_module_and_type( t, type_name )
-      if (mod is null) mod = this
-      Program.check_include_hints( t, mod, template_name )
-      throw t.error( "Reference to undefined type '$::$'."(mod,type) )
+      local (lib,type) = split_library_and_type( t, type_name )
+      if (lib is null) lib = this
+      Program.check_include_hints( t, lib, template_name )
+      throw t.error( "Reference to undefined type '$::$'."(lib,type) )
 
     method find_type( t:Token, type_name:String, &extended_search )->Type
-      local (mod,isolated_type_name) = split_module_and_type( t, type_name, &suppress_error )
+      local (lib,isolated_type_name) = split_library_and_type( t, type_name, &suppress_error )
 
       if (isolated_type_name is null) return null
 
-      if (mod) extended_search = false
-      else     mod = this
+      if (lib) extended_search = false
+      else     lib = this
 
-      local result = mod.types[ isolated_type_name ]
+      local result = lib.types[ isolated_type_name ]
       if (result) return result
 
       if (not isolated_type_name.ends_with('>'))
         use template_name = StringPool
           template_name.print isolated_type_name
           template_name.print "<<0>>"
-          local template = mod.templates[ template_name ]
-          if (template) return Type( t, template, mod, isolated_type_name )
+          local template = lib.templates[ template_name ]
+          if (template) return Type( t, template, lib, isolated_type_name )
         endUse
       endIf
 
       if (extended_search)
-        forEach (used_m in used_modules)
+        forEach (used_m in used_libraries)
           result = used_m.m.find_type( t, type_name )
           if (result) return result
         endForEach
@@ -162,17 +162,17 @@ class Module
     method must_find_type( t:Token, type_name:String, &extended_search )->Type
       local result = find_type( t, type_name, &=extended_search )
       if (result) return result
-      local (mod,type) = split_module_and_type( t, type_name )
-      if (not mod) mod = this
+      local (lib,type) = split_library_and_type( t, type_name )
+      if (not lib) lib = this
 
-      Program.check_include_hints( t, mod, type_name )
-      throw t.error( "Reference to undefined type '$::$'."(mod,type) )
+      Program.check_include_hints( t, lib, type_name )
+      throw t.error( "Reference to undefined type '$::$'."(lib,type) )
 
     method instantiate_essential_and_api_types->Logical
       local any_new = false
       if (attributes.is_essential or Program.generate_doc)
         # Instantiate one of each template with 0 type parameters
-        temporarily Program.current_module = this
+        temporarily Program.current_library = this
           local i = 0
           while (i < templates.count)
             local template = templates.at(i)
@@ -187,22 +187,22 @@ class Module
                 if (template.name == "Tuple")
                   noAction
                 elseIf (template.name == "List" and placeholders.count == 1)
-                  local element_type = Program.default_module.create_placeholder_data_type( placeholders.first ).type
+                  local element_type = Program.default_library.create_placeholder_data_type( placeholders.first ).type
                   template.doc_type = Type( template.t, element_type )
                   any_new = true
                 elseIf (template.name == "Table" and placeholders.count == 2)
-                  local key_type = Program.default_module.create_placeholder_data_type( placeholders[0] ).type
-                  local value_type = Program.default_module.create_placeholder_data_type( placeholders[1] ).type
+                  local key_type = Program.default_library.create_placeholder_data_type( placeholders[0] ).type
+                  local value_type = Program.default_library.create_placeholder_data_type( placeholders[1] ).type
                   template.doc_type = Type( template.t, key_type, value_type )
                   any_new = true
                 elseIf (template.name == "Optional" and placeholders.count == 1)
-                  local data_type = Program.default_module.create_placeholder_data_type( placeholders[0] ).type
+                  local data_type = Program.default_library.create_placeholder_data_type( placeholders[0] ).type
                   template.doc_type = Type( template.t, data_type, &optional )
                   any_new = true
                 else
                   local args = TemplateArgs( template.t )
                   forEach (placeholder_t in placeholders)
-                    placeholder_t = Program.default_module.create_placeholder_data_type( placeholder_t ).t
+                    placeholder_t = Program.default_library.create_placeholder_data_type( placeholder_t ).t
                     args.add( TokenList(template.t,[placeholder_t]) )
                   endForEach
                   template.doc_type = Type( t, template, this, args )
@@ -224,22 +224,22 @@ class Module
 
       return any_new
 
-    method split_module_and_type( t:Token, type_name:String, &allow_unknown_module, &suppress_error )->(Module,String)
+    method split_library_and_type( t:Token, type_name:String, &allow_unknown_library, &suppress_error )->(Library,String)
       if (type_name.begins_with('(') or type_name.begins_with('['))
         # Type names beginning with ( are (tuples) or (Functions)
         # Type names beginning with [ are [KeyType:ValueType] tables
-        #return (Program.default_module,type_name)
-        return (null->(as Module),type_name)
+        #return (Program.default_library,type_name)
+        return (null->(as Library),type_name)
       endIf
 
       if (not type_name.contains("::"))
-        return (null->(as Module),type_name)
+        return (null->(as Library),type_name)
       endIf
 
-      # Find module name, handling e.g. MyModule::Type<<Rogue::Int32>>
+      # Find library name, handling e.g. MyLibrary::Type<<Rogue::Int32>>
       local first_template_i = type_name.locate( "<<" )  # could be null
       local last_scope_i = type_name.locate_last( "::", first_template_i )
-      if (not last_scope_i.exists) return (null->(as Module),type_name)
+      if (not last_scope_i.exists) return (null->(as Library),type_name)
 
       use mod_name = StringPool
         forEach (i in 0..<last_scope_i.value)
@@ -248,32 +248,32 @@ class Module
 
         type_name .= substring( last_scope_i.value + 2 )
 
-        local mod = Program.modules[ mod_name ]
-        if (mod) return (mod,type_name)
+        local lib = Program.libraries[ mod_name ]
+        if (lib) return (lib,type_name)
 
         use relative_mod_name = StringPool
-          # Try one more thing - if in module Alpha, check Beta::XYZ -> Alpha::Beta::XYZ
+          # Try one more thing - if in library Alpha, check Beta::XYZ -> Alpha::Beta::XYZ
           relative_mod_name.print this.name
           relative_mod_name.print "::"
           relative_mod_name.print mod_name
-          mod = Program.modules[ relative_mod_name ]
-          if (mod) return (mod,type_name)
+          lib = Program.libraries[ relative_mod_name ]
+          if (lib) return (lib,type_name)
         endUse
 
-        if (allow_unknown_module)
-          # Create and return the module
-          mod = Program.get_module( t, mod_name )
-          return (mod,type_name)
+        if (allow_unknown_library)
+          # Create and return the library
+          lib = Program.get_library( t, mod_name )
+          return (lib,type_name)
         endIf
 
         if (suppress_error)
-          return (null->(as Module), null->(as String))  # null Type indicates suppresssed error
+          return (null->(as Library), null->(as String))  # null Type indicates suppresssed error
         endIf
 
-        throw t.error( "No such module '$'. Is there a missing 'uses $' directive?" (mod_name,mod_name) )
+        throw t.error( "No such library '$'. Is there a missing 'uses $' directive?" (mod_name,mod_name) )
       endUse
 
-      return (null->(as Module),type_name)
+      return (null->(as Library),type_name)
 
     method organize_methods
       if (is_organized) return
@@ -300,7 +300,7 @@ class Module
           endIf
 
           if (template.attributes.is_essential or Program.generate_doc)
-            temporarily Program.current_module = this
+            temporarily Program.current_library = this
               if (not template.attributes.is_augment and not types.contains(template.name))
                 Type( template.tokens.first, template.name )
               endIf
@@ -333,23 +333,23 @@ class Module
     method to->String
       return name
 
-    method uses_module( mod:Module, &is_exported )
-      if (mod is this) return
-      # happens when this is the default module because all modules implicitly "use" default module
+    method uses_library( lib:Library, &is_exported )
+      if (lib is this) return
+      # happens when this is the default library because all libraries implicitly "use" default library
 
-      forEach (existing_m at i in used_modules)
-        if (existing_m.m is mod)
+      forEach (existing_m at i in used_libraries)
+        if (existing_m.m is lib)
           # Already added - move to end to give it higher search priority than before.
-          used_modules.add( used_modules.remove_at(i) )
+          used_libraries.add( used_libraries.remove_at(i) )
           return
         endIf
       endForEach
 
-      used_modules.add( UsedModule(mod,&=is_exported) )
+      used_libraries.add( UsedLibrary(lib,&=is_exported) )
 
 endClass
 
-class UsedModule( m:Module, is_exported:Logical ) [compound]
+class UsedLibrary( m:Library, is_exported:Logical ) [compound]
   METHODS
     method to->String
       return m.name

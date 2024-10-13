@@ -1,4 +1,4 @@
-module UI
+library UI
 
 uses Collection/Node
 uses Control/Action  [export]

@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 class Ray( position:XY, direction:XY ) [compound]
   GLOBAL METHODS

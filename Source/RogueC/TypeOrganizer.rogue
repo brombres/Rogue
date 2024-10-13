@@ -1,8 +1,8 @@
-module RogueC
+library RogueC
 
 class TypeOrganizer : Visitor
   METHODS
-    method init( this_module )
+    method init( this_library )
 
     method visit( this_type, class_def:Cmd )
       # Called when instantiating a template
@@ -59,10 +59,10 @@ class TypeOrganizer : Visitor
       visit_children( cmd )
 
       # Convert to TypeAccess if possible.
-      local (mod,name) = this_module.split_module_and_type( cmd.t, cmd.name )
-      if (not mod) mod = this_module
+      local (lib,name) = this_library.split_library_and_type( cmd.t, cmd.name )
+      if (not lib) lib = this_library
 
-      local type = mod.find_type( cmd.t, name, &extended_search )
+      local type = lib.find_type( cmd.t, name, &extended_search )
       if (type) return TypeAccess( cmd.t, type, cmd.args )
       return cmd
 
@@ -91,8 +91,8 @@ class TypeOrganizer : Visitor
       return null
 
     method on_visit_node( cmd:TemplatedAccess )
-      assert this_module
-      cmd.module_context = this_module
+      assert this_library
+      cmd.library_context = this_library
       cmd.type_context = this_type
       visit_children( cmd )
 

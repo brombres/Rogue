@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class BranchAnalyzer : InspectionVisitor<<Logical>> [singleton]
   PROPERTIES

@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class ClearDynamicDispatchFlags : InspectionVisitor
   METHODS

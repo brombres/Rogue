@@ -75,7 +75,7 @@
 #   #     = (random * 10.0)
 #   #     = 1.8194
 #===============================================================================
-module Utility::Expression
+library Utility::Expression
 
 class ExpressionParser [singleton]
   PROPERTIES

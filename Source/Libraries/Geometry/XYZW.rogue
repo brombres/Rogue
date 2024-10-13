@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 class XYZW( x:Real, y:Real, z:Real, w=1:Real ) [compound]
   GLOBAL METHODS

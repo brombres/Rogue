@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class ImplicitFunctionGenerator : Visitor [singleton]
   METHODS

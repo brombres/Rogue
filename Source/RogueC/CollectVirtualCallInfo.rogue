@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class CollectVirtualCallInfo : InspectionVisitor
   METHODS

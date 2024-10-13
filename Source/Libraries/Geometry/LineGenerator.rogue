@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 class LineGenerator(
     x1:Int, x2:Int, x:Int, step_x:Int, x_error:Int,

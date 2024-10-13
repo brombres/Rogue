@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class ExceptionTypes( flags_1=0:Int64, flags_2=0:Int64 ) [compound]
   GLOBAL PROPERTIES

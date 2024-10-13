@@ -1,4 +1,4 @@
-module UI
+library UI
 
 class UIText : UIComponent
   PROPERTIES

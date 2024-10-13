@@ -1,4 +1,4 @@
-module UI
+library UI
 
 class ConditionalEntityCollector<<$EntityType>>( ancestor:Entity, condition:Function($EntityType)->Logical, all=false:Logical ) [compound]
   METHODS

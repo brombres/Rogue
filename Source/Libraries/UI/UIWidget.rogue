@@ -1,4 +1,4 @@
-module UI
+library UI
 
 enum UIWidgetState
   IDLE, TARGETED, PRESSED, DISABLED

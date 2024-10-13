@@ -1,4 +1,4 @@
-module Graphics
+library Graphics
 
 class Color( argb:Int32 ) [compound]
   DEFINITIONS

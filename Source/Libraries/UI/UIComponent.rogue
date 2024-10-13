@@ -1,4 +1,4 @@
-module UI
+library UI
 
 class UIComponent : Drawable2D
   METHODS

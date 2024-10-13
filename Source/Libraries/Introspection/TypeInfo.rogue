@@ -15,7 +15,7 @@ class TypeInfo
        |    %Ns%RogueTypeInfo* type_info = %NS%ROGUE_CREATE_OBJECT(%Ns%RogueTypeInfo);
        |    ++type_info->__refcount;
        |
-       |    type_info->module_context = %Ns%Rogue_string_table[ THISOBJ->module_name_index ];
+       |    type_info->library_context = %Ns%Rogue_string_table[ THISOBJ->library_name_index ];
        |    type_info->name           = %Ns%RogueObject____type_name__%Ns%RogueInt( THISOBJ->index );
        |    type_info->index          = THISOBJ->index;
        |    type_info->attributes     = THISOBJ->attributes;
@@ -55,7 +55,7 @@ class TypeInfo
       return TypeInfoIterator()
 
   PROPERTIES
-    module_context    : String
+    library_context    : String
     name              : String
     scoped_name       : String
     index             : Int
@@ -165,7 +165,7 @@ class TypeInfo
       return (attributes & native("%NS%ROGUE_TYPE_SINGLETON")->Int32)
 
     method scoped_name->String
-      if (not @scoped_name) @scoped_name = "$::$"(module_context,name)
+      if (not @scoped_name) @scoped_name = "$::$"(library_context,name)
       return @scoped_name
 
     method set_singleton( new_value:Variant )
