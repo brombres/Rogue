@@ -89,7 +89,7 @@ class Random [singleton]
       # the range [0,limit) - includes 0 but does not include limit.
       #
       # int(limit) is preferred over int % limit because it avoids
-      # the low number bias of a simple mod.
+      # the low number bias of a simple lib.
       #
       # Example:
       #   println( Random.int(100) )  # Prints a number 0..99
@@ -133,7 +133,7 @@ class Random [singleton]
       # the range [0,limit) - includes 0 but does not include limit.
       #
       # int32(limit) is preferred over int32 % limit because it avoids
-      # the low number bias of a simple mod.
+      # the low number bias of a simple lib.
       #
       # Example:
       #   println( Random.int32(100) )  # Prints a number 0..99

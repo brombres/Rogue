@@ -51,7 +51,7 @@ class MethodInfo
       sig.print '('
       forEach (param at i in m.parameters)
         if (i > 0) sig.print ','
-        sig.print param.parameter_module_name
+        sig.print param.parameter_library_name
         sig.print "::"
         sig.print param.parameter_type_name
       endForEach
@@ -120,8 +120,8 @@ endClass
 
 class ParameterInfo( name:String, type_index:Int32 ) [compound]
   METHODS
-    method parameter_module_name->String
-      return native("%Ns%Rogue_string_table[ %Ns%Rogue_types[$type_index]->module_name_index ]")->String
+    method parameter_library_name->String
+      return native("%Ns%Rogue_string_table[ %Ns%Rogue_types[$type_index]->library_name_index ]")->String
 
     method parameter_type_name->String
       return Object.__type_name( type_index )

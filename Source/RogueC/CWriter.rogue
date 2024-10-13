@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class CWriter : BufferedPrintWriter
   PROPERTIES
@@ -226,7 +226,7 @@ class CWriter : BufferedPrintWriter
            |  const char*        name;
            |  %Ns%RogueString*   name_object;
            |  %Ns%RogueInt       index;
-           |  %Ns%RogueInt       module_name_index;
+           |  %Ns%RogueInt       library_name_index;
            |  %Ns%RogueInt       class_data_index;
            |  %Ns%RogueInt64     attributes;
            |  void**             vtable;

@@ -1,33 +1,33 @@
 # Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
-module RogueC
+library RogueC
 
 class InspectionVisitor : InspectionVisitor<<Logical>>
 endClass
 
 class InspectionVisitor<<$ReturnType>>
   PROPERTIES
-    this_module    : Module
+    this_library    : Library
     this_type      : Type
     this_procedure : Procedure
 
   METHODS
-    method visit( m:Module )
-      temporarily this_module = m
+    method visit( m:Library )
+      temporarily this_library = m
         on_visit_node( m )
       endTemporarily
 
-    method on_visit_node( m:Module )
+    method on_visit_node( m:Library )
       visit_types( m )
 
-    method visit_types( m:Module )
-      temporarily this_module = m
+    method visit_types( m:Library )
+      temporarily this_library = m
         forEach (type in m.types)
           visit_type( type )
         endForEach
       endTemporarily
 
     method visit_type( type:Type )
-      temporarily this_module=type.module_context, this_type=type
+      temporarily this_library=type.library_context, this_type=type
         on_visit_type( type )
       endTemporarily
 
@@ -38,7 +38,7 @@ class InspectionVisitor<<$ReturnType>>
     method visit_global_methods( type:Type )
       temporarily this_type = type
         forEach (m in type.global_methods)
-          temporarily this_module=m.module_context, this_procedure=m
+          temporarily this_library=m.library_context, this_procedure=m
             visit( m )
           endTemporarily
         endForEach
@@ -48,7 +48,7 @@ class InspectionVisitor<<$ReturnType>>
       temporarily this_type = type
         forEach (m in type.methods)
           if (m.type_context is type)
-            temporarily this_module=m.module_context, this_procedure=m
+            temporarily this_library=m.library_context, this_procedure=m
               visit( m )
             endTemporarily
           endIf
@@ -283,7 +283,7 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.info)
       return result
 
-    method on_visit_children( cmd:DefineModule )->$ReturnType
+    method on_visit_children( cmd:DefineLibrary )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.attributes)
       return result
@@ -472,7 +472,7 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.statements)
       return result
 
-    method on_visit_children( cmd:ModuleQualifiedID )->$ReturnType
+    method on_visit_children( cmd:LibraryQualifiedID )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.context)
       return result

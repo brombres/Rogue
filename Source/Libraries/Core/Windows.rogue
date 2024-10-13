@@ -12,7 +12,7 @@ class Windows [singleton]
        |{
        |  // Adapted from https://stackoverflow.com/a/74705829/135791
        |  NTSTATUS (NTAPI * RtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation) = 0;
-       |  HMODULE ntdll = GetModuleHandle(L"ntdll.dll");
+       |  HMODULE ntdll = GetLibraryHandle(L"ntdll.dll");
        |  if (ntdll == NULL) return 0;
        |  *((FARPROC*)(&RtlGetVersion)) = GetProcAddress(ntdll, "RtlGetVersion");
        |  if (RtlGetVersion == 0) return 0;

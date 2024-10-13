@@ -1,7 +1,7 @@
 $define VERSION "2.34.3"
 $define DATE    "April 17, 2024"
 
-module RogueC
+library RogueC
 
 uses Codec/Base64
 
@@ -40,7 +40,7 @@ $include ImplicitWithVarCollector
 $include InspectionVisitor
 $include Macro
 $include Meta
-$include Module
+$include Library
 $include NeedsDecomposition
 $include MethodOrganizer
 $include Parser
@@ -110,7 +110,7 @@ class RogueC
           paths.add( forEach in path->String.split(',') )
         endForEach
         command//options//libraries = paths
-        Program.add_include_search_path( forEach in paths, &library )
+        Program.add_include_search_path( forEach in paths, &is_library )
       endIf
 
       if (command//options//int)
@@ -172,7 +172,7 @@ class RogueC
       if (Program.no_stdlib)
         Program.include( forEach in command//args, &api=api_includes )
       else
-        Program.add_include_search_path( libraries_folder, &library )
+        Program.add_include_search_path( libraries_folder, &is_library )
         Program.include( "StandardMacros" )
         Program.include( forEach in command//args, &api=api_includes )
         Program.include( "Standard" )
@@ -367,13 +367,13 @@ class RogueC
                |  rogue [OPTIONS] <filepath>
                |
                |OPTIONS
-               |  --api, --api=Module[::ClassName], --api="Filename.rogue"
+               |  --api, --api=Library[::ClassName], --api="Filename.rogue"
                |    --api
                |      All routines and classes in the files specified on the command line are
                |      marked [essential api], ensuring those routines, classes, and methods are
                |      available to introspection.
-               |    --api=Module, --api="Module::ClassName", --api="*"
-               |      Marks the specified class or module classes as [essential api].
+               |    --api=Library, --api="Library::ClassName", --api="*"
+               |      Marks the specified class or library classes as [essential api].
                |    --api="Filename.rogue"
                |      The specified file is included and its routines and classes are marked
                |      [essential api].

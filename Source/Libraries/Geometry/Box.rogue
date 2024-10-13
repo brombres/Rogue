@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 class Box( position:XY, size:XY ) [essential compound]
   GLOBAL METHODS

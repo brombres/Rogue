@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 augment Cmd
   GLOBAL METHODS
@@ -105,7 +105,7 @@ augment
           local template_args = TemplateArgs( t )
           template_args.add( TokenList(t,this_type.name_tokens) )
           template_args.add( TokenList(t,target_type.name_tokens) )
-          local type_Routine = Program.default_module.must_find_type( t, "Routine" )
+          local type_Routine = Program.default_library.must_find_type( t, "Routine" )
           return resolver.visit(
             TemplatedAccess( t, type_Routine, "recast_tuple", template_args, Args(t,this) )
           )
@@ -215,7 +215,7 @@ augment
       endIf
 
       local fn_def = resolver.visit(
-        FunctionDefinition(t,params,fn_type.return_type,with_values,statements,resolver.this_module)
+        FunctionDefinition(t,params,fn_type.return_type,with_values,statements,resolver.this_library)
       )
       return fn_def.resolve_conversion_to( target_type, resolver, &=suppress_error, &=coerce )
 
@@ -593,7 +593,7 @@ augment
       return null
 
     method Access.type->Type
-      local type = Program.current_module.find_type( t, name, &extended_search )
+      local type = Program.current_library.find_type( t, name, &extended_search )
       if (type and (args or type.attributes.is_singleton)) return type
       return null
 
@@ -859,9 +859,9 @@ augment
 
     method TemplatedAccess.type->Type
       local type_template_name = "$<<$>>"(name,type_args.count)
-      local type_template = module_context.find_template( t, type_template_name, name, &extended_search )
+      local type_template = library_context.find_template( t, type_template_name, name, &extended_search )
       if (type_template)
-        local type = Type( t, type_template, module_context, type_args )
+        local type = Type( t, type_template, library_context, type_args )
         if (type and (args or type.attributes.is_singleton)) return type
       endIf
 

@@ -1,4 +1,4 @@
-module UI
+library UI
 
 class DirtyRegionTracker : Poolable
   METHODS

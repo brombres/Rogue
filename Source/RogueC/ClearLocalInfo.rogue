@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class ClearLocalInfo : InspectionVisitor [singleton]
   METHODS

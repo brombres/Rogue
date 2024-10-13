@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class AspectMethodPatcher : InspectionVisitor [singleton]
   PROPERTIES
@@ -9,20 +9,20 @@ class AspectMethodPatcher : InspectionVisitor [singleton]
       visit( cmd )
 
     method patch( this_type, m:GlobalMethod )
-      m.module_context = this_type.module_context
+      m.library_context = this_type.library_context
       m.type_context   = this_type
       visit( m )
       m.add_to_call_signature_group
 
     method patch( this_type, m:Method )
-      m.module_context = this_type.module_context
+      m.library_context = this_type.library_context
       m.type_context   = this_type
       if (m.attributes.returns_this) m.return_type = this_type
       visit( m )
       m.add_to_call_signature_group
 
     method on_visit_node( cmd:TemplatedAccess )
-      cmd.module_context = this_type.module_context
+      cmd.library_context = this_type.library_context
 
     method on_visit_node( cmd:This )
       cmd.this_type = this_type

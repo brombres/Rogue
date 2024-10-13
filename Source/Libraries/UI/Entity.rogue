@@ -1,4 +1,4 @@
-module UI
+library UI
 
 class Entity : Node<<Entity>>
   ENTITY_ATTRIBUTE<< NEEDS_LAYOUT,   needs_layout,   (1:<<:0) >>

@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class CSpecializer : Visitor
   PROPERTIES
@@ -12,26 +12,26 @@ class CSpecializer : Visitor
     method apply
       Program.apply( this )
 
-      forEach (mod in Program.modules)
-        forEach (type in mod.types)
+      forEach (lib in Program.libraries)
+        forEach (type in lib.types)
           type.finalize_vtable
         endForEach
       endForEach
 
-      forEach (mod in Program.modules.values)
-        collect_literal_string( mod.name )
+      forEach (lib in Program.libraries.values)
+        collect_literal_string( lib.name )
       endForEach
 
-      if (Program.default_module.types.contains("PropertyInfo"))
-        forEach (mod in Program.modules)
-          forEach (type in mod.types.values)
+      if (Program.default_library.types.contains("PropertyInfo"))
+        forEach (lib in Program.libraries)
+          forEach (type in lib.types.values)
             collect_literal_string( (forEach in type.global_properties).name )
             collect_literal_string( (forEach in type.properties).name )
           endForEach
         endForEach
       endIf
 
-      if (Program.default_module.types.contains("MethodInfo"))
+      if (Program.default_library.types.contains("MethodInfo"))
         forEach (m in Program.all_methods)
           collect_literal_string( m.name )
           collect_literal_string( (forEach in m.parameters).name )
@@ -664,14 +664,14 @@ augment Type
       if (@c_name) return @c_name
 
       if (attributes.is_tuple)
-        @c_name = Program.unique_c_name( "$Tuple$"(module_context.c_name,Program.to_c_name(name)) )
+        @c_name = Program.unique_c_name( "$Tuple$"(library_context.c_name,Program.to_c_name(name)) )
       elseIf (name.begins_with('['))
         # [KeyType:ValueType] Table
-        @c_name = Program.unique_c_name( "$Table$"(module_context.c_name,Program.to_c_name(name)) )
+        @c_name = Program.unique_c_name( "$Table$"(library_context.c_name,Program.to_c_name(name)) )
       elseIf (attributes.is_native_type)
         @c_name = name
       else
-        @c_name = Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
+        @c_name = Program.unique_c_name( library_context.c_name + Program.to_c_name(name) )
       endIf
 
       @c_name = Program.namespace_capitalized + @c_name
@@ -684,7 +684,7 @@ augment Type
 
 endAugment
 
-augment Module
+augment Library
   PROPERTIES
     c_name : String
 

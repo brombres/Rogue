@@ -38,9 +38,9 @@ class TypeID( index:Int )
     method is_singleton->Logical
       return (attributes & native("%NS%ROGUE_TYPE_SINGLETON")->Int32)
 
-    method module_context_name->String
+    method library_context_name->String
       local result : String
-      native @|$result = %Ns%Rogue_string_table[ %Ns%Rogue_types[$index]->module_name_index ];
+      native @|$result = %Ns%Rogue_string_table[ %Ns%Rogue_types[$index]->library_name_index ];
       return result
 
     method name->String

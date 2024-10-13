@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 class IntXY( x:Int, y:Int ) [essential compound]
   DEFINITIONS

@@ -1,4 +1,4 @@
-module Graphics
+library Graphics
 
 $include Graphics/FreeType
 

@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 uses Utility/WorkList
 
@@ -1679,7 +1679,7 @@ class CGenerator : Visitor
           endBlock
         endIf
 
-        local type_obj = this_module.types[name]
+        local type_obj = this_library.types[name]
         if (type_obj) return type_obj.c_name
 
       endIf
@@ -1742,7 +1742,7 @@ augment
           forEach (p in this.properties)
             if (not p.attributes.is_faux)
               if (p.is_native)
-                local gen = CGenerator( writer ).[ this_module=module_context, this_type=this ]
+                local gen = CGenerator( writer ).[ this_library=library_context, this_type=this ]
                 writer.println gen.native_replacements( p.t, p.native_expression )
               else
                 writer.print   p.type.c_name
@@ -1783,21 +1783,21 @@ augment
 
       if (any_output) writer.println
 
-    method Module.generate_c_header( writer:CWriter )
+    method Library.generate_c_header( writer:CWriter )
       if (native_headers.count)
         native_headers.sort( (a,b) => (a.ordinal < b.ordinal) )
         writer.println( (forEach in native_headers).content )
         writer.println
       endIf
 
-    method Module.generate_c_code( writer:CWriter )
+    method Library.generate_c_code( writer:CWriter )
       if (native_code.count)
         native_code.sort( (a,b) => (a.ordinal < b.ordinal) )
         writer.println( (forEach in native_code).content )
         writer.println
       endIf
 
-    method Module.generate_c_class_initialization( writer:CWriter )
+    method Library.generate_c_class_initialization( writer:CWriter )
       forEach (type in types)
         local m = type.global_methods["init_class()"]
         if (not m or m.statements.count == 0) nextIteration
@@ -1805,7 +1805,7 @@ augment
         writer.println "if (%Ns%Rogue_exception) return 0;"
       endForEach
 
-    method Module.generate_c_launch_commands( writer:CWriter )
+    method Library.generate_c_launch_commands( writer:CWriter )
       local type_Routine = find_type( t, "Routine" )
       assert type_Routine
       local r = type_Routine.global_methods[ "on_launch()" ]
@@ -1847,7 +1847,7 @@ augment
         @|//------------------------------------------------------------------------------
          |// Generated
          |//------------------------------------------------------------------------------
-      (forEach in modules).generate_c_header( h_writer )
+      (forEach in libraries).generate_c_header( h_writer )
       h_writer.println "typedef struct %Ns%RogueRuntimeType %Ns%RogueRuntimeType;"
       (forEach in types).generate_c_class_typedefs( h_writer )
       (forEach in types).generate_c_native_headers( h_writer )
@@ -1870,7 +1870,7 @@ augment
 
       h_writer.println "extern %Ns%RogueInt %Ns%Rogue_base_types[$];" (Program.base_type_lookup.count)
 
-      if (Program.default_module.types.contains("MethodInfo"))
+      if (Program.default_library.types.contains("MethodInfo"))
         h_writer.println "extern %Ns%RogueInt %Ns%Rogue_method_count;"
         h_writer.println "extern %Ns%RogueInt %Ns%Rogue_method_info[];"
         h_writer.println "extern %Ns%RogueInt %Ns%Rogue_type_data[];"
@@ -1934,7 +1934,7 @@ augment
 
       local method_info : Int32[]
       local type_data : Int32[]
-      if (Program.default_module.types.contains("MethodInfo"))
+      if (Program.default_library.types.contains("MethodInfo"))
         c_writer.println
         c_writer.println "%Ns%RogueInt %Ns%Rogue_method_count = $;"(Program.all_methods.count)
 
@@ -2076,7 +2076,7 @@ augment
           assert type.index >= 0
           c_writer.print   type.index
           c_writer.print   ", "
-          c_writer.print   Program.string_table_indices[type.module_context.name]
+          c_writer.print   Program.string_table_indices[type.library_context.name]
           c_writer.print   ", "
           c_writer.print   type.class_data_index
           c_writer.print   ", "
@@ -2251,8 +2251,8 @@ augment
 
       c_writer = update_c_writer( c_writer )
 
-      forEach (mod in modules)
-        mod.generate_c_code( c_writer )
+      forEach (lib in libraries)
+        lib.generate_c_code( c_writer )
         c_writer = update_c_writer( c_writer )
       endForEach
 
@@ -2403,7 +2403,7 @@ augment
 
       # Zero out every singleton
       c_writer.indent += 2
-      forEach (m in Program.modules)
+      forEach (m in Program.libraries)
         forEach (type in m.types)
           if (type.attributes.is_singleton)
             c_writer.print type.c_name
@@ -2440,7 +2440,7 @@ augment
                           |}
                           |
                           |// Trace singletons
-      forEach (m in Program.modules)
+      forEach (m in Program.libraries)
         forEach (type in m.types)
           if (type.attributes.is_singleton)
             c_writer.print   "if ((ref = (%Ns%RogueObject*)"
@@ -2452,7 +2452,7 @@ augment
       c_writer.println
 
       c_writer.println "// Trace globals"
-      forEach (m in Program.modules)
+      forEach (m in Program.libraries)
         forEach (type in m.types)
           forEach (p in type.global_properties)
             if (p.type.is_reference)
@@ -2479,7 +2479,7 @@ augment
                           |{
                           |  if ((ref=(%Ns%RogueObject*)(*(%Ns%RogueObject**)*(++v))) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
                           |}
-        forEach (type in (forEach in Program.modules).types)
+        forEach (type in (forEach in Program.libraries).types)
           if (type.is_compound and type.contains_reference)
             c_writer.print   "for (i=Type"
             c_writer.print   type.c_name
@@ -2584,7 +2584,7 @@ augment
       c_writer.indent += 2
       Program.generate_c_string_literals( c_writer )
 
-      (forEach in modules).generate_c_class_initialization( c_writer )
+      (forEach in libraries).generate_c_class_initialization( c_writer )
       c_writer.println
 
       c_writer.println @|%Ns%RogueInt i;
@@ -2598,8 +2598,8 @@ augment
 
       # Instantiate essential singletons
       local any_essential_singletons = false
-      forEach (mod in modules)
-        forEach (type in mod.types)
+      forEach (lib in libraries)
+        forEach (type in lib.types)
           if (type.attributes.is_singleton and type.attributes.is_essential)
             any_essential_singletons = true
             c_writer.print "%NS%ROGUE_SINGLETON("
@@ -2610,7 +2610,7 @@ augment
       endForEach
       if (any_essential_singletons) c_writer.println
 
-      (forEach in modules).generate_c_launch_commands( c_writer )
+      (forEach in libraries).generate_c_launch_commands( c_writer )
       c_writer.println
       c_writer.println "return 1;"
       c_writer.indent -= 2

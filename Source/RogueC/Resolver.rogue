@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 uses Math/Best
 uses Utility/WorkList
 
@@ -35,8 +35,8 @@ class Resolver : Poolable, Visitor
     method on_return_to_pool
       reset
 
-    method visit( m:Module, proc:Procedure )
-      temporarily this_module=m, this_procedure=proc
+    method visit( m:Library, proc:Procedure )
+      temporarily this_library=m, this_procedure=proc
         visit( proc )
       endTemporarily
 
@@ -407,7 +407,7 @@ class Resolver : Poolable, Visitor
 
       local args = which{ cmd.args || Args(cmd.t) }
 
-      local cmd_call = resolve_templated_call( cmd.t, this_module, this_type.base_class, cmd.name,
+      local cmd_call = resolve_templated_call( cmd.t, this_library, this_type.base_class, cmd.name,
                                                cmd.template_args, args )->(as CallProcedure)
       if (not cmd_call or cmd_call not instanceOf CallThisDynamicMethod)
         local sig = which{ cmd_call:cmd_call.info.signature || cmd.name }
@@ -692,7 +692,7 @@ class Resolver : Poolable, Visitor
     method on_visit( cmd:FunctionDefinition )->Cmd
       local type = cmd.resolve_type
 
-      local var_collector = ImplicitWithVarCollector(cmd.mod)
+      local var_collector = ImplicitWithVarCollector(cmd.lib)
       forEach (param in cmd.parameters)
         var_collector.visible_locals.add( param.name )
       endForEach
@@ -1311,7 +1311,7 @@ class Resolver : Poolable, Visitor
         if (m.return_type) cmd_call = Return( cmd.t, cmd_call )
         local statements = Statements( cmd.t, cmd_call )
 
-        local fn_def = FunctionDefinition( cmd.t, params, m.return_type, with_values, statements, this_module )
+        local fn_def = FunctionDefinition( cmd.t, params, m.return_type, with_values, statements, this_library )
         return visit( fn_def )
       endUse
 
@@ -1342,11 +1342,11 @@ class Resolver : Poolable, Visitor
       return validate( CreateCompound(cmd.t, tuple_type, args) )
 
     method on_visit( cmd:NativeHeader )->Cmd
-      this_module.native_headers.add( cmd )
+      this_library.native_headers.add( cmd )
       return null
 
     method on_visit( cmd:NativeCode )->Cmd
-      this_module.native_code.add( cmd )
+      this_library.native_code.add( cmd )
       return null
 
     method on_visit_node( cmd:NativeExpression )
@@ -1555,27 +1555,27 @@ class Resolver : Poolable, Visitor
 
     method on_visit( cmd:TemplatedAccess )->Cmd
       local type_template_name = "$<<$>>"(cmd.name,cmd.type_args.count)
-      local type_template = cmd.module_context.find_template( cmd.t, type_template_name, cmd.name, &extended_search )
+      local type_template = cmd.library_context.find_template( cmd.t, type_template_name, cmd.name, &extended_search )
       if (type_template)
-        temporarily Program.current_module = cmd.module_context
-          return visit( TypeAccess(cmd.t, Type(cmd.t,type_template,cmd.module_context,cmd.type_args), cmd.args) )
+        temporarily Program.current_library = cmd.library_context
+          return visit( TypeAccess(cmd.t, Type(cmd.t,type_template,cmd.library_context,cmd.type_args), cmd.args) )
         endTemporarily
       endIf
 
       local type_context = which{ this_type || cmd.type_context }
-      return resolve_templated_call( cmd.t, cmd.module_context, type_context, cmd.name, cmd.type_args, cmd.args )
+      return resolve_templated_call( cmd.t, cmd.library_context, type_context, cmd.name, cmd.type_args, cmd.args )
 
-    method resolve_templated_call( t:Token, module_context:Module, type_context:Type,
+    method resolve_templated_call( t:Token, library_context:Library, type_context:Type,
                                    name:String, template_args:TemplateArgs, args:Cmd )->Cmd
-      temporarily Program.current_module = module_context
+      temporarily Program.current_library = library_context
         # Assume templated method call
         local full_name = template_args->String( name )
         local t_name : String
 
         # Routine template
-        t_name = instantiate_routine_templates( t, module_context, type_context, name, t_name, full_name, template_args )
-        forEach (mod in module_context.used_modules)
-          t_name = instantiate_routine_templates( t, mod.m, type_context, name, t_name, full_name, template_args )
+        t_name = instantiate_routine_templates( t, library_context, type_context, name, t_name, full_name, template_args )
+        forEach (lib in library_context.used_libraries)
+          t_name = instantiate_routine_templates( t, lib.m, type_context, name, t_name, full_name, template_args )
         endForEach
 
         if (not type_context)
@@ -1588,9 +1588,9 @@ class Resolver : Poolable, Visitor
         return resolve_call( t, type_context, null, full_name, args )
       endTemporarily
 
-    method instantiate_routine_templates( t:Token, mod:Module, type_context:Type, name:String,
+    method instantiate_routine_templates( t:Token, lib:Library, type_context:Type, name:String,
                                           t_name:String, full_name:String, template_args:TemplateArgs )->String
-      local type_Routine = mod.must_find_type( t, "Routine" )
+      local type_Routine = lib.must_find_type( t, "Routine" )
       if (type_Routine is not type_context)
         if (not type_Routine.global_method_template_instances.contains(full_name))
           if (not t_name) t_name = "$<<$>>"(name,template_args.count)
@@ -1606,7 +1606,7 @@ class Resolver : Poolable, Visitor
       local context = visit( cmd.context )
       local type_context = context.require_type
 
-      temporarily Program.current_module = type_context.module_context
+      temporarily Program.current_library = type_context.library_context
         local full_name = cmd.type_args->String( cmd.name )
 
         type_context.organize
@@ -1848,14 +1848,14 @@ class Resolver : Poolable, Visitor
       local condition_type = cmd.condition.require_type
 
       local is_enum = condition_type.is_enum
-      if (is_enum) this_module.implicit_context.add( condition_type )
+      if (is_enum) this_library.implicit_context.add( condition_type )
 
       cmd.cases = visit(cmd.cases)->(as WhichCases)
       cmd.statements = visit(cmd.statements)
 
       if (is_enum)
         # Convert enum cases to integer cases so we can use switch
-        this_module.implicit_context.remove_last
+        this_library.implicit_context.remove_last
 
         cmd.condition = visit( ContextAccess(cmd.t,cmd.condition,"value") )
         forEach (cmd_case in cmd.cases)
@@ -1944,11 +1944,11 @@ class Resolver : Poolable, Visitor
       if (cmd) current_statements.write( cmd )
 
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
-      local m : Module
-      (m,name) = this_module.split_module_and_type( t, name )
-      if (not m) m = this_module
+      local m : Library
+      (m,name) = this_library.split_library_and_type( t, name )
+      if (not m) m = this_library
 
-      temporarily this_module = m
+      temporarily this_library = m
 
         local type_context : Type
         local is_global = false
@@ -1972,7 +1972,7 @@ class Resolver : Poolable, Visitor
           endIf
 
           is_global = this_procedure.is_global
-          local type = this_module.find_type( t, name, &extended_search )
+          local type = this_library.find_type( t, name, &extended_search )
           if (type) return resolve_type_access( t, type, args, &=suppress_error )
         endIf
 
@@ -2022,8 +2022,8 @@ class Resolver : Poolable, Visitor
         if (not context)
           if (not is_fallback)
             # Check for a matching method in implicit context types (Global, Routine, ...)
-            assert this_module
-            forEach (implicit_type in this_module.implicit_context)
+            assert this_library
+            forEach (implicit_type in this_library.implicit_context)
               local implicit_match = find_procedure( t, implicit_type, null, name, args, &suppress_error )
               if (implicit_match) return resolve_call( t, GetSingleton(t,implicit_type), implicit_match, args )
 
@@ -2057,8 +2057,8 @@ class Resolver : Poolable, Visitor
 
         if (not context)
           block
-            assert this_module
-            forEach (implicit_type in this_module.implicit_context)
+            assert this_library
+            forEach (implicit_type in this_library.implicit_context)
               local result = resolve_global_access( t, implicit_type, name, args, &=suppress_error )
               if (result) return result
             endForEach
@@ -2097,11 +2097,11 @@ class Resolver : Poolable, Visitor
       return null
 
     method resolve_call( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
-      local m : Module
-      (m,name) = this_module.split_module_and_type( t, name )
-      if (not m) m = this_module
+      local m : Library
+      (m,name) = this_library.split_library_and_type( t, name )
+      if (not m) m = this_library
 
-      temporarily this_module = m
+      temporarily this_library = m
 
         local is_global = this_procedure.is_global and (not context or context.is_type_context)
 
@@ -2187,7 +2187,7 @@ class Resolver : Poolable, Visitor
 
     method resolve_type_access( t:Token, type:Type, args:Cmd, &suppress_error, &exact_arg_types, &limit_conversions )->Cmd
       type.organize
-      temporarily this_module = type.module_context
+      temporarily this_library = type.library_context
 
         if (args)
           local result = cmd_create_object( t, type, args, &=suppress_error, &=exact_arg_types, &=limit_conversions )
@@ -2345,11 +2345,11 @@ class Resolver : Poolable, Visitor
           type_context.collect_methods( "init", Candidates.list )
         else
           if (not context and not omit_routines)
-            local type_Routine = type_context.module_context.must_find_type( t, "Routine" )
+            local type_Routine = type_context.library_context.must_find_type( t, "Routine" )
             if (type_context is not type_Routine)
               type_Routine.collect_methods( name, Candidates.list, &require_global )
             endIf
-            forEach (used_mod in type_context.module_context.used_modules)
+            forEach (used_mod in type_context.library_context.used_libraries)
               type_Routine = used_mod.m.must_find_type( t, "Routine" )
               if (type_context is not type_Routine)
                 type_Routine.collect_methods( name, Candidates.list, &require_global )
@@ -2431,7 +2431,7 @@ class Resolver : Poolable, Visitor
         sig += ')'
       endIf
 
-      if (not context) Program.check_include_hints( t, type_context.module_context, name )
+      if (not context) Program.check_include_hints( t, type_context.library_context, name )
 
       local mesg : String
       if (args or Candidates.count)
@@ -3599,7 +3599,7 @@ augment
           return resolver.validate( SetLocal(t,v,new_value) )
         endIf
 
-        local type = resolver.this_module.find_type( t, name, &extended_search )
+        local type = resolver.this_library.find_type( t, name, &extended_search )
         if (type and type.attributes.is_singleton)
           return SetSingleton( t, type, new_value.resolve_conversion_to(type,resolver,&coerce) )
         endIf

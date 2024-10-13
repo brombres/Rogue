@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class MethodOrganizer : Visitor, Poolable
   PROPERTIES
@@ -44,7 +44,7 @@ class MethodOrganizer : Visitor, Poolable
       visit_children( cmd )
 
     method on_visit_node( cmd:GlobalMethod )
-      cmd.module_context = this_module
+      cmd.library_context = this_library
       cmd.type_context = this_type
       cmd.organize
 
@@ -58,7 +58,7 @@ class MethodOrganizer : Visitor, Poolable
       cmd.initial_value = visit( cmd.initial_value )
 
     method on_visit_node( cmd:Method )
-      cmd.module_context = this_module
+      cmd.library_context = this_library
       cmd.type_context = this_type
       cmd.generate_body
       cmd.organize
@@ -88,8 +88,8 @@ class MethodOrganizer : Visitor, Poolable
       endForEach
 
     method on_visit_node( cmd:TemplatedAccess )
-      assert this_module
-      cmd.module_context = this_module
+      assert this_library
+      cmd.library_context = this_library
       cmd.type_context = this_type
       visit_children( cmd )
 

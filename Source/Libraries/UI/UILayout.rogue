@@ -1,4 +1,4 @@
-module UI
+library UI
 
 $localMacro UI_FACTORY_METHODS<<$name,$TypeName>>
     method $name->$TypeName

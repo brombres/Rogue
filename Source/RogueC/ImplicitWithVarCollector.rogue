@@ -1,19 +1,19 @@
-module RogueC
+library RogueC
 
-class ImplicitWithVarCollector( mod:Module ) : ScopeVisitor
+class ImplicitWithVarCollector( lib:Library ) : ScopeVisitor
   PROPERTIES
     unknown_identifiers = String[]
 
   METHODS
     method on_visit( cmd:Access )->Cmd
       if (not find_local(cmd.name) and not unknown_identifiers.contains(cmd.name))
-        local type = mod.find_type( cmd.t, cmd.name, &extended_search )
-        if (not type and mod is not Program.default_module)
-          type = Program.default_module.find_type( cmd.t, cmd.name, &extended_search )
+        local type = lib.find_type( cmd.t, cmd.name, &extended_search )
+        if (not type and lib is not Program.default_library)
+          type = Program.default_library.find_type( cmd.t, cmd.name, &extended_search )
         endIf
 
         if (type)
-          cmd.name = type.scoped_name  # ensure type name has module scope
+          cmd.name = type.scoped_name  # ensure type name has library scope
         else
           unknown_identifiers.add( cmd.name )
         endIf

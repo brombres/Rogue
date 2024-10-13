@@ -51,7 +51,7 @@
 # println date_row[1]  # July 15, 2022
 # println
 
-module Collection::Spreadsheet
+library Collection::Spreadsheet
 
 class Spreadsheet
   PROPERTIES

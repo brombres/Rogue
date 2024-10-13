@@ -1,4 +1,4 @@
-module UI
+library UI
 
 class EntityCollector<<$EntityType>>( ancestor:Entity, all=false:Logical ) [compound]
   METHODS

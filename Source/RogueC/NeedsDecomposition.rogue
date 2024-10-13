@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class NeedsDecomposition : InspectionVisitor<<Logical>> [singleton]
   METHODS

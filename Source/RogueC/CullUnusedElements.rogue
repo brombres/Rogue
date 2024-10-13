@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class CullUnusedElements : InspectionVisitor
   PROPERTIES
@@ -9,17 +9,17 @@ class CullUnusedElements : InspectionVisitor
       ResolveUsedElements().apply
 
       # Cull unused types and methods
-      forEach (mod in Program.modules)
+      forEach (lib in Program.libraries)
         use unused_type_names = WorkList<<String>>
-          forEach (type in mod.types)
+          forEach (type in lib.types)
             if (not type.attributes.is_used)
               unused_type_names.add( type.name )
             endIf
           endForEach
-          mod.types.remove( forEach in unused_type_names )
+          lib.types.remove( forEach in unused_type_names )
         endUse
 
-        forEach (type in mod.types)
+        forEach (type in lib.types)
           use unused_global_method_sigs = WorkList<<String>>
             forEach (m in type.global_methods)
               if (not m.attributes.is_used)

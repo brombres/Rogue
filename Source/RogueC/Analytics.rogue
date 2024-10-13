@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 $include Utility/Timer
 
@@ -10,7 +10,7 @@ class Analytics [singleton]
     parse_templates    = Timer(&stopped)
     ensure_definitions = Timer(&stopped)
     main_parse         = Timer(&stopped)
-    collect_modules    = Timer(&stopped)
+    collect_libraries    = Timer(&stopped)
 
     instantiate_essential = Timer(&stopped)
     organize_methods      = Timer(&stopped)

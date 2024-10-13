@@ -1,9 +1,9 @@
-module RogueC
+library RogueC
 
 class Template
   PROPERTIES
     t              : Token
-    module_context : Module
+    library_context : Library
     name           : String
     placeholders   : Token[]
     tokens         = Token[]
@@ -11,7 +11,7 @@ class Template
     doc_type       : Type
 
   METHODS
-    method init( t, module_context, name, placeholders, tokens, attributes:Int64 )
+    method init( t, library_context, name, placeholders, tokens, attributes:Int64 )
       this.attributes = Attributes( t )
       this.attributes.flags = attributes
 
@@ -28,11 +28,11 @@ class Template
 
       if (attributes.omit_doc) type.attributes.omit_doc = true
 
-      if (not type.module_context) type.module_context = module_context
+      if (not type.library_context) type.library_context = library_context
       type.attributes.flags |= attributes.flags
       type.attributes.is_defined = true
 
-      if (type.name == "Variant" and type.module_context is Program.default_module)
+      if (type.name == "Variant" and type.library_context is Program.default_library)
         Program.type_Variant = type
       endIf
 
@@ -44,7 +44,7 @@ class Template
       Program.unorganized_types.add( type )
       local is_first_unorganized_type = (Program.unorganized_types.count == 1)
       local parser = Parser( template_tokens )
-      temporarily Program.current_module = type.module_context
+      temporarily Program.current_library = type.library_context
         if (type.attributes.is_enum)
           type.class_def = parser.parse( Parser.ip_enum )->(as Class)
         else
@@ -63,13 +63,13 @@ class Template
     method incorporate_augments( type:Type, name:String, replacements:[String:Token[]] )
       local class_def = type.class_def->(as Class)
       assert class_def
-      assert type.module_context
+      assert type.library_context
 
-      local augments = type.module_context.augments[name]
+      local augments = type.library_context.augments[name]
       if (augments and augments.count)
         forEach (augment_name in augments)
-          local augment_template = type.module_context.templates[augment_name]
-          local augment_type = Type( t, type.module_context, augment_name, augment_template.attributes.flags )
+          local augment_template = type.library_context.templates[augment_name]
+          local augment_type = Type( t, type.library_context, augment_name, augment_template.attributes.flags )
           local augment_tokens = augment_template.tokens
           augment_tokens = Template.make_replacements( augment_type, augment_tokens, replacements )
 
@@ -77,7 +77,7 @@ class Template
           augment_type.attributes.is_defined = true
           Program.unorganized_types.add( augment_type )
 
-          temporarily Program.current_module=type.module_context
+          temporarily Program.current_library=type.library_context
             augment_type.class_def = Parser( augment_tokens ).parse( Parser.ip_class )
           endTemporarily
 

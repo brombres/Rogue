@@ -1,5 +1,5 @@
 # Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
-module RogueC
+library RogueC
 
 class Visitor
   # Tree-rebuilding visitor.
@@ -17,7 +17,7 @@ class Visitor
   # call, so return 'cmd' to keep that subtree or else return a different Cmd
   # node to replace the subtree.
   PROPERTIES
-    this_module    : Module
+    this_library    : Library
     this_type      : Type
     this_procedure : Procedure
 
@@ -55,23 +55,23 @@ class Visitor
       cmd.dispatch<<on_visit_node,ThisType>>( this )
       return cmd
 
-    method visit( m:Module )
-      temporarily this_module = m
+    method visit( m:Library )
+      temporarily this_library = m
         on_visit_node( m )
       endTemporarily
 
-    method on_visit_node( m:Module )
+    method on_visit_node( m:Library )
       visit_types( m )
 
-    method visit_types( m:Module )
-      temporarily this_module = m
+    method visit_types( m:Library )
+      temporarily this_library = m
         forEach (type in m.types)
           visit_type( type )
         endForEach
       endTemporarily
 
     method visit_type( type:Type )
-      temporarily this_module=type.module_context, this_type=type
+      temporarily this_library=type.library_context, this_type=type
         on_visit_type( type )
       endTemporarily
 
@@ -82,7 +82,7 @@ class Visitor
     method visit_global_methods( type:Type )
       temporarily this_type = type
         forEach (m in type.global_methods)
-          temporarily this_module=m.module_context, this_procedure=m
+          temporarily this_library=m.library_context, this_procedure=m
             visit( m )
           endTemporarily
         endForEach
@@ -92,7 +92,7 @@ class Visitor
       temporarily this_type = type
         forEach (m in type.methods)
           if (m.type_context is type)
-            temporarily this_module=m.module_context, this_procedure=m
+            temporarily this_library=m.library_context, this_procedure=m
               visit( m )
             endTemporarily
           endIf
@@ -217,10 +217,10 @@ class Visitor
     method on_visit_children( cmd:CallProcedure )
       cmd.args = visit(cmd.args)
 
-    method on_visit_children( cmd:DefineModule )
+    method on_visit_children( cmd:DefineLibrary )
       cmd.attributes = visit(cmd.attributes)->(as Attributes)
 
-    method on_visit_children( cmd:ModuleQualifiedID )
+    method on_visit_children( cmd:LibraryQualifiedID )
       cmd.context = visit(cmd.context)
 
     method on_visit_children( cmd:NativeExpression )

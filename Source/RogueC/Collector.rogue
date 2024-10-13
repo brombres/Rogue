@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class Collector : Visitor
   PROPERTIES
@@ -8,19 +8,19 @@ class Collector : Visitor
     method on_visit( cmd:Cmd )->Cmd
       throw cmd.t.error( "[INTERNAL] Unexpected $ in Collector."(cmd.type_name) )
 
-    method on_visit( cmd:DefineModule )->Cmd
+    method on_visit( cmd:DefineLibrary )->Cmd
       local t = cmd.t
 
-      if (cmd.name) Program.current_module = Program.get_module( t, cmd.name )
-      else          Program.current_module = Program.default_module
+      if (cmd.name) Program.current_library = Program.get_library( t, cmd.name )
+      else          Program.current_library = Program.default_library
 
-      local m = Program.current_module
+      local m = Program.current_library
       m.attributes.flags |= cmd.attributes.flags
 
       return null
 
     method on_visit( cmd:Statements )->Cmd
-      Program.current_module.global_statements.add( forEach in cmd )
+      Program.current_library.global_statements.add( forEach in cmd )
       return null
 
 endClass

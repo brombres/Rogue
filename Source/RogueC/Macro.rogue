@@ -1,4 +1,4 @@
-module RogueC
+library RogueC
 
 class Macro( t:Token, name:String, placeholders:Placeholders, tokens:Token[] )
   METHODS

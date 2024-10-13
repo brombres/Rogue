@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 class Ellipse( position:XY, size:XY ) [compound]
   METHODS

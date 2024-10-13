@@ -1,4 +1,4 @@
-module UI
+library UI
 
 class UIFont [abstract]
   PROPERTIES

@@ -1,4 +1,4 @@
-module UI
+library UI
 
 class UIContent : UIFlowLayout, BufferedPrintWriter<<text_buffer>>
   PROPERTIES

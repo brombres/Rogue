@@ -1,4 +1,4 @@
-module Geometry
+library Geometry
 
 class IntCorners( top_left:IntXY, bottom_right:IntXY ) [compound]
   GLOBAL METHODS
