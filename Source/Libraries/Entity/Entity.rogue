@@ -12,6 +12,7 @@ class Entity : Node<<Entity>>
     attributes : EntityAttributes
     actions    : Action
     position   : XYZ
+    offset     : XYZ
     size       : XYZ
     scale      = XYZ(1,1,1)
     rotation   = Quaternion()
@@ -31,8 +32,28 @@ class Entity : Node<<Entity>>
     method bounds->Box
       return Box( position.xy, size.xy ).relative_to( anchor )
 
+    method contains( at_position:XY )->Logical
+      return find( at_position )?
+
+    method display_bounds->Box
+      return Box( display_position, size )
+
+    method display_position->XY
+      return parent?.display_position + position
+
     method draw
       on_draw
+
+    method find( at_position:XY )->Entity
+      if (display_bounds.contains(at_position)) return this
+
+      forEach (child in children)
+        if local result = child.find( at_position )
+          return result
+        endIf
+      endForEach
+
+      return null
 
     method on_draw
       noAction

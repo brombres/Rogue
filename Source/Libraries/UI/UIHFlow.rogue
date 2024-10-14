@@ -12,12 +12,12 @@ class UIHFlow : UIComponent
     method perform_layout( position )
       if (layout_finished) return
 
-      layout_cursor = XY(0,0)
+      localize content_position
+      layout_cursor = content_position
       line_height   = 0
 
-      local available_width = size.x
+      local available_width = content_size.x
 
-      localize bounds
       use components = WorkList<<UIComponent>>
         collect_child_display_components( components )
 
@@ -35,11 +35,11 @@ class UIHFlow : UIComponent
                 component.split_h( split_position, components, i )
                 nextIteration
               endIf
-              sufficient (layout_cursor.x > 0)
+              sufficient (layout_cursor.x > content_position.x)
             endIf
             escapeContingent
           satisfied
-            layout_cursor.x = 0
+            layout_cursor.x = content_position.x
             layout_cursor.y += line_height
             line_height = 0
           endContingent
@@ -51,6 +51,7 @@ class UIHFlow : UIComponent
             max_width   .= or_larger( layout_cursor.x )
           endIf
         endWhile
+
       endUse
 
       # Leave cursor as min size to enclose content
@@ -61,7 +62,7 @@ class UIHFlow : UIComponent
 
     method resolve_child_layout_sizes [override]
       if (layout_finished) return
-      local available_size = size.xy
+      local available_size = content_size
       use components = WorkList<<UIComponent>>
         collect_child_display_components( components )
         (forEach in components).resolve_layout_size( available_size )

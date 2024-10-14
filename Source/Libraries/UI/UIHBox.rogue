@@ -13,7 +13,7 @@ class UIHBox : UIComponent
         endForEach
 
         local pos = position
-        pos.x = Box(XY(total_w,h)).positioned_within( bounds, alignment ).position.x
+        pos.x = Box(XY(total_w,h)).positioned_within( content_bounds, alignment ).position.x
         forEach (component in components)
           component.perform_layout(
             component.bounds.positioned_within( Box(pos,component.size.x,size.y), alignment ).position
@@ -23,7 +23,7 @@ class UIHBox : UIComponent
       endUse
 
     method resolve_child_layout_sizes [override]
-      local available_size = size.xy
+      local available_size = content_size
       use components = WorkList<<UIComponent>>
         collect_child_display_components( components )
 

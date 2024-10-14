@@ -2,6 +2,7 @@ $include Entity
 $include UI/Event
 $include UI/LayoutMode
 $include UI/ParameterNames
+$include UI/UIBorder
 $include UI/UIComponent
 $include UI/UIComponentSizeInfo
 $include UI/UIFont

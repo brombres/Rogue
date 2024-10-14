@@ -203,12 +203,12 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       local h = bounds.height
       local x1 = bounds.x    : Int
       local y1 = bounds.y    : Int
-      local x2 = bounds.x2-1 : Int
-      local y2 = bounds.y2-1 : Int
-      fill( IntBox(x1+1,y1,w-2,1), pattern[1%pattern.count] )
-      fill( IntBox(x1+1,y2,w-2,1), pattern[7%pattern.count] )
-      fill( IntBox(x1,y1+1,1,h-2), pattern[3%pattern.count] )
-      fill( IntBox(x2,y1+1,1,h-2), pattern[5%pattern.count] )
+      local x2 = (bounds.x2-1).clamped_low(x1) : Int
+      local y2 = (bounds.y2-1).clamped_low(y1) : Int
+      fill( IntBox(x1+1,y1,(w-2).clamped_low(0),1), pattern[1%pattern.count] )
+      fill( IntBox(x1+1,y2,(w-2).clamped_low(0),1), pattern[7%pattern.count] )
+      fill( IntBox(x1,y1+1,1,(h-2).clamped_low(0)), pattern[3%pattern.count] )
+      fill( IntBox(x2,y1+1,1,(h-2).clamped_low(0)), pattern[5%pattern.count] )
       set( x1, y1, pattern[0] )
       set( x2, y1, pattern[2%pattern.count] )
       set( x1, y2, pattern[6%pattern.count] )
