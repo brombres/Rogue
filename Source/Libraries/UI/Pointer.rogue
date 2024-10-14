@@ -1,3 +1,5 @@
+library UI
+
 class Pointer [singleton]
   PROPERTIES
     position  : IntXY?   # of most recently active press (may be still active)

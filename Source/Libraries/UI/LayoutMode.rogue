@@ -1,3 +1,5 @@
+library UI
+
 enum LayoutMode
   EXPAND_TO_FILL
   ASPECT_FIT

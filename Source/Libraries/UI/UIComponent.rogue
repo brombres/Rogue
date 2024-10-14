@@ -1,3 +1,5 @@
+library UI
+
 class UIComponent : Entity
   PROPERTIES
     anchor        = Anchor.TOP_LEFT : Anchor
@@ -141,14 +143,18 @@ class UIComponent : Entity
       DISPATCH_EVENT
 
     method display_position->XY
-      return parent->(as UIComponent)?.display_position + position
+      return parent->(as UIComponent)?.display_position + position + offset
 
     method draw
       on_draw
-      use components = WorkList<<UIComponent>>
-        collect_child_display_components( components )
-        (forEach in components).draw
-      endUse
+
+      temporarily UI.clip = display_bounds
+        use components = WorkList<<UIComponent>>
+          collect_child_display_components( components )
+          (forEach in components).draw
+        endUse
+      endTemporarily
+
       on_end_draw
 
     method find_h_split( max_width:Real )->Real?

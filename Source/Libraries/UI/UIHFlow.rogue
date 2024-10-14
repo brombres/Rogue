@@ -1,3 +1,5 @@
+library UI
+
 class UIHFlow : UIComponent
   PROPERTIES
     layout_finished : Logical

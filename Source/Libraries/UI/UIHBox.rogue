@@ -1,3 +1,5 @@
+library UI
+
 class UIHBox : UIComponent
   METHODS
     method perform_layout( position )
@@ -12,7 +14,7 @@ class UIHBox : UIComponent
           h .= or_larger( sz.y )
         endForEach
 
-        local pos = position
+        local pos = XY.zero
         pos.x = Box(XY(total_w,h)).positioned_within( content_bounds, alignment ).position.x
         forEach (component in components)
           component.perform_layout(

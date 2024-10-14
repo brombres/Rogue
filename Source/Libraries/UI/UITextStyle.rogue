@@ -1,3 +1,5 @@
+library UI
+
 class UITextStyle
   PROPERTIES
     color    : Color?

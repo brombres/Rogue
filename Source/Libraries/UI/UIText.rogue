@@ -1,3 +1,5 @@
+library UI
+
 class UIText : UIComponent
   PROPERTIES
     value : String
@@ -77,7 +79,7 @@ class UIText : UIComponent
       return style?.color || prior.color
 
     method description->String
-      local result = ''UIText("$")''(value?.to_escaped_ascii||"")
+      local result = ''UIText($)''(value?.to_escaped_ascii||"")
       if (count)
         result.print '['
         forEach (child at i in children)

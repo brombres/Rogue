@@ -39,7 +39,7 @@ class Entity : Node<<Entity>>
       return Box( display_position, size )
 
     method display_position->XY
-      return parent?.display_position + position
+      return parent?.display_position + position + offset
 
     method draw
       on_draw

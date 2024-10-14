@@ -1,3 +1,5 @@
+library UI
+
 class UIBorder : UIComponent
   PROPERTIES
     left, top, right, bottom : Real

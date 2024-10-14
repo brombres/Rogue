@@ -201,7 +201,11 @@ class ConsoleUI : UI
       handle( PointerEvent.RELEASE, index, event )
 
     method set_clip( @clip )
-      ConsoleUICanvas.clip = @clip
+      if local clip_value = clip
+        ConsoleUICanvas.clip = clip_value->IntBox
+      else
+        ConsoleUICanvas.clip = null
+      endIf
 
     method update
       #local cur_ms = System.execution_time_ms

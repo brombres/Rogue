@@ -1,8 +1,7 @@
+library UI
+
 class UIMetaComponent : UIComponent
   METHODS
-    method display_position->XY
-      return parent->(as UIComponent)?.display_position
-
     method is_display_component->Logical
       return false
 endClass
