@@ -4,26 +4,26 @@ $include Entity
 $include UI/Event
 $include UI/LayoutMode
 $include UI/ParameterNames
-$include UI/UIBorder
-$include UI/UIComponent
-$include UI/UIComponentSizeInfo
-$include UI/UIFont
-$include UI/UIMetaComponent
-$include UI/UIHBox
-$include UI/UIHFlow
-$include UI/UIText
-$include UI/UITextBox
-$include UI/UITextStyle
-$include UI/UIVBox
+$include UI/Border
+$include UI/Component
+$include UI/ComponentSizeInfo
+$include UI/Font
+$include UI/MetaComponent
+$include UI/HBox
+$include UI/HFlow
+$include UI/Text
+$include UI/TextBox
+$include UI/TextStyle
+$include UI/VBox
 
-class UI : UIComponent [singleton]
+class UI : Component [singleton]
   PROPERTIES
-    default_font   : UIFont
+    default_font   : Font
 
     clip           : Box?
 
-    pointer_focus  : UIComponent
-    keyboard_focus : UIComponent
+    pointer_focus  : Component
+    keyboard_focus : Component
 
     parameters     : Variant
 
@@ -39,7 +39,7 @@ class UI : UIComponent [singleton]
         prior.draw
       endTemporarily
 
-    method font->UIFont
+    method font->Font
       return default_font
 
     method handle( e:KeyEvent )

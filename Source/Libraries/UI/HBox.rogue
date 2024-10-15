@@ -1,11 +1,11 @@
 library UI
 
-class UIHBox : UIComponent
+class HBox : Component
   METHODS
     method perform_layout( position )
       local total_w = 0.0
       local h = 0.0
-      use components = WorkList<<UIComponent>>
+      use components = WorkList<<Component>>
         collect_child_display_components( components )
 
         forEach (component in components)
@@ -26,10 +26,10 @@ class UIHBox : UIComponent
 
     method resolve_child_layout_sizes [override]
       local available_size = content_size
-      use components = WorkList<<UIComponent>>
+      use components = WorkList<<Component>>
         collect_child_display_components( components )
 
-        use info_list = WorkList<<UIComponentSizeInfo>>
+        use info_list = WorkList<<ComponentSizeInfo>>
 
           # Determine the min & max widths of all child components.
           local total_weight : Real
@@ -40,7 +40,7 @@ class UIHBox : UIComponent
               available_size.x -= min_size.x
             elseIf (component.weight)
               total_weight += component.weight.x
-              info_list.add( UIComponentSizeInfo(component, &=min_size, &=max_size) )
+              info_list.add( ComponentSizeInfo(component, &=min_size, &=max_size) )
             endIf
           endForEach
 
@@ -98,9 +98,9 @@ class UIHBox : UIComponent
     method resolve_shrink_to_fit_layout_size( available_size:XY, &limited )->XY
       local w = 0.0
       local h = 0.0
-      use components = WorkList<<UIComponent>>
+      use components = WorkList<<Component>>
         collect_child_display_components( components )
-        forEach (component as UIComponent in components)
+        forEach (component as Component in components)
           local sz = component.resolve_layout_size( available_size, &=limited )
           w += sz.x
           h .= or_larger( sz.y )
@@ -111,10 +111,10 @@ class UIHBox : UIComponent
       return XY(w,h)
 endClass
 
-class UIGeneratedHBox : UIHBox
+class UIGeneratedHBox : HBox
   # Special subclass for operator overrides
   METHODS
-    method operator+( rhs:UIComponent )->UIComponent [override]
+    method operator+( rhs:Component )->Component [override]
       add( rhs )
       return this
 endClass

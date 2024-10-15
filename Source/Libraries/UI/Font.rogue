@@ -1,18 +1,18 @@
 library UI
 
-class UIFont [abstract]
+class Font [abstract]
   PROPERTIES
     name   : String
 
   METHODS
     method init( name )
 
-    method init( existing:UIFont )
+    method init( existing:Font )
       name = existing.name
 
-    method cloned->UIFont [abstract]
+    method cloned->Font [abstract]
 
-    method draw( text:UIText ) [abstract]
+    method draw( text:Text ) [abstract]
 
     method draw( text:String, position:XY )  [abstract]
 
@@ -28,7 +28,7 @@ class UIFont [abstract]
         bounds, anchor ).position
       draw( text, position )
 
-    method draw( text:String, container:UIComponent )
+    method draw( text:String, container:Component )
       draw( text, container.display_bounds, container.alignment )
 
     method height->Real                 [abstract]

@@ -1,6 +1,6 @@
 library UI
 
-class UIBorder : UIComponent
+class Border : Component
   PROPERTIES
     left, top, right, bottom : Real
 

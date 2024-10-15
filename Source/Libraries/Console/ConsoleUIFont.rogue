@@ -4,7 +4,7 @@ uses Graphics
 uses Console/ANSIColor
 uses Console/ANSIRGB
 
-class ConsoleUIFont : UIFont [singleton]
+class ConsoleUIFont : Font [singleton]
   PROPERTIES
     #is_bold      : Logical
     #is_inverse   : Logical
@@ -28,7 +28,7 @@ class ConsoleUIFont : UIFont [singleton]
       ]
       }#
 
-    method draw( text:UIText ) [override]
+    method draw( text:Text ) [override]
       local color = text.color
       local bg_color = text.bg_color
       if (color)    ConsoleUICanvas.style.fg( color.value )

@@ -1,6 +1,6 @@
 library UI
 
-class UITextStyle
+class TextStyle
   PROPERTIES
     color    : Color?
     bg_color : Color?

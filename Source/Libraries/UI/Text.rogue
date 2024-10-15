@@ -1,9 +1,9 @@
 library UI
 
-class UIText : UIComponent
+class Text : Component
   PROPERTIES
     value : String
-    style : UITextStyle
+    style : TextStyle
 
   METHODS
     method init( text:String )
@@ -46,10 +46,10 @@ class UIText : UIComponent
           forEach (ch in processed)
             if (ch == '\n')
               .add_builder( builder )
-              add( UIText('\n') )
+              add( Text('\n') )
             elseIf (ch == ' ' and not builder.count)
               # Leading space becomes its own element
-              add( UIText(" ") )
+              add( Text(" ") )
             else
               builder.print ch
             endIf
@@ -64,10 +64,10 @@ class UIText : UIComponent
         if (builder.last == ' ')
           # Make a trailing space its own element
           builder.remove_last
-          add( UIText(builder.cloned) )
-          add( UIText(" ") )
+          add( Text(builder.cloned) )
+          add( Text(" ") )
         else
-          add( UIText(builder.cloned) )
+          add( Text(builder.cloned) )
         endIf
         builder.clear
       endIf
@@ -79,7 +79,7 @@ class UIText : UIComponent
       return style?.color || prior.color
 
     method description->String
-      local result = ''UIText($)''(value?.to_escaped_ascii||"")
+      local result = ''Text($)''(value?.to_escaped_ascii||"")
       if (count)
         result.print '['
         forEach (child at i in children)
@@ -92,7 +92,7 @@ class UIText : UIComponent
 
     method display_position->XY
       if (is_display_component) return prior.display_position
-      else                      return parent->(as UIComponent)?.display_position
+      else                      return parent->(as Component)?.display_position
 
     method find_h_split( max_width:Real )->Real? [override]
       localize font
@@ -113,7 +113,7 @@ class UIText : UIComponent
       return value == " "
 
     method is_display_component->Logical [override]
-      forEach (child as UIComponent in children)
+      forEach (child as Component in children)
         if (child.is_display_component) return false
       endForEach
       return true
@@ -139,13 +139,13 @@ class UIText : UIComponent
     method set_value( @value )
       attributes.modified = true
 
-    method split_h( split_position:Real, components:UIComponent[], component_i:Int ) [override]
-      local left, center, right : UIText
+    method split_h( split_position:Real, components:Component[], component_i:Int ) [override]
+      local left, center, right : Text
 
       local split_i = split_position->Int
-      if (split_i) left = UIText( value.substring(0, split_i) )
-      center = UIText( value[split_i] )
-      if (split_i + 1 < value.count) right = UIText( value.substring(split_i+1) )
+      if (split_i) left = Text( value.substring(0, split_i) )
+      center = Text( value[split_i] )
+      if (split_i + 1 < value.count) right = Text( value.substring(split_i+1) )
 
       if (left) add( left )
       add( center )

@@ -1,6 +1,6 @@
 library UI
 
-class UIMetaComponent : UIComponent
+class MetaComponent : Component
   METHODS
     method is_display_component->Logical
       return false

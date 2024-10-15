@@ -1,6 +1,6 @@
 library UI
 
-class UIComponent : Entity
+class Component : Entity
   PROPERTIES
     anchor        = Anchor.TOP_LEFT : Anchor
     alignment     : Anchor?
@@ -13,7 +13,7 @@ class UIComponent : Entity
     method init
       noAction
 
-    method init( child:UIComponent )
+    method init( child:Component )
       add( child )
 
     method on( e:KeyEvent )
@@ -63,7 +63,7 @@ class UIComponent : Entity
       if local result = @alignment
         return result
       else
-        if local parent_component = parent->(as UIComponent)
+        if local parent_component = parent->(as Component)
           return parent_component.alignment
         else
           return Anchor.CENTER
@@ -91,7 +91,7 @@ class UIComponent : Entity
       layout_mode.x = LayoutMode.ASPECT_FIT
 
     method bg_color->Color?
-      return parent->(as UIComponent)?.bg_color
+      return parent->(as Component)?.bg_color
 
     $localMacro DISPATCH_EVENT
       # Send input events to children in reverse order because the top layer comes last
@@ -100,11 +100,11 @@ class UIComponent : Entity
       handle( e )
     $endLocalMacro
 
-    method collect_child_display_components( list:UIComponent[] )
+    method collect_child_display_components( list:Component[] )
       # Collect child components that need to be laid out, skipping any meta-components.
-      (forEach as UIComponent in children).collect_display_components( list )
+      (forEach as Component in children).collect_display_components( list )
 
-    method collect_display_components( list:UIComponent[] )
+    method collect_display_components( list:Component[] )
       if (is_display_component)
         list.add( this )
       else
@@ -112,7 +112,7 @@ class UIComponent : Entity
       endIf
 
     method color->Color?
-      return parent->(as UIComponent)?.color
+      return parent->(as Component)?.color
 
     method content_bounds->Box
       return Box( content_position, content_size )
@@ -143,13 +143,13 @@ class UIComponent : Entity
       DISPATCH_EVENT
 
     method display_position->XY
-      return parent->(as UIComponent)?.display_position + position + offset
+      return parent->(as Component)?.display_position + position + offset
 
     method draw
       on_draw
 
       temporarily UI.clip = display_bounds
-        use components = WorkList<<UIComponent>>
+        use components = WorkList<<Component>>
           collect_child_display_components( components )
           (forEach in components).draw
         endUse
@@ -160,8 +160,8 @@ class UIComponent : Entity
     method find_h_split( max_width:Real )->Real?
       return null
 
-    method first_child_component->UIComponent
-      forEach (child as UIComponent in children)
+    method first_child_component->Component
+      forEach (child as Component in children)
         return child
       endForEach
       return null
@@ -177,8 +177,8 @@ class UIComponent : Entity
       layout_size.x = w
       layout_mode.x = LayoutMode.FIXED_SIZE
 
-    method font->UIFont
-      return parent->(as UIComponent)?.font
+    method font->Font
+      return parent->(as Component)?.font
 
     method handle( e:KeyEvent )
       if (attributes.hidden or attributes.input_disabled) return
@@ -230,27 +230,27 @@ class UIComponent : Entity
     method is_space->Logical
       return false
 
-    method next_component->UIComponent
+    method next_component->Component
       local next_entity = next
-      local next_component = next_entity->(as UIComponent)
+      local next_component = next_entity->(as Component)
       while (next_entity and not next_component)
         next_entity = next_entity.next
-        next_component = next_entity->(as UIComponent)
+        next_component = next_entity->(as Component)
       endWhile
       return next_component
 
-    method operator+( rhs:UIComponent )->UIComponent
+    method operator+( rhs:Component )->Component
       return UIGeneratedHBox( this ).[ add(rhs) ]
 
-    method operator/( rhs:UIComponent )->UIComponent
+    method operator/( rhs:Component )->Component
       return UIGeneratedVBox( this ).[ add(rhs) ]
 
-    method operator|( rhs:UIComponent )->UIComponent
+    method operator|( rhs:Component )->Component
       return UIGeneratedStack( this ).[ add(rhs) ]
 
     method perform_layout( position )
       localize content_bounds
-      use components = WorkList<<UIComponent>>
+      use components = WorkList<<Component>>
         collect_child_display_components( components )
         forEach (component in components)
           component.perform_layout( component.bounds.positioned_within(content_bounds,alignment).position )
@@ -357,14 +357,14 @@ class UIComponent : Entity
 
     method resolve_child_layout_sizes
       local available_size = content_size
-      use components = WorkList<<UIComponent>>
+      use components = WorkList<<Component>>
         collect_child_display_components( components )
         (forEach in components).resolve_layout_size( available_size )
       endUse
 
     method resolve_shrink_to_fit_layout_size( available_size:XY, &limited )->XY
       local sz : XY
-      use components = WorkList<<UIComponent>>
+      use components = WorkList<<Component>>
         collect_child_display_components( components )
         sz = sz.or_larger( (forEach in components).resolve_layout_size( available_size, &=limited ) )
       endUse
@@ -385,21 +385,21 @@ class UIComponent : Entity
     method shrink_to_fit_width
       layout_mode.x = LayoutMode.SHRINK_TO_FIT
 
-    method split_h( split_position:Real, components:UIComponent[], component_i:Int )
+    method split_h( split_position:Real, components:Component[], component_i:Int )
       noAction
 
     method update_size
-      use components = WorkList<<UIComponent>>
+      use components = WorkList<<Component>>
         collect_child_display_components( components )
         (forEach in components).update_size
       endUse
       on_update_size
 endClass
 
-class UIGeneratedStack : UIComponent
+class UIGeneratedStack : Component
   # Special subclass for operator overrides
   METHODS
-    method operator|( rhs:UIComponent )->UIComponent [override]
+    method operator|( rhs:Component )->Component [override]
       add( rhs )
       return this
 endClass

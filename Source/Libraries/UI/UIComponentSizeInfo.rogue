@@ -1,4 +1,0 @@
-library UI
-
-class UIComponentSizeInfo( component:UIComponent, min_size:XY, max_size:XY ) [compound]
-endClass

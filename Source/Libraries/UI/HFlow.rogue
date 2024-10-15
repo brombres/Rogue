@@ -1,6 +1,6 @@
 library UI
 
-class UIHFlow : UIComponent
+class HFlow : Component
   PROPERTIES
     layout_finished : Logical
     layout_cursor   : XY
@@ -20,7 +20,7 @@ class UIHFlow : UIComponent
 
       local available_width = content_size.x
 
-      use components = WorkList<<UIComponent>>
+      use components = WorkList<<Component>>
         collect_child_display_components( components )
 
         local i = 0
@@ -65,7 +65,7 @@ class UIHFlow : UIComponent
     method resolve_child_layout_sizes [override]
       if (layout_finished) return
       local available_size = content_size
-      use components = WorkList<<UIComponent>>
+      use components = WorkList<<Component>>
         collect_child_display_components( components )
         (forEach in components).resolve_layout_size( available_size )
       endUse
