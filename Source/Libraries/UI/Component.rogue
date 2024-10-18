@@ -2,12 +2,13 @@ library UI
 
 class Component : Entity
   PROPERTIES
-    anchor        = Anchor.TOP_LEFT : Anchor
-    alignment     : Anchor?
-    layout_mode   : LayoutModeXY
-    layout_size   : XY
-    weight        = XY(1,1)
-    layout_params : ParameterNames
+    anchor         = Anchor.TOP_LEFT : Anchor
+    alignment      : Anchor?
+    layout_mode    : LayoutModeXY
+    layout_size    : XY
+    display_offset : XY
+    weight         = XY(1,1)
+    layout_params  : ParameterNames
 
   METHODS # Overrides
     method init
@@ -90,6 +91,12 @@ class Component : Entity
       layout_size.x = w
       layout_mode.x = LayoutMode.ASPECT_FIT
 
+    method bounds->Box
+      return Box( position.xy, size.xy ).relative_to( anchor )
+
+    method contains( at_position:XY )->Logical
+      return find( at_position )?
+
     method bg_color->Color?
       return parent->(as Component)?.bg_color
 
@@ -142,13 +149,21 @@ class Component : Entity
     method dispatch( e:TextEvent )
       DISPATCH_EVENT
 
+    method display_bounds->Box
+      return Box( display_position, size )
+
+    method content_display_bounds->Box
+      return content_bounds + display_position
+
     method display_position->XY
-      return parent->(as Component)?.display_position + position + offset
+      return parent->(as Component)?.display_position + position + display_offset
 
     method draw
       on_draw
 
-      temporarily UI.clip = display_bounds
+      localize content_display_bounds
+      local new_clip = which{ UI.clip:UI.clip & content_display_bounds || content_display_bounds }
+      temporarily UI.clip = new_clip
         use components = WorkList<<Component>>
           collect_child_display_components( components )
           (forEach in components).draw
@@ -156,6 +171,17 @@ class Component : Entity
       endTemporarily
 
       on_end_draw
+
+    method find( at_position:XY )->Entity
+      if (display_bounds.contains(at_position)) return this
+
+      forEach (child as Component in children)
+        if local result = child.find( at_position )
+          return result
+        endIf
+      endForEach
+
+      return null
 
     method find_h_split( max_width:Real )->Real?
       return null
