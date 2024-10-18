@@ -1,0 +1,36 @@
+library UI
+
+class ScrollView : VBox
+  METHODS
+    method init_object
+      alignment = Anchor.TOP_LEFT
+
+    method on( e:ScrollEvent )
+      if local content = first_child_component
+        content.display_offset -= e.delta
+        e.consume
+      endIf
+
+    method bottom_offset->Real
+      # Result will be negative or zero.
+      if local content = first_child_component
+        return (size.y - content.size.y).clamped_high(0)
+      else
+        return 0
+      endIf
+
+    method left_offset->Real
+      return 0
+
+    method right_offset->Real
+      # Result will be negative or zero.
+      if local content = first_child_component
+        return (size.x - content.size.x).clamped_high(0)
+      else
+        return 0
+      endIf
+
+    method top_offset->Real
+      return 0
+
+endClass

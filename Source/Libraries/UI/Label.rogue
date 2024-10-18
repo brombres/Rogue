@@ -1,0 +1,17 @@
+library UI
+
+class Label : Component
+  PROPERTIES
+    text : Text
+
+  METHODS
+    method init( text:String )
+      init( Text(text) )
+
+    method init( text )
+      add( text )
+
+    method init_object
+      alignment = Anchor.CENTER
+endClass
+

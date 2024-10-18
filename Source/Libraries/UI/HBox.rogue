@@ -2,6 +2,19 @@ library UI
 
 class HBox : Component
   METHODS
+    method minimum_layout_size( available_size:XY, &limited )->XY [override]
+      local w = 0.0
+      local h = 0.0
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+        forEach (component as Component in components)
+          local sz = component.resolve_layout_size( available_size, &=limited )
+          w += sz.x
+          h .= or_larger( sz.y )
+        endForEach
+      endUse
+      return XY(w,h)
+
     method perform_layout( position )
       local total_w = 0.0
       local h = 0.0
@@ -95,20 +108,6 @@ class HBox : Component
         endForEach
       endUse
 
-    method resolve_shrink_to_fit_layout_size( available_size:XY, &limited )->XY
-      local w = 0.0
-      local h = 0.0
-      use components = WorkList<<Component>>
-        collect_child_display_components( components )
-        forEach (component as Component in components)
-          local sz = component.resolve_layout_size( available_size, &=limited )
-          w += sz.x
-          h .= or_larger( sz.y )
-        endForEach
-      endUse
-      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) size.x = w
-      if (layout_mode.y == LayoutMode.SHRINK_TO_FIT) size.y = h
-      return XY(w,h)
 endClass
 
 class UIGeneratedHBox : HBox

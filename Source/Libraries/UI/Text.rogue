@@ -106,6 +106,13 @@ class Text : Component
       endForEach
       return null
 
+    method font->Font
+      if (style and style.font)
+        return style.font.value
+      else
+        return prior.font
+      endIf
+
     method is_br->Logical [override]
       return value == "\n"
 
@@ -118,6 +125,13 @@ class Text : Component
       endForEach
       return true
 
+    method minimum_layout_size( available_size:XY, &limited )->XY [override]
+      if local font = font
+        return font.measure( value )
+      else
+        return XY.zero
+      endIf
+
     method on_draw [override]
       font?.draw( this )
 
@@ -128,13 +142,20 @@ class Text : Component
       fixed_size( font?.measure(value || "") )
       size = layout_size
 
-    method set_bg_color( color:Color )
+    method set_bg_color( color:Color? )
       ensure<<style>>
       style.bg_color = color
 
-    method set_color( color:Color )
+    method set_color( color:Color? )
       ensure<<style>>
       style.color = color
+
+    method set_font( font:Font? )
+      ensure<<style>>
+      if (style.font != font)
+        style.font = font
+        attributes.modified = true
+      endIf
 
     method set_value( @value )
       attributes.modified = true

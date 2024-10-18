@@ -8,6 +8,14 @@ class HFlow : Component
     line_height     : Real
 
   METHODS
+    method minimum_layout_size( available_size:XY, &limited )->XY [override]
+      resolve_child_layout_sizes
+
+      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) size.x = available_size.x
+      perform_layout( XY.zero )
+
+      return layout_cursor
+
     method on_update_size
       layout_finished = false
 
@@ -69,15 +77,5 @@ class HFlow : Component
         collect_child_display_components( components )
         (forEach in components).resolve_layout_size( available_size )
       endUse
-
-    method resolve_shrink_to_fit_layout_size( available_size:XY, &limited )->XY
-      resolve_child_layout_sizes
-
-      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) size.x = available_size.x
-      perform_layout( XY.zero )
-
-      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) size.x = layout_cursor.x
-      if (layout_mode.y == LayoutMode.SHRINK_TO_FIT) size.y = layout_cursor.y
-      return layout_cursor
 
 endClass

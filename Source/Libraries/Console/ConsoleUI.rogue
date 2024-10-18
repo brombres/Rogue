@@ -81,7 +81,7 @@ class ConsoleUI : UI
 
     method on_draw [override]
       ConsoleUICanvas.resize( size.x, size.y )
-      ConsoleUICanvas.fill( '.' )
+      ConsoleUICanvas.fill( ' ' )
 
     method on_resize
       Console.clear

@@ -8,13 +8,17 @@ $include UI/Border
 $include UI/Component
 $include UI/ComponentSizeInfo
 $include UI/Font
+$include UI/Label
+$include UI/List
 $include UI/MetaComponent
 $include UI/HBox
 $include UI/HFlow
+$include UI/ScrollView
 $include UI/Text
 $include UI/TextBox
 $include UI/TextStyle
 $include UI/VBox
+$include UI/Widget
 
 class UI : Component [singleton]
   PROPERTIES
@@ -130,9 +134,12 @@ class UI : Component [singleton]
     method update_layout( bounds:Box )
       temporarily UI = this
         position = bounds.position
-        update_size
-        resolve_layout_size( bounds.size )
-        perform_layout( position )
+        if (needs_layout or bounds.size != size)
+          needs_layout = false
+          update_size
+          resolve_layout_size( bounds.size )
+          perform_layout( position )
+        endIf
       endTemporarily
 
 endClass
