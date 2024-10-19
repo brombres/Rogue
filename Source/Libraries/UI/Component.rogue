@@ -413,6 +413,10 @@ class Component : Entity
         (forEach in components).resolve_layout_size( available_size )
       endUse
 
+    method set_content( content:Component )
+      remove_children
+      add( content )
+
     method set_structure_modified( setting:Logical ) [override]
       prior.set_structure_modified( setting )
       if (setting) request_layout
@@ -432,6 +436,9 @@ class Component : Entity
     method update
       on_update
       (forEach as Component in children).update
+
+    method update_layout
+      # Call when
 
     method update_size
       use components = WorkList<<Component>>

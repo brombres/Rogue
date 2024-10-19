@@ -1,17 +1,20 @@
 library UI
 
 class Label : Component
-  PROPERTIES
-    text : Text
-
   METHODS
     method init( text:String )
       init( Text(text) )
 
-    method init( text )
-      add( text )
+    method init( content:Component )
+      set_content( content )
 
     method init_object
       alignment = Anchor.CENTER
+
+    method set_text( text:String )
+      content = Text( text )
+
+    method set_text( text:Text )
+      content = text
 endClass
 
