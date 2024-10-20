@@ -557,7 +557,7 @@ class StyledCharacter( value=' ':Character, style=CharacterStyle.NONE:CharacterS
       endIf
 
     method create( value:Character, fg:Color, bg:Color )->StyledCharacter
-      return StyledCharacter( value, CharacterStyle(CharacterStyle.TRUECOLOR_FG|TRUECOLOR_BG,fg,bg) )
+      return StyledCharacter( value, CharacterStyle(CharacterStyle.TRUECOLOR_FG|CharacterStyle.TRUECOLOR_BG,fg,bg) )
 
   METHODS
     method operator==( other:StyledCharacter )->Logical
@@ -871,25 +871,33 @@ class CharacterStyle( flags:Int, fg=Color(0):Color, bg=Color(0):Color ) [compoun
             else                    ConsoleStyle.set<<HIDDEN_OFF>>( output )
           endIf
 
-          if (new_flags & TRUECOLOR_FG)
-            if (new_flags & TRUECOLOR_BG)
+          if (is_truecolor_supported)
+            if ((new_flags & (TRUECOLOR_FG|TRUECOLOR_BG)) == (TRUECOLOR_FG|TRUECOLOR_BG))
+              # Truecolor has been newly set for both FG and BG.
+              # Apply truecolor values and don't apply 256-color values.
               ConsoleStyle.colors( new_style.fg, new_style.bg, output )
-              diff &= !(FG_MASK | BG_MASK)  # don't apply 256-color values
+              diff &= !(FG_MASK | BG_MASK)
             else
-              ConsoleStyle.fg_color( new_style.fg, output )
-              diff &= !FG_MASK  # don't apply 256-color values
-            endIf
-          elseIf (new_flags & TRUECOLOR_BG)
-            ConsoleStyle.bg_color( new_style.bg, output )
-            diff &= !BG_MASK  # don't apply 256-color values
-          else
-            if ((diff & TRUECOLOR_FG) and is_truecolor_supported)
-              # TRUECOLOR_FG mode changed, so make sure to apply 256-color value
-              diff |= FG_MASK
-            endIf
-            if ((diff & TRUECOLOR_BG) and is_truecolor_supported)
-              # TRUECOLOR_BG mode changed, so make sure to apply 256-color value
-              diff |= BG_MASK
+              if (new_flags & TRUECOLOR_FG)
+                # We just turned on truecolor FG.
+                # Apply truecolor FG value and don't apply 256-color FG value.
+                ConsoleStyle.fg_color( new_style.fg, output )
+                diff &= !FG_MASK
+              elseIf (diff & TRUECOLOR_FG)
+                # We just turned off truecolor FG; be sure to apply 256-color FG
+                diff |= FG_MASK
+              endIf
+
+              if (new_flags & TRUECOLOR_BG)
+                # We just turned on truecolor BG.
+                # Apply truecolor BG value and don't apply 256-color BG value.
+                ConsoleStyle.bg_color( new_style.bg, output )
+                diff &= !BG_MASK
+              elseIf (diff & TRUECOLOR_BG)
+                # We just turned off truecolor BG; be sure to apply 256-color BG
+                diff |= BG_MASK
+              endIf
+
             endIf
           endIf
 
