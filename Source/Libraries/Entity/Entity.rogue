@@ -1,3 +1,5 @@
+library Entity
+
 uses Collection/Node
 uses Control
 uses Geometry

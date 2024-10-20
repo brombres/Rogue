@@ -132,15 +132,15 @@ class Text : Component
         return XY.zero
       endIf
 
-    method on_draw [override]
-      font?.draw( this )
-
-    method on_update_size [override]
+    method on_begin_layout [override]
       if (not attributes.modified) return
       attributes.modified = false
 
-      fixed_size( font?.measure(value || "") )
+      fixed_size =  font?.measure(value || "")
       size = layout_size
+
+    method on_draw [override]
+      font?.draw( this )
 
     method set_bg_color( color:Color? )
       ensure<<style>>
@@ -177,9 +177,10 @@ class Text : Component
       components.insert( center, component_i )
       if (left) components.insert( left, component_i )
 
-      if (left) left.on_update_size
-      center.on_update_size
-      if (right) right.on_update_size
+      # Have the new child components set their size
+      if (left) left.on_begin_layout
+      center.on_begin_layout
+      if (right) right.on_begin_layout
 
     method to->String
       return description

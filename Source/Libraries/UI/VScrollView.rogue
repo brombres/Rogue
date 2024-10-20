@@ -1,6 +1,6 @@
 library UI
 
-class ScrollView : VBox
+class VScrollView : Component
   PROPERTIES
     velocity               : XY
     decay                  : XY

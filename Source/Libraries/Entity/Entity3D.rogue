@@ -1,3 +1,5 @@
+library Entity
+
 class Entity3D : Entity
   PROPERTIES
     position : XYZ

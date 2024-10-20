@@ -1,6 +1,6 @@
 library UI
 
-class List : VBox
+class VList : VBox
   METHODS
     method init_object
       shrink_to_fit_height

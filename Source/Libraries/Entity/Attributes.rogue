@@ -1,3 +1,5 @@
+library Entity
+
 enum Attributes [bitflags]
   CATEGORIES
     HIDDEN

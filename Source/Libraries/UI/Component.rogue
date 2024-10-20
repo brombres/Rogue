@@ -67,9 +67,6 @@ class Component : Entity
     method on_update
       noAction
 
-    method on_update_size
-      noAction
-
   METHODS # Public API
     method align( @alignment )
       noAction
@@ -84,26 +81,6 @@ class Component : Entity
           return Anchor.CENTER
         endIf
       endIf
-
-    method aspect_fill( layout_size )
-      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FILL, LayoutMode.ASPECT_FILL )
-
-    method aspect_fill_height( layout_size )
-      layout_mode.y = LayoutMode.ASPECT_FILL
-
-    method aspect_fill_width( layout_size )
-      layout_size.x = w
-      layout_mode.x = LayoutMode.ASPECT_FILL
-
-    method aspect_fit( layout_size )
-      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FIT, LayoutMode.ASPECT_FIT )
-
-    method aspect_fit_height( layout_size )
-      layout_mode.y = LayoutMode.ASPECT_FIT
-
-    method aspect_fit_width( layout_size )
-      layout_size.x = w
-      layout_mode.x = LayoutMode.ASPECT_FIT
 
     method begin_layout
       on_begin_layout
@@ -209,6 +186,15 @@ class Component : Entity
         (forEach in components).end_layout
       endUse
 
+    method expand_to_fill
+      layout_mode = LayoutModeXY( LayoutMode.EXPAND_TO_FILL, LayoutMode.EXPAND_TO_FILL )
+
+    method expand_to_fill_height
+      layout_mode.y = LayoutMode.EXPAND_TO_FILL
+
+    method expand_to_fill_width
+      layout_mode.x = LayoutMode.EXPAND_TO_FILL
+
     method find( at_position:XY )->Entity
       if (display_bounds.contains(at_position)) return this
 
@@ -228,17 +214,6 @@ class Component : Entity
         return child
       endForEach
       return null
-
-    method fixed_size( layout_size )
-      layout_mode = LayoutModeXY( LayoutMode.FIXED_SIZE, LayoutMode.FIXED_SIZE )
-
-    method fixed_height( h:Real )
-      layout_size.y = h
-      layout_mode.y = LayoutMode.FIXED_SIZE
-
-    method fixed_width( w:Real )
-      layout_size.x = w
-      layout_mode.x = LayoutMode.FIXED_SIZE
 
     method font->Font
       return parent->(as Component)?.font
@@ -338,17 +313,6 @@ class Component : Entity
         endForEach
       endUse
 
-    method proportional( layout_size )
-      layout_mode = LayoutModeXY( LayoutMode.PROPORTIONAL, LayoutMode.PROPORTIONAL )
-
-    method proportional_height( h:Real )
-      layout_size.y = h
-      layout_mode.y = LayoutMode.PROPORTIONAL
-
-    method proportional_width( w:Real )
-      layout_size.x = w
-      layout_mode.x = LayoutMode.PROPORTIONAL
-
     method release_keyboard_focus
       if (UI.keyboard_focus is this)
         UI.keyboard_focus = null
@@ -443,9 +407,51 @@ class Component : Entity
         (forEach in components).resolve_layout_size( available_size )
       endUse
 
+    method set_aspect_fill( layout_size )
+      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FILL, LayoutMode.ASPECT_FILL )
+
+    method set_aspect_fill_height( layout_size )
+      layout_mode.y = LayoutMode.ASPECT_FILL
+
+    method set_aspect_fill_width( layout_size )
+      layout_size.x = w
+      layout_mode.x = LayoutMode.ASPECT_FILL
+
+    method set_aspect_fit( layout_size )
+      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FIT, LayoutMode.ASPECT_FIT )
+
+    method set_aspect_fit_height( layout_size )
+      layout_mode.y = LayoutMode.ASPECT_FIT
+
+    method set_aspect_fit_width( layout_size )
+      layout_size.x = w
+      layout_mode.x = LayoutMode.ASPECT_FIT
+
     method set_content( content:Component )
       remove_children
       add( content )
+
+    method set_fixed_size( layout_size )
+      layout_mode = LayoutModeXY( LayoutMode.FIXED_SIZE, LayoutMode.FIXED_SIZE )
+
+    method set_fixed_height( h:Real )
+      layout_size.y = h
+      layout_mode.y = LayoutMode.FIXED_SIZE
+
+    method set_fixed_width( w:Real )
+      layout_size.x = w
+      layout_mode.x = LayoutMode.FIXED_SIZE
+
+    method set_proportional_size( layout_size )
+      layout_mode = LayoutModeXY( LayoutMode.PROPORTIONAL, LayoutMode.PROPORTIONAL )
+
+    method set_proportional_height( h:Real )
+      layout_size.y = h
+      layout_mode.y = LayoutMode.PROPORTIONAL
+
+    method set_proportional_width( w:Real )
+      layout_size.x = w
+      layout_mode.x = LayoutMode.PROPORTIONAL
 
     method set_structure_modified( setting:Logical ) [override]
       prior.set_structure_modified( setting )
@@ -467,12 +473,6 @@ class Component : Entity
       prior.update
       (forEach as Component in children).update
 
-    method update_size
-      use components = WorkList<<Component>>
-        collect_child_display_components( components )
-        (forEach in components).update_size
-      endUse
-      on_update_size
 endClass
 
 class UIGeneratedStack : Component

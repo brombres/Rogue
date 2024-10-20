@@ -2,6 +2,7 @@ library UI
 
 uses Collection/Node
 uses Control
+uses Entity
 uses Geometry
 
 $include UI/Border
@@ -13,14 +14,14 @@ $include UI/HBox
 $include UI/HFlow
 $include UI/Label
 $include UI/LayoutMode
-$include UI/List
 $include UI/MetaComponent
 $include UI/ParameterNames
-$include UI/ScrollView
 $include UI/Text
 $include UI/TextBox
 $include UI/TextStyle
 $include UI/VBox
+$include UI/VList
+$include UI/VScrollView
 $include UI/Widget
 
 class UI : Component [singleton]
@@ -145,7 +146,6 @@ class UI : Component [singleton]
         if (needs_layout or bounds.size != size)
           needs_layout = false
           begin_layout
-          update_size #FIXME: replace with begin_layout
           resolve_layout_size( bounds.size )
           perform_layout( position )
           end_layout
