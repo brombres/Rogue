@@ -208,7 +208,7 @@ class Node<<$ExtendedNodeType>> : IteratorPreferred
       parent.add( this->(as $ExtendedNodeType) )
 
     method iterator->NodeIterator<<$ExtendedNodeType>>
-      return NodeIterator<<$ExtendedNodeType>>( this->(as $ExtendedNodeType) )
+      return NodeIterator<<$ExtendedNodeType>>( first_child )
 
     method node_name->String
       return type_name
