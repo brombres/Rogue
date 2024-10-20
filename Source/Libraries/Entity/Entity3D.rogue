@@ -1,0 +1,36 @@
+class Entity3D : Entity
+  PROPERTIES
+    position : XYZ
+    size     : XYZ
+    scale    = XYZ(1,1,1)
+    rotation = Quaternion()
+    anchor   = Anchor.CENTER : Anchor
+
+  METHODS
+    method set_position( @position )
+      noAction
+
+    method set_position( pos:XY )
+      @position = XYZ( pos, @position.z )
+
+    method set_rotation( @rotation )
+      noAction
+
+    method set_rotation( z:Radians )
+      local radians = rotation->RadiansXYZ
+      radians.z = z
+      rotation = Quaternion( radians )
+
+    method set_scale( @scale )
+      noAction
+
+    method set_scale( s:XY )
+      @scale = XYZ( s, @scale.z )
+
+    method set_size( @size )
+      noAction
+
+    method set_size( sz:XY )
+      @size = XYZ( sz, @size.z )
+
+endClass

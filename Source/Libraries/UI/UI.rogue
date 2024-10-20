@@ -1,18 +1,21 @@
 library UI
 
-$include Entity
-$include UI/Event
-$include UI/LayoutMode
-$include UI/ParameterNames
+uses Collection/Node
+uses Control
+uses Geometry
+
 $include UI/Border
 $include UI/Component
 $include UI/ComponentSizeInfo
+$include UI/Event
 $include UI/Font
-$include UI/Label
-$include UI/List
-$include UI/MetaComponent
 $include UI/HBox
 $include UI/HFlow
+$include UI/Label
+$include UI/LayoutMode
+$include UI/List
+$include UI/MetaComponent
+$include UI/ParameterNames
 $include UI/ScrollView
 $include UI/Text
 $include UI/TextBox

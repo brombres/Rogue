@@ -2,7 +2,9 @@ library UI
 
 class Component : Entity
   PROPERTIES
-    anchor         = Anchor.TOP_LEFT : Anchor
+    position       : XY
+    size           : XY
+
     alignment      : Anchor?
     layout_mode    : LayoutModeXY
     layout_size    : XY
@@ -62,6 +64,9 @@ class Component : Entity
     method on_release_pointer_focus
       noAction
 
+    method on_update
+      noAction
+
     method on_update_size
       noAction
 
@@ -111,7 +116,8 @@ class Component : Entity
       return parent->(as Component)?.bg_color
 
     method bounds->Box
-      return Box( position.xy, size.xy ).relative_to( anchor )
+      return Box( position, size )
+      #return Box( position, size ).relative_to( anchor )
 
     method capture_pointer_focus->Logical
       if (UI.pointer_focus and UI.pointer_focus is not this) return false

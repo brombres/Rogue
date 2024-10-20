@@ -3,19 +3,18 @@ uses Control
 uses Geometry
 uses Math/Quaternion
 
-$include Entity/EntityAttributes
+$include Entity/Entity3D
+$include Entity/Attributes
 
 class Entity : Node<<Entity>>
+  GLOBAL PROPERTIES
+    next_id = 1
+
   PROPERTIES
     name       : String
     id         : Int
-    attributes : EntityAttributes
+    attributes : Attributes
     actions    : Action
-    position   : XYZ
-    size       : XYZ
-    scale      = XYZ(1,1,1)
-    rotation   = Quaternion()
-    anchor     = Anchor.CENTER : Anchor
 
   METHODS
     method init
@@ -28,37 +27,8 @@ class Entity : Node<<Entity>>
       id = next_id
       ++next_id
 
-    #method on_draw
-    #  noAction
-
     method on_update
       noAction
-
-    method set_position( @position )
-      noAction
-
-    method set_position( pos:XY )
-      @position = XYZ( pos, @position.z )
-
-    method set_rotation( @rotation )
-      noAction
-
-    method set_rotation( z:Radians )
-      local radians = rotation->RadiansXYZ
-      radians.z = z
-      rotation = Quaternion( radians )
-
-    method set_scale( @scale )
-      noAction
-
-    method set_scale( s:XY )
-      @scale = XYZ( s, @scale.z )
-
-    method set_size( @size )
-      noAction
-
-    method set_size( sz:XY )
-      @size = XYZ( sz, @size.z )
 
     method to->String
       if (@name) return @name
@@ -67,8 +37,5 @@ class Entity : Node<<Entity>>
     method update
       actions = actions?.updated
       on_update
-
-  GLOBAL PROPERTIES
-    next_id = 1
 
 endClass

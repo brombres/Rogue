@@ -1,4 +1,4 @@
-enum EntityAttributes [bitflags]
+enum Attributes [bitflags]
   CATEGORIES
     HIDDEN
     INPUT_DISABLED
