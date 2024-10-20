@@ -40,6 +40,8 @@ class UI : Component [singleton]
 
     dt : Real # interval since last update, in seconds
 
+    snap_to_pixel_coordinates = true
+
   METHODS
     method init_object
       UI = this

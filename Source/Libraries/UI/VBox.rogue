@@ -59,6 +59,8 @@ class VBox : Component
             endIf
           endForEach
 
+          local snap = UI.snap_to_pixel_coordinates
+
           block
             local repeat = true
             while (repeat)
@@ -67,7 +69,10 @@ class VBox : Component
               local remaining_count = info_list.count
               forEach (info in rewriter=info_list.rewriter)
                 local h = remaining_height
-                if (remaining_count > 1) h = (h * info.component.weight.y / total_weight).floor
+                if (remaining_count > 1)
+                  h = h * info.component.weight.y / total_weight
+                  if (snap) h .= floor
+                endIf
                 if (info.max_size.y < h)
                   # Component's max size falls short of its share. Let it keep its max size and
                   # remove it from the list by not rewriting it.
@@ -95,7 +100,10 @@ class VBox : Component
             local remaining_count = info_list.count
             forEach (info in info_list)
               local h = remaining_height
-              if (remaining_count > 1) h = (h * info.component.weight.y / total_weight).floor
+              if (remaining_count > 1)
+                h = h * info.component.weight.y / total_weight
+                if (snap) h .= floor
+              endIf
               info.component.size.y = h
               remaining_height -= h
               --remaining_count
