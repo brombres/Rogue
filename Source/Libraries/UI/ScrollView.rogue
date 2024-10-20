@@ -1,15 +1,29 @@
 library UI
 
 class ScrollView : VBox
+  PROPERTIES
+    velocity               : XY
+    decay                  : XY
+
+    tracks_bottom          = false
+
+    active_scroll          = false
+    allow_momentum_scroll  = true
+    allow_overscroll       = true
+    clamp_to_bounds        = true
+
+    scroll_rate = ScrollRate( default_scroll_rate )
+
+    is_pressed  = false
+    is_dragging = false
+    drag_time   = Timer()
+    drag_start  : XY
+    drag_pos    : XY
+    drag_deltas = DragDelta[]
+
   METHODS
     method init_object
       alignment = Anchor.TOP_LEFT
-
-    method on( e:ScrollEvent )
-      if local content = first_child_component
-        content.display_offset -= e.delta
-        e.consume
-      endIf
 
     method bottom_offset->Real
       # Result will be negative or zero.
@@ -18,6 +32,10 @@ class ScrollView : VBox
       else
         return 0
       endIf
+
+    method default_scroll_rate->Real
+      if (UI instanceOf ConsoleUI) return 3
+      else                         return 5
 
     method left_offset->Real
       return 0
@@ -30,7 +48,257 @@ class ScrollView : VBox
         return 0
       endIf
 
+    method on( e:PointerEvent )
+      if (e.is_press)
+        if (not is_dragging and contains(e))
+          if (capture_pointer_focus)
+            actions = null
+            decay = 0.10   # halt any scrolling going on
+            is_pressed = true
+            drag_time.restart
+            drag_pos = e.position
+            drag_start = drag_pos
+            e.consume
+            return
+          endIf
+        endIf
+
+      elseIf (e.is_move)
+        if (is_dragging)
+          actions = null
+          local drag_delta = (drag_pos - e.position).yv
+          drag_deltas.add( DragDelta(drag_delta) )
+          if (drag_deltas.count > 10) drag_deltas.remove_first
+          drag_pos = e.position
+          scroll( drag_delta )
+          e.consume
+          return
+        elseIf (is_pressed)
+          actions = null
+          if (e.position.distance_to(drag_pos) >= UI.drag_threshold)
+            is_dragging = true
+            drag_deltas.clear
+            drag_pos = e.position
+            e.consume
+            return
+          endIf
+        else
+          # Pass move event to children
+          if local first_child_component = first_child_component
+            first_child_component.dispatch( e )
+            return
+          endIf
+        endIf
+
+      elseIf (e.is_release)
+        is_pressed = false
+        release_pointer_focus
+        if (is_dragging)
+          actions = null
+          is_dragging = false
+          decay = 0.10
+          if (drag_deltas.count)
+            local cur_time = System.execution_time
+            local sum = XY.zero
+            local n = 0
+            forEach (delta in drag_deltas)
+              if ((cur_time - delta.time) <= 0.10)
+                sum += delta.value
+                ++n
+              endIf
+            endForEach
+            local avg = sum / n
+            if (avg.y.abs >= UI.drag_threshold)
+              decay = 0.96
+              velocity -= avg.yv
+            endIf
+          endIf
+          e.consume
+          return
+        else
+          decay = 0.10
+          if (velocity.abs.max < 1)
+            # We pressed and released content without dragging it.  Send a press/release event
+            # to subcomponents.
+            local e_press = e.cloned.[ type=PointerEvent.PRESS ]
+            on_select( e_press, e )
+            return
+          endIf
+        endIf
+      endIf
+
+    method on( e:ScrollEvent )
+      actions = null
+
+      if (not allow_momentum_scroll)
+        if (e.is_momentum)
+          if (not e.in_progress) allow_momentum_scroll = true
+          return
+        endIf
+      endIf
+
+      if (Pointer.position and display_bounds.contains(Pointer.position.value))
+        scroll( scroll_rate.add(e).yv, &clamp=not e.is_precise )
+        if (e.in_progress)
+          if (e.is_momentum)
+            if (content_offset.y > top_offset or content_offset.y < bottom_offset)
+              allow_momentum_scroll = false  # ran OOB
+            endIf
+          else
+            active_scroll = true
+          endIf
+        else
+          allow_momentum_scroll = true
+          active_scroll = false
+        endIf
+      else
+        # Mouse may have moved out while still scrolling
+        active_scroll = false
+        allow_momentum_scroll = true
+      endIf
+
+    method on_begin_layout
+      if (not tracks_bottom and bottom_offset)
+        tracks_bottom = (content_offset.y <= bottom_offset)
+      endIf
+
+    method on_end_layout
+      if (tracks_bottom)
+        content_offset = XY( 0, bottom_offset )
+      endIf
+
+    method on_select( e_press:PointerEvent, e_release:PointerEvent )
+      # UIScrollView consumes any original press event in preparation for dragging.
+      # If a release comes without turning into a drag, this pair of press/release events
+      # should be dispatched to the appropriate subcomponent.
+
+      local subcomponent = find( e_press.position )
+      # Any subcomponents that could respond to this event?
+
+      localize first_child_component
+      if (first_child_component and subcomponent)
+        first_child_component.dispatch( e_press )
+        # This may capture pointer focus
+
+        if (UI.pointer_focus)
+          if (not UI.pointer_focus.attributes.hidden and not UI.pointer_focus.attributes.input_disabled)
+            UI.pointer_focus.handle( e_release )
+          else
+            UI.pointer_focus.release_pointer_focus
+            first_child_component.dispatch( e_release )
+          endIf
+        else
+          first_child_component.dispatch( e_release )
+        endIf
+
+      else
+        on_select_background( e_press.position )
+
+      endIf
+
+    method on_select_background( position:XY )
+      noAction
+
+    method on_update
+      local ticks = (UI.dt * 60)->Int.clamped_low(1)
+      loop (ticks) on_update_tick
+
+    method on_update_tick
+      if (not is_dragging and not active_scroll)
+        if (not velocity.is_zero)
+          content_offset = (content_offset + velocity).ceiling
+          velocity *= decay
+          if (velocity.x.abs < 0.1) velocity .= yv
+          if (velocity.y.abs < 0.1) velocity .= xv
+        endIf
+
+        if (clamp_to_bounds)
+          local bottom_offset = bottom_offset
+          local _offset = content_offset
+          if (_offset.y > 0)
+            if (_offset.abs.y < 1)
+              content_offset = _offset.xv
+            else
+              content_offset = (_offset * XY(1,0.8)).floor
+              decay = XY(0,0.5)
+            endIf
+          elseIf (_offset.y < bottom_offset)
+            local delta = (_offset.y - bottom_offset)
+            if (delta.abs < 1)
+              content_offset = XY( _offset.x, bottom_offset )
+            else
+              content_offset = XY( _offset.x, (bottom_offset + delta * 0.8) ).ceiling
+              decay = XY(0,0.5)
+            endIf
+          endIf
+        endIf
+      endIf
+
+    method scroll( delta:XY, &clamp )
+      if (delta.abs.max < 0.1) return
+
+      delta.y = -delta.y
+
+      localize content_offset
+      localize bottom_offset
+      local target = (content_offset + delta.yv).ceiling
+      if (target.y > 0 and delta.y > 0)
+        # Scrolling up beyond top
+        local excess_p = ((4*target.y) / size.y.or_larger(1)).clamped_high(1)
+        local in_bounds_portion = (delta * (1.0 - excess_p)).floor
+        local oob_portion = delta.yv - in_bounds_portion
+        local oob_limiter = (1.0 - excess_p) ^ 8
+        local new_content_offset = content_offset + in_bounds_portion + oob_portion*oob_limiter
+        set_scroll_position( new_content_offset, &=clamp )
+        return
+      elseIf (target.y < bottom_offset and delta.y < 0)
+        # Scrolling down beyond bottom
+        local excess_p  = ((-4*(target.y - bottom_offset)) / size.y.or_larger(1)).clamped_high(1)
+        local in_bounds_portion = (delta * (1.0 - excess_p)).floor
+        local oob_portion = delta.yv - in_bounds_portion
+        local oob_limiter = (1.0 - excess_p) ^ 8
+        local new_content_offset = content_offset + in_bounds_portion + oob_portion*oob_limiter
+        set_scroll_position( new_content_offset, &=clamp )
+        return
+      endIf
+
+      set_scroll_position( target, &=clamp )
+
+    method scroll_position->XY
+      return content_offset
+
+    method scroll_to( offset:XY, duration=0.5:Real )
+      actions = null
+      if (offset != content_offset)
+        if (duration)
+          local view = this
+          local start_pos = content_offset
+          local delta = offset - start_pos
+          actions = Action(
+          (p) => view.scroll_position = start_pos + delta * p,
+            &=duration,
+            ProgressFn.QUADRATIC
+          )
+        else
+          scroll_position = offset
+        endIf
+      endIf
+
+    method set_scroll_position( offset:XY, &clamp )
+      offset .= ceiling
+
+      if (offset == content_offset) return
+      if (not allow_overscroll) clamp = true
+      if (not clamp_to_bounds) clamp = false
+
+      local bottom_offset = bottom_offset
+      if (clamp) offset = offset.clamped_high( XY.zero ).clamped_low( XY(0,bottom_offset) )
+      tracks_bottom = (offset.y <= bottom_offset)
+      content_offset = offset
+
     method top_offset->Real
       return 0
 
 endClass
+
+class DragDelta( value:XY, time=System.execution_time:Real ) [compound];

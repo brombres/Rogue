@@ -1,5 +1,5 @@
 uses Collection/Node
-uses Control/Action
+uses Control
 uses Geometry
 uses Math/Quaternion
 

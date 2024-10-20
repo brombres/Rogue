@@ -14,7 +14,7 @@ class ConsoleUI : UI
 
   PROPERTIES
     last_update_ms       : Int
-    mouse_position       : IntXY?
+    mouse_position       : XY?
     button_pressed       = Dim<<Logical>>(2)
     is_running           : Logical
 
@@ -27,7 +27,7 @@ class ConsoleUI : UI
     #method init
     #  prior.init( Console.size )
 
-    #method init( size:IntXY )
+    #method init( size:XY )
     #  prior.init( size )
 
     #method init( bounds:Box )
@@ -40,7 +40,7 @@ class ConsoleUI : UI
       #  underline_font = default_font.cloned.[ underline=true ]
       #endIf
 
-    method drag_threshold->Int
+    method drag_threshold->Real [override]
       return 1
 
     method draw
@@ -71,10 +71,10 @@ class ConsoleUI : UI
 
     method handle( type:Int, index:Int, e:ConsoleEvent )
       # Only called when e is a pointer or scroll event
-      local pos = IntXY( e.x, e.y )
+      local pos = XY( e.x, e.y )
       Pointer.position = pos
       Pointer.positions.[clear].add( pos )
-      handle( PointerEvent(type,pos,IntXY(0,0),index) )
+      handle( PointerEvent(type,pos,XY(0,0),index) )
 
     method keep_active( seconds:Real )
       keep_active_timer.init( seconds.or_larger(keep_active_timer.duration) )
@@ -160,10 +160,10 @@ class ConsoleUI : UI
             handle( PointerEvent.MOVE, 0, event )
 
           case ConsoleEventType.SCROLL_UP
-            handle( ScrollEvent(IntXY(0,-1)) )
+            handle( ScrollEvent(XY(0,-1)) )
 
           case ConsoleEventType.SCROLL_DOWN
-            handle( ScrollEvent(IntXY(0, 1)) )
+            handle( ScrollEvent(XY(0, 1)) )
 
         endWhich
       endLoop
@@ -208,9 +208,8 @@ class ConsoleUI : UI
       endIf
 
     method update
-      #local cur_ms = System.execution_time_ms
-      #dt = ((cur_ms - last_update_ms) / 1000.0).clamped_high(1.0)
-      #last_update_ms = cur_ms
-
+      local cur_ms = System.execution_time_ms
+      dt = ((cur_ms - last_update_ms) / 1000.0).clamped_high(1.0)
+      last_update_ms = cur_ms
       prior.update
 endClass

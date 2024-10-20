@@ -167,8 +167,8 @@ class PointerEvent : Event
 
   PROPERTIES
     type      : Int
-    position  : IntXY
-    delta     : IntXY
+    position  : XY
+    delta     : XY
     index     : Int
     cancelled : Logical
     # When a touch event in progress is interrupted then a RELEASE event is sent
@@ -229,10 +229,10 @@ class PointerEvent : Event
     method is_release_middle->Logical
       return is_release( 2 )
 
-    method operator+( offset:IntXY )->PointerEvent
+    method operator+( offset:XY )->PointerEvent
       return PointerEvent( type, position+offset, delta, index, cancelled )
 
-    method operator-( offset:IntXY )->PointerEvent
+    method operator-( offset:XY )->PointerEvent
       return this + (-offset)
 
     method to->String
@@ -255,8 +255,8 @@ endClass
 
 class ScrollEvent : Event
   PROPERTIES
-    delta         : IntXY
-    precise       : Logical
+    delta         : XY
+    is_precise    : Logical
       # True for Apple Magic Mouse and Trackpad, AKA supports gestures and momentum.
       # If this is true then is_progress and is_momentum are valid (and vice versa).
     in_progress   : Logical
@@ -267,10 +267,10 @@ class ScrollEvent : Event
     density       : Int
 
   METHODS
-    method init( delta, precise=false, in_progress=false, is_momentum=false, density=1 )
+    method init( delta, is_precise=false, in_progress=false, is_momentum=false, density=1 )
 
     method cloned->ScrollEvent
-      return ScrollEvent( delta, &=precise, &=in_progress, &=is_momentum, &=density ).[ init(this) ]
+      return ScrollEvent( delta, &=is_precise, &=in_progress, &=is_momentum, &=density ).[ init(this) ]
 
     method to->String
       local buffer = String().[ print("Scroll "), print( delta ) ]
@@ -289,30 +289,30 @@ class ScrollRate
   # Other OS or input device:
   # - Scales each scroll delta by 'base_scale' with no acceleration.
   PROPERTIES
-    base_scale     : Int
-    delta          : IntXY
+    base_scale     : Real
+    delta          : XY
     history_x      = ScrollEvent[]
     history_y      = ScrollEvent[]
     acceleration_x = 1.0
     acceleration_y = 1.0
 
   METHODS
-    method init( base_scale=5 )
+    method init( base_scale=5.0 )
 
-    method add( e:ScrollEvent )->IntXY
+    method add( e:ScrollEvent )->XY
       # Returns the scaled or accelerated scroll-delta.
       contingent
-        necessary (e.precise)
+        necessary (e.is_precise)
         necessary (not e.is_momentum)
 
-        delta = IntXY(
+        delta = XY(
           _process<<history_x,x,acceleration_x>>(e),
           _process<<history_y,y,acceleration_y>>(e)
         )
 
       unsatisfied
         delta = e.delta * base_scale
-        if (not e.precise) delta *= e.density
+        if (not e.is_precise) delta *= e.density
         history_x.clear
         history_y.clear
         acceleration_x = 1.0
@@ -322,7 +322,7 @@ class ScrollRate
 
       return delta
 
-    method _same_direction( v1:Real, v2:Real )->Logical
+    method .same_direction( v1:Real, v2:Real )->Logical
       if (v1 == 0 or v2 == 0) return true  # 0 matches either sign
       return not ((v1 > 0) xor (v2 > 0))
 
@@ -330,7 +330,7 @@ class ScrollRate
       while ($history.count and $history.first.timestamp < e.timestamp - 250) $history.remove_first
 
       local result = 0.0
-      if ($history.count and _same_direction($history.first.delta.$xy,e.delta.$xy))
+      if ($history.count and .same_direction($history.first.delta.$xy,e.delta.$xy))
         $history.add( e )
         result += (forEach in $history).delta.$xy
         result /= $history.count

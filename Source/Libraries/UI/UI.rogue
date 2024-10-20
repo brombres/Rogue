@@ -34,9 +34,14 @@ class UI : Component [singleton]
     needs_layout   = true
     needs_redraw   = true
 
+    dt : Real # interval since last update, in seconds
+
   METHODS
     method init_object
       UI = this
+
+    method drag_threshold->Real
+      return 16
 
     method draw [override]
       temporarily UI = this
@@ -136,9 +141,11 @@ class UI : Component [singleton]
         position = bounds.position
         if (needs_layout or bounds.size != size)
           needs_layout = false
-          update_size
+          begin_layout
+          update_size #FIXME: replace with begin_layout
           resolve_layout_size( bounds.size )
           perform_layout( position )
+          end_layout
         endIf
       endTemporarily
 
