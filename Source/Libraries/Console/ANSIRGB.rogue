@@ -19,9 +19,25 @@ class ANSIRGB( red:Real, green:Real, blue:Real ) [compound]
     method operator*( value:Real )->ANSIRGB
       return ANSIRGB( red*value, green*value, blue*value )
 
-    method to->ANSIColor
+    method to->ANSIColor( &c240, &c16, &g24, &g4 )
+      local mode : ANSIColorMode
+      if (c240)    mode = ANSIColorMode.COLOR_240
+      elseIf (c16) mode = ANSIColorMode.COLOR_16
+      elseIf (g24) mode = ANSIColorMode.GRAY_24
+      elseIf (g4)  mode = ANSIColorMode.GRAY_4
+      return this->ANSIColor( mode )
+
+    method to->ANSIColor( mode=ANSIColorMode.COLOR_240:ANSIColorMode )
       local r = Int( red*255 ).clamped( 0, 255 )
       local g = Int( green*255 ).clamped( 0, 255 )
       local b = Int( blue*255 ).clamped( 0, 255 )
-      return ANSIColors[ ANSIColorLookup[ ((r & 0xF0):<<:4) | (g & 0xF0) | ((b & 0xF0):>>>:4) ] ]
+      local rgb16 = ((r & 0xF0):<<:4) | (g & 0xF0) | ((b & 0xF0):>>>:4)
+      local index : Int
+      which (mode)
+        case ANSIColorMode.COLOR_240: index = ANSIColorLookupColor240[rgb16]
+        case ANSIColorMode.COLOR_16:  index = ANSIColorLookupColor16[rgb16]
+        case ANSIColorMode.GRAY_24:   index = ANSIColorLookupGray24[rgb16]
+        case ANSIColorMode.GRAY_4:    index = ANSIColorLookupGray4[rgb16]
+      endWhich
+      return ANSIColors[index]
 endClass

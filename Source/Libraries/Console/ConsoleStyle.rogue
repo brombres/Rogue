@@ -60,7 +60,7 @@ class ConsoleStyle [singleton]
     BG_WHITE         = 107
 
   METHODS
-    # $include Bitmap/Color to augment in the following methods:
+    # $include Graphics/Color to augment in the following methods:
     #   method bg_color( bg:Color, output=Global:PrintWriter )
     #   method colors( fg:Color, bg:Color, output=Global:PrintWriter )
     #   method fg_color( fg:Color, output=Global:PrintWriter )

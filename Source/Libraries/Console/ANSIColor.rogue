@@ -5,7 +5,18 @@ uses Graphics
 # https://stackoverflow.com/a/27165165/135791
 
 class ANSIColor( index:Int, color:Color ) [compound]
+  GLOBAL METHODS
+    method create( color:Color, mode=ANSIColorMode.COLOR_240:ANSIColorMode )->ANSIColor
+      return ANSIRGB( color )->ANSIColor( mode )
 endClass
+
+enum ANSIColorMode
+  UNDEFINED = -1
+  COLOR_240
+  COLOR_16
+  GRAY_24
+  GRAY_4
+endEnum
 
 class ANSIColors : ANSIColor[] [singleton]
   PROPERTIES
@@ -68,27 +79,21 @@ endClass
 
 
 class ANSIColorLookup : Byte[] [singleton]
-  DEFINITIONS
-    COLOR_240 = 0
-    COLOR_16  = 1
-    GRAY_24   = 2
-    GRAY_4    = 3
 
   PROPERTIES
-    color_mode = -1
+    color_mode = ANSIColorMode.UNDEFINED : ANSIColorMode
 
   METHODS
     method init
-      init( COLOR_240 )
+      init( ANSIColorMode.COLOR_240 )
 
-    method init( color_mode:Int )
+    method init( color_mode:ANSIColorMode )
       # color_mode
       #   COLOR_240, COLOR_16, GRAY_24, or GRAY_4
-      #   Windows is limited to COLOR_16 and GRAY_4
       prior.init( 16*16*16 )
       configure( color_mode )
 
-    method configure( color_mode:Int )
+    method configure( color_mode:ANSIColorMode )
       if (this.color_mode == color_mode) return
       this.color_mode = color_mode
 
@@ -99,11 +104,11 @@ class ANSIColorLookup : Byte[] [singleton]
 
       local palette = Int32[](240)  # indices into target_colors[]
       which (color_mode)
-        case GRAY_4
+        case ANSIColorMode.GRAY_4
           palette.[ add(0), add(7), add(8), add(15) ]
-        case COLOR_16
+        case ANSIColorMode.COLOR_16
           palette.add( forEach in 0..15 )
-        case GRAY_24
+        case ANSIColorMode.GRAY_24
           palette.add( forEach in 232..255 )
         others
           palette.add( forEach in 16..255 )
@@ -140,3 +145,26 @@ class ANSIColorLookup : Byte[] [singleton]
               |}
 endClass
 
+class ANSIColorLookupColor240 : ANSIColorLookup [singleton]
+  METHODS
+    method init
+      prior.init( ANSIColorMode.COLOR_240 )
+endClass
+
+class ANSIColorLookupColor16 : ANSIColorLookup [singleton]
+  METHODS
+    method init
+      prior.init( ANSIColorMode.COLOR_16 )
+endClass
+
+class ANSIColorLookupGray24 : ANSIColorLookup [singleton]
+  METHODS
+    method init
+      prior.init( ANSIColorMode.GRAY_24 )
+endClass
+
+class ANSIColorLookupGray4 : ANSIColorLookup [singleton]
+  METHODS
+    method init
+      prior.init( ANSIColorMode.GRAY_4 )
+endClass
