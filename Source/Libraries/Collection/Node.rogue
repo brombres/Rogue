@@ -200,8 +200,15 @@ class Node<<$ExtendedNodeType>> : IteratorPreferred
         cur = cur.next
       endLoop
 
+    method insert_previous( new_sibling:$ExtendedNodeType )
+      localize parent
+      assert parent
+      this.detach( &preserve_next )
+      parent.add( new_sibling )
+      parent.add( this->(as $ExtendedNodeType) )
+
     method iterator->NodeIterator<<$ExtendedNodeType>>
-      return NodeIterator<<$ExtendedNodeType>>( this->(as $ExtendedNodeType) )
+      return NodeIterator<<$ExtendedNodeType>>( first_child )
 
     method node_name->String
       return type_name
@@ -223,7 +230,7 @@ class Node<<$ExtendedNodeType>> : IteratorPreferred
       return null
 
     method remove( child:$ExtendedNodeType )->$ExtendedNodeType
-      child.detach
+      child?.detach
       return child
 
     method remove_at( index:Int )->$ExtendedNodeType
