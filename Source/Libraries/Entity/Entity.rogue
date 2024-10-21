@@ -1,0 +1,43 @@
+library Entity
+
+uses Collection/Node
+uses Control
+uses Geometry
+uses Math/Quaternion
+
+$include Entity/Entity3D
+$include Entity/Attributes
+
+class Entity : Node<<Entity>>
+  GLOBAL PROPERTIES
+    next_id = 1
+
+  PROPERTIES
+    name       : String
+    id         : Int
+    attributes : Attributes
+    actions    : Action
+
+  METHODS
+    method init
+      noAction
+
+    method init( name )
+      noAction
+
+    method init_object
+      id = next_id
+      ++next_id
+
+    method on_update
+      noAction
+
+    method to->String
+      if (@name) return @name
+      else       return type_name
+
+    method update
+      actions = actions?.updated
+      on_update
+
+endClass

@@ -2,8 +2,8 @@ library UI
 
 class Pointer [singleton]
   PROPERTIES
-    position  : IntXY?   # of most recently active press (may be still active)
-    positions = IntXY[]  # of active presses
+    position  : XY?   # of most recently active press (may be still active)
+    positions = XY[]  # of active presses
 
   METHODS
     method on( e:PointerEvent )
@@ -39,7 +39,7 @@ class Pointer [singleton]
 
       endIf
 
-    method closest_pointer_index( pos:IntXY )->Int?
+    method closest_pointer_index( pos:XY )->Int?
       which (positions.count)
         case 0
           return null

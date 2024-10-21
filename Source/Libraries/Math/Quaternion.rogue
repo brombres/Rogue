@@ -107,7 +107,6 @@ class Quaternion( x=0:Real, y=0:Real, z=0:Real, w=1.0:Real ) [compound]
       local c = from.cross( to ) * (1 / root)
       return Quaternion( c.x, c.y, c.z, root / 2 ).normalized
 
-
     method identity->Quaternion
       return Quaternion(0,0,0,1)
 
@@ -212,6 +211,11 @@ class Quaternion( x=0:Real, y=0:Real, z=0:Real, w=1.0:Real ) [compound]
       else
         return linear_tween( target,t )
       endIf
+
+      #{
+    method radians->RadiansXYZ
+      return this->RadiansXYZ
+      }#
 
     method rotated( by_angles:RadiansXYZ )->Quaternion
       return this * Quaternion(by_angles)

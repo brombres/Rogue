@@ -1,45 +1,45 @@
 library UI
 
-enum UIWidgetState
+enum WidgetState
   IDLE, TARGETED, PRESSED, DISABLED
 endEnum
 
-class UIWidget : UIComponent
+class Widget : Component
   PROPERTIES
-    widget_state       : UIWidgetState
+    widget_state       : WidgetState
     on_select_callback : Function
 
   METHODS
     method init
       prior.init
 
-    method init( size:IntXY )
+    method init( size:XY )
       prior.init( size )
 
-    method init( component:UIComponent )
+    method init( component:Component )
       prior.init( component )
 
     method init( label:String )
-      init( UILabel(label) )
+      init( Label(label) )
 
-    method init( label:String, font:UIFont )
-      init( UILabel(label,font) )
+    method init( label:Text )
+      init( Label(label,font) )
 
     method handle_select
       on_select
       if (on_select_callback) on_select_callback()
 
     method is_disabled->Logical
-      return (widget_state == UIWidgetState.DISABLED)
+      return (widget_state == WidgetState.DISABLED)
 
     method is_idle->Logical
-      return (widget_state == UIWidgetState.IDLE)
+      return (widget_state == WidgetState.IDLE)
 
     method is_pressed->Logical
-      return (widget_state == UIWidgetState.PRESSED)
+      return (widget_state == WidgetState.PRESSED)
 
     method is_targeted->Logical
-      return (widget_state == UIWidgetState.TARGETED)
+      return (widget_state == WidgetState.TARGETED)
 
     method on( e:PointerEvent )
       if (is_disabled) return
@@ -52,7 +52,7 @@ class UIWidget : UIComponent
       if (e.is_press)
         if (contains_e)
           if (capture_pointer_focus)
-            widget_state = UIWidgetState.PRESSED
+            widget_state = WidgetState.PRESSED
             e.consume
           endIf
         else
@@ -61,7 +61,7 @@ class UIWidget : UIComponent
       elseIf (e.is_release)
         if (contains_e and has_pointer_focus)
           prior.release_pointer_focus
-          widget_state = UIWidgetState.TARGETED
+          widget_state = WidgetState.TARGETED
           e.consume
           handle_select
         else
@@ -69,36 +69,41 @@ class UIWidget : UIComponent
         endIf
       elseIf (e.is_move)
         if (contains_e)
-          if (widget_state == UIWidgetState.IDLE)
-            widget_state = UIWidgetState.TARGETED
+          if (widget_state == WidgetState.IDLE)
+            widget_state = WidgetState.TARGETED
           endIf
         else
-          if (widget_state == UIWidgetState.TARGETED or widget_state == UIWidgetState.PRESSED)
-            widget_state = UIWidgetState.IDLE
+          if (widget_state == WidgetState.TARGETED or widget_state == WidgetState.PRESSED)
+            widget_state = WidgetState.IDLE
           endIf
         endIf
       endIf
 
     method on_select
 
-    method on_select( on_select_callback )
-
     method release_pointer_focus
-      if (UI.active.pointer_focus is this)
-        if (widget_state != UIWidgetState.DISABLED) widget_state = UIWidgetState.IDLE
+      if (has_pointer_focus)
+        if (widget_state != WidgetState.DISABLED) widget_state = WidgetState.IDLE
         request_redraw
       endIf
       prior.release_pointer_focus
 
     method set_disabled( setting:Logical )
       if (setting == is_disabled) return
-      widget_state = which{ setting:UIWidgetState.DISABLED || UIWidgetState.IDLE }
+      widget_state = which{ setting:WidgetState.DISABLED || WidgetState.IDLE }
 
     method set_is_visible( setting:Logical )
       if (setting == visible) return
       if (not setting) release_pointer_focus
       prior.set_is_visible( setting )
-      if (not is_disabled) widget_state = UIWidgetState.IDLE
+      if (not is_disabled) widget_state = WidgetState.IDLE
 
     method set_on_select( on_select_callback )
+
+    method set_label( text:String )
+      label = Text( text )
+
+    method set_label( component:Component )
+      content = component
+
 endClass

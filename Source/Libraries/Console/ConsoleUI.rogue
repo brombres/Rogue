@@ -1,21 +1,20 @@
-library UI
-
 uses UI [export]
 
 $include Console/ConsoleUIFont
 $include Console/ConsoleUICanvas
 
 uses Utility/Epilog
+uses Utility/Timer
 
 class ConsoleUI : UI
   GLOBAL PROPERTIES
-    bold_font      : ConsoleUIFont
-    inverse_font   : ConsoleUIFont
-    underline_font : ConsoleUIFont
+    #bold_font      : ConsoleUIFont
+    #inverse_font   : ConsoleUIFont
+    #underline_font : ConsoleUIFont
 
   PROPERTIES
     last_update_ms       : Int
-    mouse_position       : IntXY?
+    mouse_position       : XY?
     button_pressed       = Dim<<Logical>>(2)
     is_running           : Logical
 
@@ -25,32 +24,32 @@ class ConsoleUI : UI
     keep_active_timer    = Timer(1.0)
 
   METHODS
-    method init
-      prior.init( Console.size )
+    #method init
+    #  prior.init( Console.size )
 
-    method init( size:IntXY )
-      prior.init( size )
+    #method init( size:XY )
+    #  prior.init( size )
 
-    method init( bounds:IntBox )
-      prior.init( bounds )
+    #method init( bounds:Box )
+    #  prior.init( bounds )
 
     method init_object
-      if (not bold_font)
-        bold_font = default_font.cloned.[ bold=true ]
-        inverse_font = default_font.cloned.[ inverse=true ]
-        underline_font = default_font.cloned.[ underline=true ]
-      endIf
+      #if (not bold_font)
+      #  bold_font = default_font.cloned.[ bold=true ]
+      #  inverse_font = default_font.cloned.[ inverse=true ]
+      #  underline_font = default_font.cloned.[ underline=true ]
+      #endIf
 
-    method default_font->ConsoleUIFont
-      return ConsoleUIFont
-
-    method drag_threshold->Int
+    method drag_threshold->Real [override]
       return 1
 
     method draw
       prior.draw
       ConsoleUICanvas.display(0,0)
       Console.set_cursor( 0, bounds.y2 )
+
+    method font->ConsoleUIFont [override]
+      return ConsoleUIFont
 
     method handle( e:KeyEvent )
       keep_active( 0.5 )
@@ -72,17 +71,17 @@ class ConsoleUI : UI
 
     method handle( type:Int, index:Int, e:ConsoleEvent )
       # Only called when e is a pointer or scroll event
-      local pos = IntXY( e.x, e.y )
+      local pos = XY( e.x, e.y )
       Pointer.position = pos
       Pointer.positions.[clear].add( pos )
-      handle( PointerEvent(type,pos,IntXY(0,0),index) )
+      handle( PointerEvent(type,pos,XY(0,0),index) )
 
     method keep_active( seconds:Real )
       keep_active_timer.init( seconds.or_larger(keep_active_timer.duration) )
 
     method on_draw [override]
-      ConsoleUICanvas.resize( placement.size.x, placement.size.y )
-      ConsoleUICanvas.fill( '.' )
+      ConsoleUICanvas.resize( size.x, size.y )
+      ConsoleUICanvas.fill( ' ' )
 
     method on_resize
       Console.clear
@@ -161,10 +160,10 @@ class ConsoleUI : UI
             handle( PointerEvent.MOVE, 0, event )
 
           case ConsoleEventType.SCROLL_UP
-            handle( ScrollEvent(IntXY(0, 1)) )
+            handle( ScrollEvent(XY(0,-1)) )
 
           case ConsoleEventType.SCROLL_DOWN
-            handle( ScrollEvent(IntXY(0,-1)) )
+            handle( ScrollEvent(XY(0, 1)) )
 
         endWhich
       endLoop
@@ -178,7 +177,7 @@ class ConsoleUI : UI
       try
         is_running = true
         while (is_running)
-          update( IntBox(Console.width,Console.height) )
+          update( Box(Console.width,Console.height) )
           draw
 
           if (needs_redraw) keep_active( 1.0 )
@@ -202,12 +201,15 @@ class ConsoleUI : UI
       handle( PointerEvent.RELEASE, index, event )
 
     method set_clip( @clip )
-      ConsoleUICanvas.clip = @clip
+      if local clip_value = clip
+        ConsoleUICanvas.clip = clip_value->IntBox
+      else
+        ConsoleUICanvas.clip = null
+      endIf
 
     method update
       local cur_ms = System.execution_time_ms
       dt = ((cur_ms - last_update_ms) / 1000.0).clamped_high(1.0)
       last_update_ms = cur_ms
-
       prior.update
 endClass
