@@ -1,247 +1,157 @@
 library UI
 
 uses Collection/Node
-uses Control/Action  [export]
-uses Geometry        [export]
+uses Control
+uses Entity
+uses Geometry
 
-# These two macro includes must come first
-$include UI/EntityMacros
-$include UI/DynamicProperty
-
-$include UI/ConditionalEntityCollector
-$include UI/DirtyRegionTracker
-$include UI/Drawable2D
-$include UI/Entity
-$include UI/EntityCollector
+$include UI/Border
+$include UI/Component
+$include UI/ComponentSizeInfo
 $include UI/Event
-$include UI/Keyboard
-$include UI/Placement2D
-$include UI/Pointer
-$include UI/UIBorder
-$include UI/UIComponent
-$include UI/UIContent
-$include UI/UIFiller
-$include UI/UIFlowLayout
-$include UI/UIFont
-$include UI/UIHorizontalLayout
-$include UI/UILabel
-$include UI/UILayout
-$include UI/UIList
-$include UI/UIScrollView
-$include UI/UIScrollViewController
-$include UI/UISpacer
-$include UI/UIStackLayout
-$include UI/UITableLayout
-$include UI/UIText
-$include UI/UIVerticalLayout
-$include UI/UIWidget
+$include UI/Font
+$include UI/HBox
+$include UI/HFlow
+$include UI/Label
+$include UI/LayoutMode
+$include UI/MetaComponent
+$include UI/ParameterNames
+$include UI/Text
+$include UI/TextBox
+$include UI/TextStyle
+$include UI/VBox
+$include UI/VList
+$include UI/VScrollView
+$include UI/Widget
 
-class UI : UILayout
-  GLOBAL PROPERTIES
-    active : UI
-
+class UI : Component [singleton]
   PROPERTIES
-    default_font         : UIFont
+    default_font   : Font
 
-    dirty_region_tracker = SimpleDirtyRegionTracker() : DirtyRegionTracker
-    clip                 : IntBox?
-    dt                   = 1.0 / 60.0
+    clip           : Box?
 
-    pointer_focus        : Entity
-    keyboard_focus       : Entity
+    pointer_focus  : Component
+    keyboard_focus : Component
+
+    parameters     : Variant
+
+    needs_layout   = true
+    needs_redraw   = true
+
+    dt : Real # interval since last update, in seconds
+
+    snap_to_pixel_coordinates = true
 
   METHODS
     method init_object
-      activate
+      UI = this
 
-    method activate
-      active = this
-
-    method clear
-      prior.clear
-      clear_focus
-      dirty_region_tracker.clear
-      clip = null
-
-    method clear_focus
-      keyboard_focus = null
-      pointer_focus = null
-
-    method clip->IntBox?
-      return @clip
-
-    method contains( pos:IntXY )->Logical
-      return bounds.contains( pos )
-
-    method default_font->UIFont
-      if (@default_font) return @default_font
-      Console.error.println "[UI] No .default_font configured."
-      return null
-
-    method dirty_region_tracker->DirtyRegionTracker
-      if (@dirty_region_tracker) return @dirty_region_tracker
-      dirty_region_tracker = SimpleDirtyRegionTracker()
-      return @dirty_region_tracker
-
-    method drag_threshold->Int
+    method drag_threshold->Real
       return 16
 
-    method draw
-      activate
-      needs_redraw = false
+    method draw [override]
+      temporarily UI = this
+        prior.draw
+      endTemporarily
 
-      update_display_state
-
-      use drawables = collect<<Drawable2D>>( (drawable) => return drawable.needs_redraw, &all )
-        dirty_region_tracker.add( forEach in drawables )
-        (forEach in drawables).needs_redraw = false
-      endUse
-
-      use dirty_regions = dirty_region_tracker
-        if (dirty_regions.count)
-          dirty_region_tracker.clear
-
-          use drawables = collect<<Drawable2D>>
-            drawables.sort( $1.draw_order < $2.draw_order )
-
-            forEach (dirty_region in dirty_regions)
-              temporarily clip = dirty_region
-                on_draw
-                (forEach in drawables).draw
-                after_draw
-              endTemporarily
-            endForEach
-
-            (forEach in drawables).save_display_state
-            save_display_state
-          endUse
-        endIf
-      endUse
+    method font->Font
+      return default_font
 
     method handle( e:KeyEvent )
-      activate
+      temporarily UI = this
+        on( e )
+        if (e.is_consumed) return
 
-      on( e )
-      if (e.is_consumed) return
-
-      if (keyboard_focus)
-        if (not keyboard_focus.hidden and not keyboard_focus.input_disabled)
-          keyboard_focus.handle( e )
+        if (keyboard_focus)
+          if (not keyboard_focus.attributes.hidden and not keyboard_focus.attributes.input_disabled)
+            keyboard_focus.handle( e )
+          else
+            keyboard_focus.release_keyboard_focus
+            first_child_component?.dispatch( e )
+          endIf
         else
-          keyboard_focus.release_keyboard_focus
-          first_child?.dispatch( e )
+          first_child_component?.dispatch( e )
         endIf
-      else
-        first_child?.dispatch( e )
-      endIf
-      if (e.is_consumed) return
+        if (e.is_consumed) return
 
-      after( e )
+        on_end( e )
+      endTemporarily
 
     method handle( e:PointerEvent )
-      activate
+      temporarily UI = this
+        UI = this
 
-      on( e )
-      if (e.is_consumed) return
+        on( e )
+        if (e.is_consumed) return
 
-      if (pointer_focus)
-        if (not pointer_focus.hidden and not pointer_focus.input_disabled)
-          pointer_focus.handle( e )
+        if (pointer_focus)
+          if (not pointer_focus.attributes.hidden and not pointer_focus.attributes.input_disabled)
+            pointer_focus.handle( e )
+          else
+            pointer_focus.release_pointer_focus
+            first_child_component?.dispatch( e )
+          endIf
         else
-          pointer_focus.release_pointer_focus
-          first_child?.dispatch( e )
+          first_child_component?.dispatch( e )
         endIf
-      else
-        first_child?.dispatch( e )
-      endIf
-      if (e.is_consumed) return
+        if (e.is_consumed) return
 
-      after( e )
+        on_end( e )
+      endTemporarily
 
     method handle( e:ScrollEvent )
-      activate
+      temporarily UI = this
+        UI = this
 
-      on( e )
-      if (e.is_consumed) return
+        on( e )
+        if (e.is_consumed) return
 
-      if (pointer_focus)
-        pointer_focus.handle( e )
-      else
-        first_child?.dispatch( e )
-      endIf
-      if (e.is_consumed) return
+        if (pointer_focus)
+          pointer_focus.handle( e )
+        else
+          first_child_component?.dispatch( e )
+        endIf
+        if (e.is_consumed) return
 
-      after( e )
+        on_end( e )
+      endTemporarily
 
     method handle( e:TextEvent )
-      activate
+      temporarily UI = this
+        UI = this
 
-      on( e )
-      if (e.is_consumed) return
+        on( e )
+        if (e.is_consumed) return
 
-      if (keyboard_focus)
-        keyboard_focus.handle( e )
-      else
-        first_child?.dispatch( e )
-      endIf
-      if (e.is_consumed) return
+        if (keyboard_focus)
+          keyboard_focus.handle( e )
+        else
+          first_child_component?.dispatch( e )
+        endIf
+        if (e.is_consumed) return
 
-      after( e )
-
-    method needs_redraw->Logical
-      return prior.needs_redraw or dirty_region_tracker.count
-
-    method release_keyboard_focus
-      activate
-      if (keyboard_focus) keyboard_focus.release_pointer_focus
-
-    method release_pointer_focus
-      activate
-      if (pointer_focus) pointer_focus.release_pointer_focus
-
-    method request_redraw
-      request_redraw( bounds )
-
-    method request_redraw( bounds:IntBox )
-      dirty_region_tracker.add( bounds )
-
-    method set_bounds( value:IntBox )
-      localize bounds
-      if (value == bounds) return
-
-      dirty_region_tracker.add( bounds )
-      prior.set_bounds( value )
-      dirty_region_tracker.add( value )
-
-      needs_layout = true
-
-      on_resize
-
-      use drawables = collect<<Drawable2D>>( &all )
-        (forEach in drawables).on_resize
-        DynamicProperties.on_resize( forEach in drawables )
-        (forEach in drawables).after_resize
-      endUse
-
-      after_resize
+        on_end( e )
+      endTemporarily
 
     method set_clip( @clip )
+      noAction
 
-    method update
-      # Must update before layout so that new components created in update() can be
-      # measured in update_layout()
-      activate
-      prior.update
-      if (needs_layout) update_layout
+    method update( bounds:Box )
+      temporarily UI = this
+        update
+        update_layout( bounds )
+      endTemporarily
 
-    method update_display_state
-      prior.update_display_state
+    method update_layout( bounds:Box )
+      temporarily UI = this
+        position = bounds.position
+        if (needs_layout or bounds.size != size)
+          needs_layout = false
+          begin_layout
+          resolve_layout_size( bounds.size )
+          perform_layout( position )
+          end_layout
+        endIf
+      endTemporarily
 
-      use drawables = collect<<Drawable2D>>( &all )
-        (forEach in drawables).update_display_state
-      endUse
-
-    method update_layout
-      activate
-      prior.update_layout
 endClass

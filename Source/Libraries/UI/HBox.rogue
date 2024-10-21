@@ -1,0 +1,127 @@
+library UI
+
+class HBox : Component
+  METHODS
+    method minimum_layout_size( available_size:XY, &limited )->XY [override]
+      local w = 0.0
+      local h = 0.0
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+        forEach (component as Component in components)
+          local sz = component.resolve_layout_size( available_size, &=limited )
+          w += sz.x
+          h .= or_larger( sz.y )
+        endForEach
+      endUse
+      return XY(w,h)
+
+    method perform_layout( position )
+      local total_w = 0.0
+      local h = 0.0
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+
+        forEach (component in components)
+          local sz = component.size
+          total_w += sz.x
+          h .= or_larger( sz.y )
+        endForEach
+
+        local pos = XY.zero
+        pos.x = Box(XY(total_w,h)).positioned_within( content_bounds, alignment ).position.x
+        forEach (component in components)
+          component.perform_layout(
+            component.bounds.positioned_within( Box(pos,component.size.x,size.y), alignment ).position
+          )
+          pos.x += component.size.x
+        endForEach
+      endUse
+
+    method resolve_child_layout_sizes [override]
+      local available_size = content_size
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+
+        use info_list = WorkList<<ComponentSizeInfo>>
+
+          # Determine the min & max widths of all child components.
+          local total_weight : Real
+          forEach (component in components)
+            local min_size = component.resolve_layout_size( XY.zero, &limited )
+            local max_size = component.resolve_layout_size( available_size, &limited )
+            if (min_size == max_size)
+              available_size.x -= min_size.x
+            elseIf (component.weight)
+              total_weight += component.weight.x
+              info_list.add( ComponentSizeInfo(component, &=min_size, &=max_size) )
+            endIf
+          endForEach
+
+          local snap = UI.snap_to_pixel_coordinates
+
+          block
+            local repeat = true
+            while (repeat)
+              repeat = false
+              local remaining_width = available_size.x
+              local remaining_count = info_list.count
+              forEach (info in rewriter=info_list.rewriter)
+                local w = remaining_width
+                if (remaining_count > 1)
+                  w = w * info.component.weight.x / total_weight
+                  if (snap) w .= floor
+                endIf
+                if (info.max_size.x < w)
+                  # Component's max size falls short of its share. Let it keep its max size and
+                  # remove it from the list by not rewriting it.
+                  available_size.x -= info.max_size.x
+                  repeat = true
+                elseIf (info.min_size.x > w)
+                  # Component's min size exceeds its share. Assign it its min size and
+                  # remove it from the list by not rewriting it.
+                  info.component.size.x = info.min_size.x
+                  available_size.x -= info.min_size.x
+                  repeat = true
+                else
+                  # Component can size at least as big as its proportional share; keep it for the next pass.
+                  rewriter.write( info )
+                endIf
+                remaining_width -= w
+                --remaining_count
+              endForEach
+            endWhile
+          endBlock
+
+          # Assign remaining components their proportional share of available width.
+          block
+            local remaining_width = available_size.x
+            local remaining_count = info_list.count
+            forEach (info in info_list)
+              local w = remaining_width
+              if (remaining_count > 1)
+                w = w * info.component.weight.x / total_weight
+                if (snap) w .= floor
+              endIf
+              info.component.size.x = w
+              remaining_width -= w
+              --remaining_count
+            endForEach
+          endBlock
+        endUse
+
+        # All child components have their own size set or assigned; have them recursively
+        # determine their child sizes.
+        forEach (component in components)
+          component.resolve_child_layout_sizes
+        endForEach
+      endUse
+
+endClass
+
+class UIGeneratedHBox : HBox
+  # Special subclass for operator overrides
+  METHODS
+    method operator+( rhs:Component )->Component [override]
+      add( rhs )
+      return this
+endClass

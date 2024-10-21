@@ -1,0 +1,14 @@
+library UI
+
+enum LayoutMode
+  EXPAND_TO_FILL
+  ASPECT_FIT
+  ASPECT_FILL
+  PROPORTIONAL
+  SHRINK_TO_FIT
+  FIXED_SIZE
+  PARAMETER
+endEnum
+
+class LayoutModeXY( x:LayoutMode, y:LayoutMode ) [compound]
+endClass

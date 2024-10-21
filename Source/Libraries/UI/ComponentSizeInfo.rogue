@@ -1,0 +1,4 @@
+library UI
+
+class ComponentSizeInfo( component:Component, min_size:XY, max_size:XY ) [compound]
+endClass

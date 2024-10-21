@@ -1,0 +1,188 @@
+library UI
+
+class Text : Component
+  PROPERTIES
+    value : String
+    style : TextStyle
+
+  METHODS
+    method init( text:String )
+      if (text.count <= 1)
+        value = text
+        return
+      endIf
+
+      use processed = StringPool
+        local iterator = text.iterator
+        local prev = -1
+        local has_eol = false
+        loop
+          if local ch = iterator.read_another
+            if (ch == '\r') nextIteration
+            if (ch == '\n')     has_eol = true
+            elseIf (ch == '\t') ch = ' '
+            if (ch == ' ')
+              if (prev == ' ') nextIteration
+            endIf
+            processed.print( ch )
+            prev = ch
+          else
+            escapeLoop
+          endIf
+        endLoop
+
+        if (processed.count <= 1)
+          value = processed.cloned
+          return
+        endIf
+
+        local has_edge_spaces = processed[0] == ' ' or processed.last == ' '
+        if (not has_edge_spaces and not has_eol)
+          value = processed.cloned
+          return
+        endIf
+
+        use builder = StringPool
+          forEach (ch in processed)
+            if (ch == '\n')
+              .add_builder( builder )
+              add( Text('\n') )
+            elseIf (ch == ' ' and not builder.count)
+              # Leading space becomes its own element
+              add( Text(" ") )
+            else
+              builder.print ch
+            endIf
+          endForEach
+          .add_builder( builder )
+        endUse
+
+      endUse
+
+    method .add_builder( builder:String )
+      if (builder.count)
+        if (builder.last == ' ')
+          # Make a trailing space its own element
+          builder.remove_last
+          add( Text(builder.cloned) )
+          add( Text(" ") )
+        else
+          add( Text(builder.cloned) )
+        endIf
+        builder.clear
+      endIf
+
+    method bg_color->Color? [override]
+      return style?.bg_color || prior.bg_color
+
+    method color->Color? [override]
+      return style?.color || prior.color
+
+    method description->String
+      local result = ''Text($)''(value?.to_escaped_ascii||"")
+      if (count)
+        result.print '['
+        forEach (child at i in children)
+          if (i > 0) result.print ','
+          result.print child
+        endForEach
+        result.print ']'
+      endIf
+      return result
+
+    method display_position->XY
+      if (is_display_component) return prior.display_position
+      else                      return parent->(as Component)?.display_position
+
+    method find_h_split( max_width:Real )->Real? [override]
+      localize font
+      assert font
+      forEach (ch at i in value step -1)
+        if (ch == ' ' or ch == '\n' or ch == '\r' or ch == '\t')
+          if (i == 0) return null
+          local w = font.measure( value, 0, i )
+          if (w < max_width) return i
+        endIf
+      endForEach
+      return null
+
+    method font->Font
+      if (style and style.font)
+        return style.font.value
+      else
+        return prior.font
+      endIf
+
+    method is_br->Logical [override]
+      return value == "\n"
+
+    method is_space->Logical [override]
+      return value == " "
+
+    method is_display_component->Logical [override]
+      forEach (child as Component in children)
+        if (child.is_display_component) return false
+      endForEach
+      return true
+
+    method minimum_layout_size( available_size:XY, &limited )->XY [override]
+      if local font = font
+        return font.measure( value )
+      else
+        return XY.zero
+      endIf
+
+    method on_begin_layout [override]
+      if (not attributes.modified) return
+      attributes.modified = false
+
+      fixed_size =  font?.measure(value || "")
+      size = layout_size
+
+    method on_draw [override]
+      font?.draw( this )
+
+    method set_bg_color( color:Color? )
+      ensure<<style>>
+      style.bg_color = color
+
+    method set_color( color:Color? )
+      ensure<<style>>
+      style.color = color
+
+    method set_font( font:Font? )
+      ensure<<style>>
+      if (style.font != font)
+        style.font = font
+        attributes.modified = true
+      endIf
+
+    method set_value( @value )
+      attributes.modified = true
+
+    method split_h( split_position:Real, components:Component[], component_i:Int ) [override]
+      local left, center, right : Text
+
+      local split_i = split_position->Int
+      if (split_i) left = Text( value.substring(0, split_i) )
+      center = Text( value[split_i] )
+      if (split_i + 1 < value.count) right = Text( value.substring(split_i+1) )
+
+      if (left) add( left )
+      add( center )
+      if (right) add( right )
+
+      components.remove_at( component_i )
+      if (right) components.insert( right, component_i )
+      components.insert( center, component_i )
+      if (left) components.insert( left, component_i )
+
+      # Have the new child components set their size
+      if (left) left.on_begin_layout
+      center.on_begin_layout
+      if (right) right.on_begin_layout
+
+    method to->String
+      return description
+
+endClass

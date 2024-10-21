@@ -1,0 +1,492 @@
+library UI
+
+class Component : Entity
+  PROPERTIES
+    position       : XY
+    size           : XY
+
+    alignment      : Anchor?
+    layout_mode    : LayoutModeXY
+    layout_size    : XY
+    content_offset : XY
+    weight         = XY(1,1)
+    layout_params  : ParameterNames
+
+  METHODS # Overrides
+    method init
+      noAction
+
+    method init( child:Component )
+      add( child )
+
+    method init( _fixed_size:XY )
+      fixed_size( _fixed_size )
+
+    method on( e:KeyEvent )
+      noAction
+
+    method on( e:PointerEvent )
+      noAction
+
+    method on( e:ScrollEvent )
+      noAction
+
+    method on( e:TextEvent )
+      noAction
+
+    method on_begin_layout
+      noAction
+
+    method on_end( e:KeyEvent )
+      noAction
+
+    method on_end( e:PointerEvent )
+      noAction
+
+    method on_end( e:ScrollEvent )
+      noAction
+
+    method on_end( e:TextEvent )
+      noAction
+
+    method on_end_draw
+      noAction
+
+    method on_end_layout
+      noAction
+
+    method on_draw
+      noAction
+
+    method on_release_keyboard_focus
+      noAction
+
+    method on_release_pointer_focus
+      noAction
+
+    method on_update
+      noAction
+
+  METHODS # Public API
+    method align( @alignment )
+      noAction
+
+    method alignment->Anchor
+      if local result = @alignment
+        return result
+      else
+        if local parent_component = parent->(as Component)
+          return parent_component.alignment
+        else
+          return Anchor.CENTER
+        endIf
+      endIf
+
+    method begin_layout
+      on_begin_layout
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+        (forEach in components).begin_layout
+      endUse
+
+    method bg_color->Color?
+      return parent->(as Component)?.bg_color
+
+    method bounds->Box
+      return Box( position, size )
+      #return Box( position, size ).relative_to( anchor )
+
+    method capture_pointer_focus->Logical
+      if (UI.pointer_focus and UI.pointer_focus is not this) return false
+      UI.pointer_focus = this
+      return true
+
+    method collect_child_display_components( list:Component[] )
+      # Collect child components that need to be laid out, skipping any meta-components.
+      (forEach as Component in children).collect_display_components( list )
+
+    method collect_display_components( list:Component[] )
+      if (is_display_component)
+        list.add( this )
+      else
+        collect_child_display_components( list )
+      endIf
+
+    method color->Color?
+      return parent->(as Component)?.color
+
+    method contains( at_position:XY )->Logical
+      return find( at_position )?
+
+    method contains( e:PointerEvent )->Logical
+      return contains( e.position )
+
+    method content_bounds->Box
+      return Box( content_position, content_size )
+
+    method content_position->XY
+      return XY.zero
+
+    method content_size->XY
+      return size
+
+    method content_size_to_layout_size( content_size:XY )->XY
+      return content_size
+
+    $localMacro DISPATCH_EVENT
+      # Send input events to children in reverse order because the top layer comes last
+      next_component?.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+    $endLocalMacro
+
+    method dispatch( e:KeyEvent )
+      DISPATCH_EVENT
+
+    method dispatch( e:PointerEvent )
+      DISPATCH_EVENT
+
+    method dispatch( e:ScrollEvent )
+      DISPATCH_EVENT
+
+    method dispatch( e:TextEvent )
+      DISPATCH_EVENT
+
+    method display_bounds->Box
+      return Box( display_position, size )
+
+    method content_display_bounds->Box
+      return content_bounds + display_position
+
+    method display_position->XY
+      if local parent_component = parent->(as Component)
+        return parent_component.display_position + parent_component.content_offset + position
+      else
+        return position
+      endIf
+
+    method draw
+      on_draw
+
+      localize content_display_bounds
+      local new_clip = which{ UI.clip:UI.clip & content_display_bounds || content_display_bounds }
+      if (UI.snap_to_pixel_coordinates) new_clip .= floor
+      temporarily UI.clip = new_clip
+        use components = WorkList<<Component>>
+          collect_child_display_components( components )
+          (forEach in components).draw
+        endUse
+      endTemporarily
+
+      on_end_draw
+
+    method end_layout
+      on_end_layout
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+        (forEach in components).end_layout
+      endUse
+
+    method expand_to_fill
+      layout_mode = LayoutModeXY( LayoutMode.EXPAND_TO_FILL, LayoutMode.EXPAND_TO_FILL )
+
+    method expand_to_fill_height
+      layout_mode.y = LayoutMode.EXPAND_TO_FILL
+
+    method expand_to_fill_width
+      layout_mode.x = LayoutMode.EXPAND_TO_FILL
+
+    method find( at_position:XY )->Entity
+      if (not display_bounds.contains(at_position)) return null
+
+      forEach (child as Component in children)
+        if local result = child.find( at_position )
+          return result
+        endIf
+      endForEach
+
+      return this
+
+    method find_h_split( max_width:Real )->Real?
+      return null
+
+    method first_child_component->Component
+      forEach (child as Component in children)
+        return child
+      endForEach
+      return null
+
+    method font->Font
+      return parent->(as Component)?.font
+
+    method handle( e:KeyEvent )
+      if (attributes.hidden or attributes.input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      first_child_component?.dispatch( e )
+      if (e.is_consumed) return
+
+      on_end( e )
+
+    method handle( e:PointerEvent )
+      if (attributes.hidden or attributes.input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      first_child_component?.dispatch( e )
+      if (e.is_consumed) return
+
+      on_end( e )
+
+    method handle( e:ScrollEvent )
+      if (attributes.hidden or attributes.input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      first_child_component?.dispatch( e )
+      if (e.is_consumed) return
+
+      on_end( e )
+
+    method handle( e:TextEvent )
+      if (attributes.hidden or attributes.input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      first_child_component?.dispatch( e )
+      if (e.is_consumed) return
+
+      on_end( e )
+
+    method has_keyboard_focus->Logical
+      return UI.keyboard_focus is this
+
+    method has_pointer_focus->Logical
+      return UI.pointer_focus is this
+
+    method is_br->Logical
+      return false
+
+    method is_display_component->Logical
+      # If false, this component is considered an informational meta-component.
+      return true
+
+    method is_space->Logical
+      return false
+
+    method minimum_layout_size( available_size:XY, &limited )->XY
+      local sz : XY
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+        sz = sz.or_larger( (forEach in components).resolve_layout_size( available_size, &=limited ) )
+      endUse
+      return sz
+
+    method next_component->Component
+      local next_entity = next
+      local next_component = next_entity->(as Component)
+      while (next_entity and not next_component)
+        next_entity = next_entity.next
+        next_component = next_entity->(as Component)
+      endWhile
+      return next_component
+
+    method operator+( rhs:Component )->Component
+      return UIGeneratedHBox( this ).[ add(rhs) ]
+
+    method operator/( rhs:Component )->Component
+      return UIGeneratedVBox( this ).[ add(rhs) ]
+
+    method operator|( rhs:Component )->Component
+      return UIGeneratedStack( this ).[ add(rhs) ]
+
+    method perform_layout( position )
+      localize content_bounds
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+        forEach (component in components)
+          component.perform_layout( component.bounds.positioned_within(content_bounds,alignment).position )
+        endForEach
+      endUse
+
+    method release_keyboard_focus
+      if (UI.keyboard_focus is this)
+        UI.keyboard_focus = null
+        on_release_keyboard_focus
+      endIf
+
+    method release_pointer_focus
+      if (UI.pointer_focus is this)
+        UI.pointer_focus = null
+        on_release_pointer_focus
+      endIf
+
+    method request_layout
+      UI.needs_layout = true
+
+    method request_redraw
+      UI.needs_redraw = true
+
+    method resolve_layout_size( available_size:XY, &limited )->XY
+      local sz = available_size
+      local snap = UI.snap_to_pixel_coordinates
+
+      which (layout_mode.x)
+        case EXPAND_TO_FILL
+          noAction
+        case SHRINK_TO_FIT
+          noAction
+        case ASPECT_FIT
+          local fit_x = (available_size.y / (layout_size.y || 1.0)) * layout_size.x
+          if (snap) fit_x .= floor
+          if (layout_mode.y == LayoutMode.ASPECT_FILL or fit_x <= available_size.x)
+            sz.x = fit_x
+          else
+            sz.x = available_size.x
+          endIf
+        case ASPECT_FILL
+          if (layout_mode.y != LayoutMode.ASPECT_FIT)
+            local scale_x = (available_size.x / (layout_size.x || 1.0))
+            local scale_y = (available_size.y / (layout_size.y || 1.0))
+            sz.x = scale_x.or_larger(scale_y) * layout_size.x
+            if (snap) sz.x .= floor
+          endIf
+        case PROPORTIONAL
+          sz.x = available_size.x * layout_size.x
+          if (snap) sz.x .= floor
+        case FIXED_SIZE
+          sz.x = layout_size.x
+        #case PARAMETER
+      endWhich
+
+      which (layout_mode.y)
+        case EXPAND_TO_FILL
+          sz.y = available_size.y
+        case SHRINK_TO_FIT
+          noAction
+        case ASPECT_FIT
+          local fit_y = (available_size.x / (layout_size.x || 1.0)) * layout_size.y
+          if (snap) fit_y .= floor
+          if (layout_mode.x == LayoutMode.ASPECT_FILL or fit_y <= available_size.y)
+            sz.y = fit_y
+          else
+            sz.y = available_size.y
+          endIf
+        case ASPECT_FILL
+          if (layout_mode.x != LayoutMode.ASPECT_FIT)
+            local scale_x = (available_size.x / (layout_size.x || 1.0))
+            local scale_y = (available_size.y / (layout_size.y || 1.0))
+            sz.y = scale_x.or_larger(scale_y) * layout_size.y
+            if (snap) sz.y .= floor
+          endIf
+        case PROPORTIONAL
+          sz.y = available_size.y * layout_size.y
+          if (snap) sz.y .= floor
+        case FIXED_SIZE
+          sz.y = layout_size.y
+        #case PARAMETER
+      endWhich
+
+      size = sz
+
+      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT or layout_mode.y == LayoutMode.SHRINK_TO_FIT)
+        local min_size = minimum_layout_size( content_size, &=limited )
+        min_size = content_size_to_layout_size( min_size )
+        if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) sz.x = min_size.x
+        if (layout_mode.y == LayoutMode.SHRINK_TO_FIT) sz.y = min_size.y
+        size = sz
+      endIf
+
+      if (not limited)
+        resolve_child_layout_sizes
+      endIf
+
+      return sz
+
+    method resolve_child_layout_sizes
+      local available_size = content_size
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+        (forEach in components).resolve_layout_size( available_size )
+      endUse
+
+    method set_aspect_fill( layout_size )
+      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FILL, LayoutMode.ASPECT_FILL )
+
+    method set_aspect_fill_height( layout_size )
+      layout_mode.y = LayoutMode.ASPECT_FILL
+
+    method set_aspect_fill_width( layout_size )
+      layout_size.x = w
+      layout_mode.x = LayoutMode.ASPECT_FILL
+
+    method set_aspect_fit( layout_size )
+      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FIT, LayoutMode.ASPECT_FIT )
+
+    method set_aspect_fit_height( layout_size )
+      layout_mode.y = LayoutMode.ASPECT_FIT
+
+    method set_aspect_fit_width( layout_size )
+      layout_size.x = w
+      layout_mode.x = LayoutMode.ASPECT_FIT
+
+    method set_content( content:Component )
+      remove_children
+      add( content )
+
+    method set_fixed_size( layout_size )
+      layout_mode = LayoutModeXY( LayoutMode.FIXED_SIZE, LayoutMode.FIXED_SIZE )
+
+    method set_fixed_height( h:Real )
+      layout_size.y = h
+      layout_mode.y = LayoutMode.FIXED_SIZE
+
+    method set_fixed_width( w:Real )
+      layout_size.x = w
+      layout_mode.x = LayoutMode.FIXED_SIZE
+
+    method set_proportional_size( layout_size )
+      layout_mode = LayoutModeXY( LayoutMode.PROPORTIONAL, LayoutMode.PROPORTIONAL )
+
+    method set_proportional_height( h:Real )
+      layout_size.y = h
+      layout_mode.y = LayoutMode.PROPORTIONAL
+
+    method set_proportional_width( w:Real )
+      layout_size.x = w
+      layout_mode.x = LayoutMode.PROPORTIONAL
+
+    method set_structure_modified( setting:Logical ) [override]
+      prior.set_structure_modified( setting )
+      if (setting) request_layout
+
+    method shrink_to_fit
+      layout_mode = LayoutModeXY( LayoutMode.SHRINK_TO_FIT, LayoutMode.SHRINK_TO_FIT )
+
+    method shrink_to_fit_height
+      layout_mode.y = LayoutMode.SHRINK_TO_FIT
+
+    method shrink_to_fit_width
+      layout_mode.x = LayoutMode.SHRINK_TO_FIT
+
+    method split_h( split_position:Real, components:Component[], component_i:Int )
+      noAction
+
+    method update
+      prior.update
+      (forEach as Component in children).update
+
+endClass
+
+class UIGeneratedStack : Component
+  # Special subclass for operator overrides
+  METHODS
+    method operator|( rhs:Component )->Component [override]
+      add( rhs )
+      return this
+endClass

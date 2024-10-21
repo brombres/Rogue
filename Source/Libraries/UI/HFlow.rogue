@@ -1,0 +1,81 @@
+library UI
+
+class HFlow : Component
+  PROPERTIES
+    layout_finished : Logical
+    layout_cursor   : XY
+    max_width       : Real
+    line_height     : Real
+
+  METHODS
+    method minimum_layout_size( available_size:XY, &limited )->XY [override]
+      resolve_child_layout_sizes
+
+      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) size.x = available_size.x
+      perform_layout( XY.zero )
+
+      return layout_cursor
+
+    method on_begin_layout
+      layout_finished = false
+
+    method perform_layout( position )
+      if (layout_finished) return
+
+      localize content_position
+      layout_cursor = content_position
+      line_height   = 0
+
+      local available_width = content_size.x
+
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+
+        local i = 0
+        while (i < components.count)
+          local component = components[i]
+          line_height .= or_larger( component.size.y )
+
+          local w = component.size.x
+          local too_wide = (layout_cursor.x + w > available_width)
+          contingent
+            sufficient (component.is_br)
+            if (too_wide)
+              if local split_position = component.find_h_split( available_width - layout_cursor.x )
+                component.split_h( split_position, components, i )
+                nextIteration
+              endIf
+              sufficient (layout_cursor.x > content_position.x)
+            endIf
+            escapeContingent
+          satisfied
+            layout_cursor.x = content_position.x
+            layout_cursor.y += line_height
+            line_height = 0
+          endContingent
+
+          ++i
+          component.perform_layout( layout_cursor )
+          if (layout_cursor.x or not component.is_space)
+            layout_cursor.x += w
+            max_width   .= or_larger( layout_cursor.x )
+          endIf
+        endWhile
+
+      endUse
+
+      # Leave cursor as min size to enclose content
+      layout_cursor.x = max_width
+      layout_cursor.y += line_height
+
+      layout_finished = true
+
+    method resolve_child_layout_sizes [override]
+      if (layout_finished) return
+      local available_size = content_size
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+        (forEach in components).resolve_layout_size( available_size )
+      endUse
+
+endClass

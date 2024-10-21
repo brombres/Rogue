@@ -1,0 +1,7 @@
+library UI
+
+class MetaComponent : Component
+  METHODS
+    method is_display_component->Logical
+      return false
+endClass

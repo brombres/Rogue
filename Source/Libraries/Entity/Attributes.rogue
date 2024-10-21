@@ -1,0 +1,9 @@
+library Entity
+
+enum Attributes [bitflags]
+  CATEGORIES
+    HIDDEN
+    INPUT_DISABLED
+    MODIFIED
+endEnum
+
