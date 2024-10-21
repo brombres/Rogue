@@ -110,6 +110,9 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
 
     method to->IntXY [essential]
       return IntXY(x.floor,y.floor)
+
+    method xy->XY
+      return XY(x,y)
 endClass
 
 class DegreesXYZ( value:XYZ ) [compound]
