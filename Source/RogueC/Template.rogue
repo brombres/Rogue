@@ -2,13 +2,13 @@ library RogueC
 
 class Template
   PROPERTIES
-    t              : Token
+    t               : Token
     library_context : Library
-    name           : String
-    placeholders   : Token[]
-    tokens         = Token[]
-    attributes     : Attributes
-    doc_type       : Type
+    name            : String
+    placeholders    : Token[]
+    tokens          = Token[]
+    attributes      : Attributes
+    doc_type        : Type
 
   METHODS
     method init( t, library_context, name, placeholders, tokens, attributes:Int64 )

@@ -51,6 +51,7 @@ class Attribute
     REPLACE            = (Int64(1):<<:46)
     INTERNAL_ID        = (Int64(1):<<:47)
     DELETED            = (Int64(1):<<:48)
+    UNDOCUMENTED       = (Int64(1):<<:49)
 endClass
 
 class Attributes : CmdList
@@ -103,6 +104,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE<< is_replace,           Attribute.REPLACE >>
   ROGUE_ATTRIBUTE<< is_internal_id,       Attribute.INTERNAL_ID >>
   ROGUE_ATTRIBUTE<< deleted,              Attribute.DELETED >>
+  ROGUE_ATTRIBUTE<< undocumented,         Attribute.UNDOCUMENTED >>
 
   PROPERTIES
     flags : Int64
@@ -167,6 +169,9 @@ augment
 
     method AttributeFaux.attribute_flags->Int64
       return Attribute.FAUX
+
+    method AttributeUndocumented.attribute_flags->Int64
+      return Attribute.UNDOCUMENTED
 
     method AttributeInsert.attribute_flags->Int64
       return Attribute.INSERT

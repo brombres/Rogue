@@ -188,21 +188,22 @@ class State<<$ExtendedType>>
 
 endClass
 
-class StateWait<<$ExtendedType>>( duration ) : $ExtendedType;
+class StateWait<<$ExtendedType>>( duration ) : $ExtendedType [undocumented];
 
-class StateWaitFor<<$ExtendedType>>( condition:Function->Logical, duration=$ExtendedType.INDEFINITE ) : $ExtendedType
+class StateWaitFor<<$ExtendedType>>( condition:Function->Logical, duration=$ExtendedType.INDEFINITE )
+  : $ExtendedType [undocumented]
   METHODS
     method is_finished->Logical
       return condition()
 endClass
 
-class StateCall<<$ExtendedType>>( fn:Function(), duration=$ExtendedType.INSTANT ) : $ExtendedType
+class StateCall<<$ExtendedType>>( fn:Function(), duration=$ExtendedType.INSTANT ) : $ExtendedType [undocumented]
   METHODS
     method on_start
       fn()
 endClass
 
-class StateCallWithProgress<<$ExtendedType>>( fn:Function(Real), duration, progress_fn ) : $ExtendedType
+class StateCallWithProgress<<$ExtendedType>>( fn:Function(Real), duration, progress_fn ) : $ExtendedType [undocumented]
   METHODS
     method on_update
       fn( progress )

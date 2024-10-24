@@ -5265,3 +5265,15 @@ class OperandAnd : Binary
       return "OperandAnd($,$)" (%left,%right)
 
 endClass
+
+class AttributeIndirectDoc : Cmd
+  METHODS
+    method description->String
+      return "AttributeIndirectDoc"
+endClass
+
+class AttributeUndocumented : Cmd
+  METHODS
+    method description->String
+      return "AttributeUndocumented"
+endClass
