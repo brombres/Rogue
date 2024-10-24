@@ -171,7 +171,6 @@ class Library
     method instantiate_essential_and_api_types->Logical
       local any_new = false
       if (attributes.is_essential or Program.generate_doc)
-        # Instantiate one of each template with 0 type parameters
         temporarily Program.current_library = this
           local i = 0
           while (i < templates.count)
@@ -179,6 +178,7 @@ class Library
             if (not template.attributes.is_augment)
               local placeholders = template.placeholders
               if (placeholders.count == 0)
+                # Instantiate one of each template with 0 type parameters
                 if (not types.contains(template.name))
                   Type( template.t, this, template.name )
                   any_new = true
@@ -199,7 +199,8 @@ class Library
                   local data_type = Program.default_library.create_placeholder_data_type( placeholders[0] ).type
                   template.doc_type = Type( template.t, data_type, &optional )
                   any_new = true
-                else
+                elseIf (not template.attributes.undocumented)
+                  # Create a dummy placeholder datatype and instantiate template.
                   local args = TemplateArgs( template.t )
                   forEach (placeholder_t in placeholders)
                     placeholder_t = Program.default_library.create_placeholder_data_type( placeholder_t ).t

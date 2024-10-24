@@ -6,16 +6,17 @@ $include "ParserCore.rogue"
 
 class Parser : ParserCore, Poolable
   PROPERTIES
-    processed_tokens      : Token[]
-    marked_token          : Token
-    token_buffer          = Token[]
-    inserted_tokens       = Token[]
-    id_start_stack        = Int[]
-    string_start_stack    = Int[]
-    collecting_templates  = false
-    _attribute_no_include = false
-    _attribute_essential  = false
-    is_api                = false
+    processed_tokens        : Token[]
+    marked_token            : Token
+    token_buffer            = Token[]
+    inserted_tokens         = Token[]
+    id_start_stack          = Int[]
+    string_start_stack      = Int[]
+    collecting_templates    = false
+    _attribute_no_include   = false
+    _attribute_undocumented = false
+    _attribute_essential    = false
+    is_api                  = false
 
     augment_t             : Token
     augment_context_name  : String
@@ -65,6 +66,7 @@ class Parser : ParserCore, Poolable
       collecting_templates  = false
       _attribute_no_include = false
       _attribute_essential  = false
+      _attribute_undocumented = false
 
       generic_fn_args_depth = 0
       generic_fn_args_used  = 0
@@ -376,6 +378,10 @@ class Parser : ParserCore, Poolable
 
     method class_attribute_essential->Int
       _attribute_essential = true
+      return 0
+
+    method class_attribute_undocumented->Int
+      _attribute_undocumented = true
       return 0
 
     method create_definition->Int
@@ -702,8 +708,8 @@ class Parser : ParserCore, Poolable
       local attributes = _cmd_stack.remove_last->(as Attributes)
       local path = _cmd_stack.remove_last
       if (collecting_templates)
-        local m = Program.get_library( path.t, path->String.replacing("/","::") )
-        Program.current_library.uses_library( m, &is_exported=attributes.is_exported )
+        local lib = Program.get_library( path.t, path->String.replacing("/","::") )
+        Program.current_library.uses_library( lib, &is_exported=attributes.is_exported )
       endIf
       return 0
 
@@ -723,6 +729,8 @@ class Parser : ParserCore, Poolable
       local attributes : Int64
       if (_attribute_essential) attributes |= Attribute.ESSENTIAL
       _attribute_essential = false
+      if (_attribute_undocumented) attributes |= Attribute.UNDOCUMENTED
+      _attribute_undocumented = false
 
       if (not collecting_templates) return null
 
@@ -747,9 +755,9 @@ class Parser : ParserCore, Poolable
         tokens.discard( 0, 2 )   # remove "class Name"
       endIf
 
-      local m = Program.current_library
+      local lib = Program.current_library
       local extended_name = "$<<$>>"(name,placeholders.count)
-      if (m.templates[extended_name])
+      if (lib.templates[extended_name])
         if (placeholders.count)
           throw tokens.first.error( "A $-parameter template '$' already exists."(placeholders.count,name) )
         else
@@ -758,8 +766,8 @@ class Parser : ParserCore, Poolable
       endIf
 
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
-      local result = Template( class_t, m, name, placeholders, tokens, attributes )
-      m.templates[extended_name] = result
+      local result = Template( class_t, lib, name, placeholders, tokens, attributes )
+      lib.templates[extended_name] = result
       return result
 
     method on_parsed_subclass->Int
@@ -771,7 +779,7 @@ class Parser : ParserCore, Poolable
       local i2 = _position - 1
       local class_t = _tokens[i1]  # 'subclass'
 
-      local m = Program.current_library
+      local lib = Program.current_library
       local hash = "$:$:$" (File(class_t.filepath).abs,class_t.line,class_t.column)
 
       if (collecting_templates)
@@ -783,12 +791,12 @@ class Parser : ParserCore, Poolable
 
         local attributes = Attribute.OMIT_DOC
         if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
-        local result = Template( class_t, m, name, Token[], tokens, attributes )
-        m.templates["$<<0>>"(name)] = result
+        local result = Template( class_t, lib, name, Token[], tokens, attributes )
+        lib.templates["$<<0>>"(name)] = result
 
       else
         local name = Program.anonymous_class_names[ hash ]
-        local template = m.templates["$<<0>>"(name)]
+        local template = lib.templates["$<<0>>"(name)]
         local tokens = template.tokens
 
         tokens.insert( class_t.cloned(TokenType.EOL,"") )
@@ -801,7 +809,7 @@ class Parser : ParserCore, Poolable
           block access = access->(as Access)
             template.name = access.name + template.name
             name = template.name
-            m.templates["$<<0>>"(name)] = template
+            lib.templates["$<<0>>"(name)] = template
             tokens.insert( class_t.cloned(TokenType.IDENTIFIER,access.name) )
             tokens.insert( class_t.cloned(TokenType.SYMBOL_COLON) )
             access.name = name
@@ -812,12 +820,12 @@ class Parser : ParserCore, Poolable
         elseIf (access instanceOf TemplatedAccess)
           block access = access->(as TemplatedAccess)
             local type_template_name = "$<<$>>"(access.name,access.type_args.count)
-            local type_template = m.find_template( access.t, type_template_name, access.name, &extended_search )
+            local type_template = lib.find_template( access.t, type_template_name, access.name, &extended_search )
             local of_type : Type
             if (type_template)
               of_type = Type( access.t,type_template,access.type_args )
             else
-              throw class_t.error( "Reference to undefined type '$::$'."(m,access.type_args->String(access.name)) )
+              throw class_t.error( "Reference to undefined type '$::$'."(lib,access.type_args->String(access.name)) )
             endIf
             forEach (t in of_type.name_tokens step -1)
               tokens.insert( t )

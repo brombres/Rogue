@@ -1221,11 +1221,17 @@ parser
     call class_attribute_essential
     produce AttributeEssential
   endIf
-  syntaxError "Illegal class attribute. Expected one or more of [abstract api aspect compound essential primitive singleton]."
+  if (consume @"undocumented")
+    call class_attribute_undocumented
+    produce AttributeUndocumented
+  endIf
+  syntaxError "Illegal class attribute. Expected one or more of [abstract api aspect compound essential primitive singleton undocumented]."
 
 - class
   constructor_properties
+  consume_eols
   base_types
+  consume_eols
   class_attributes
   call parse_doc_comment
   if (consume(';'))
@@ -1253,7 +1259,9 @@ parser
 
 - enum
   constructor_properties
+  consume_eols
   base_types
+  consume_eols
   enum_attributes
   call parse_doc_comment
   if (consume(';'))
