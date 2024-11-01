@@ -1785,7 +1785,7 @@ augment
 
     method Library.generate_c_header( writer:CWriter )
       if (native_headers.count)
-        native_headers.sort( (a,b) => (a.ordinal < b.ordinal) )
+        native_headers.sort( (a,b) => (a.ordinal <= b.ordinal) )
         writer.println( (forEach in native_headers).content )
         writer.println
       endIf
