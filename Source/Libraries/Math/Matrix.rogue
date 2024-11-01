@@ -71,7 +71,7 @@ class Matrix( ...
       m.r2c2 = z_far / (z_near - z_far)
       m.r3c2 = -1
 
-      m.r2c3 = -(z_far * z_near) / (z_far - z_near)
+      m.r2c3 = -2 * (z_far * z_near) / (z_far - z_near)
       m.r3c3 = 0
 
       return m
@@ -113,11 +113,11 @@ class Matrix( ...
 
       return result * Matrix.translate( -origin )
 
-    method mode_2dx( width:Real, height:Real, nominal_z=2000:Real,
+    method mode_2dx( width:Real, height:Real, depth_scale=1.0:Real,
         perspective_center=XY(0.5,0.5):XY, &invert_y )->Matrix
-      nominal_z = -nominal_z.abs
-      local max_z = nominal_z * 2
-      local k = (-nominal_z + 1) * 2
+      local nominal_z = (width^2 + height^2).sqrt * depth_scale
+      local max_z = -nominal_z * 2
+      local k = (nominal_z + 1) * 2
       local left = ((-2 * width) / k)  * perspective_center.x
       local top  = ((-2 * height) / k) * perspective_center.y
       local right = left + 2*width/k
@@ -127,7 +127,7 @@ class Matrix( ...
 
       return ...
         Matrix.frustum( left, right, top, bottom, -1, (max_z*k)/3 ) ...
-        * Matrix.translate( XYZ(-width*perspective_center.x,-height*perspective_center.y,0) )
+        * Matrix.translate( XYZ(-width*perspective_center.x,-height*perspective_center.y,nominal_z) )
 
     method perspective( fov_y:Radians, aspect_ratio:Real, z_near:Real, z_far:Real )->Matrix
       # Returns a right-handed projection matrix with Vulkan/D3D depth settings
