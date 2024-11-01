@@ -71,7 +71,7 @@ class Matrix( ...
       m.r2c2 = z_far / (z_near - z_far)
       m.r3c2 = -1
 
-      m.r2c3 = -(z_far * z_near) / (z_far - z_near)
+      m.r2c3 = -2 * (z_far * z_near) / (z_far - z_near)
       m.r3c3 = 0
 
       return m
