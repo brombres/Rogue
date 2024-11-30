@@ -505,12 +505,13 @@ class List<<$DataType>> : Poolable ListType
       endForEach
       return result
 
-    method remove( value:$DataType )->$DataType
+    method remove( value:$DataType )->Logical
       local index = locate( value )
       if (index)
-        return remove_at( index.value )
+        remove_at( index.value )
+        return true
       else
-        return value
+        return false
       endIf
 
     method remove( query:(Function($DataType)->Logical) )->$DataType[]
