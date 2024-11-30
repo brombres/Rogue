@@ -25,6 +25,9 @@ class Color( argb:Int32 ) [compound]
     WHITE       = Graphics::Color( 0xffFFFFFF )
 
   GLOBAL METHODS
+    method create( argb:Int )->Color
+      return Color( argb->Int32 )
+
     method create( r:Int, g:Int, b:Int, a=255:Int )->Color
       return Color( a.clamped(0,255):<<:24 | r.clamped(0,255):<<:16 | g.clamped(0,255):<<:8 | b.clamped(0,255) )
 

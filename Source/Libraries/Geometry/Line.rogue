@@ -2,7 +2,7 @@ library Geometry
 
 class Line( a:XY, b:XY ) [compound]
   GLOBAL METHODS
-    method create( ax:Int, ay:Int, bx:Int, by:Int )->Line
+    method create( ax:Real, ay:Real, bx:Real, by:Real )->Line
       return Line( XY(ax,ay), XY(bx,by) )
 
   METHODS
