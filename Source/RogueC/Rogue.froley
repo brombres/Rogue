@@ -2250,7 +2250,7 @@ parser
     createTokenListPreservingStack
     produce Assert(expression,token_list:TokenList)
   endOn
-  on "ensure" "<<" expression ">>" args -> Ensure(expression,args:Args)
+
   on "escapeBlock"                   -> EscapeBlock:Escape
   on "escapeContingent"              -> EscapeContingent:Escape
   on "escapeForEach"                 -> EscapeForEach:Escape
@@ -3335,6 +3335,12 @@ parser
     type
     mustConsume ">>"
     produce GetTypeInfo(of_type:Type)
+  endOn
+
+  on "ensure" "<<" expression ">>"
+    if (nextIs('.')) beginList; createList Args
+    else             args
+    produce Ensure(expression,args:Args)
   endOn
 
   on "new" "<<" expression ">>" args -> New(type_expression,args:Args)
