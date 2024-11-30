@@ -224,6 +224,16 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
         endForEach
       endForEach
 
+    method draw( characters:StyledCharacter[], width:Int, position=IntXY.zero:IntXY )
+      local height = characters.count / width
+      local src = 0
+      forEach (j in 0..<height)
+        forEach (i in 0..<width)
+          set( position+IntXY(i,j), characters[src] )
+          ++src
+        endForEach
+      endForEach
+
     method draw( pattern:String )
       draw( IntBox(width,height), pattern )
 
@@ -757,6 +767,7 @@ class CharacterStyle( flags:Int, fg=Color(0):Color, bg=Color(0):Color ) [compoun
     HIDDEN               = (1 :<<: 5)
     TRUECOLOR_FG         = (1 :<<: 6)
     TRUECOLOR_BG         = (1 :<<: 7)
+    TRUECOLOR            = (CharacterStyle.TRUECOLOR_FG | CharacterStyle.TRUECOLOR_BG)
 
     FG_DEFAULT           = (0  :<<: 8)
     FG_BLACK             = (1  :<<: 8)
