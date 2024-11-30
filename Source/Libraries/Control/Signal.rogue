@@ -1,0 +1,50 @@
+class Signal
+  PROPERTIES
+    standard_listeners      : Function(Variant)[]
+    one_time_listeners      : Function(Variant)[]
+
+  METHODS
+    method add_listener( listener:Function(Variant), &once )->Function(Variant)
+      if (once) ensure<<one_time_listeners>>.add( listener )
+      else      ensure<<standard_listeners>>.add( listener )
+      return listener
+
+    method add_listener( listener:Function(), &once )->Function(Variant)
+      return add_listener( (args) => listener(), &=once )
+
+    method dispatch( args=undefined:Variant )
+      if (standard_listeners)
+        (forEach in standard_listeners)(args)
+      endIf
+
+      if (one_time_listeners)
+        local listeners = one_time_listeners
+        one_time_listeners = null
+        (forEach in listeners)(args)
+      endIf
+
+    method remove_listener( listener_fn:Function(Variant) )->Logical
+      if (standard_listeners?.remove(listener_fn)) return true
+      return one_time_listeners?.remove( listener_fn )
+
+endClass
+
+class Signals
+  PROPERTIES
+    attachments : (signal:Signal,listener:Function(Variant))[]
+
+  METHODS
+    method on( signal:Signal, listener:Function(), &once )
+      ensure<<attachments>>.add( (signal, signal.add_listener(listener,&=once)) )
+
+    method on( signal:Signal, listener:Function(Variant), &once )
+      ensure<<attachments>>.add( (signal, signal.add_listener(listener,&=once)) )
+
+    method detach
+      if (attachments)
+        forEach (attachment in attachments)
+          attachment.signal.remove_listener( attachment.listener )
+        endForEach
+      endIf
+
+endClass
