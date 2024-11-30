@@ -21,6 +21,7 @@ class Resolver : Poolable, Visitor
     control_stack     = ControlStructure[]
 
     current_statements : ListRewriter<<Cmd>>
+    current_statement  : Cmd
 
     autoname_index = 0
 
@@ -30,6 +31,7 @@ class Resolver : Poolable, Visitor
       visible_locals_fp.clear
       control_stack.clear
       current_statements = null
+      current_statement  = null
       autoname_index = 0
 
     method on_return_to_pool
@@ -634,12 +636,17 @@ class Resolver : Poolable, Visitor
 
     method on_visit( cmd:Ensure )->Cmd
       local t = cmd.expression.t
-      return visit(
+      insert(
         If( t, LogicalNot(t,cmd.expression.cloned),
           Statements( t, Assign(t,cmd.expression.cloned,New(t,cmd.expression,cmd.args)) ),
           null
         )
       )
+      if (current_statement is cmd)
+        return null
+      else
+        return visit( cmd.expression.cloned )
+      endIf
 
     method on_visit( cmd:EnumValue )->Cmd
       local def = visit(cmd.of_type.definitions[cmd.name])->(as CreateCompound)
@@ -1512,11 +1519,13 @@ class Resolver : Poolable, Visitor
     method on_visit_node( cmd:Statements )
       temporarily current_statements = cmd.list.rewriter
         forEach (statement in current_statements)
-          statement = visit( statement )
-          if (statement)
-            if (statement.type) statement = statement.discarding_result
-            current_statements.write( statement )
-          endIf
+          temporarily current_statement = statement
+            statement = visit( statement )
+            if (statement)
+              if (statement.type) statement = statement.discarding_result
+              current_statements.write( statement )
+            endIf
+          endTemporarily
         endForEach
       endTemporarily
 
