@@ -29,22 +29,22 @@ class Signal
 
 endClass
 
-class Signals
+class SignalHandlers
   PROPERTIES
-    attachments : (signal:Signal,listener:Function(Variant))[]
+    handlers : (signal:Signal,listener:Function(Variant))[]
 
   METHODS
-    method on( signal:Signal, listener:Function(), &once )
-      ensure<<attachments>>.add( (signal, signal.add_listener(listener,&=once)) )
-
-    method on( signal:Signal, listener:Function(Variant), &once )
-      ensure<<attachments>>.add( (signal, signal.add_listener(listener,&=once)) )
-
-    method detach
-      if (attachments)
-        forEach (attachment in attachments)
+    method clear
+      if (handlers)
+        forEach (attachment in handlers)
           attachment.signal.remove_listener( attachment.listener )
         endForEach
       endIf
+
+    method on( signal:Signal, listener:Function(), &once )
+      ensure<<handlers>>.add( (signal, signal.add_listener(listener,&=once)) )
+
+    method on( signal:Signal, listener:Function(Variant), &once )
+      ensure<<handlers>>.add( (signal, signal.add_listener(listener,&=once)) )
 
 endClass
