@@ -1,5 +1,8 @@
 $include Control/ProgressFn
 
+class State : State<<State>>
+endClass
+
 class State<<$ExtendedType>>
   DEFINITIONS
     # Duration values
@@ -29,6 +32,9 @@ class State<<$ExtendedType>>
     method wait_for( condition:Function->Logical, duration=$ExtendedType.INDEFINITE:Real )->$ExtendedType
       return StateWaitFor<<$ExtendedType>>( condition, duration )
 
+    method yield->$ExtendedType
+      return StateYield<<$ExtendedType>>()
+
   PROPERTIES
     duration    : Real
     progress_fn = ProgressFn.LINEAR : Function(Real)->Real
@@ -43,14 +49,12 @@ class State<<$ExtendedType>>
     exited : Logical # flag that assists when states finish outside of updated()
 
   METHODS
-    method init_object
-      duration = default_duration
-
     method init
       noAction
 
-    method init( duration, progress_fn=ProgressFn.LINEAR, &indefinite )
-      if (indefinite) duration = INDEFINITE
+    method init( progress_fn )
+
+    method init( duration, progress_fn=ProgressFn.LINEAR )
 
     method and_then( state:$ExtendedType )->$ExtendedType
       if (state)
@@ -83,9 +87,6 @@ class State<<$ExtendedType>>
       if (concurrent_state) n += concurrent_state.count
       return n
 
-    method default_duration->Real
-      return INDEFINITE
-
     method describe->String
       return type_name
 
@@ -115,11 +116,10 @@ class State<<$ExtendedType>>
       while (cur.next_state ) cur = cur.next_state
       return cur
 
-    method make_indefinite
-      duration = $ExtendedType.INDEFINITE
-
-    method make_instant
-      duration = $ExtendedType.INSTANT
+    method on_execute
+      # Override to automatically make duration INSTANT
+      duration = INDEFINITE  # only happeens when not overridden
+      on_start  # start an indefinite state
 
     method on_start
 
@@ -160,7 +160,13 @@ class State<<$ExtendedType>>
       else
         local cur_time = System.execution_time
         if (not prev_time)
-          on_start
+          if (duration)
+            on_start
+          else
+            on_execute
+            # Default will change duration to INDEFINITE and call on_start()
+            # Override on_execute() to keep INSTANT.
+          endIf
         else
           delta_time = (cur_time - prev_time)
           if (delta_time > 1.0/10.0) delta_time = 1.0/60.0
@@ -199,7 +205,7 @@ endClass
 
 class StateCall<<$ExtendedType>>( fn:Function(), duration=$ExtendedType.INSTANT ) : $ExtendedType [undocumented]
   METHODS
-    method on_start
+    method on_execute
       fn()
 endClass
 
@@ -209,3 +215,14 @@ class StateCallWithProgress<<$ExtendedType>>( fn:Function(Real), duration, progr
       fn( progress )
 endClass
 
+class StateYield<<$ExtendedType>> : $ExtendedType
+  PROPERTIES
+    ticks = 0
+
+  METHODS
+    method is_finished->Logical
+      return ticks == 2
+
+    method on_update
+      ++ticks
+endClass
