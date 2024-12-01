@@ -3422,6 +3422,8 @@ parser
 
   if (consume(':'))
     # { :id } -> { "id":id }
+    deprecation_warning = "Syntax ':id' is deprecated - use 'id' as shorthand for '\"id\":id' instead."
+    call print_deprecation_warning
     on IDENTIFIER
       create LiteralString(name=content)
       createNull
@@ -3436,14 +3438,21 @@ parser
     on IDENTIFIER
       # { id:value } -> { "id":value }
       create LiteralString(name=content)
+      consume_eols
+      if (not nextIs(':'))
+        createNull
+        create Access(name=content,args)
+        create KeyValuePair(key,value)
+        consume_eols
+        return
+      endIf
     elseOnOthers
       variant_expression
+      consume_eols
     endOn
-    consume_eols
 
     mustConsume ':'
     consume_eols
-
     variant_expression
   endIf
 

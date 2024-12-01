@@ -214,7 +214,7 @@ class CommandLineParser
       args .= cloned
 
       options  = @{}
-      command  = @{ :options }
+      command  = @{ options }
       cur_group = "args"
 
       forEach (key in defaults.keys)
