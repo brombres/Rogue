@@ -131,9 +131,11 @@ class List<<$DataType>> : Poolable ListType
       count = n
 
     method discard( i1:Int, n=1:Int )
-      local i2 = i1 + n
-      copy( i2, (count-i2), this, i1 )
-      discard_from( count-n )
+      if (n > 0)
+        local i2 = i1 + n
+        copy( i2, (count-i2), this, i1 )
+        discard_from( count-n )
+      endIf
 
     method discard( discard_if:(Function($DataType)->Logical) )
       # Discards any item that passes the query function.
@@ -141,9 +143,8 @@ class List<<$DataType>> : Poolable ListType
         if (not discard_if(value)) rewriter.write( value )
       endForEach
 
-    method discarding( discard_if:(Function($DataType)->Logical) )->$DataType[]
-      # Returns a copy of the list without any item that passes the query function.
-      return cloned.[ discard(discard_if) ]
+    method discard_first( n:Int )
+      discard( 0, n.or_smaller(count) )
 
     method discard_from( index:Int )
       local n = (count - index)
@@ -151,6 +152,14 @@ class List<<$DataType>> : Poolable ListType
         zero( index, n )
         count = index
       endIf
+
+    method discard_last( n:Int )
+      localize count
+      discard_from( count - n.or_smaller(count) )
+
+    method discarding( discard_if:(Function($DataType)->Logical) )->$DataType[]
+      # Returns a copy of the list without any item that passes the query function.
+      return cloned.[ discard(discard_if) ]
 
     method ensure_capacity( desired_capacity:Int )
       reserve( desired_capacity - count )
