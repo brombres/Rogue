@@ -2621,8 +2621,20 @@ class Resolver : Poolable, Visitor
         endIf
       endLoop
 
-      # Prefer 'init' over 'create'
-      if (Candidates.list.contains($.name == "init"))
+      # If an init() method exists...
+      if local m_init = Candidates.list.find( $.name == "init" )
+        # Prefer extended-class create over base-class init().
+        if local m_create = Candidates.list.find( $.name == "create" )
+          if (m_create.type_context is not m_init.type_context and m_create.type_context.instance_of(m_init.type_context))
+            forEach (m in Candidates)
+              if (m.name == "create") Candidates.keep m
+            endForEach
+            if (Candidates.found_match) return Candidates.match
+            Candidates.refine
+          endIf
+        endIf
+
+        # Prefer 'init' over 'create'
         forEach (m in Candidates)
           if (m.name == "init") Candidates.keep m
         endForEach
