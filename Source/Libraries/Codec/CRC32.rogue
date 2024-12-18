@@ -15,7 +15,7 @@ class CRC32( hash=0:Int32 ) [compound]
   #   println crc32->String
   GLOBAL METHODS
     method create( bytes:Byte[] )->CRC32
-      local hash = -1
+      local hash = Int32(-1)
       forEach (byte in bytes)
         hash = crc32_table[ (hash ~ byte) & 0xFF ] ~ (hash :>>: 8)
       endForEach
