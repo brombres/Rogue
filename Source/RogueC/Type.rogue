@@ -1642,6 +1642,13 @@ class Type : Cmd
         if (m and m.return_type)
           throw m.t.error( "on_cleanup() cannot return a value." )
         endIf
+        if (base_class)
+          local prior_m = base_class.methods[ "on_cleanup()" ]
+          if (prior_m and prior_m is not m)
+            # on_cleanup() auto-calls prior.on_cleanup() after other statements
+            m.statements.add( CallThisStaticMethod(m.t,prior_m,Args(m.t)) )
+          endIf
+        endIf
       endBlock
 
       forEach (m in global_methods.values)
