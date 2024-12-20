@@ -1,50 +1,109 @@
 class Signal
   PROPERTIES
-    standard_listeners      : Function(Variant)[]
-    one_time_listeners      : Function(Variant)[]
+    group              : SignalGroup
+    standard_handlers : (handler:SignalHandler,callback:Function(Variant))[]
+    one_time_handlers : (handler:SignalHandler,callback:Function(Variant))[]
 
   METHODS
-    method add_listener( listener:Function(Variant), &once )->Function(Variant)
-      if (once) ensure<<one_time_listeners>>.add( listener )
-      else      ensure<<standard_listeners>>.add( listener )
-      return listener
+    method init( group=null )
+      group?.add( this )
 
-    method add_listener( listener:Function(), &once )->Function(Variant)
-      return add_listener( (args) => listener(), &=once )
+    method add_handler( handler:SignalHandler, callback:Function(Variant), &once )->Function(Variant)
+      if (once) ensure<<one_time_handlers>>.add( (handler:handler,callback:callback) )
+      else      ensure<<standard_handlers>>.add( (handler:handler,callback:callback) )
+      return callback
+
+    method add_handler( handler:SignalHandler, callback:Function(), &once )->Function(Variant)
+      return add_handler( handler, (args) => callback(), &=once )
+
+    method disconnect
+      # Disconnect all handlers from this signal.
+      if (standard_handlers)
+        use pending_list = WorkList<<(handler:SignalHandler,callback:Function(Variant))>>
+          pending_list.add( standard_handlers )
+          standard_handlers.clear
+          forEach (connection in pending_list)
+            connection.handler._disconnect( this, connection.callback )
+          endForEach
+        endUse
+      endIf
+
+      if (one_time_handlers)
+        use pending_list = WorkList<<(handler:SignalHandler,callback:Function(Variant))>>
+          pending_list.add( one_time_handlers )
+          one_time_handlers.clear
+          forEach (connection in pending_list)
+            connection.handler._disconnect( this, connection.callback )
+          endForEach
+        endUse
+      endIf
 
     method dispatch( args=undefined:Variant )
-      if (standard_listeners)
-        (forEach in standard_listeners)(args)
+      if (standard_handlers)
+        use pending_list = WorkList<<(handler:SignalHandler,callback:Function(Variant))>>
+          pending_list.add( standard_handlers )
+          (forEach in pending_list).callback(args)
+        endUse
       endIf
 
-      if (one_time_listeners)
-        local listeners = one_time_listeners
-        one_time_listeners = null
-        (forEach in listeners)(args)
+      if (one_time_handlers)
+        use pending_list = WorkList<<(handler:SignalHandler,callback:Function(Variant))>>
+          pending_list.add( one_time_handlers )
+          one_time_handlers.clear
+          forEach (connection in pending_list)
+            connection.handler._disconnect( this, connection.callback )
+            connection.callback(args)
+          endForEach
+        endUse
       endIf
 
-    method remove_listener( listener_fn:Function(Variant) )->Logical
-      if (standard_listeners?.remove(listener_fn)) return true
-      return one_time_listeners?.remove( listener_fn )
+    method remove_handler( listener_fn:Function(Variant) )->Logical
+      if (standard_handlers?.remove( $.callback is listener_fn )) return true
+      return one_time_handlers?.remove( $.callback is listener_fn )
 
 endClass
 
-class SignalHandlers
+class SignalGroup
   PROPERTIES
-    handlers : (signal:Signal,listener:Function(Variant))[]
+    signals = Signal[]
 
   METHODS
-    method clear
-      if (handlers)
-        forEach (attachment in handlers)
-          attachment.signal.remove_listener( attachment.listener )
-        endForEach
+    method add( signal:Signal )
+      signals.add( signal )
+
+    method disconnect
+      # Disconnect handlers from all signals in this group.
+      use pending_list = WorkList<<Signal>>
+        pending_list.add( signals )
+        (forEach in pending_list).disconnect
+      endUse
+endClass
+
+class SignalHandler
+  PROPERTIES
+    connections : (signal:Signal,callback:Function(Variant))[]
+
+  METHODS
+    method disconnect
+      # Disconnect all signals.
+      if (connections)
+        use pending_list = WorkList<<(signal:Signal,callback:Function(Variant))>>
+          pending_list.add( connections )
+          connections.clear
+          forEach (connection in pending_list)
+            connection.signal.remove_handler( connection.callback )
+          endForEach
+        endUse
       endIf
 
-    method on( signal:Signal, listener:Function(), &once )
-      ensure<<handlers>>.add( (signal, signal.add_listener(listener,&=once)) )
+    method .disconnect( signal:Signal, callback:Function(Variant) )
+      connections.remove( (signal:signal,callback:callback) )
+      signal.remove_handler( callback )
 
-    method on( signal:Signal, listener:Function(Variant), &once )
-      ensure<<handlers>>.add( (signal, signal.add_listener(listener,&=once)) )
+    method on( signal:Signal, callback:Function(), &once )
+      ensure<<connections>>.add( (signal, signal.add_handler(this,callback,&=once)) )
+
+    method on( signal:Signal, callback:Function(Variant), &once )
+      ensure<<connections>>.add( (signal, signal.add_handler(this,callback,&=once)) )
 
 endClass
