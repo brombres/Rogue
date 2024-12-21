@@ -5277,3 +5277,34 @@ class AttributeUndocumented : Cmd
     method description->String
       return "AttributeUndocumented"
 endClass
+
+class CmdLabel : Cmd
+  PROPERTIES
+    name : String
+
+  METHODS
+    method init( t, name )
+      name = "<$>"(name)
+      Program.labels.add( this )
+
+    method init( existing:CmdLabel )
+      prior.init( existing )
+      name = existing.name
+
+    method description->String
+      return "CmdLabel($)" (%name)
+
+    method hashcode->Int
+      return name.hashcode
+
+    method operator==( other:CmdLabel )->Logical
+      return name == other.name
+
+    method to->Character
+      return Cmd.to_character(name)
+
+    method to->Int:     return name
+    method to->Logical: return name?
+    method to->String: return name
+
+endClass

@@ -1,0 +1,3 @@
+enum Label [essential]
+  METHODS
+endEnum

@@ -433,6 +433,9 @@ class Resolver : Poolable, Visitor
       endIf
       visit_children( cmd )
 
+    method on_visit( cmd:CmdLabel )->Cmd
+      return visit( ContextAccess( cmd.t, Access(cmd.t,"Rogue::Label"), cmd.name ) )
+
     method on_visit( cmd:CommandExists )->Cmd
       local access = cmd.command->(as Access)
       if (access)

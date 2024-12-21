@@ -104,6 +104,8 @@ class Program [singleton]
     prior_warning : String
     prior_warnings = Set<<String>>()
 
+    labels = Set<<CmdLabel>>()
+
   METHODS
     method init
       Program = this  # update singleton reference
