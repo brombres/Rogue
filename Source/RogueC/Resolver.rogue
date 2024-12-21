@@ -1851,6 +1851,23 @@ class Resolver : Poolable, Visitor
 
       return visit( ContextBlock(t, cmd_table, build_list) )
 
+    #{
+    method on_visit( cmd:WeakRef )->Cmd
+      local expression = visit( cmd.expression )
+      local type = expression.require_type
+      local type_args = TemplateArgs( cmd.t )
+      type_args.add( TokenList( cmd.t, type.name_tokens ) )
+
+      return visit(
+        TemplatedAccess(
+          cmd.t,
+          "WeakReference",
+          type_args,
+          Args(expression)
+        ).[ library_context = Program.default_library ]
+      )
+    }#
+
     method on_visit( cmd:Which )->Cmd
       if (cmd.is_resolved) return cmd
       cmd.is_resolved = true

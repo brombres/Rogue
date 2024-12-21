@@ -113,6 +113,7 @@ KEYWORD_UNDEFINED         undefined
 KEYWORD_UNSATISFIED       unsatisfied [structural]
 KEYWORD_USE               use
 KEYWORD_USES              uses        [structural]
+#KEYWORD_WEAK_REF          weakRef
 KEYWORD_WHICH             which
 KEYWORD_WHILE             while
 KEYWORD_WITH              with
@@ -3361,6 +3362,10 @@ parser
     else             args
     produce Ensure(expression,args:Args)
   endOn
+
+  #on "weakRef" "<<" expression ">>"
+  #  produce WeakRef(expression)
+  #endOn
 
   on "new" "<<" expression ">>" args -> New(type_expression,args:Args)
 
