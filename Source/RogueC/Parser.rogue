@@ -770,6 +770,20 @@ class Parser : ParserCore, Poolable
       lib.templates[extended_name] = result
       return result
 
+    method collect_label->Int
+      local i1 = _saved_positions.last.position
+      local i2 = _position - 1
+      local label = String()
+      forEach (i in i1..i2)
+        local t = _tokens[i]
+        if (t.type == TokenType.IDENTIFIER)
+          label.print( t.content )
+        elseIf (t.type == TokenType.SYMBOL_PERIOD)
+          label.print( '.' )
+        endIf
+      endForEach
+      CmdLabel( _tokens[i1], label )
+
     method on_parsed_subclass->Int
       if (disable_output and not collecting_templates)
         return 0

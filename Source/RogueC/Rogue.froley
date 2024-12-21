@@ -3285,14 +3285,17 @@ parser
   endOn
 
   on '<'
-    identifier
-    while consume('.')
-      create Identifier( name=".":String )
-      call join_identifiers
+    savePosition
       identifier
-      call join_identifiers
-    endWhile
-    mustConsume '>'
+      while consume('.')
+        create Identifier( name=".":String )
+        call join_identifiers
+        identifier
+        call join_identifiers
+      endWhile
+      call collect_label
+      mustConsume '>'
+    discardPosition
     produce CmdLabel( name:String )
   endOn
 
