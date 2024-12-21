@@ -8,16 +8,36 @@ class Signals [singleton]
       one_time_connections[signal_id]?.clear
       standard_connections[signal_id]?.clear
 
+    method disconnect( signal_id:GlobalID, context:Object )
+      local signal_id = connection.signal_id
+
+      if local group = standard_connections[ signal_id ]
+        group.discard( $.context.object is context )
+      endIf
+
+      if local group = one_time_connections[ signal_id ]
+        group.discard( $.callback.object is callback )
+      endIf
+
+    method disconnect( context:Object )
+      forEach (group in standard_connections)
+        group.discard( $.context.object is context )
+      endForEach
+
+      forEach (group in one_time_connections)
+        group.discard( $.context.object is context )
+      endForEach
+
     method disconnect( connection:SignalConnection )
       local signal_id = connection.signal_id
       local callback = connection.callback.object
 
       if local group = standard_connections[ signal_id ]
-        if (group.remove_first($.callback.object is callback)) return
+        group.discard( $.callback.object is callback )
       endIf
 
       if local group = one_time_connections[ signal_id ]
-        group.remove_first( $.callback.object is callback )
+        group.discard( $.callback.object is callback )
       endIf
 
     method dispatch( signal_id:GlobalID, args=undefined:Variant )
@@ -49,14 +69,14 @@ class Signals [singleton]
         endUse
       endIf
 
-    method on( signal_id:GlobalID, callback:Function(Variant), &once )->SignalConnection
+    method on( signal_id:GlobalID, context:Object, callback:Function(Variant), &once )->SignalConnection
       if (once)
         local group = one_time_connections[signal_id]
         if (not group)
           ensure<<group>>
           one_time_connections[signal_id] = group
         endIf
-        local connection = SignalConnection( signal_id, callback )
+        local connection = SignalConnection( signal_id, context, callback )
         group.add( connection )
         return connection
       else
@@ -65,20 +85,27 @@ class Signals [singleton]
           ensure<<group>>
           standard_connections[signal_id] = group
         endIf
-        local connection = SignalConnection( signal_id, callback )
+        local connection = SignalConnection( signal_id, context, callback )
         group.add( connection )
         return connection
       endIf
 
+    method on( signal_id:GlobalID, callback:Function(Variant), &once )->SignalConnection
+      return on( signal_id, null, callback, &=once )
+
+    method on( signal_id:GlobalID, context:Object, callback:Function(), &once )->SignalConnection
+      return on( signal_id, context, (args) => callback(), &=once )
+
     method on( signal_id:GlobalID, callback:Function(), &once )->SignalConnection
-      return on( signal_id, (args) => callback(), &=once )
+      return on( signal_id, null, (args) => callback(), &=once )
 
 endClass
 
-class SignalConnection( signal_id:GlobalID, callback:WeakReference<<Function(Variant)>> ) [compound]
+class SignalConnection( signal_id:GlobalID, context:WeakReference<<Object>>,
+    callback:WeakReference<<Function(Variant)>> ) [compound]
   GLOBAL METHODS
-    method create( signal_id:GlobalID, callback:Function(Variant) )->SignalConnection
-      return SignalConnection( signal_id, WeakReference<<Function(Variant)>>(callback) )
+    method create( signal_id:GlobalID, context:Object, callback:Function(Variant) )->SignalConnection
+      return SignalConnection( signal_id, WeakReference<<Object>>(context), WeakReference<<Function(Variant)>>(callback) )
 
   METHODS
     method call( args:Variant )
