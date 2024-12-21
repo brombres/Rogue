@@ -3775,10 +3775,10 @@ endClass
 class TemplatedAccess : Cmd
   PROPERTIES
     library_context : Library
-    type_context   : Type
-    name           : String
-    type_args      : TemplateArgs
-    args           : Cmd
+    type_context    : Type
+    name            : String
+    type_args       : TemplateArgs
+    args            : Cmd
 
   METHODS
     method init( t, name, type_args, args )
