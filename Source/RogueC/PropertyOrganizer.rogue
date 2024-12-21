@@ -53,6 +53,22 @@ class PropertyOrganizer : Visitor
         local ordinal = 0 : Int?
         if (this_type.attributes.bitflags) ordinal = 1
 
+        if (this_type.library_context is Program.default_library and this_type.name == "Label")
+          ordinal = 1
+          local labels = Program.labels.to_list
+          forEach (label at i in labels)
+            this_type.categories.add(
+              Category(
+                label.t,
+                label.name,
+                Args(label.t),
+                null,
+                null
+              )
+            )
+          endForEach
+        endIf
+
         local prev_name   : String
         forEach (category in this_type.categories)
           local t = category.t
@@ -99,7 +115,16 @@ class PropertyOrganizer : Visitor
           forEach (category in this_type.categories)
             list.add( Access(category.t,category.name) )
           endForEach
-          collect_global( list.t, Property(list.t,"categories",list,Type(list.t,this_type)) )
+          local list_type = Type( list.t, this_type )
+          collect_global(
+            list.t,
+            Property(
+              list.t,
+              "categories",
+              TypedLiteralList( list.t, list_type, list ),
+              Type(list.t,this_type)
+            )
+          )
         endBlock
       endIf
 

@@ -2,6 +2,7 @@ $include Core/Boxed
 $include Core/Dim
 $include Core/Exception
 $include Core/Global
+$include Core/Label
 $include Core/MacOS
 $include Core/Object
 $include Core/ObjectPool

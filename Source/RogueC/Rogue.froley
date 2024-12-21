@@ -1254,8 +1254,12 @@ parser
   produceList Attributes
 
 - enum_attribute
-  on @"bitflags"  -> AttributeBitflags
-  syntaxError "Illegal enum attribute. Expected [bitflags]."
+  on @"bitflags"   -> AttributeBitflags
+  if (consume @"essential")
+    call class_attribute_essential
+    produce AttributeEssential
+  endIf
+  syntaxError "Illegal enum attribute. Expected any of [bitflags essential]."
 
 - enum
   constructor_properties
@@ -3278,6 +3282,18 @@ parser
   onPeek "forEach"
     inline_forEach
     return
+  endOn
+
+  on '<'
+    identifier
+    while consume('.')
+      create Identifier( name=".":String )
+      call join_identifiers
+      identifier
+      call join_identifiers
+    endWhile
+    mustConsume '>'
+    produce CmdLabel( name:String )
   endOn
 
   on "undefined"

@@ -16,7 +16,7 @@ class Type : Cmd
     PRECISION_OBJECT    = 10
 
   PROPERTIES
-    library_context    : Library
+    library_context   : Library
     name              : String
     base_class        : Type
     aspects           : Type[]
