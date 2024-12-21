@@ -782,7 +782,7 @@ class Parser : ParserCore, Poolable
           label.print( '.' )
         endIf
       endForEach
-      CmdLabel( _tokens[i1], label )
+      CmdGlobalID( _tokens[i1], label )
 
     method on_parsed_subclass->Int
       if (disable_output and not collecting_templates)
