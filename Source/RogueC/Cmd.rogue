@@ -5278,7 +5278,7 @@ class AttributeUndocumented : Cmd
       return "AttributeUndocumented"
 endClass
 
-class CmdLabel : Cmd
+class CmdGlobalID : Cmd
   PROPERTIES
     name : String
 
@@ -5287,17 +5287,17 @@ class CmdLabel : Cmd
       name = "<$>"(name)
       Program.labels.add( this )
 
-    method init( existing:CmdLabel )
+    method init( existing:CmdGlobalID )
       prior.init( existing )
       name = existing.name
 
     method description->String
-      return "CmdLabel($)" (%name)
+      return "CmdGlobalID($)" (%name)
 
     method hashcode->Int
       return name.hashcode
 
-    method operator==( other:CmdLabel )->Logical
+    method operator==( other:CmdGlobalID )->Logical
       return name == other.name
 
     method to->Character

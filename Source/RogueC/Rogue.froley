@@ -3296,7 +3296,7 @@ parser
       call collect_label
       mustConsume '>'
     discardPosition
-    produce CmdLabel( name:String )
+    produce CmdGlobalID( name:String )
   endOn
 
   on "undefined"

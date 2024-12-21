@@ -53,7 +53,7 @@ class PropertyOrganizer : Visitor
         local ordinal = 0 : Int?
         if (this_type.attributes.bitflags) ordinal = 1
 
-        if (this_type.library_context is Program.default_library and this_type.name == "Label")
+        if (this_type.library_context is Program.default_library and this_type.name == "GlobalID")
           ordinal = 1
           local labels = Program.labels.to_list
           forEach (label at i in labels)
