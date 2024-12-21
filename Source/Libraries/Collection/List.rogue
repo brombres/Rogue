@@ -137,11 +137,14 @@ class List<<$DataType>> : Poolable ListType
         discard_from( count-n )
       endIf
 
-    method discard( discard_if:(Function($DataType)->Logical) )
+    method discard( discard_if:(Function($DataType)->Logical) )->Int
       # Discards any item that passes the query function.
+      local discard_count = 0
       forEach (value in rewriter=this.rewriter)
-        if (not discard_if(value)) rewriter.write( value )
+        if (discard_if(value)) ++discard_count
+        else                   rewriter.write( value )
       endForEach
+      return discard_count
 
     method discard_first( n:Int )
       discard( 0, n.or_smaller(count) )
