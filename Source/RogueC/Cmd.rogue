@@ -3865,6 +3865,11 @@ class FunctionType : Type
       m_call.attributes.add( Attribute.ABSTRACT )
       m_call.organize
 
+      local m_valid = Method( t, this, "valid" )
+      m_valid.return_type = Program.type_Logical
+      m_valid.attributes.add( Attribute.ABSTRACT )
+      m_valid.organize
+
     method init( existing:FunctionType )
       prior.init( existing )
       if (existing.param_types) param_types = existing.param_types.cloned
@@ -3885,8 +3890,10 @@ class FunctionDefinition : Cmd
     base_type   : Type
     lib         : Library
 
+    weak        : Logical   # contains WeakReference '_THIS'
+
   METHODS
-    method init( t, parameters, return_type, with_values, statements, lib=Program.current_library )
+    method init( t, parameters, return_type, with_values, statements, lib=Program.current_library, weak=false )
 
     method init( existing:FunctionDefinition )
       prior.init( existing )
@@ -3897,9 +3904,10 @@ class FunctionDefinition : Cmd
       if (existing.fn_type)     fn_type     = existing.fn_type.cloned
       if (existing.base_type)   base_type   = existing.base_type.cloned
       lib = existing.lib
+      weak = existing.weak
 
     method description->String
-      return "FunctionDefinition($,$,$,$)" (%parameters,%return_type,%with_values,%statements)
+      return "FunctionDefinition($,$,$,$,$)" (%parameters,%return_type,%with_values,%statements,weak)
 
     method resolve_type->Type
       if (fn_type) return fn_type
@@ -3926,6 +3934,15 @@ class FunctionDefinition : Cmd
       m_call.body = LocalScope( t, statements )
       m_call.statements = statements
       m_call.organize
+
+      local m_valid = Method( t, fn_type, "valid" )
+      m_valid.return_type = Program.type_Logical
+      if (weak)
+        m_valid.statements.add( Return( t, Logicalize(t,Access(t,"_THIS")) ) )
+      else
+        m_valid.statements.add( Return( t, LiteralLogical(t,true) ) )
+      endIf
+      m_valid.organize
 
       return fn_type
 

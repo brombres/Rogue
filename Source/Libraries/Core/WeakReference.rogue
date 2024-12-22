@@ -32,6 +32,10 @@ class WeakReference [essential]
     method object->Object
       return native( "$this->object" )->Object
 
+  GLOBAL METHODS
+    method operator?( ref:WeakReference )->Logical
+      return native( "!!$ref->object" )->Logical
+
 endClass
 
 class WeakReference<<$DataType>> : WeakReference
@@ -47,8 +51,5 @@ class WeakReference<<$DataType>> : WeakReference
       else
         return false
       endIf
-
-    method to->Logical
-      return object?
 endClass
 
