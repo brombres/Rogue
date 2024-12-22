@@ -43,39 +43,38 @@ class Signals [singleton]
         use list = WorkList<<SignalConnection>>
           list.add( group )
 
-          local has_broken_connections = false
+          local has_invalid_connections = false
           forEach (connection in list)
             if (connection) connection( args )
-            else            has_broken_connections = true
+            else            has_invalid_connections = true
           endForEach
-          if (has_broken_connections)
+          if (has_invalid_connections)
             group.discard( not $ )
           endIf
         endUse
       endIf
 
-    method on( signal_id:GlobalID, context:Object, callback:Function(Variant), &once )->SignalConnection
-      if (not context) context = this
-
+    method on( connection:SignalConnection, &once )
       if (once)
-        local group = one_time_connections[signal_id]
+        local group = one_time_connections[connection.signal_id]
         if (not group)
           ensure<<group>>
-          one_time_connections[signal_id] = group
+          one_time_connections[connection.signal_id] = group
         endIf
-        local connection = SignalConnection( signal_id, context, callback )
         group.add( connection )
-        return connection
       else
-        local group = standard_connections[signal_id]
+        local group = standard_connections[connection.signal_id]
         if (not group)
           ensure<<group>>
-          standard_connections[signal_id] = group
+          standard_connections[connection.signal_id] = group
         endIf
-        local connection = SignalConnection( signal_id, context, callback )
         group.add( connection )
-        return connection
       endIf
+
+    method on( signal_id:GlobalID, context:Object, callback:Function(Variant), &once )->SignalConnection
+      local connection = SignalConnection( signal_id, context, callback )
+      on( connection, &=once )
+      return connection
 
     method on( signal_id:GlobalID, callback:Function(Variant), &once )->SignalConnection
       return on( signal_id, null, callback, &=once )
@@ -86,12 +85,19 @@ class Signals [singleton]
     method on( signal_id:GlobalID, callback:Function(), &once )->SignalConnection
       return on( signal_id, null, (args) => callback(), &=once )
 
+    method remove_invalid_connections
+      # Invalid connections are automatically removed during signal dispatch, but
+      # remove_invalid_connections can be manually called to examine every connection.
+      (forEach in standard_connections).discard( not $? )
+      (forEach in one_time_connections).discard( not $? )
+
 endClass
 
 class SignalConnection( signal_id:GlobalID, context:WeakReference<<Object>>,
     callback:Function(Variant) ) [compound]
   GLOBAL METHODS
     method create( signal_id:GlobalID, context:Object, callback:Function(Variant) )->SignalConnection
+      if (not context) context = Signals
       return SignalConnection( signal_id, WeakReference<<Object>>(context), callback )
 
   METHODS
@@ -100,14 +106,15 @@ class SignalConnection( signal_id:GlobalID, context:WeakReference<<Object>>,
 
     method disconnect
       Signals.disconnect( this )
-      context.object = null
+      context?.object = null
 
     method operator==( other_object:Object )->Logical
       local other = other_object->(as SignalConnection)
-      return signal_id == other.signal_id and context == other.context and callback is other.callback
+      if (context? != other.context?) return false
+      return signal_id == other.signal_id and callback is other.callback
 
     method operator?()->Logical
-      return context?
+      return context? and callback.valid
 endClass
 
 class SignalGroup
