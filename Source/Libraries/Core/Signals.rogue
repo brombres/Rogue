@@ -9,45 +9,33 @@ class Signals [singleton]
       standard_connections[signal_id]?.clear
 
     method disconnect( signal_id:GlobalID, context:Object )
-      local signal_id = connection.signal_id
-
       if local group = standard_connections[ signal_id ]
-        group.discard( $.context.object is context )
+        group.discard( $.context == context )
       endIf
 
       if local group = one_time_connections[ signal_id ]
-        group.discard( $.callback.object is callback )
+        group.discard( $.context == context )
       endIf
 
     method disconnect( context:Object )
       forEach (group in standard_connections)
-        group.discard( $.context.object is context )
+        group.discard( $.context == context )
       endForEach
 
       forEach (group in one_time_connections)
-        group.discard( $.context.object is context )
+        group.discard( $.context == context )
       endForEach
 
     method disconnect( connection:SignalConnection )
-      local signal_id = connection.signal_id
-      local callback = connection.callback.object
-
-      if local group = standard_connections[ signal_id ]
-        group.discard( $.callback.object is callback )
-      endIf
-
-      if local group = one_time_connections[ signal_id ]
-        group.discard( $.callback.object is callback )
-      endIf
+      standard_connections[ connection.signal_id ]?.remove( connection )
+      one_time_connections[ connection.signal_id ]?.remove( connection )
 
     method dispatch( signal_id:GlobalID, args=undefined:Variant )
       if local group = one_time_connections[ signal_id ]
         use list = WorkList<<SignalConnection>>
           list.add( group )
           group.clear
-          forEach (callback in list)
-            callback( args )
-          endForEach
+          (forEach in list)( args )
         endUse
       endIf
 
@@ -61,15 +49,14 @@ class Signals [singleton]
             else            has_broken_connections = true
           endForEach
           if (has_broken_connections)
-            forEach (connection in rewriter=group.rewriter)
-              if (connection) rewriter.write( connection )
-            endForEach
+            group.discard( not $ )
           endIf
-
         endUse
       endIf
 
     method on( signal_id:GlobalID, context:Object, callback:Function(Variant), &once )->SignalConnection
+      if (not context) context = this
+
       if (once)
         local group = one_time_connections[signal_id]
         if (not group)
@@ -102,21 +89,25 @@ class Signals [singleton]
 endClass
 
 class SignalConnection( signal_id:GlobalID, context:WeakReference<<Object>>,
-    callback:WeakReference<<Function(Variant)>> ) [compound]
+    callback:Function(Variant) ) [compound]
   GLOBAL METHODS
     method create( signal_id:GlobalID, context:Object, callback:Function(Variant) )->SignalConnection
-      return SignalConnection( signal_id, WeakReference<<Object>>(context), WeakReference<<Function(Variant)>>(callback) )
+      return SignalConnection( signal_id, WeakReference<<Object>>(context), callback )
 
   METHODS
     method call( args:Variant )
-      callback.object?.call( args )
+      if (context) callback( args )
 
     method disconnect
       Signals.disconnect( this )
-      callback.object = null
+      context.object = null
+
+    method operator==( other_object:Object )->Logical
+      local other = other_object->(as SignalConnection)
+      return signal_id == other.signal_id and context == other.context and callback is other.callback
 
     method operator?()->Logical
-      return callback.object?
+      return context?
 endClass
 
 class SignalGroup
@@ -148,5 +139,29 @@ augment Rogue::Global
   METHODS
     method signal( signal_id:GlobalID, args=undefined:Variant )
       Signals.dispatch( signal_id, args )
+endAugment
+
+augment GlobalID
+  METHODS
+    method disconnect_signal
+      Signals.disconnect( this )
+
+    method disconnect_signal( context:Object )
+      Signals.disconnect( this, context )
+
+    method on_signal( context:Object, callback:Function(Variant) )->SignalConnection
+      return Signals.on( this, context, callback )
+
+    method on_signal( context:Object, callback:Function() )->SignalConnection
+      return Signals.on( this, context, callback )
+
+    method on_signal( callback:Function(Variant) )->SignalConnection
+      return Signals.on( this, callback )
+
+    method on_signal( callback:Function() )->SignalConnection
+      return Signals.on( this, callback )
+
+    method signal( args=undefined:Variant )
+      Signals.dispatch( this, args )
 endAugment
 

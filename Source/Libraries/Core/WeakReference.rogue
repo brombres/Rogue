@@ -31,12 +31,22 @@ class WeakReference [essential]
 
     method object->Object
       return native( "$this->object" )->Object
+
 endClass
 
 class WeakReference<<$DataType>> : WeakReference
   METHODS
     method object->$DataType
       return native( "$this->object" )->$DataType
+
+    method operator==( other_object:Object )->Logical
+      if local other = other_object->(as WeakReference<<$DataType>>)
+        return native( "$this->object == $other->object" )->Logical
+      elseIf local other = other_object->(as $DataType)
+        return native( "$this->object == $other" )->Logical
+      else
+        return false
+      endIf
 
     method to->Logical
       return object?
