@@ -1344,7 +1344,8 @@ class Resolver : Poolable, Visitor
         if (m.return_type) cmd_call = Return( cmd.t, cmd_call )
         local statements = Statements( cmd.t, cmd_call )
 
-        local fn_def = FunctionDefinition( cmd.t, params, m.return_type, with_values, statements, this_library )
+        local fn_def = FunctionDefinition( cmd.t, params, m.return_type, with_values, statements, this_library,
+          &weak=cmd.weak )
         return visit( fn_def )
       endUse
 
