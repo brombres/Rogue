@@ -93,6 +93,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       endLoop
 
       ConsoleStyle.reset( output )
+      style.reset
 
     method display( x:Int, y:Int )
       # (0,0) is the top-left corner of the console
@@ -122,6 +123,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       endForEach
 
       ConsoleStyle.reset
+      style.reset
 
     method display( xy:IntXY )
       display( xy.x, xy.y )
