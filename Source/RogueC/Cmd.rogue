@@ -4716,21 +4716,23 @@ endClass
 
 class CallbackFunction : Cmd
   PROPERTIES
-    context : Cmd
-    name    : String
+    context     : Cmd
+    name        : String
     param_types : TypeList
+    weak        : Logical
 
   METHODS
-    method init( t, context, name, param_types )
+    method init( t, context, name, param_types, weak=false )
 
     method init( existing:CallbackFunction )
       prior.init( existing )
       if (existing.context) context = existing.context.cloned
       if (existing.param_types) param_types = existing.param_types.cloned
       name = existing.name
+      weak = existing.weak
 
     method description->String
-      return "CallbackFunction($,$,$)" (%context,%name,%param_types)
+      return "CallbackFunction($,$,$,$)" (%context,%name,%param_types,weak)
 
 endClass
 

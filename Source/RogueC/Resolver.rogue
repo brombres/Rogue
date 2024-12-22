@@ -1310,12 +1310,35 @@ class Resolver : Poolable, Visitor
         local cmd_call    : Cmd
 
         if (m.is_global)
+          if (cmd.weak)
+            throw cmd.t.error( "Use '=>' instead of '?=>' to create a callback function for global method $()."(m) )
+          endIf
           cmd_call = ContextAccess( cmd.t, TypeContext(cmd.t,m.type_context), cmd.name, args )
 
         else
           with_values = WithValues(cmd.t)
-          with_values.add( WithValue(cmd.t,"_THIS",context) )
-          cmd_call = ContextAccess( cmd.t, Access(cmd.t,"_THIS"), cmd.name, args )
+          if (cmd.weak)
+            with_values.add( WithValue(cmd.t,"_THIS",weak_ref(context)) )
+            cmd_call =
+              If( cmd.t,
+                Access(cmd.t,"_THIS"),
+                Statements(
+                  ContextAccess(
+                    cmd.t,
+                    ContextAccess(
+                      cmd.t,
+                      Access(cmd.t,"_THIS"),
+                      "object"
+                    )
+                    cmd.name,
+                    args
+                  )
+                )
+              )
+          else
+            with_values.add( WithValue(cmd.t,"_THIS",context) )
+            cmd_call = ContextAccess( cmd.t, Access(cmd.t,"_THIS"), cmd.name, args )
+          endIf
         endIf
 
         if (m.return_type) cmd_call = Return( cmd.t, cmd_call )
@@ -2975,6 +2998,21 @@ class Resolver : Poolable, Visitor
 
       return false
 
+    method weak_ref( expression:Cmd )->Cmd
+      local t = expression.t
+      expression = visit( expression )
+      local type = expression.require_type
+      local type_args = TemplateArgs( t )
+      type_args.add( TokenList( t, type.name_tokens ) )
+
+      return visit(
+        TemplatedAccess(
+          t,
+          "WeakReference",
+          type_args,
+          Args(expression)
+        ).[ library_context = Program.default_library ]
+      )
 
 endClass
 

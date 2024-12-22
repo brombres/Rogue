@@ -218,6 +218,7 @@ SYMBOL_SLASH_SLASH           //
 SYMBOL_BRIEF_TRACE           @trace
 SYMBOL_TILDE                 ~
 SYMBOL_VERTICAL_BAR          |
+SYMBOL_WEAK_FAT_ARROW        ?=>
 
 SYMBOL_PLUS_EQUALS           +=
 SYMBOL_MINUS_EQUALS          -=
@@ -2971,12 +2972,18 @@ parser
     context_block
   elseOn "?.["
     conditional_context_block
-  elseOn "=>"
+  elseOn '=>'
     consume_eols
     identifier
     if (nextIs('(')) function_param_types
     else             createNull
     produce CallbackFunction(context,name:String,param_types:TypeList)
+  elseOn '?=>'
+    consume_eols
+    identifier
+    if (nextIs('(')) function_param_types
+    else             createNull
+    produce CallbackFunction(context,name:String,param_types:TypeList,weak="true":Logical)
   elseOn "[>"
     consume_eols
     beginList
@@ -3212,7 +3219,7 @@ parser
           return
         endIf
         if (consume(')'))
-          if (not (nextIs("with") or nextIs("=>")))
+          if (not (nextIs("with") or nextIs('=>')))
             # good to go as expression grouping
             discardPosition
             return
@@ -3222,7 +3229,7 @@ parser
 
         savePosition
         anonymous_tuple_or_tuple_type
-        if (not (nextIs("=>") or nextIs("with")))
+        if (not (nextIs('=>') or nextIs("with")))
           discardPosition  # confirmed anonymous_tuple
           return
         endIf
@@ -3560,7 +3567,7 @@ parser
   elseOnOthers
     createNull
   endOn
-  mustConsume "=>"
+  mustConsume '=>'
   single_line_statements
   produce GenericFunctionDefinition(parameters:IDList,with_values:WithValues,statements)
 
