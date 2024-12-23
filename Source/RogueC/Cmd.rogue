@@ -5327,3 +5327,19 @@ class CmdGlobalID : Cmd
     method to->String: return name
 
 endClass
+
+class WeakRef : Cmd
+  PROPERTIES
+    expression : Cmd
+
+  METHODS
+    method init( t, expression )
+
+    method init( existing:WeakRef )
+      prior.init( existing )
+      if (existing.expression) expression = existing.expression.cloned
+
+    method description->String
+      return "WeakRef($)" (%expression)
+
+endClass
