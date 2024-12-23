@@ -3865,9 +3865,9 @@ class FunctionType : Type
       m_call.attributes.add( Attribute.ABSTRACT )
       m_call.organize
 
-      local m_valid = Method( t, this, "valid" )
+      local m_valid = Method( t, this, "is_valid" )
       m_valid.return_type = Program.type_Logical
-      m_valid.attributes.add( Attribute.ABSTRACT )
+      m_valid.statements.add( Return(t,LiteralLogical(t,true)) )
       m_valid.organize
 
     method init( existing:FunctionType )
@@ -3935,7 +3935,7 @@ class FunctionDefinition : Cmd
       m_call.statements = statements
       m_call.organize
 
-      local m_valid = Method( t, fn_type, "valid" )
+      local m_valid = Method( t, fn_type, "is_valid" )
       m_valid.return_type = Program.type_Logical
       if (weak)
         m_valid.statements.add( Return( t, Logicalize(t,Access(t,"_THIS")) ) )

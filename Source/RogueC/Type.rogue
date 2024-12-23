@@ -1896,7 +1896,7 @@ class Type : Cmd
             if (m.type_context is this)
               throw m.t.error( "Method $ can only be declared [abstract] in an [abstract] class."(m) )
             else
-              throw m.t.error( "Inherited abstract method $.$ be overridden or class $ must be declared [abstract]."...
+              throw m.t.error( "Inherited abstract method $.$ must be overridden or class $ must be declared [abstract]."...
                                (m.type_context,m,this) )
             endIf
           endIf

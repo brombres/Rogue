@@ -556,12 +556,16 @@ augment Program
         local ch = iterator.read
         if (ch.is_letter or ch.is_number)
           builder.print ch
+        elseIf (ch == '=')
+          if (iterator.peek == '=') builder.print "EQ"; iterator.read
+          else                      builder.print "ASSIGN"
         elseIf (ch == '>')
           if (iterator.peek == '>') builder.print 'x'; iterator.read
           else                      builder.print "GT"
         elseIf (ch == '<')
-          if (iterator.peek == '<') builder.print 'x'; iterator.read
-          else                      builder.print "LT"
+          if (iterator.peek == '<')     builder.print 'x';   iterator.read
+          elseIf (iterator.peek == '>') builder.print "CMP"; iterator.read
+          else                          builder.print "LT"
         elseIf (ch == '+')
           if (iterator.peek == '+') builder.print "INC"; iterator.read
           else                      builder.print "PLUS"

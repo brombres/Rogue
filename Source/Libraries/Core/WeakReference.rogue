@@ -45,9 +45,9 @@ class WeakReference<<$DataType>> : WeakReference
 
     method operator==( other_object:Object )->Logical
       if local other = other_object->(as WeakReference<<$DataType>>)
-        return native( "$this->object == $other->object" )->Logical
+        return native( "(RogueObject*)$this->object == (RogueObject*)$other->object" )->Logical
       elseIf local other = other_object->(as $DataType)
-        return native( "$this->object == $other" )->Logical
+        return native( "(RogueObject*)$this->object == (RogueObject*)$other" )->Logical
       else
         return false
       endIf
