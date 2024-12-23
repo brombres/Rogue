@@ -755,5 +755,8 @@ class Visitor
       cmd.optional_at = visit(cmd.optional_at)->(as ForEachAt)
       cmd.collection = visit(cmd.collection)->(as ForEachCollection)
 
+    method on_visit_children( cmd:WeakRef )
+      cmd.expression = visit(cmd.expression)
+
 endClass
 

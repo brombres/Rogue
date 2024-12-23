@@ -1166,4 +1166,9 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.collection)
       return result
 
+    method on_visit_children( cmd:WeakRef )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expression)
+      return result
+
 endClass

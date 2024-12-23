@@ -1875,7 +1875,6 @@ class Resolver : Poolable, Visitor
 
       return visit( ContextBlock(t, cmd_table, build_list) )
 
-    #{
     method on_visit( cmd:WeakRef )->Cmd
       local expression = visit( cmd.expression )
       local type = expression.require_type
@@ -1890,7 +1889,6 @@ class Resolver : Poolable, Visitor
           Args(expression)
         ).[ library_context = Program.default_library ]
       )
-    }#
 
     method on_visit( cmd:Which )->Cmd
       if (cmd.is_resolved) return cmd
