@@ -3,7 +3,6 @@ library UI
 class VList : VBox
   METHODS
     method init_object
-      shrink_to_fit_height
       alignment = Anchor.TOP_LEFT
 
 endClass
