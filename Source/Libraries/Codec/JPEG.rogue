@@ -88,16 +88,16 @@ class JPEGDecoder
       # If we expanded the bitmap size to a power of two, extend the right
       # and/or bottom edges to prevent artifacts when used as a texture.
       if (image_width < w)
-        dest_bitmap.blit( Box(image_width-1,0,1,image_height), dest_bitmap, IntXY(image_width,0) )
+        dest_bitmap.blit( Box(image_width-1,0,1,image_height), dest_bitmap, XY(image_width,0) )
       endIf
       if (image_height < h)
-        dest_bitmap.blit( Box(0,image_height-1,image_width,1), dest_bitmap, IntXY(0,image_height) )
+        dest_bitmap.blit( Box(0,image_height-1,image_width,1), dest_bitmap, XY(0,image_height) )
       endIf
 
       return dest_bitmap
 
-    method image_size->IntXY
-      return IntXY( image_width, image_height )
+    method image_size->XY
+      return XY( image_width, image_height )
 
   NATIVE
     nativeHeader...

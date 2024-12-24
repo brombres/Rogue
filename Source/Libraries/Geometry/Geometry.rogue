@@ -5,9 +5,6 @@ $include Geometry/Box
 $include Geometry/Circle
 $include Geometry/Corners
 $include Geometry/Ellipse
-$include Geometry/IntBox
-$include Geometry/IntCorners
-$include Geometry/IntXY
 $include Geometry/Line
 $include Geometry/LineGenerator
 $include Geometry/Quad
@@ -19,7 +16,7 @@ $include Geometry/XYZW
 
 augment Rogue::Console
   METHODS
-    method size->Geometry::IntXY
-      return Geometry::IntXY(width,height)
+    method size->Geometry::XY
+      return Geometry::XY(width,height)
 
 endAugment

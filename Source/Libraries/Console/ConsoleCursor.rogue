@@ -1,8 +1,8 @@
 class ConsoleCursor [compound]
   # API
   #   Console.cursor = (x,y)  # Defined in Console.set_cursor(), (0,0) is top-left
-  #   Console.cursor->IntXY   # (0,0) is top-left
-  #   Console.cursor.position->IntXY  # Same as above
+  #   Console.cursor->XY   # (0,0) is top-left
+  #   Console.cursor.position->XY  # Same as above
   #   Console.cursor += (delta_x,delta_y)
   #   Console.cursor.save_position
   #   Console.cursor.restore_position
@@ -24,7 +24,7 @@ class ConsoleCursor [compound]
       endIf
       output.flush
 
-    method position->IntXY
+    method position->XY
       local x, y : Int
       native
       @|
@@ -54,7 +54,7 @@ class ConsoleCursor [compound]
        |  --$x;
        |  --$y;
        |#endif
-      return IntXY(x,y)
+      return XY(x,y)
 
     method print_to( buffer:PrintWriter )
       position.print_to( buffer )
@@ -73,7 +73,7 @@ class ConsoleCursor [compound]
     method show( output=Global:PrintWriter )
       hide( false, output )
 
-    method to->IntXY
+    method to->XY
       return position
 
     method to->String
