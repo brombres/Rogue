@@ -261,9 +261,6 @@ class Box( position:XY, size:XY ) [essential compound]
     method to->Circle
       return Circle( center, size.max/2 )
 
-    method to->IntBox
-      return IntBox( position, size )
-
     method to->Quad
       return Quad( this )
 

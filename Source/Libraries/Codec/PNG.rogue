@@ -140,8 +140,8 @@ class PNGDecoder
 
       return dest_bitmap
 
-    method image_size->IntXY
-      return IntXY( image_width, image_height )
+    method image_size->XY
+      return XY( image_width, image_height )
 endClass
 
 

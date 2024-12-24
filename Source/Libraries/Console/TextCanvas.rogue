@@ -9,11 +9,11 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     width        : Int
     height       : Int
 
-    cursor       : IntXY
+    cursor       : XY
     autoscroll   : Logical
     style        = CurrentCharacterStyle()
 
-    clip         : IntBox?
+    clip         : Box?
 
     _is_flushing : Logical
 
@@ -59,7 +59,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
     method clear( fill:StyledCharacter )
       forEach (i of buffer) buffer[i] = fill
-      cursor = IntXY(0,0)
+      cursor = XY(0,0)
 
     method clear( fill=' ':Character )
       clear( StyledCharacter(fill,style.current) )
@@ -125,7 +125,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       ConsoleStyle.reset
       style.reset
 
-    method display( xy:IntXY )
+    method display( xy:XY )
       display( xy.x, xy.y )
 
     method draw( src:TextCanvas, x:Int, y:Int )
@@ -173,25 +173,25 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
         dest_i1 += dest_width
       endForEach
 
-    method draw( src:TextCanvas, xy:IntXY )
+    method draw( src:TextCanvas, xy:XY )
       draw( src, xy.x, xy.y )
 
-    method draw( bounds:IntBox, ch:Character )
+    method draw( bounds:Box, ch:Character )
       draw( bounds, StyledCharacter(ch,style.current) )
 
-    method draw( bounds:IntBox, ch:StyledCharacter )
+    method draw( bounds:Box, ch:StyledCharacter )
       local w = bounds.width
       local h = bounds.height
       local x1 = bounds.x    : Int
       local y1 = bounds.y    : Int
       local x2 = bounds.x2-1 : Int
       local y2 = bounds.y2-1 : Int
-      fill( IntBox(x1,y1,w,1), ch )
-      fill( IntBox(x1,y2,w,1), ch )
-      fill( IntBox(x1,y1+1,1,h-2), ch )
-      fill( IntBox(x2,y1+1,1,h-2), ch )
+      fill( Box(x1,y1,w,1), ch )
+      fill( Box(x1,y2,w,1), ch )
+      fill( Box(x1,y1+1,1,h-2), ch )
+      fill( Box(x2,y1+1,1,h-2), ch )
 
-    method draw( bounds:IntBox, pattern:String )
+    method draw( bounds:Box, pattern:String )
       # Pattern: "ABCDEFGHI" where:
       #   ABC
       #   D F
@@ -207,39 +207,39 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       local y1 = bounds.y    : Int
       local x2 = (bounds.x2-1).clamped_low(x1) : Int
       local y2 = (bounds.y2-1).clamped_low(y1) : Int
-      fill( IntBox(x1+1,y1,(w-2).clamped_low(0),1), pattern[1%pattern.count] )
-      fill( IntBox(x1+1,y2,(w-2).clamped_low(0),1), pattern[7%pattern.count] )
-      fill( IntBox(x1,y1+1,1,(h-2).clamped_low(0)), pattern[3%pattern.count] )
-      fill( IntBox(x2,y1+1,1,(h-2).clamped_low(0)), pattern[5%pattern.count] )
+      fill( Box(x1+1,y1,(w-2).clamped_low(0),1), pattern[1%pattern.count] )
+      fill( Box(x1+1,y2,(w-2).clamped_low(0),1), pattern[7%pattern.count] )
+      fill( Box(x1,y1+1,1,(h-2).clamped_low(0)), pattern[3%pattern.count] )
+      fill( Box(x2,y1+1,1,(h-2).clamped_low(0)), pattern[5%pattern.count] )
       set( x1, y1, pattern[0] )
       set( x2, y1, pattern[2%pattern.count] )
       set( x1, y2, pattern[6%pattern.count] )
       set( x2, y2, pattern[8%pattern.count] )
 
-    method draw( text_image:String, width:Int, position=IntXY.zero:IntXY )
+    method draw( text_image:String, width:Int, position=XY.zero:XY )
       local height = text_image.count / width
       local src = 0
       forEach (j in 0..<height)
         forEach (i in 0..<width)
-          set( position+IntXY(i,j), text_image[src] )
+          set( position+XY(i,j), text_image[src] )
           ++src
         endForEach
       endForEach
 
-    method draw( characters:StyledCharacter[], width:Int, position=IntXY.zero:IntXY )
+    method draw( characters:StyledCharacter[], width:Int, position=XY.zero:XY )
       local height = characters.count / width
       local src = 0
       forEach (j in 0..<height)
         forEach (i in 0..<width)
-          set( position+IntXY(i,j), characters[src] )
+          set( position+XY(i,j), characters[src] )
           ++src
         endForEach
       endForEach
 
     method draw( pattern:String )
-      draw( IntBox(width,height), pattern )
+      draw( Box(width,height), pattern )
 
-    method draw_frame( bounds:IntBox, &thick )
+    method draw_frame( bounds:Box, &thick )
       # Draws a box-character frame, e.g.:
       # ┌───────┐ ┏━━━━━━┓
       # │Default│ ┃&thick┃
@@ -263,14 +263,14 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       height = dest.height
       invalidate
 
-    method fill( bounds:IntBox, ch:Character )
+    method fill( bounds:Box, ch:Character )
       fill( bounds, StyledCharacter(ch,style.current) )
 
     method fill( ch:Character )
-      fill( IntBox(width,height), StyledCharacter(ch,style.current) )
+      fill( Box(width,height), StyledCharacter(ch,style.current) )
 
-    method fill( bounds:IntBox, ch:StyledCharacter )
-      local intersection = bounds & IntBox(width,height)
+    method fill( bounds:Box, ch:StyledCharacter )
+      local intersection = bounds & Box(width,height)
       if (not intersection) return
       if (clip) intersection = intersection.value & clip.value
       if (not intersection) return
@@ -288,9 +288,9 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       endLoop
 
     method fill( ch:StyledCharacter )
-      fill( IntBox(width,height), ch )
+      fill( Box(width,height), ch )
 
-    method fill( bounds:IntBox, pattern:String )
+    method fill( bounds:Box, pattern:String )
       # Pattern: "ABCDEFGHI" where:
       #   ABC
       #   DEF
@@ -304,7 +304,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       draw( bounds, pattern )
 
     method fill( pattern:String )
-      fill( IntBox(0,0,width,height), pattern )
+      fill( Box(0,0,width,height), pattern )
 
     method flipped( &h, &v )->TextCanvas
       if (not v) h = true
@@ -355,15 +355,15 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       forEach (ch in buffer)
         if (ch == '\r') nextIteration
         if (ch == '\n')
-          @cursor = IntXY(x1,cursor.y+1)
+          @cursor = XY(x1,cursor.y+1)
           if (autoscroll and cursor.y > height)
             local delta = (cursor.y - height)
             shift( 0, -delta )
-            @cursor -= IntXY(0,delta)
+            @cursor -= XY(0,delta)
           endIf
         else
           set( cursor, ch )
-          @cursor += IntXY(1,0)
+          @cursor += XY(1,0)
         endIf
       endForEach
       buffer.clear
@@ -372,7 +372,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       if (i < 0 or j < 0 or i >= width or j >= height) return StyledCharacter(0)
       return buffer[ j*width + i ]
 
-    method get( xy:IntXY )->StyledCharacter
+    method get( xy:XY )->StyledCharacter
       return get( xy.x, xy.y )
 
     method invalidate
@@ -381,8 +381,8 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       local zero = StyledCharacter(0)
       displayed[ forEach of displayed ] = zero
 
-    method invalidate( bounds:IntBox )
-      local intersection = bounds & IntBox(width,height)
+    method invalidate( bounds:Box )
+      local intersection = bounds & Box(width,height)
       if (not intersection) return
       bounds = intersection.value
 
@@ -452,7 +452,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
       return result
 
-    method resize( new_size:IntXY )
+    method resize( new_size:XY )
       resize( new_size.x, new_size.y )
 
     method resize( new_width:Int, new_height:Int )
@@ -484,28 +484,28 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       return result
 
     method set( i:Int, j:Int, ch:Character )
-      local clip = which{ this.clip || IntBox(0,0,width,height) }
+      local clip = which{ this.clip || Box(0,0,width,height) }
       if (i < clip.x or j < clip.y or i >= clip.x2 or j >= clip.y2)
         return
       endIf
       buffer[ j*width + i ] = StyledCharacter(ch,style.current)
 
     method set( i:Int, j:Int, ch:StyledCharacter )
-      local clip = which{ this.clip || IntBox(0,0,width,height) }
+      local clip = which{ this.clip || Box(0,0,width,height) }
       if (i < clip.x or j < clip.y or i >= clip.x2 or j >= clip.y2) return
       buffer[ j*width + i ] = ch
 
-    method set( xy:IntXY, ch:Character )
+    method set( xy:XY, ch:Character )
       set( xy.x, xy.y, ch )
 
-    method set( xy:IntXY, ch:StyledCharacter )
+    method set( xy:XY, ch:StyledCharacter )
       set( xy.x, xy.y, ch )
 
-    method set_clip( new_clip:IntBox? )
+    method set_clip( new_clip:Box? )
       flush
       @clip = new_clip
 
-    method set_cursor( new_pos:IntXY )
+    method set_cursor( new_pos:XY )
       flush
       @cursor = new_pos
 
@@ -526,7 +526,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
           --index
           buffer[index+offset] = buffer[index]
         endWhile
-        fill( IntBox(0,0,which{dx||width},which{dy||height}), fill_ch )
+        fill( Box(0,0,which{dx||width},which{dy||height}), fill_ch )
       else
         # Iterate forward, copying backward
         local offset = -(dy*width + dx)
@@ -537,14 +537,14 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
           ++index
         endWhile
         if (dx)
-          fill( IntBox(width+dx,0,-dx,height), fill_ch )
+          fill( Box(width+dx,0,-dx,height), fill_ch )
         else
-          fill( IntBox(0,height+dy,width,-dy), fill_ch )
+          fill( Box(0,height+dy,width,-dy), fill_ch )
         endIf
       endIf
 
-    method size->IntXY
-      return IntXY(width,height)
+    method size->XY
+      return XY(width,height)
 
     method style->CurrentCharacterStyle
       flush

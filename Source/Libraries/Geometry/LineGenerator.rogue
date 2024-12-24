@@ -7,7 +7,7 @@ class LineGenerator(
   ) [compound]
 
   GLOBAL METHODS
-    method create( a:IntXY, b:IntXY )->LineGenerator
+    method create( a:XY, b:XY )->LineGenerator
       local delta = b - a
       return LineGenerator(
         a.x, b.x, a.x, delta.x.sign, delta.x.abs,
@@ -56,8 +56,8 @@ class LineGenerator(
     method is_finished->Logical
       return (x == x2 and y == y2)
 
-    method read->IntXY [mutating]
-      local result = IntXY(x,y)
+    method read->XY [mutating]
+      local result = XY(x,y)
       if (is_finished) has_another = false
       else             advance
       return result
@@ -71,8 +71,8 @@ class LineGenerator(
         return (y2 - y) / step_y
       endIf
 
-    method to->IntXY
-      return IntXY( x, y )
+    method to->XY
+      return XY( x, y )
 
     method width->Int
       return x_error + 1

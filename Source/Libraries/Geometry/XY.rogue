@@ -15,9 +15,6 @@ class XY( x:Real, y:Real ) [compound]
     method create( n:Real )->XY
       return XY(n,n)
 
-    method create( xy:IntXY )->XY
-      return XY(xy.x,xy.y)
-
     method operator+( a:XY, b:XY )->XY
       return XY( a.x+b.x, a.y+b.y )
 
@@ -30,26 +27,14 @@ class XY( x:Real, y:Real ) [compound]
     method operator*( a:XY, b:Real )->XY
       return XY( a.x*b, a.y*b )
 
-    method operator*( a:XY, b:IntXY )->XY
-      return XY( a.x*b.x, a.y*b.y )
-
-    method operator*( a:IntXY, b:XY )->XY
-      return XY( a.x*b.x, a.x*b.y )
-
     method operator/( a:XY, b:XY )->XY
       return XY( a.x/b.x, a.y/b.y )
 
     method operator/( a:XY, b:Real )->XY
       return XY( a.x/b, a.y/b )
 
-    method operator/( a:XY, b:IntXY )->XY
-      return XY( a.x/b.x, a.y/b.y )
-
     method operator/( a:Real, b:XY )->XY
       return XY( a/b.x, a/b.y )
-
-    method operator/( a:IntXY, b:XY )->XY
-      return XY( a.x/b.x, a.x/b.y )
 
     method operator%( a:XY, b:XY )->XY
       return XY( a.x%b.x, a.y%b.y )
@@ -60,9 +45,6 @@ class XY( x:Real, y:Real ) [compound]
 
     method operator%( a:Real, b:XY )->XY
       return XY( a%b.x, a%b.y )
-
-    method operator%( a:IntXY, b:XY )->XY
-      return XY( a.x%b.x, a.x%b.y )
 
     method operator^( a:XY, b:XY )->XY
       return XY( a.x^b.x, a.y^b.y )
@@ -160,7 +142,7 @@ class XY( x:Real, y:Real ) [compound]
     method clamped_low( limit:XY )->XY
       return XY( this.x.clamped_low(limit.x), this.y.clamped_low(limit.y) )
 
-    method cross( other:IntXY )->Real
+    method cross( other:XY )->Real
       return x * other.y - y * other.x
 
     method degrees->Degrees
@@ -169,7 +151,7 @@ class XY( x:Real, y:Real ) [compound]
     method distance_to( other:XY )->Int
       return (other - this).magnitude
 
-    method dot( other:IntXY )->Real
+    method dot( other:XY )->Real
       return x * other.x + y * other.y
 
     method floor->XY

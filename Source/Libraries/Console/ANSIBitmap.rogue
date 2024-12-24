@@ -143,8 +143,8 @@ class ANSIBitmap
 
       return canvas
 
-    method size->IntXY
-      return IntXY(width,height)
+    method size->XY
+      return XY(width,height)
 
 endClass
 

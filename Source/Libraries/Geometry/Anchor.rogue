@@ -24,17 +24,17 @@ class Anchor( position:XY ) [compound]
     RIGHT_BOTTOM  = BOTTOM_RIGHT
 
   GLOBAL METHODS
-    method operator*( size:IntXY, anchor:Anchor )->IntXY
+    method operator*( size:XY, anchor:Anchor )->XY
       # size * anchor -> delta (or the anchor position within the area (0,0,size))
-      # Display.size * Anchor.TOP_LEFT     -> IntXY(0,0)
+      # Display.size * Anchor.TOP_LEFT     -> XY(0,0)
       # Display.size * Anchor.BOTTOM_RIGHT -> Display.size
-      return IntXY( anchor.position.x*size.x, anchor.position.y*size.y )
+      return XY( anchor.position.x*size.x, anchor.position.y*size.y )
 
-    method operator*( anchor:Anchor, size:IntXY )->IntXY
+    method operator*( anchor:Anchor, size:XY )->XY
       # anchor * size -> delta (or the anchor position within the area (0,0,size))
-      # Anchor.TOP_LEFT     * Display.size -> IntXY(0,0)
+      # Anchor.TOP_LEFT     * Display.size -> XY(0,0)
       # Anchor.BOTTOM_RIGHT * Display.size -> Display.size
-      return IntXY( anchor.position.x*size.x, anchor.position.y*size.y )
+      return XY( anchor.position.x*size.x, anchor.position.y*size.y )
 
   METHODS
     method hashcode->Int

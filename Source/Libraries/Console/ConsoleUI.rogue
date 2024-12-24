@@ -202,7 +202,7 @@ class ConsoleUI : UI
 
     method set_clip( @clip )
       if local clip_value = clip
-        ConsoleUICanvas.clip = clip_value->IntBox
+        ConsoleUICanvas.clip = clip_value
       else
         ConsoleUICanvas.clip = null
       endIf

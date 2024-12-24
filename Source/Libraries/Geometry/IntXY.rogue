@@ -227,3 +227,40 @@ augment Rogue::Random
       return Geometry::IntXY( int32(limit.x), int32(limit.y) )
 endAugment
 
+augment Rogue::XY
+  GLOBAL METHODS
+    method create( xy:IntXY )->XY
+      return XY(xy.x,xy.y)
+
+    method operator*( a:XY, b:IntXY )->XY
+      return XY( a.x*b.x, a.y*b.y )
+
+    method operator*( a:IntXY, b:XY )->XY
+      return XY( a.x*b.x, a.x*b.y )
+
+    method operator/( a:XY, b:IntXY )->XY
+      return XY( a.x/b.x, a.y/b.y )
+
+    method operator/( a:IntXY, b:XY )->XY
+      return XY( a.x/b.x, a.x/b.y )
+
+    method operator%( a:IntXY, b:XY )->XY
+      return XY( a.x%b.x, a.x%b.y )
+
+  METHODS
+
+endAugment
+
+augment Rogue::XYZ
+  GLOBAL METHODS
+    method create( xy:IntXY )->XYZ
+      return XYZ( xy.x, xy.y, 0 )
+
+    method create( xy:IntXY, z:Real )->XYZ
+      return XYZ( xy.x, xy.y, z )
+
+  METHODS
+    method to->IntXY [essential]
+      return IntXY(x.floor,y.floor)
+
+endAugment

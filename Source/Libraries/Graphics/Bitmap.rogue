@@ -52,7 +52,7 @@ class Bitmap
       endIf
       return result
 
-    method create( existing:Bitmap, subset:IntBox )->Bitmap
+    method create( existing:Bitmap, subset:Box )->Bitmap
       return existing.extract( subset )
 
     method encode_data( bytes:Byte[], width=0:Int )->Bitmap
@@ -152,18 +152,18 @@ class Bitmap
     error                  : String
 
   METHODS
-    method init( size:IntXY, color=Color(0):Color ) [essential]
+    method init( size:XY, color=Color(0):Color ) [essential]
       init( size.x, size.y, color )
 
     method init( width, height, color:Color ) [essential]
       init( width, height, Dim<<Graphics::Color>>( width*height ).[fill(color)] )
 
-    method init( size:IntXY, pixels )
+    method init( size:XY, pixels )
       init( size.x, size.y, pixels )
 
     method init( width, height, pixels )
 
-    method init( existing:Bitmap, bounds:IntBox )
+    method init( existing:Bitmap, bounds:Box )
       init( bounds.size )
       existing.blit( this, -bounds.position )
 
@@ -186,20 +186,20 @@ class Bitmap
       forEach (1..width*rows) pixels.add( color )
       height += rows
 
-    method all_pixels_are_transparent( bounds=null:IntBox? )->Logical
-      if (not bounds) bounds = IntBox( size )
+    method all_pixels_are_transparent( bounds=null:Box? )->Logical
+      if (not bounds) bounds = Box( size )
       return RequireAllTransparentPixels.check( this, bounds.value )
 
     method blit( dest_bitmap:Bitmap, x:Int, y:Int, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
-      blit( dest_bitmap, IntXY(x,y), &=blit_fn )
+      blit( dest_bitmap, XY(x,y), &=blit_fn )
 
-    method blit( dest_bitmap:Bitmap, pos=IntXY(0,0):IntXY, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
-      blit( IntBox(0,0,size), dest_bitmap, pos, &=blit_fn )
+    method blit( dest_bitmap:Bitmap, pos=XY(0,0):XY, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
+      blit( Box(0,0,size), dest_bitmap, pos, &=blit_fn )
 
-    method blit( bounds:IntBox, dest_bitmap:Bitmap, x:Int, y:Int, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
-      blit( bounds, dest_bitmap, IntXY(x,y), &=blit_fn )
+    method blit( bounds:Box, dest_bitmap:Bitmap, x:Int, y:Int, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
+      blit( bounds, dest_bitmap, XY(x,y), &=blit_fn )
 
-    method blit( bounds:IntBox, dest_bitmap:Bitmap, dest_position=IntXY(0,0):IntXY, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
+    method blit( bounds:Box, dest_bitmap:Bitmap, dest_position=XY(0,0):XY, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
       local src_x1  = bounds.position.x->Int
       local src_y1  = bounds.position.y->Int
       local w       = bounds.width->Int
@@ -284,7 +284,7 @@ class Bitmap
       if (left == 0 and top == 0 and right == 0 and bottom == 0) return
 
       local result = Bitmap( width-(left+right), height-(top+bottom), pad_color )
-      blit( result, IntXY(-left,-top) )
+      blit( result, XY(-left,-top) )
 
       this.width = result.width
       this.height = result.height
@@ -293,8 +293,8 @@ class Bitmap
     method crop( new_width:Int, new_height:Int, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )
       if (width == new_width and height == new_height) return
 
-      local new_size = IntXY( new_width, new_height )
-      local bounds = IntBox(this.size).positioned_within( IntBox(new_size), anchor )
+      local new_size = XY( new_width, new_height )
+      local bounds = Box(this.size).positioned_within( Box(new_size), anchor )
       local reframed = Bitmap( new_size, pad_color )
       blit( reframed, bounds.position )
 
@@ -302,12 +302,12 @@ class Bitmap
       this.height = reframed.height
       this.pixels = reframed.pixels
 
-    method crop( subset_bounds:IntBox )
+    method crop( subset_bounds:Box )
       local pos = subset_bounds.position
       local sz  = subset_bounds.size
       crop( pos.x, pos.y, width-(pos.x+sz.x), height-(pos.y+sz.y) )
 
-    method extract( subset_bounds:IntBox )->Bitmap
+    method extract( subset_bounds:Box )->Bitmap
       return cloned.[ crop(subset_bounds) ]
 
     method cropped( delta:Int, pad_color=Color(0):Color )->Bitmap
@@ -317,15 +317,15 @@ class Bitmap
       if (left == 0 and top == 0 and right == 0 and bottom == 0) return this
 
       local result = Bitmap( width-(left+right), height-(top+bottom), pad_color )
-      blit( result, IntXY(-left,-top) )
+      blit( result, XY(-left,-top) )
 
       return result
 
     method cropped( new_width:Int, new_height:Int, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )->Bitmap
       if (width == new_width and height == new_height) return this
 
-      local new_size = IntXY( new_width, new_height )
-      local bounds = IntBox(this.size).positioned_within( IntBox(new_size), anchor )
+      local new_size = XY( new_width, new_height )
+      local bounds = Box(this.size).positioned_within( Box(new_size), anchor )
       local reframed = Bitmap( new_size, pad_color )
       blit( reframed, bounds.position )
 
@@ -366,24 +366,24 @@ class Bitmap
       if (wp2 == width and hp2 == height) return
 
       local result = Bitmap( wp2, hp2 )
-      this.blit( result, IntXY(0,0) )
+      this.blit( result, XY(0,0) )
       width = result.width
       height = result.height
       pixels = result.pixels
 
-    method extend_edges( bounds:IntBox )
+    method extend_edges( bounds:Box )
       local x1 = bounds.position.x
       local y1 = bounds.position.y
       local w  = bounds.size.x
       local h  = bounds.size.y
       local x2 = x1 + (w - 1)
       local y2 = y1 + (h - 1)
-      blit( IntBox(x1,y1,w,1), this, IntXY(x1,y1-1) )  # top
-      blit( IntBox(x1,y2,w,1), this, IntXY(x1,y2+1) )  # bottom
-      blit( IntBox(x1,y1-1,1,h+2), this, IntXY(x1-1,y1-1) )  # left
-      blit( IntBox(x2,y1-1,1,h+2), this, IntXY(x2+1,y1-1) )  # right
+      blit( Box(x1,y1,w,1), this, XY(x1,y1-1) )  # top
+      blit( Box(x1,y2,w,1), this, XY(x1,y2+1) )  # bottom
+      blit( Box(x1,y1-1,1,h+2), this, XY(x1-1,y1-1) )  # left
+      blit( Box(x2,y1-1,1,h+2), this, XY(x2+1,y1-1) )  # right
 
-    method fill( box:IntBox, color:Color )
+    method fill( box:Box, color:Color )
       local x1 = box.position.x->Int
       local y1 = box.position.y->Int
       local x_limit = x1 + box.size.x->Int
@@ -414,7 +414,7 @@ class Bitmap
               |  dest += $row_skip;
               |}
 
-    method fill( box:IntBox, color:Color, channel_mask:Int )
+    method fill( box:Box, color:Color, channel_mask:Int )
       local x1 = box.position.x->Int
       local y1 = box.position.y->Int
       local x_limit = x1 + box.size.x->Int
@@ -635,7 +635,7 @@ class Bitmap
         return pixels[ y*width + x ]
       endIf
 
-    method get( xy:IntXY )->Color
+    method get( xy:XY )->Color
       return get( xy.x, xy.y )
 
     method is_opaque->Logical
@@ -652,19 +652,19 @@ class Bitmap
         |}
          return true
 
-    method draw( box:IntBox, color:Color )
-      fill( IntBox(box.top_left, IntXY(box.width,1)), color )
-      fill( IntBox(box.bottom_left-IntXY(0,1), IntXY(box.width,1)), color )
+    method draw( box:Box, color:Color )
+      fill( Box(box.top_left, XY(box.width,1)), color )
+      fill( Box(box.bottom_left-XY(0,1), XY(box.width,1)), color )
 
-      fill( IntBox(box.top_left,            IntXY(1,box.height)), color )
-      fill( IntBox(box.top_right - IntXY(1,0), IntXY(1,box.height)), color )
+      fill( Box(box.top_left,               XY(1,box.height)), color )
+      fill( Box(box.top_right - XY(1,0), XY(1,box.height)), color )
 
-    method draw( box:IntBox, color:Color, channel_mask:Int )
-      fill( IntBox(box.top_left, IntXY(box.width,1)), color, channel_mask )
-      fill( IntBox(box.bottom_left-IntXY(0,1), IntXY(box.width,1)), color, channel_mask )
+    method draw( box:Box, color:Color, channel_mask:Int )
+      fill( Box(box.top_left, XY(box.width,1)), color, channel_mask )
+      fill( Box(box.bottom_left-XY(0,1), XY(box.width,1)), color, channel_mask )
 
-      fill( IntBox(box.top_left,            IntXY(1,box.height)), color, channel_mask )
-      fill( IntBox(box.top_right - IntXY(1,0), IntXY(1,box.height)), color, channel_mask )
+      fill( Box(box.top_left,            XY(1,box.height)), color, channel_mask )
+      fill( Box(box.top_right - XY(1,0), XY(1,box.height)), color, channel_mask )
 
     method draw( line:Line, color:Color, thickness=1:Real )
       if (thickness == 1)
@@ -682,7 +682,7 @@ class Bitmap
         while (line_generator.y < 0) line_generator.advance
 
         # All we know is we're going top to bottom. Could optimize further by adding
-        # Line/IntBox intersection and clip the line ahead of time.
+        # Line/Box intersection and clip the line ahead of time.
         loop
           local x = line_generator.x
           local y = line_generator.y
@@ -696,7 +696,7 @@ class Bitmap
 
       else
         local delta = line.b - line.a
-        fill( IntBox(0, -thickness/2, delta.magnitude, thickness).rotated( delta.radians ) + line.a, color )
+        fill( Box(0, -thickness/2, delta.magnitude, thickness).rotated( delta.radians ) + line.a, color )
       endIf
 
     method fill( quad:Quad, color:Color )
@@ -717,14 +717,14 @@ class Bitmap
       this.height = result.height
       this.pixels = result.pixels
 
-    method non_transparent_bounds->IntBox?
+    method non_transparent_bounds->Box?
       local w_limit = width
       local h_limit = height
 
       local top_h = 1
       block y1 = 0
         while (top_h < h_limit)
-          if (not all_pixels_are_transparent(IntBox(0,y1,w_limit,1)))
+          if (not all_pixels_are_transparent(Box(0,y1,w_limit,1)))
             --top_h
             escapeWhile
           endIf
@@ -738,7 +738,7 @@ class Bitmap
       local bottom_h = 1
       block y2 = h_limit - 1
         loop
-          if (not all_pixels_are_transparent(IntBox(0,y2,w_limit,1)))
+          if (not all_pixels_are_transparent(Box(0,y2,w_limit,1)))
             --bottom_h
             escapeLoop
           endIf
@@ -752,7 +752,7 @@ class Bitmap
       local left_w = 1
       block x1 = 0
         loop
-          if (not all_pixels_are_transparent(IntBox(x1,top_h,1,result_h)))
+          if (not all_pixels_are_transparent(Box(x1,top_h,1,result_h)))
             --left_w
             escapeLoop
           endIf
@@ -764,7 +764,7 @@ class Bitmap
       local right_w = 1
       block x2 = w_limit - 1
         loop
-          if (not all_pixels_are_transparent(IntBox(x2,top_h,1,result_h)))
+          if (not all_pixels_are_transparent(Box(x2,top_h,1,result_h)))
             --right_w
             escapeLoop
           endIf
@@ -775,7 +775,7 @@ class Bitmap
 
       local result_w = w_limit - (left_w + right_w)
 
-      return IntBox( left_w, top_h, result_w, result_h )
+      return Box( left_w, top_h, result_w, result_h )
 
     method operator+( rhs:Bitmap )->Bitmap
       # Join two bitmaps side by side - this on the left and rhs on the right.
@@ -828,9 +828,9 @@ class Bitmap
       crop( new_width, new_height, anchor, &=pad_color )
 
     method resize( new_width:Int, new_height:Int )
-      resize( IntXY(new_width,new_height) )
+      resize( XY(new_width,new_height) )
 
-    method resize( new_size:IntXY )
+    method resize( new_size:XY )
       if (new_size.x == width and new_size.y == height) return # no need to resize
       local result = resized( new_size )
       width = result.width
@@ -1012,9 +1012,9 @@ class Bitmap
       resize( (width*scale)->Int, (height*scale)->Int )
 
     method resized( new_width:Int, new_height:Int )->Bitmap
-      return resized( IntXY(new_width,new_height) )
+      return resized( XY(new_width,new_height) )
 
-    method resized( new_size:IntXY )->Bitmap
+    method resized( new_size:XY )->Bitmap
       local result = Bitmap( new_size )
       resize_to( result )
       return result
@@ -1085,11 +1085,11 @@ class Bitmap
         pixels[ y*width + x ] = color
       endIf
 
-    method set( xy:IntXY, color:Color )
+    method set( xy:XY, color:Color )
       set( xy.x, xy.y, color )
 
-    method size->IntXY
-      return IntXY( width, height )
+    method size->XY
+      return XY( width, height )
 
     method split( tiles_wide:Int, tiles_high:Int )->Bitmap[]
       local tiles = Bitmap[]( tiles_wide * tiles_high )
@@ -1097,7 +1097,7 @@ class Bitmap
       local h = height / tiles_high
       forEach (y in 0..<tiles_high)
         forEach (x in 0..<tiles_wide)
-          tiles.add( Bitmap(this,IntBox(x*w,y*h,w,h)) )
+          tiles.add( Bitmap(this,Box(x*w,y*h,w,h)) )
         endForEach
       endForEach
       return tiles
@@ -1129,7 +1129,7 @@ class Bitmap
 
     method trim->Logical
       if local bounds = non_transparent_bounds
-        if (bounds == IntBox(size)) return false
+        if (bounds == Box(size)) return false
         crop( bounds )
         return true
       else
@@ -1289,7 +1289,7 @@ class RequireAllTransparentPixels : BitmapBlitFn [singleton]
     success : Logical
 
   METHODS
-    method check( bitmap:Bitmap, bounds:IntBox )->Logical
+    method check( bitmap:Bitmap, bounds:Box )->Logical
       bitmap.blit( bounds, bitmap, bounds.position, this )
       return success
 

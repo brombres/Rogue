@@ -317,3 +317,9 @@ augment IntBox?
       return lhs.value | rhs
 endAugment
 
+augment Rogue::Box
+  METHODS
+    method to->IntBox
+      return IntBox( position, size )
+
+endClass

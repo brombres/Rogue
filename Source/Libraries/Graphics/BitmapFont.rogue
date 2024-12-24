@@ -81,7 +81,7 @@ class BitmapFont
     method bitmap( ch:BitmapFontCharacterInfo )->Bitmap
       return Bitmap( atlas, ch.bounds )
 
-    method draw( text:String, dest_bitmap:Bitmap, position:IntXY, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
+    method draw( text:String, dest_bitmap:Bitmap, position:XY, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
       draw( text, dest_bitmap, position.x, position.y, anchor, blit_fn )
 
     method draw( text:String, dest_bitmap:Bitmap, x:Int, y:Int, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
@@ -136,7 +136,7 @@ class BitmapFont
         return characters[ ch ]
       endIf
 
-    method measure( text:String )->IntXY
+    method measure( text:String )->XY
       local w = 0
       local max_w = 0
       local h = 0
@@ -173,7 +173,7 @@ class BitmapFont
       max_w .= or_larger( w )
       h += height
 
-      return IntXY( max_w, h )
+      return XY( max_w, h )
 
 endClass
 

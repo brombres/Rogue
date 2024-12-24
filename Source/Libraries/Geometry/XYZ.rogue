@@ -11,12 +11,6 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
 		method create( xy:XY, z:Real )->XYZ
       return XYZ( xy.x, xy.y, z )
 
-    method create( xy:IntXY )->XYZ
-      return XYZ( xy.x, xy.y, 0 )
-
-    method create( xy:IntXY, z:Real )->XYZ
-      return XYZ( xy.x, xy.y, z )
-
   METHODS
     method cross( other:XYZ )->XYZ
       return XYZ(
@@ -107,9 +101,6 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
 
     method to->String
       return "[$,$,$]" (x,y,z)
-
-    method to->IntXY [essential]
-      return IntXY(x.floor,y.floor)
 
     method xy->XY
       return XY(x,y)
