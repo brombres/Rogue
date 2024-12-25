@@ -304,6 +304,30 @@ class Variant [compound]
           object->(as [Variant:Variant]).clear
       endWhich
 
+    method cloned->Variant
+      local result : Variant
+      if (type <= TYPE_NULL)
+        native @|memcpy( &$result, &$this, sizeof($<<Variant>>) );
+      else
+        which (type)
+          case TYPE_LIST
+            result = @[]
+            result.object->(as Variant[]).reserve( count )
+            forEach (item in this)
+              result.add( item.cloned )
+            endForEach
+          case TYPE_TABLE
+            result = @{}
+            forEach (entry in entries)
+              result[entry.key.cloned] = entry.value.cloned
+            endForEach
+          others
+            result.type = type
+            result.object = object
+        endWhich
+      endIf
+      return result
+
     method contains( value:Variant )->Logical
       which (type)
         case TYPE_STRING, TYPE_FILE
