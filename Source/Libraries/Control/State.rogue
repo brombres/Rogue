@@ -56,6 +56,10 @@ class State<<$ExtendedType>>
 
     method init( duration, progress_fn=ProgressFn.LINEAR )
 
+    method allow_multiple_states_per_update->Logical
+      # Does change_state() etc. execute immediately or on the next call to updated()?
+      return false
+
     method and_then( state:$ExtendedType )->$ExtendedType
       if (state)
         local cur = this
@@ -130,7 +134,7 @@ class State<<$ExtendedType>>
     method progress->Real
       return which{ duration>0:progress_fn(t/duration) || 1.0 }
 
-    method start_next->$ExtendedType
+    method .start_next->$ExtendedType
       # Finds the successor to this state, adjusts links if necessary, and
       # returns it or the result of a call to its updated().
       if (next_state)
@@ -140,9 +144,10 @@ class State<<$ExtendedType>>
           next_state = next_state.also( concurrent_state )
           concurrent_state = null
         endIf
-        return next_state.updated
+        if (allow_multiple_states_per_update) return next_state.updated
+        else                                  return next_state
       elseIf (concurrent_state)
-        # start_next() is called after updated(), which has already updated 'concurrent_state' this tick.
+        # .start_next() is called after updated(), which has already updated 'concurrent_state' this tick.
         return concurrent_state
       else
         return null
@@ -187,7 +192,7 @@ class State<<$ExtendedType>>
 
       _handle_finish
 
-      return start_next
+      return .start_next
 
     method _handle_finish
       on_finish

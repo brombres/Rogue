@@ -1,4 +1,7 @@
 $include Control/State
 
 class Action : State<<Action>>
+  METHODS
+    method allow_multiple_states_per_update->Logical
+      return true
 endClass
