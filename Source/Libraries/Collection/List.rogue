@@ -110,6 +110,11 @@ class List<<$DataType>> : Poolable ListType
                 |);
       endIf
 
+    method count( item:$DataType )->Int
+      local n = 0
+      if ((forEach in this) == item) ++n
+      return n
+
     method count( query:Function($DataType)->Logical )->Int
       local n = 0
       if (query(forEach in this)) ++n
