@@ -1749,6 +1749,35 @@ class String : Poolable PrintWriter
     method to_utf8->Byte[]
       return this->Byte[]
 
+    method tidied->String
+      # Trims whitespace on either end and replaces interior runs of one or more spaces
+      # and/or tabs with single spaces.
+      local state = <discard_leading_whitespace>
+      use builder = StringPool
+        builder.reserve( count )
+        forEach (ch in this)
+          which (state)
+            case <discard_leading_whitespace>
+              if (not (ch == ' ' or ch == '\t'))
+                builder.print( ch )
+                state = <non_whitespace>
+              endIf
+            case <non_whitespace>
+              if (ch == ' ' or ch == '\t') state = <whitespace_run>
+              else                         builder.print( ch )
+            case <whitespace_run>
+              if (not (ch == ' ' or ch == '\t'))
+                builder.print ' '
+                builder.print ch
+                state = <non_whitespace>
+              endIf
+          endWhich
+        endForEach
+
+        if (builder == this) return this
+        else                 return builder.cloned
+      endUse
+
     method trimmed->String
       # Trim white spaces on both ends
       local i1 = 0
