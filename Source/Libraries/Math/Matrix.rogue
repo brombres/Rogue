@@ -52,29 +52,36 @@ class Matrix( ...
     r0c3:Real, r1c3:Real, r2c3:Real, r3c3:Real
     ) [compound]
 
+  # Row/Column <> Index Table
+  #
+  #     C0 C1 C2 C3
+  #    +-----------
+  # R0 | 0  4  8 12
+  # R1 | 1  5  9 13
+  # R2 | 2  6 10 14
+  # R3 | 3  7 11 15
+
+
   DEFINITIONS
     count = 16
+
+  GLOBAL PROPERTIES
+    normalized_depth = true
+    right_handed     = true
 
   GLOBAL METHODS
     method create->Matrix
       return Matrix( 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 )
 
-    method frustum( left:Real, right:Real, top:Real, bottom:Real, z_near:Real, z_far:Real )->Matrix
-      # Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
-      local m = Matrix()
-
-      m.r0c0 = 2 * z_near / (right - left)
-      m.r1c1 = 2 * z_near / (bottom - top)
-
-      m.r0c2 = (right + left) / (right - left)
-      m.r1c2 = (top + bottom) / (bottom - top)
-      m.r2c2 = z_far / (z_near - z_far)
-      m.r3c2 = -1
-
-      m.r2c3 = -2 * (z_far * z_near) / (z_far - z_near)
-      m.r3c3 = 0
-
-      return m
+    method frustum( left:Real, right:Real, bottom:Real, top:Real, z_near:Real, z_far:Real,
+      normalized_depth=Matrix.normalized_depth:Logical, &right_handed=Matrix.right_handed )->Matrix
+      local inverted_w = 1 / (right - left)
+      local inverted_h = 1 / (top - bottom)
+      local width      =  2 * z_near * inverted_w
+      local height     =  2 * z_near * inverted_h
+      local x          = (right + left) * inverted_w
+      local y          = (top + bottom) * inverted_h
+      return .projection( Box(x, y, width, height), z_near, z_far, &=normalized_depth, &=right_handed )
 
     method identity->Matrix
       local m = Matrix()
@@ -84,37 +91,48 @@ class Matrix( ...
       m.r3c3 = 1
       return m
 
-    method look_at( origin:XYZ, target:XYZ, up:XYZ )->Matrix
-      local f = (target - origin).normalized
-      local s = f.cross( up ).normalized
-      local t = s.cross( f )
+    method look_at( origin:XYZ, target:XYZ, up:XYZ, &right_handed=Matrix.right_handed )->Matrix
+      local view = which{ right_handed:(origin - target) || (target - origin) }.normalized
 
-      local result = Matrix(
-         s.x,
-         t.x,
-        -f.x,
-         0,
+      local uxv = up.cross( view )
 
-         s.y,
-         t.y,
-        -f.y,
-         0,
+      local _right : XYZ
+      if (uxv.dot(uxv) == 0)
+        if (right_handed) _right = XYZ( 1, 0, 0 )
+        else              _right = XYZ( -1, -1, -1 )
+      else
+        _right = uxv.normalized
+      endIf
 
-         s.z,
-         t.z,
-        -f.z,
-         0,
+      local _up = view.cross( _right )
 
-         0,
-         0,
-         0,
-         1
-      )
+      local m = Matrix()
 
-      return result * Matrix.translate( -origin )
+      m.r0c0 = _right.x
+      m.r1c0 = _up.x
+      m.r2c0 = view.x
+      m.r3c0 = 0
+
+      m.r0c1 = _right.y
+      m.r1c1 = _up.y
+      m.r2c1 = view.y
+      m.r3c1 = 0
+
+      m.r0c2 = _right.z
+      m.r1c2 = _up.z
+      m.r2c2 = view.z
+      m.r3c2 = 0
+
+      m.r0c3 = -_right.dot( origin )
+      m.r1c3 = -_up.dot( origin )
+      m.r2c3 = -view.dot( origin )
+      m.r3c3 = 1
+
+      return m
 
     method mode_2dx( width:Real, height:Real, depth_scale=1.0:Real,
-        perspective_center=XY(0.5,0.5):XY, &invert_y )->Matrix
+        perspective_center=XY(0.5,0.5):XY, &invert_y,
+        &normalized_depth=Matrix.normalized_depth, &right_handed=Matrix.right_handed )->Matrix
       local nominal_z = (width^2 + height^2).sqrt * depth_scale
       local max_z = -nominal_z * 2
       local k = (nominal_z + 1) * 2
@@ -126,18 +144,41 @@ class Matrix( ...
       if (invert_y) swapValues( top, bottom )
 
       return ...
-        Matrix.frustum( left, right, top, bottom, -1, (max_z*k)/3 ) ...
+        Matrix.frustum( left, right, top, bottom, -1, (max_z*k)/3, &=normalized_depth, &=right_handed ) ...
         * Matrix.translate( XYZ(-width*perspective_center.x,-height*perspective_center.y,nominal_z) )
 
-    method perspective( fov_y:Radians, aspect_ratio:Real, z_near:Real, z_far:Real )->Matrix
-      # Returns a right-handed projection matrix with Vulkan/D3D depth settings
+    method orthographic( left:Real, right:Real, bottom:Real, top:Real, near:Real, far:Real, offset:Real,
+      normalized_depth=Matrix.normalized_depth:Logical, &right_handed=Matrix.right_handed )->Matrix
       local m = Matrix()
-      local f = (fov_y * 0.5).tan
-      m.r0c0 = 1.0 / (f * aspect_ratio)
-      m.r1c1 = 1.0 / f
-      m.r2c2 = z_far / (z_near - z_far)
-      m.r2c3 = -(z_far * z_near) / (z_far - z_near)
-      m.r3c2 = -1
+      m.r0c0 = 2.0f / (right - left);
+      m.r1c1 = 2.0f / (top - bottom);
+      m.r2c2 = (which{ normalized_depth:1.0 || 2.0} / (far - near)) * which{right_handed:-1||1};
+      m.r3c0 = ((left + right ) / (left   - right)) + offset;
+      m.r3c1 = (top  + bottom) / (bottom - top);
+      m.r3c2 = which{ normalized_depth:near/(near-far) || (near+far)/(near-far) }
+      m.r3c3 = 1.0
+      return m
+
+    method perspective( fov_y:Radians, aspect_ratio:Real, z_near:Real, z_far:Real, normalized_depth=Matrix.normalized_depth:Logical, &right_handed=Matrix.right_handed )->Matrix
+      local h = 1.0 / (fov_y * 0.5).tan
+      local w = h / aspect_ratio
+      return .projection( Box(0, 0, w, h), z_near, z_far, &=normalized_depth, &=right_handed )
+
+    method .projection( bounds:Box, z_near:Real, z_far:Real, normalized_depth:Logical, &right_handed=Matrix.right_handed )->Matrix
+      local m = Matrix()
+
+      local z_delta = z_far - z_near;
+      local r2c2 = which{ normalized_depth:z_far/z_delta || (z_far+z_near)/z_delta }
+      local r2c3 = which{ normalized_depth:z_near*r2c2 || (2*z_far*z_near)/z_delta }
+
+      m.r0c0 = bounds.width;
+      m.r1c1 = bounds.height;
+      m.r0c2 = which{ right_handed: bounds.x || -bounds.x }
+      m.r1c2 = which{ right_handed: bounds.y || -bounds.y }
+      m.r2c2 = which{ right_handed:    -r2c2 ||      r2c2 }
+      m.r3c2 = which{ right_handed:     -1.0 ||       1.0 }
+      m.r2c3 = -r2c3;
+
       return m
 
     method rotate( degrees:DegreesXYZ )->Matrix
