@@ -11,6 +11,9 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
 		method create( xy:XY, z:Real )->XYZ
       return XYZ( xy.x, xy.y, z )
 
+    method zero->XYZ
+      return XYZ( 0, 0, 0 )
+
   METHODS
     method cross( other:XYZ )->XYZ
       return XYZ(
