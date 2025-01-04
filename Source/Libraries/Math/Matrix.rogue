@@ -66,22 +66,22 @@ class Matrix( ...
     count = 16
 
   GLOBAL PROPERTIES
-    normalized_depth = true
-    right_handed     = true
+    homogeneous_depth = false
+    left_handed       = false
 
   GLOBAL METHODS
     method create->Matrix
       return Matrix( 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 )
 
     method frustum( left:Real, right:Real, bottom:Real, top:Real, z_near:Real, z_far:Real,
-      normalized_depth=Matrix.normalized_depth:Logical, &right_handed=Matrix.right_handed )->Matrix
+        homogeneous_depth=Matrix.homogeneous_depth:Logical, &left_handed=Matrix.left_handed )->Matrix
       local inverted_w = 1 / (right - left)
       local inverted_h = 1 / (top - bottom)
       local width      =  2 * z_near * inverted_w
       local height     =  2 * z_near * inverted_h
       local x          = (right + left) * inverted_w
       local y          = (top + bottom) * inverted_h
-      return .projection( Box(x, y, width, height), z_near, z_far, &=normalized_depth, &=right_handed )
+      return .projection( Box(x, y, width, height), z_near, z_far, &=homogeneous_depth, &=left_handed )
 
     method identity->Matrix
       local m = Matrix()
@@ -91,15 +91,15 @@ class Matrix( ...
       m.r3c3 = 1
       return m
 
-    method look_at( origin:XYZ, target:XYZ, up:XYZ, &right_handed=Matrix.right_handed )->Matrix
-      local view = which{ right_handed:(origin - target) || (target - origin) }.normalized
+    method look_at( origin:XYZ, target:XYZ, up=XYZ(0,-1,0):XYZ, &left_handed=Matrix.left_handed )->Matrix
+      local view = which{ left_handed:(target - origin) || (origin - target) }.normalized
 
       local uxv = up.cross( view )
 
       local _right : XYZ
       if (uxv.dot(uxv) == 0)
-        if (right_handed) _right = XYZ( 1, 0, 0 )
-        else              _right = XYZ( -1, -1, -1 )
+        if (left_handed)  _right = XYZ( -1, -1, -1 )
+        else              _right = XYZ( 1, 0, 0 )
       else
         _right = uxv.normalized
       endIf
@@ -132,7 +132,7 @@ class Matrix( ...
 
     method mode_2dx( width:Real, height:Real, depth_scale=1.0:Real,
         perspective_center=XY(0.5,0.5):XY, &invert_y,
-        &normalized_depth=Matrix.normalized_depth, &right_handed=Matrix.right_handed )->Matrix
+        &homogeneous_depth=Matrix.homogeneous_depth, &left_handed=Matrix.left_handed )->Matrix
       local nominal_z = (width^2 + height^2).sqrt * depth_scale
       local max_z = -nominal_z * 2
       local k = (nominal_z + 1) * 2
@@ -144,39 +144,40 @@ class Matrix( ...
       if (invert_y) swapValues( top, bottom )
 
       return ...
-        Matrix.frustum( left, right, top, bottom, -1, (max_z*k)/3, &=normalized_depth, &=right_handed ) ...
+      Matrix.frustum( left, right, top, bottom, -1, (max_z*k)/3, &=homogeneous_depth, &=left_handed ) ...
         * Matrix.translate( XYZ(-width*perspective_center.x,-height*perspective_center.y,nominal_z) )
 
     method orthographic( left:Real, right:Real, bottom:Real, top:Real, near:Real, far:Real, offset:Real,
-      normalized_depth=Matrix.normalized_depth:Logical, &right_handed=Matrix.right_handed )->Matrix
+      homogeneous_depth=Matrix.homogeneous_depth:Logical, &left_handed=Matrix.left_handed )->Matrix
       local m = Matrix()
       m.r0c0 = 2.0f / (right - left);
       m.r1c1 = 2.0f / (top - bottom);
-      m.r2c2 = (which{ normalized_depth:1.0 || 2.0} / (far - near)) * which{right_handed:-1||1};
+      m.r2c2 = (which{homogeneous_depth:2.0 || 1.0} / (far - near)) * which{left_handed:1||-1};
       m.r3c0 = ((left + right ) / (left   - right)) + offset;
       m.r3c1 = (top  + bottom) / (bottom - top);
-      m.r3c2 = which{ normalized_depth:near/(near-far) || (near+far)/(near-far) }
+      m.r3c2 = which{ homogeneous_depth:(near+far)/(near-far) || near/(near-far) }
       m.r3c3 = 1.0
       return m
 
-    method perspective( fov_y:Radians, aspect_ratio:Real, z_near:Real, z_far:Real, normalized_depth=Matrix.normalized_depth:Logical, &right_handed=Matrix.right_handed )->Matrix
+    method perspective( fov_y:Radians, aspect_ratio:Real, z_near:Real, z_far:Real,
+        homogeneous_depth=Matrix.homogeneous_depth:Logical, &left_handed=Matrix.left_handed )->Matrix
       local h = 1.0 / (fov_y * 0.5).tan
       local w = h / aspect_ratio
-      return .projection( Box(0, 0, w, h), z_near, z_far, &=normalized_depth, &=right_handed )
+      return .projection( Box(0, 0, w, h), z_near, z_far, &=homogeneous_depth, &=left_handed )
 
-    method .projection( bounds:Box, z_near:Real, z_far:Real, normalized_depth:Logical, &right_handed=Matrix.right_handed )->Matrix
+    method .projection( bounds:Box, z_near:Real, z_far:Real, homogeneous_depth:Logical, &left_handed=Matrix.left_handed )->Matrix
       local m = Matrix()
 
       local z_delta = z_far - z_near;
-      local r2c2 = which{ normalized_depth:z_far/z_delta || (z_far+z_near)/z_delta }
-      local r2c3 = which{ normalized_depth:z_near*r2c2 || (2*z_far*z_near)/z_delta }
+      local r2c2 = which{ homogeneous_depth:(z_far+z_near)/z_delta || z_far/z_delta  }
+      local r2c3 = which{ homogeneous_depth:(2*z_far*z_near)/z_delta || z_near*r2c2  }
 
       m.r0c0 = bounds.width;
       m.r1c1 = bounds.height;
-      m.r0c2 = which{ right_handed: bounds.x || -bounds.x }
-      m.r1c2 = which{ right_handed: bounds.y || -bounds.y }
-      m.r2c2 = which{ right_handed:    -r2c2 ||      r2c2 }
-      m.r3c2 = which{ right_handed:     -1.0 ||       1.0 }
+      m.r0c2 = which{ left_handed:-bounds.x || bounds.x }
+      m.r1c2 = which{ left_handed:-bounds.y || bounds.y }
+      m.r2c2 = which{ left_handed:r2c2      ||    -r2c2 }
+      m.r3c2 = which{ left_handed:1.0       ||     -1.0 }
       m.r2c3 = -r2c3;
 
       return m
@@ -507,12 +508,27 @@ class Matrix( ...
       native( "(&$this->r0c0)[ $index ] = $value;" )
 
     method to->Matrix32
-      return Matrix32(
-        r0c0, r1c0, r2c0, r3c0,
-        r0c1, r1c1, r2c1, r3c1,
-        r0c2, r1c2, r2c2, r3c2,
-        r0c3, r1c3, r2c3, r3c3
-      )
+      local result : Matrix32
+      native
+      @|double* src  = (double*)(void*)&$this;
+       |float*  dest = (float*)(void*)&$result;
+       |dest[0] = (float) src[0];
+       |dest[1] = (float) src[1];
+       |dest[2] = (float) src[2];
+       |dest[3] = (float) src[3];
+       |dest[4] = (float) src[4];
+       |dest[5] = (float) src[5];
+       |dest[6] = (float) src[6];
+       |dest[7] = (float) src[7];
+       |dest[8] = (float) src[8];
+       |dest[9] = (float) src[9];
+       |dest[10] = (float) src[10];
+       |dest[11] = (float) src[11];
+       |dest[12] = (float) src[12];
+       |dest[13] = (float) src[13];
+       |dest[14] = (float) src[14];
+       |dest[15] = (float) src[15];
+      return result
 
     method to->String
       local min_whole_digits = 0
@@ -553,7 +569,6 @@ class Matrix( ...
         endForEach
         return 4
       endUse
-
 
 endClass
 
