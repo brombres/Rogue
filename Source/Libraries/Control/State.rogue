@@ -1,8 +1,5 @@
 $include Control/ProgressFn
 
-class State : State<<State>>
-endClass
-
 class State<<$ExtendedType>>
   DEFINITIONS
     # Duration values
