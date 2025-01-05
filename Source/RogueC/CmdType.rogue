@@ -613,6 +613,9 @@ augment
       if (result_discarded) return null
       return info.return_type
 
+    method CmdGlobalID.type->Type
+      return Type( t, "Rogue::GlobalID" )
+
     method ConditionalAccess.type->Type
       return access.type
 
