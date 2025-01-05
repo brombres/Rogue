@@ -187,14 +187,22 @@ class Matrix( ...
 
     method rotate( radians:RadiansXYZ )->Matrix
       if (radians.value.x)
-        local result = rotate_x( radians.value.x )
-        if (radians.value.y) result *= rotate_y( radians.value.y )
-        if (radians.value.z) result *= rotate_z( radians.value.z )
-        return result
+        if (radians.value.y)
+          if (radians.value.z)
+            return rotate_xyz( radians )
+          else
+            return rotate_xy( RadiansXY(radians.value.x,radians.value.y) )
+          endIf
+        elseIf (radians.value.z)
+          return rotate_xyz( radians )
+        endIf
+
       elseIf (radians.value.y)
-        local result = rotate_y( radians.value.y )
-        if (radians.value.z) result *= rotate_z( radians.value.z )
-        return result
+        if (radians.value.z)
+          return rotate_xyz( radians )
+        else
+          return rotate_y( radians.value.y )
+        endIf
       elseIf (radians.value.z)
         return rotate_z( radians.value.z )
       else
@@ -217,33 +225,101 @@ class Matrix( ...
       )
 
     method rotate_x( theta:Radians )->Matrix
-      local m = identity
+      local m : Matrix
       local sin0 = theta.sin
       local cos0 = theta.cos
+      m.r0c0 =     1
       m.r1c1 =  cos0
       m.r1c2 = -sin0
       m.r2c1 =  sin0
       m.r2c2 =  cos0
+      m.r3c3 =     1
       return m
 
     method rotate_y( theta:Radians )->Matrix
-      local m = identity
+      local m : Matrix
       local sin0 = theta.sin
       local cos0 = theta.cos
       m.r0c0 =  cos0
+      m.r1c1 =     1
       m.r0c2 =  sin0
       m.r2c0 = -sin0
       m.r2c2 =  cos0
+      m.r3c3 =     1
       return m
 
     method rotate_z( theta:Radians )->Matrix
-      local m = identity
+      local m : Matrix
       local sin0 = theta.sin
       local cos0 = theta.cos
       m.r0c0 =  cos0
       m.r0c1 = -sin0
       m.r1c0 =  sin0
       m.r1c1 =  cos0
+      m.r2c2 =     1
+      m.r3c3 =     1
+      return m
+
+    method rotate_xy( radians:RadiansXY )->Matrix
+      local m : Matrix
+
+      local sx = radians.value.x.sin
+      local cx = radians.value.x.cos
+      local sy = radians.value.y.sin
+      local cy = radians.value.y.cos
+
+      m.r0c0 =     cy
+      m.r2c0 =     sy
+      m.r0c1 =  sx*sy
+      m.r1c1 =     cx
+      m.r2c1 = -sx*cy
+      m.r0c2 = -cx*sy
+      m.r1c2 =     sx
+      m.r2c2 =  cx*cy
+      m.r3c3 =      1
+
+      return m
+
+    method rotate_xyz( radians:RadiansXYZ )
+      local sx = radians.value.x.sin
+      local cx = radians.value.x.cos
+      local sy = radians.value.y.sin
+      local cy = radians.value.y.cos
+      local sz = radians.value.z.sin
+      local cz = radians.value.z.cos
+
+      local m : Matrix
+      m.r0c0 =             cy*cz
+      m.r1c0 =            -cy*sz
+      m.r2c0 =                sy
+      m.r0c1 =  cz*sx*sy + cx*sz
+      m.r1c1 =  cx*cz - sx*sy*sz
+      m.r2c1 =            -cy*sx
+      m.r0c2 = -cx*cz*sy + sx*sz
+      m.r1c2 =  cz*sx + cx*sy*sz
+      m.r2c2 =             cx*cy
+      m.r3c3 =                 1
+      return m
+
+    method rotate_zyx( radians:RadiansXYZ )
+      local sx = radians.value.x.sin
+      local cx = radians.value.x.cos
+      local sy = radians.value.y.sin
+      local cy = radians.value.y.cos
+      local sz = radians.value.z.sin
+      local cz = radians.value.z.cos
+
+      local m : Matrix
+      m.r0c0 =             cy*cz
+      m.r1c0 =    cz*sx*sy-cx*sz
+      m.r2c0 =    cx*cz*sy+sx*sz
+      m.r0c1 =             cy*sz
+      m.r1c1 =  cx*cz + sx*sy*sz
+      m.r2c1 = -cz*sx + cx*sy*sz
+      m.r0c2 =               -sy
+      m.r1c2 =             cy*sx
+      m.r2c2 =             cx*cy
+      m.r3c3 =                 1
       return m
 
     method transform( size:XY, anchor:Anchor )->Matrix
@@ -353,6 +429,36 @@ class Matrix( ...
 
     method get( index:Int32 )->Real
       return native( "(&$this.r0c0)[ $index ]" )->Real
+
+    method inverted->Matrix
+      local det = 0.0
+      det += r0c0 * (r1c1*(r2c2*r3c3 - r3c2*r2c3) - r2c1*(r1c2*r3c3 - r3c2*r1c3) + r3c1*(r1c2*r2c3 - r2c2*r1c3))
+      det -= r1c0 * (r0c1*(r2c2*r3c3 - r3c2*r2c3) - r2c1*(r0c2*r3c3 - r3c2*r0c3) + r3c1*(r0c2*r2c3 - r2c2*r0c3))
+      det += r2c0 * (r0c1*(r1c2*r3c3 - r3c2*r1c3) - r1c1*(r0c2*r3c3 - r3c2*r0c3) + r3c1*(r0c2*r1c3 - r1c2*r0c3))
+      det -= r3c0 * (r0c1*(r1c2*r2c3 - r2c2*r1c3) - r1c1*(r0c2*r2c3 - r2c2*r0c3) + r2c1*(r0c2*r1c3 - r1c2*r0c3))
+      local inv_det = 1.0/det
+
+      local m : Matrix
+      m.r0c0 =  (r1c1*(r2c2*r3c3 - r2c3*r3c2) - r2c1*(r1c2*r3c3 - r1c3*r3c2) + r3c1*(r1c2*r2c3 - r1c3*r2c2) ) * inv_det
+      m.r1c0 = -(r1c0*(r2c2*r3c3 - r2c3*r3c2) - r2c0*(r1c2*r3c3 - r1c3*r3c2) + r3c0*(r1c2*r2c3 - r1c3*r2c2) ) * inv_det
+      m.r2c0 =  (r1c0*(r2c1*r3c3 - r2c3*r3c1) - r2c0*(r1c1*r3c3 - r1c3*r3c1) + r3c0*(r1c1*r2c3 - r1c3*r2c1) ) * inv_det
+      m.r3c0 = -(r1c0*(r2c1*r3c2 - r2c2*r3c1) - r2c0*(r1c1*r3c2 - r1c2*r3c1) + r3c0*(r1c1*r2c2 - r1c2*r2c1) ) * inv_det
+
+      m.r0c1 = -(r0c1*(r2c2*r3c3 - r2c3*r3c2) - r2c1*(r0c2*r3c3 - r0c3*r3c2) + r3c1*(r0c2*r2c3 - r0c3*r2c2) ) * inv_det
+      m.r1c1 =  (r0c0*(r2c2*r3c3 - r2c3*r3c2) - r2c0*(r0c2*r3c3 - r0c3*r3c2) + r3c0*(r0c2*r2c3 - r0c3*r2c2) ) * inv_det
+      m.r2c1 = -(r0c0*(r2c1*r3c3 - r2c3*r3c1) - r2c0*(r0c1*r3c3 - r0c3*r3c1) + r3c0*(r0c1*r2c3 - r0c3*r2c1) ) * inv_det
+      m.r3c1 =  (r0c0*(r2c1*r3c2 - r2c2*r3c1) - r2c0*(r0c1*r3c2 - r0c2*r3c1) + r3c0*(r0c1*r2c2 - r0c2*r2c1) ) * inv_det
+
+      m.r0c2 =  (r0c1*(r1c2*r3c3 - r1c3*r3c2) - r1c1*(r0c2*r3c3 - r0c3*r3c2) + r3c1*(r0c2*r1c3 - r0c3*r1c2) ) * inv_det
+      m.r1c2 = -(r0c0*(r1c2*r3c3 - r1c3*r3c2) - r1c0*(r0c2*r3c3 - r0c3*r3c2) + r3c0*(r0c2*r1c3 - r0c3*r1c2) ) * inv_det
+      m.r2c2 =  (r0c0*(r1c1*r3c3 - r1c3*r3c1) - r1c0*(r0c1*r3c3 - r0c3*r3c1) + r3c0*(r0c1*r1c3 - r0c3*r1c1) ) * inv_det
+      m.r3c2 = -(r0c0*(r1c1*r3c2 - r1c2*r3c1) - r1c0*(r0c1*r3c2 - r0c2*r3c1) + r3c0*(r0c1*r1c2 - r0c2*r1c1) ) * inv_det
+
+      m.r0c3 = -(r0c1*(r1c2*r2c3 - r1c3*r2c2) - r1c1*(r0c2*r2c3 - r0c3*r2c2) + r2c1*(r0c2*r1c3 - r0c3*r1c2) ) * inv_det
+      m.r1c3 =  (r0c0*(r1c2*r2c3 - r1c3*r2c2) - r1c0*(r0c2*r2c3 - r0c3*r2c2) + r2c0*(r0c2*r1c3 - r0c3*r1c2) ) * inv_det
+      m.r2c3 = -(r0c0*(r1c1*r2c3 - r1c3*r2c1) - r1c0*(r0c1*r2c3 - r0c3*r2c1) + r2c0*(r0c1*r1c3 - r0c3*r1c1) ) * inv_det
+      m.r3c3 =  (r0c0*(r1c1*r2c2 - r1c2*r2c1) - r1c0*(r0c1*r2c2 - r0c2*r2c1) + r2c0*(r0c1*r1c2 - r0c2*r1c1) ) * inv_det
+      return m
 
     method operator*( other:Matrix )->Matrix
       local result = Matrix()
