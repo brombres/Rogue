@@ -293,3 +293,35 @@ class XY32( x:Real32, y:Real32 ) [compound]
     method to->XY
       return XY( x, y )
 endClass
+
+class DegreesXY( value:XY ) [compound]
+  GLOBAL METHODS
+    method create( x:Real, y:Real )->DegreesXY
+      return DegreesXY( XY(x,y) )
+
+  METHODS
+    method to->RadiansXY
+      return RadiansXY( Degrees(value.x)->Radians, Degrees(value.y)->Radians )
+
+    method to->String
+      return %value
+
+    method to->XY
+      return value
+endClass
+
+class RadiansXY( value:XY ) [compound]
+  GLOBAL METHODS
+    method create( x:Real, y:Real )->RadiansXY
+      return RadiansXY( XY(x,y) )
+
+  METHODS
+    method to->DegreesXY
+      return DegreesXY( Radians(value.x)->Degrees, Radians(value.y)->Degrees )
+
+    method to->String
+      return %value
+
+    method to->XY
+      return value
+endClass

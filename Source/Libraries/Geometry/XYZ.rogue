@@ -109,6 +109,33 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
       return XY(x,y)
 endClass
 
+class XYZ32( x:Real32, y:Real32, z:Real32 ) [compound]
+  GLOBAL METHODS
+    method create( xyz:XYZ )->XYZ32
+      return XYZ32( xyz.x, xyz.y, xyz.z )
+
+  METHODS
+    method hashcode->Int
+      return x.hashcode ~ y.hashcode ~ z.hashcode
+
+    method operator?->Logical
+      return x or y or z
+
+    method operator<>( other:XY )->Int
+      if (x == other.x)
+        if (y == other.y)
+          return z <> other.z
+        else
+          return y <> other.y
+        endIf
+      else
+        return x <> other.x
+      endIf
+
+    method to->XYZ
+      return XYZ( x, y, z )
+endClass
+
 class DegreesXYZ( value:XYZ ) [compound]
   GLOBAL METHODS
     method create( x:Real, y:Real, z:Real )->DegreesXYZ
