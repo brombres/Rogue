@@ -83,6 +83,12 @@ class XYZW( x:Real, y:Real, z:Real, w=1:Real ) [compound]
 
     method to->XYZ
       return XYZ(x,y,z)
+
+    method xy->XY
+      return XY(x,y)
+
+    method xyz->XYZ
+      return XYZ(x,y,z)
 endClass
 
 augment Rogue::Random
