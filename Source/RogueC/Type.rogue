@@ -1653,7 +1653,7 @@ class Type : Cmd
 
       forEach (m in global_methods.values)
         if (methods.contains(m.signature))
-          throw m.t.error( "Duplicate definitions of $ as both a global method and an object method." )
+          throw m.t.error( "Duplicate definitions of $ as both a global method and an object method."(m) )
         endIf
       endForEach
 
