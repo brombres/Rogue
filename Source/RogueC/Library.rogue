@@ -263,7 +263,7 @@ class Library
 
         if (allow_unknown_library)
           # Create and return the library
-          lib = Program.get_library( t, mod_name )
+          lib = Program.get_library( t, mod_name.cloned )
           return (lib,type_name)
         endIf
 
