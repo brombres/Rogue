@@ -610,6 +610,25 @@ class Matrix( ...
         this[15]  * v.w
       )
 
+    method operator==( other:Matrix )->Logical
+      if (r0c0 != other.r0c0) return false
+      if (r1c0 != other.r1c0) return false
+      if (r2c0 != other.r2c0) return false
+      if (r3c0 != other.r3c0) return false
+      if (r0c1 != other.r0c1) return false
+      if (r1c1 != other.r1c1) return false
+      if (r2c1 != other.r2c1) return false
+      if (r3c1 != other.r3c1) return false
+      if (r0c2 != other.r0c2) return false
+      if (r1c2 != other.r1c2) return false
+      if (r2c2 != other.r2c2) return false
+      if (r3c2 != other.r3c2) return false
+      if (r0c3 != other.r0c3) return false
+      if (r1c3 != other.r1c3) return false
+      if (r2c3 != other.r2c3) return false
+      if (r3c3 != other.r3c3) return false
+      return true
+
     method set( index:Int32, value:Real ) [mutating]
       native( "(&$this->r0c0)[ $index ] = $value;" )
 
