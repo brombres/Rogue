@@ -133,7 +133,7 @@ class Matrix( ...
     method mode_2dx( width:Real, height:Real, depth_scale=1.0:Real,
         perspective_center=XY(0.5,0.5):XY, &invert_y,
         &homogeneous_depth=Matrix.homogeneous_depth, &left_handed=Matrix.left_handed )->Matrix
-      local nominal_z = (width^2 + height^2).sqrt * depth_scale
+      local nominal_z = ((width^2 + height^2).sqrt * depth_scale).floor
       local max_z = -nominal_z * 2
       local k = (nominal_z + 1) * 2
       local left = ((-2 * width) / k)  * perspective_center.x
@@ -144,18 +144,18 @@ class Matrix( ...
       if (invert_y) swapValues( top, bottom )
 
       return ...
-      Matrix.frustum( left, right, top, bottom, -1, (max_z*k)/3, &=homogeneous_depth, &=left_handed ) ...
-        * Matrix.translate( XYZ(-width*perspective_center.x,-height*perspective_center.y,nominal_z) )
+        Matrix.frustum( left, right, bottom, top, 1, (-max_z*k)/3, &=homogeneous_depth, &=left_handed ) ...
+        * Matrix.translate( XYZ(-width*perspective_center.x,-height*perspective_center.y,-nominal_z) )
 
-    method orthographic( left:Real, right:Real, bottom:Real, top:Real, near:Real, far:Real, offset:Real,
+    method orthographic( left:Real, right:Real, bottom:Real, top:Real, near:Real, far:Real, offset=0.0:Real,
       homogeneous_depth=Matrix.homogeneous_depth:Logical, &left_handed=Matrix.left_handed )->Matrix
       local m = Matrix()
       m.r0c0 = 2.0f / (right - left);
       m.r1c1 = 2.0f / (top - bottom);
       m.r2c2 = (which{homogeneous_depth:2.0 || 1.0} / (far - near)) * which{left_handed:1||-1};
-      m.r3c0 = ((left + right ) / (left   - right)) + offset;
-      m.r3c1 = (top  + bottom) / (bottom - top);
-      m.r3c2 = which{ homogeneous_depth:(near+far)/(near-far) || near/(near-far) }
+      m.r0c3 = ((left + right ) / (left   - right)) + offset;
+      m.r1c3 = (top  + bottom) / (bottom - top);
+      m.r2c3 = which{ homogeneous_depth:(near+far)/(near-far) || near/(near-far) }
       m.r3c3 = 1.0
       return m
 
