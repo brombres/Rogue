@@ -2533,7 +2533,7 @@ class String : Poolable PrintWriter
                  |      // %aaaaaaaa ->
                  |      // %110x xxaa 10aa aaaa
                  |      utf8[dest_i]   = 0xC0 | ((ch >> 6) & 0x03);
-                 |      utf8[dest_i+1] = 0x80 | ((ch >> 2) & 0x3F);
+                 |      utf8[dest_i+1] = 0x80 | (ch & 0x3F);
                  |      dest_i += 2;
                  |    }
                  |    else

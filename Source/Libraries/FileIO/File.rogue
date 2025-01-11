@@ -885,7 +885,7 @@ endAugment
 
 augment String
   GLOBAL METHODS
-    method create( file:File )->String
-      return file.load_as_string
+    method create( file:File, encoding=StringEncoding.AUTODETECT:StringEncoding )->String
+      return file.load_as_string( encoding )
 
 endAugment
