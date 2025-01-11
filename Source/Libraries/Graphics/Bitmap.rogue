@@ -652,6 +652,9 @@ class Bitmap
         |}
          return true
 
+    method is_power_of_2->Logical
+      return (width.to_power_of_2 == width and height.to_power_of_2 == height)
+
     method draw( box:Box, color:Color )
       fill( Box(box.top_left, XY(box.width,1)), color )
       fill( Box(box.bottom_left-XY(0,1), XY(box.width,1)), color )
@@ -702,20 +705,6 @@ class Bitmap
     method fill( quad:Quad, color:Color )
       fill( Triangle(quad.a,quad.b,quad.c), color )
       fill( Triangle(quad.a,quad.c,quad.d), color )
-
-    method make_power_of_2
-      local w = width
-      local wp2 = w.to_power_of_2
-      local h = height
-      local hp2 = h.to_power_of_2
-      if (w == wp2 and h == hp2) return
-
-      local result = Bitmap( wp2, hp2 )
-      this.blit( result, 0, 0 )
-
-      this.width = result.width
-      this.height = result.height
-      this.pixels = result.pixels
 
     method non_transparent_bounds->Box?
       local w_limit = width
