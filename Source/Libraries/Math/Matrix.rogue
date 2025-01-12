@@ -344,9 +344,7 @@ class Matrix( ...
       )
 
     method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Radians )->Matrix
-      # Returns a transformation matrix that will position a [0,0 1x1] coordinate box
-      # in 2DX space - everything is in 2D except for the Z coordinate that is applied
-      # at the end to move the image closer to (z > 0) or farther away from (z < 0) the camera.
+      # Returns a transformation matrix that will position a [0,0 1x1] coordinate box in 2D+ space
       local cos0 = rotation.cos
       local sin0 = rotation.sin
       local a    = -anchor.position
@@ -358,6 +356,31 @@ class Matrix( ...
         ((((sin0*size.x)*a.x) + ((cos0*size.y)*a.y)) + position.y),
         position.z,
         1
+      )
+
+    method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Radians, internal_size:XY )->Matrix
+      # Returns a transformation matrix that will position a [0,0 1x1] coordinate box in 2D+ space
+      local ix   = 1.0 / internal_size.x
+      local iy   = 1.0 / internal_size.y
+      local cos0 = rotation.cos
+      local sin0 = rotation.sin
+      local a    = -anchor.position
+      return Matrix(
+        (cos0*size.x)*ix,  (sin0*size.x)*ix, 0, 0,  # column 1
+        (-sin0*size.y)*iy, (cos0*size.y)*iy, 0, 0,  # column 2
+        0,                 0,                1, 0,  # column 3
+        ((((cos0*size.x)*a.x) + ((-sin0*size.y)*a.y)) + position.x),
+        ((((sin0*size.x)*a.x) + ((cos0*size.y)*a.y)) + position.y),
+        position.z,
+        1
+      )
+
+    method transform( position:XYZ, size:XY )->Matrix
+      return Matrix(
+        (size.x),   0,          0,          0,  # column 1
+        0,          (size.y),   0,          0,  # column 2
+        0,          0,          1,          0,  # column 3
+        position.x, position.y, position.z, 1   # column 4
       )
 
     method translate( delta:XY )->Matrix
