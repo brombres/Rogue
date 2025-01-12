@@ -5,6 +5,7 @@ uses Control
 uses Geometry
 uses Math/Quaternion
 
+$include Entity/Entity2D
 $include Entity/Entity3D
 $include Entity/Attributes
 
