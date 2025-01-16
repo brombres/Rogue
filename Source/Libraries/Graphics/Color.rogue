@@ -100,6 +100,9 @@ class Color( argb:Int32 ) [compound]
     method red_byte->Int
       return (argb :>>: 16) & 255
 
+    method rgba->Int32
+      return ((argb:<<:8) & 0xFFFFFF00) | ((argb:>>>:24) & 0x000000FF)
+
     method to->String
       return argb->String(&hex)
 
