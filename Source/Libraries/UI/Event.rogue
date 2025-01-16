@@ -77,6 +77,9 @@ class KeyEvent : Event
     method is_press( keycode:Keycode )->Logical
       return this.keycode == keycode and is_press
 
+    method is_printable->Logical
+      return unicode >= 32 and unicode != 127
+
     method is_repeat( keycode:Keycode )->Logical
       return this.keycode == keycode and is_repeat
 
@@ -128,7 +131,7 @@ class TextEvent : Event
     method init
       prior.init
 
-    method init( character, text )
+    method init( character, text=null )
       prior.init
 
     method init( existing:TextEvent )
