@@ -1,12 +1,6 @@
 library UI
 
 class Keyboard [singleton]
-  DEFINITIONS
-    SHIFT_MODIFIER_FLAG   = 1
-    CONTROL_MODIFIER_FLAG = 2
-    ALT_MODIFIER_FLAG     = 4
-    OS_MODIFIER_FLAG      = 8
-
   PROPERTIES
     key_pressed = Dim<<Logical>>( 256 )
 
@@ -15,16 +9,25 @@ class Keyboard [singleton]
       # Clears the key_pressed array - used when window focus is lost and regained
       key_pressed[ forEach of key_pressed ] = false
 
-    method modifier_key_state->Int
-      local state = 0
-      if (is_shift_pressed)   state |= SHIFT_MODIFIER_FLAG
-      if (is_control_pressed) state |= CONTROL_MODIFIER_FLAG
-      if (is_alt_pressed)     state |= ALT_MODIFIER_FLAG
-      if (is_os_pressed)      state |= OS_MODIFIER_FLAG
+    method modifier_state->KeyModifier
+      local state : KeyModifier
+      if (key_pressed[Keycode.LEFT_SHIFT.value])    state |= KeyModifier.LEFT_SHIFT
+      if (key_pressed[Keycode.RIGHT_SHIFT.value])   state |= KeyModifier.RIGHT_SHIFT
+      if (key_pressed[Keycode.LEFT_CONTROL.value])  state |= KeyModifier.LEFT_CONTROL
+      if (key_pressed[Keycode.RIGHT_CONTROL.value]) state |= KeyModifier.RIGHT_CONTROL
+      if (key_pressed[Keycode.LEFT_ALT.value])      state |= KeyModifier.LEFT_ALT
+      if (key_pressed[Keycode.RIGHT_ALT.value])     state |= KeyModifier.RIGHT_ALT
+      if (key_pressed[Keycode.LEFT_OS.value])       state |= KeyModifier.LEFT_OS
+      if (key_pressed[Keycode.RIGHT_OS.value])      state |= KeyModifier.RIGHT_OS
       return state
 
-    method is_key_pressed( keycode:Int )->Logical
-      return this.key_pressed[ keycode & 255 ]
+    method on( e:KeyEvent )
+      if (e.keycode.value)
+        key_pressed[ e.keycode.value ] = e.is_press
+      endIf
+
+    method is_key_pressed( keycode:Keycode )->Logical
+      return key_pressed[ keycode.value & 255 ]
 
     method is_alt_pressed->Logical
       return is_key_pressed(Keycode.LEFT_ALT) or is_key_pressed(Keycode.RIGHT_ALT)
@@ -39,174 +42,215 @@ class Keyboard [singleton]
       return is_key_pressed(Keycode.LEFT_SHIFT) or is_key_pressed(Keycode.RIGHT_SHIFT)
 endClass
 
-class Keycode
+enum KeyModifier [bitflags]
+  CATEGORIES
+    LEFT_SHIFT    = 1
+    RIGHT_SHIFT   = 2
+    LEFT_CONTROL  = 4
+    RIGHT_CONTROL = 8
+    LEFT_ALT      = 16
+    RIGHT_ALT     = 32
+    LEFT_OS       = 64
+    RIGHT_OS      = 128
+    CAPS_LOCK     = 256
+    NUM_LOCK      = 512
+    SCROLL_LOCK   = 1024
+
   DEFINITIONS
-    LEFT_ARROW       =  1
-    UP_ARROW         =  2
-    RIGHT_ARROW      =  3
-    DOWN_ARROW       =  4
+    SHIFT         = (KeyModifier.LEFT_SHIFT | KeyModifier.RIGHT_SHIFT)
+    CONTROL       = (KeyModifier.LEFT_CONTROL | KeyModifier.RIGHT_CONTROL)
+    ALT           = (KeyModifier.LEFT_ALT | KeyModifier.RIGHT_ALT)
+    OS            = (KeyModifier.LEFT_OS | KeyModifier.RIGHT_OS)
 
-    BACKSPACE        =  8
-    TAB              =  9
-    ENTER            = 10
+  METHODS
+    method shift->Logical
+      return (this & SHIFT)?
 
-    CAPS_LOCK        = 11
-    LEFT_SHIFT       = 12
-    RIGHT_SHIFT      = 13
-    LEFT_CONTROL     = 14
-    RIGHT_CONTROL    = 15
-    LEFT_ALT         = 16
-    RIGHT_ALT        = 17
+    method control->Logical
+      return (this & CONTROL)?
 
-    LEFT_OS          = 18
-    RIGHT_OS         = 19
-    LEFT_WINDOWS     = LEFT_OS
-    RIGHT_WINDOWS    = RIGHT_OS
-    LEFT_COMMAND     = LEFT_OS
-    RIGHT_COMMAND    = RIGHT_OS
+    method alt->Logical
+      return (this & ALT)?
 
-    FUNCTION         = 26
-    ESCAPE           = 27
+    method os->Logical
+      return (this & OS)?
+endEnum
 
-    SPACE            = 32
 
-    APOSTROPHE       = 39
-    QUOTE            = 39
-    COMMA            = 44
-    MINUS            = 45
-    PERIOD           = 46
-    SLASH            = 47
-    NUMBER_0         = 48
-    NUMBER_1         = 49
-    NUMBER_2         = 50
-    NUMBER_3         = 51
-    NUMBER_4         = 52
-    NUMBER_5         = 53
-    NUMBER_6         = 54
-    NUMBER_7         = 55
-    NUMBER_8         = 56
-    NUMBER_9         = 57
-    SEMICOLON        = 59
-    EQUALS           = 61
+enum Keycode
+  CATEGORIES
+    UNDEFINED          =  0
 
-    AT               = 64
-    A                = 65
-    B                = 66
-    C                = 67
-    D                = 68
-    E                = 69
-    F                = 70
-    G                = 71
-    H                = 72
-    I                = 73
-    J                = 74
-    K                = 75
-    L                = 76
-    M                = 77
-    N                = 78
-    O                = 79
-    P                = 80
-    Q                = 81
-    R                = 82
-    S                = 83
-    T                = 84
-    U                = 85
-    V                = 86
-    W                = 87
-    X                = 88
-    Y                = 89
-    Z                = 90
+    LEFT_ARROW         =  1
+    UP_ARROW           =  2
+    RIGHT_ARROW        =  3
+    DOWN_ARROW         =  4
 
-    OPEN_BRACKET     = 91
-    BACKSLASH        = 92
-    CLOSE_BRACKET    = 93
-    BACKQUOTE        = 96
+    BACKSPACE          =  8
+    TAB                =  9
+    ENTER              = 10
 
-    NUMPAD_ENTER     = 110
+    CAPS_LOCK          = 11
+    LEFT_SHIFT         = 12
+    RIGHT_SHIFT        = 13
+    LEFT_CONTROL       = 14
+    RIGHT_CONTROL      = 15
+    LEFT_ALT           = 16
+    RIGHT_ALT          = 17
 
-    SYS_REQUEST      = 124
-    SCROLL_LOCK      = 125
-    BREAK            = 126
+    LEFT_OS            = 18
+    RIGHT_OS           = 19
 
-    DELETE           = 127
-    INSERT           = 128
-    HOME             = 129
-    END              = 130
-    PAGE_UP          = 131
-    PAGE_DOWN        = 132
+    FUNCTION           = 26
+    ESCAPE             = 27
 
-    NUMPAD_ASTERISK  = 142
-    NUMPAD_PLUS      = 143
-    NUMPAD_MINUS     = 145
-    NUMPAD_PERIOD    = 146
-    NUMPAD_SLASH     = 147
-    NUMPAD_0         = 148
-    NUMPAD_1         = 149
-    NUMPAD_2         = 150
-    NUMPAD_3         = 151
-    NUMPAD_4         = 152
-    NUMPAD_5         = 153
-    NUMPAD_6         = 154
-    NUMPAD_7         = 155
-    NUMPAD_8         = 156
-    NUMPAD_9         = 157
-    NUMPAD_NUM_LOCK  = 158
-    NUMPAD_EQUALS    = 161
+    SPACE              = 32
 
-    F1               = 201
-    F2               = 202
-    F3               = 203
-    F4               = 204
-    F5               = 205
-    F6               = 206
-    F7               = 207
-    F8               = 208
-    F9               = 209
-    F10              = 210
-    F11              = 211
-    F12              = 212
-    F13              = 213
-    F14              = 214
-    F15              = 215
-    F16              = 216
-    F17              = 217
-    F18              = 218
-    F19              = 219
-    F20              = 220
-    F21              = 221
-    F22              = 222
-    F23              = 223
-    F24              = 224
+    QUOTE              = 39  # AKA APOSTROPHE
+    COMMA              = 44
+    MINUS              = 45
+    PERIOD             = 46
+    SLASH              = 47
+    NUMBER_0           = 48
+    NUMBER_1           = 49
+    NUMBER_2           = 50
+    NUMBER_3           = 51
+    NUMBER_4           = 52
+    NUMBER_5           = 53
+    NUMBER_6           = 54
+    NUMBER_7           = 55
+    NUMBER_8           = 56
+    NUMBER_9           = 57
+    SEMICOLON          = 59
+    EQUALS             = 61
 
-    UNICODE          = 255
-    # A KeyEvent containing .keycode == Keycode.UNICODE means that .syscode is the Unicode value
+    AT                 = 64
+    A                  = 65
+    B                  = 66
+    C                  = 67
+    D                  = 68
+    E                  = 69
+    F                  = 70
+    G                  = 71
+    H                  = 72
+    I                  = 73
+    J                  = 74
+    K                  = 75
+    L                  = 76
+    M                  = 77
+    N                  = 78
+    O                  = 79
+    P                  = 80
+    Q                  = 81
+    R                  = 82
+    S                  = 83
+    T                  = 84
+    U                  = 85
+    V                  = 86
+    W                  = 87
+    X                  = 88
+    Y                  = 89
+    Z                  = 90
+
+    OPEN_BRACKET       = 91
+    BACKSLASH          = 92
+    CLOSE_BRACKET      = 93
+    BACKQUOTE          = 96   # AKA GRAVE
+
+    SYS_REQUEST        = 124
+    SCROLL_LOCK        = 125
+    BREAK              = 126
+
+    DELETE             = 127
+    INSERT             = 128
+    HOME               = 129
+    END                = 130
+    PAGE_UP            = 131
+    PAGE_DOWN          = 132
+
+    PRINT_SCREEN       = 133
+    PAUSE              = 134
+
+    NUMPAD_ENTER       = 140
+    NUMPAD_EQUALS      = 141
+    NUMPAD_PLUS        = 142
+    NUMPAD_MINUS       = 143
+    NUMPAD_TIMES       = 144
+    NUMPAD_DIVIDE      = 145
+    NUMPAD_COMMA       = 146
+    NUMPAD_PERIOD      = 147
+    NUMPAD_0           = 148
+    NUMPAD_1           = 149
+    NUMPAD_2           = 150
+    NUMPAD_3           = 151
+    NUMPAD_4           = 152
+    NUMPAD_5           = 153
+    NUMPAD_6           = 154
+    NUMPAD_7           = 155
+    NUMPAD_8           = 156
+    NUMPAD_9           = 157
+    NUMPAD_TAB         = 158
+    NUMPAD_BACKSPACE   = 159
+    NUMPAD_NUM_LOCK    = 160
+
+    F1                 = 201
+    F2                 = 202
+    F3                 = 203
+    F4                 = 204
+    F5                 = 205
+    F6                 = 206
+    F7                 = 207
+    F8                 = 208
+    F9                 = 209
+    F10                = 210
+    F11                = 211
+    F12                = 212
+    F13                = 213
+    F14                = 214
+    F15                = 215
+    F16                = 216
+    F17                = 217
+    F18                = 218
+    F19                = 219
+    F20                = 220
+    F21                = 221
+    F22                = 222
+    F23                = 223
+    F24                = 224
+
+  DEFINITIONS
+    LEFT_WINDOWS       = LEFT_OS
+    RIGHT_WINDOWS      = RIGHT_OS
+    LEFT_COMMAND       = LEFT_OS
+    RIGHT_COMMAND      = RIGHT_OS
+
 
   GLOBAL PROPERTIES
     unshifted_keycode_to_unicode =
       ''                                       '    ,-./0123456789 ; =  '' ...
-      ''@abcdefghijklmnopqrstuvwxyz[\\]  `             \n                 '' ...
-      ''              * +-./0123456789   =''
+      ''@abcdefghijklmnopqrstuvwxyz[\\]  `                               '' ...
+      ''             =+-*/,.0123456789''
 
     shifted_keycode_to_unicode =
       ''                                       "    <_>?)!@#$%^&*( : +  '' ...
-      ''@ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}  ~             \n                 '' ...
-      ''              * +-./0123456789   =''
-
-    unicode_to_keycode     : Int[]
-    unicode_to_shift_state : Logical[]
+      ''@ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}  ~                               '' ...
+      ''             =+-*/,.0123456789''
 
   GLOBAL METHODS
-    method keycode_to_unicode( keycode:Int, &is_shift_pressed )->Character
-      if (keycode <= SPACE)
+    method keycode_to_unicode( keycode:Keycode, &is_shift_pressed )->Character
+      if (keycode.value <= SPACE.value)
         which (keycode)
-          case Keycode.SPACE:  return ' '
-          case Keycode.ENTER:  return '\n'
-          case Keycode.TAB:    return '\t'
-          case Keycode.DELETE: return Character(127)
-          others:              return 0
+          case Keycode.SPACE:            return ' '
+          case Keycode.ENTER:            return '\n'
+          case Keycode.NUMPAD_ENTER:     return '\n'
+          case Keycode.TAB:              return '\t'
+          case Keycode.NUMPAD_TAB:       return '\t'
+          case Keycode.DELETE:           return Character(127)
+          case Keycode.NUMPAD_BACKSPACE: return Character(127)
+          others:                        return 0
         endWhich
       endIf
-      if (keycode >= unshifted_keycode_to_unicode.count) return 0
+      if (keycode.value >= unshifted_keycode_to_unicode.count) return 0
 
       local result : Character
       if (is_shift_pressed) result = shifted_keycode_to_unicode[ keycode ]
@@ -215,32 +259,5 @@ class Keycode
       if (result == ' ') return 0  # we already handled actual SPACE; others are placeholders for zero
       return result
 
-    method unicode_to_keycode( unicode:Character )->(Int,Logical)  # keycode, is_shifted
-      if (not @unicode_to_keycode)
-        @unicode_to_keycode    = Dim<<Int>>(128)
-        unicode_to_shift_state = Dim<<Logical>>(128)
-        forEach (keycode in 32..127)
-          local ucode = shifted_keycode_to_unicode[ keycode ]
-          @unicode_to_keycode[ ucode ] = keycode
-          unicode_to_shift_state[ ucode ] = true
-        endForEach
-        forEach (keycode in 32..127)
-          local ucode = unshifted_keycode_to_unicode[ keycode ]
-          @unicode_to_keycode[ ucode ] = keycode
-          unicode_to_shift_state[ ucode ] = false
-        endForEach
-        @unicode_to_keycode[8]  = Keycode.BACKSPACE
-        @unicode_to_keycode[17] = Keycode.UP_ARROW
-        @unicode_to_keycode[18] = Keycode.DOWN_ARROW
-        @unicode_to_keycode[19] = Keycode.RIGHT_ARROW
-        @unicode_to_keycode[20] = Keycode.LEFT_ARROW
-        @unicode_to_keycode['\e'] = Keycode.ESCAPE
-        @unicode_to_keycode['\t'] = Keycode.TAB
-        @unicode_to_keycode['\n'] = Keycode.ENTER
-        @unicode_to_keycode[' ']  = Keycode.SPACE
-        @unicode_to_keycode[127]  = Keycode.DELETE
-      endIf
-      if (unicode < 128) return (@unicode_to_keycode[unicode],unicode_to_shift_state[unicode])
-      else               return (Keycode.UNICODE,false)
-endClass
+endEnum
 

@@ -16,10 +16,9 @@ class Event
 
     method init( existing:Event )
       is_consumed = existing.is_consumed
-      refcount    = existing.refcount
       timestamp   = existing.timestamp
 
-    method cloned->Event [propagated]
+    method cloned->ThisType [propagated]
       return ThisType( this )
 
     method consume
@@ -37,80 +36,85 @@ endClass
 
 class KeyEvent : Event
   PROPERTIES
-    keycode            : Int   # if keycode == Keycode.UNICODE then 'syscode' contains unicode value
-    syscode            : Int
-    is_press           : Logical
-    is_repeat          : Logical
-    modifier_key_state : Int
+    keycode   : Keycode   # if Keycode.UNICODE then generated event w/o keycode or scancode.
+    scancode  : Int
+    unicode   : Character
+    is_press  : Logical
+    is_repeat : Logical
+    modifiers : KeyModifier
 
   METHODS
-    method init( keycode, syscode, is_press=false, is_repeat=false, modifier_key_state=Keyboard.modifier_key_state )
+    method init
+      prior.init
 
-    method cloned->KeyEvent
-      return KeyEvent( keycode, syscode, is_press, is_repeat, modifier_key_state ).[ init(this) ]
+    method init( keycode, scancode, is_press=false, is_repeat=false, modifiers=Keyboard.modifier_state )
+      prior.init
+      unicode = Keycode.keycode_to_unicode( keycode, is_shift_pressed )
+
+    method init( unicode, is_press=false, is_repeat=false, modifiers=Keyboard.modifier_state )
+      prior.init
+      keycode = Keycode.UNDEFINED
+      scancode = 0
+
+    method init( existing:KeyEvent )
+      prior.init( existing )
+      keycode   = existing.keycode
+      scancode  = existing.scancode
+      unicode   = existing.unicode
+      is_press  = existing.is_press
+      is_repeat = existing.is_repeat
+      modifiers = existing.modifiers
 
     method is_alt_pressed->Logical
-      return (modifier_key_state & Keyboard.ALT_MODIFIER_FLAG)
+      return (modifiers & KeyModifier.ALT)?
 
     method is_control_pressed->Logical
-      return (modifier_key_state & Keyboard.CONTROL_MODIFIER_FLAG)
+      return (modifiers & KeyModifier.CONTROL)?
 
     method is_os_pressed->Logical
-      return (modifier_key_state & Keyboard.OS_MODIFIER_FLAG)
+      return (modifiers & KeyModifier.OS)?
 
-    method is_press( _keycode:Int )->Logical
-      return keycode == _keycode and is_press
+    method is_press( keycode:Keycode )->Logical
+      return this.keycode == keycode and is_press
 
-    method is_repeat( _keycode:Int )->Logical
-      return keycode == _keycode and is_repeat
+    method is_repeat( keycode:Keycode )->Logical
+      return this.keycode == keycode and is_repeat
 
     method is_release->Logical
       return not this.is_press
 
-    method is_release( _keycode:Int )->Logical
-      return keycode == _keycode and not is_press
+    method is_release( keycode:Keycode )->Logical
+      return this.keycode == keycode and not is_press
 
     method is_shift_pressed->Logical
-      return (modifier_key_state & Keyboard.SHIFT_MODIFIER_FLAG)
+      return (modifiers & KeyModifier.SHIFT)?
 
     method to->String
       local buffer = String()
-      which (keycode)
-         case    1: buffer.print( "[LeftArrow]" )
-         case    2: buffer.print( "[UpArrow]" )
-         case    3: buffer.print( "[RightArrow]" )
-         case    4: buffer.print( "[DownArrow]" )
-         case    8: buffer.print( "[Backspace]" )
-         case '\t': buffer.print( "[Tab]" )
-         case '\n': buffer.print( "[Enter]" )
-         case   27: buffer.print( "[Escape]" )
-         case   32: buffer.print( "[Space]" )
-         case  127: buffer.print( "[Delete]" )
-         others
-           if local ch = unicode
-             if (ch >= 32 and ch != 127)
-               buffer.print "'$'"(ch)
-             endIf
-           endIf
+      if (unicode)
+        buffer.print unicode
+        buffer.print ' '
+        buffer.print " ("
+        buffer.print keycode
+        buffer.print ' '
+      else
+        buffer.print keycode
+        buffer.print " ("
+      endIf
 
-           buffer .= appending( "(Keycode " )
-           buffer.[ print(Int(keycode)), print(")") ]
-       endWhich
+      buffer.print keycode.value
+      buffer.print ')'
 
        if (is_press)
-         if (is_repeat) buffer .= appending( "pressed (repeating)" )
-         else           buffer .= appending( "pressed" )
+         if (is_repeat) buffer.print( " pressed (repeating)" )
+         else           buffer.print( " pressed" )
        else
-         buffer .= appending( "released" )
+         buffer.print( " released" )
        endIf
 
-       if (is_consumed) buffer .= appending( "(consumed)" )
+       if (is_consumed) buffer.print( " [consumed]" )
 
        return buffer
-
-    method unicode->Character
-      if (keycode == Keycode.UNICODE) return syscode->Character
-      return Keycode.keycode_to_unicode( keycode, is_shift_pressed )
 
 endClass
 
@@ -121,10 +125,16 @@ class TextEvent : Event
     text      : String
 
   METHODS
-    method init( character, text )
+    method init
+      prior.init
 
-    method cloned->TextEvent
-      return TextEvent( character, text ).[ init(this) ]
+    method init( character, text )
+      prior.init
+
+    method init( existing:TextEvent )
+      prior.init( existing )
+      character = existing.character
+      text      = existing.text
 
     method text->String
       if (not @text) text = "" + character
@@ -154,56 +164,51 @@ endClass
 
 class PointerEvent : Event
   DEFINITIONS
-    MOVE       = 0
-    PRESS      = 1
-    RELEASE    = 2
-    DRAG_MOVE  = 3
-    DRAG_START = 4
-    DRAG_STOP  = 5
-
     LEFT     = 0
     RIGHT    = 1
     MIDDLE   = 2
 
   PROPERTIES
-    type      : Int
+    type      : GlobalID
     position  : XY
     delta     : XY
     index     : Int
     cancelled : Logical
-    # When a touch event in progress is interrupted then a RELEASE event is sent
+    # When a touch event in progress is interrupted, a <RELEASE> event is sent
     # with .cancelled==true.
 
   METHODS
+    method init
+      prior.init
+
     method init( type, position, delta, index, cancelled=false )
+      prior.init
 
     method init( existing:PointerEvent )
-      type = existing.type
-      position = existing.position
-      delta = existing.delta
-      index = existing.index
+      prior.init( existing )
+      type      = existing.type
+      position  = existing.position
+      delta     = existing.delta
+      index     = existing.index
       cancelled = existing.cancelled
 
-    method cloned->PointerEvent
-      return PointerEvent( this )
-
     method is_drag_move->Logical
-      return (this.type == PointerEvent.DRAG_MOVE)
+      return (this.type == <DRAG_MOVE>)
 
     method is_drag_start->Logical
-      return (this.type == PointerEvent.DRAG_START)
+      return (this.type == <DRAG_START>)
 
     method is_drag_stop->Logical
-      return (this.type == PointerEvent.DRAG_STOP)
+      return (this.type == <DRAG_STOP>)
 
     method is_move->Logical
-      return (this.type == PointerEvent.MOVE)
+      return (this.type == <MOVE>)
 
     method is_press->Logical
-      return (this.type == PointerEvent.PRESS)
+      return (this.type == <PRESS>)
 
     method is_press( button_index:Int )->Logical
-      return (this.type == PRESS and index == button_index)
+      return (this.type == <PRESS> and index == button_index)
 
     method is_press_left->Logical
       return is_press( 0 )
@@ -215,10 +220,10 @@ class PointerEvent : Event
       return is_press( 2 )
 
     method is_release->Logical
-      return (this.type == PointerEvent.RELEASE)
+      return (this.type == <RELEASE>)
 
     method is_release( button_index:Int )->Logical
-      return (this.type == RELEASE and index == button_index)
+      return (this.type == <RELEASE> and index == button_index)
 
     method is_release_left->Logical
       return is_release( 0 )
@@ -239,12 +244,12 @@ class PointerEvent : Event
       local buffer = String()
       buffer.print( "Pointer " )
       which (type)
-        case MOVE:       buffer.print( "move" )
-        case PRESS:      buffer.[ print("press index "), print(index) ]
-        case RELEASE:    buffer.print( "release" )
-        case DRAG_START: buffer.print( "drag start" )
-        case DRAG_MOVE:  buffer.print( "drag move" )
-        case DRAG_STOP:  buffer.print( "drag stop" )
+        case <MOVE>:       buffer.print( "move" )
+        case <PRESS>:      buffer.[ print("press index "), print(index) ]
+        case <RELEASE>:    buffer.[ print("release index "), print(index) ]
+        case <DRAG_START>: buffer.print( "drag start" )
+        case <DRAG_MOVE>:  buffer.print( "drag move" )
+        case <DRAG_STOP>:  buffer.print( "drag stop" )
       endWhich
       buffer.[ print(" at "), print(position) ]
       if (is_consumed) buffer.print( " (consumed)" )
@@ -267,10 +272,19 @@ class ScrollEvent : Event
     density       : Int
 
   METHODS
-    method init( delta, is_precise=false, in_progress=false, is_momentum=false, density=1 )
+    method init
+      prior.init
 
-    method cloned->ScrollEvent
-      return ScrollEvent( delta, &=is_precise, &=in_progress, &=is_momentum, &=density ).[ init(this) ]
+    method init( delta, is_precise=false, in_progress=false, is_momentum=false, density=1 )
+      prior.init
+
+    method init( existing:ScrollEvent )
+      prior.init( existing )
+      delta         = existing.delta
+      is_precise    = existing.is_precise
+      in_progress   = existing.in_progress
+      is_momentum   = existing.is_momentum
+      density       = existing.density
 
     method to->String
       local buffer = String().[ print("Scroll "), print( delta ) ]
@@ -281,6 +295,7 @@ class ScrollEvent : Event
       return buffer
 endClass
 
+# Note: this is a utility class used by VScrollView, not an Event.
 class ScrollRate
   # macOS with Magic Mouse or trackpad:
   # - Tracks 0.25 seconds of continuous-gesture scroll data and accelerates
