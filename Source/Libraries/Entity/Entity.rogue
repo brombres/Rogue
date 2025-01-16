@@ -40,5 +40,6 @@ class Entity : Node<<Entity>>
     method update
       actions = actions?.updated
       on_update
+      (forEach in children).update
 
 endClass
