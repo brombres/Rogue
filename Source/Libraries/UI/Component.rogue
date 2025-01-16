@@ -477,10 +477,6 @@ class Component : Entity
     method split_h( split_position:Real, components:Component[], component_i:Int )
       noAction
 
-    method update
-      prior.update
-      (forEach as Component in children).update
-
 endClass
 
 class UIGeneratedStack : Component

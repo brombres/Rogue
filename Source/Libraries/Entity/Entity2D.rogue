@@ -7,7 +7,6 @@ class Entity2D : Entity
     position      : XY
     z             : Real
     rotation      : Radians
-    rotation_3d   : Quaternion?
     anchor        = Anchor.CENTER : Anchor
 
   METHODS
@@ -21,21 +20,12 @@ class Entity2D : Entity
       scale = (bounds.size / internal_size).min
 
     method set_rotation( @rotation )
-      rotation_3d = null
 
     method set_rotation( degrees:Degrees )
       @rotation = degrees->Radians
-      rotation_3d = null
 
     method set_rotation( degrees:Real )
       @rotation = Degrees(degrees)->Radians
-      rotation_3d = null
-
-    method set_rotation( degrees:DegreesXYZ )
-      rotation_3d = Quaternion( degrees->RadiansXYZ )
-
-    method set_rotation( radians:RadiansXYZ )
-      rotation_3d = Quaternion( radians )
 
     method set_scale( scale:Real )
       size = internal_size * scale
