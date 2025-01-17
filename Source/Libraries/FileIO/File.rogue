@@ -777,15 +777,13 @@ class File( filepath:String ) [compound]
     method to->String
       return filepath
 
-      #{
-    method touch( filepath:String )
-      filepath = shell_escaped( expand_path(filepath) )
+    method touch
+      local filepath = resolved.esc
       if (System.is_windows)
         System.run "type nul >> $" (filepath)
       else
         System.run "touch $" (filepath)
       endIf
-      }#
 
     method with_destination( destination:File )->File
       # Uses console-style filename and folder rules to modify a source filepath
