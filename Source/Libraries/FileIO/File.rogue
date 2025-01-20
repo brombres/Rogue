@@ -348,7 +348,6 @@ class File( filepath:String ) [compound]
       native @|struct stat s;
       return native("(stat((char*)$filepath->data->as_utf8, &s) == 0)")->Logical
 
-
     method extension->String
       return filename.after_last( '.' )
 
@@ -397,6 +396,9 @@ class File( filepath:String ) [compound]
 
     method has_parent->Logical
       return resolved.folder.count > 0
+
+    method hashcode->Int
+      return filepath.hashcode
 
     method is_absolute->Logical
       local filepath = resolved.filepath
@@ -520,6 +522,9 @@ class File( filepath:String ) [compound]
       local bytes = load_as_bytes( &discard_bom )
       return String( bytes, encoding )
 
+    method matches( pattern:FilePattern, &ignore_case )->Logical
+      return pattern.matches( filepath, &=ignore_case )
+
     method operator==( other:File )->Logical
       # Returns true if 'this' and 'other' both exist, are the same size, and have the same CRC32.
       local file = resolved
@@ -533,6 +538,9 @@ class File( filepath:String ) [compound]
       if (file.size != other.size)      return false
       if (file.crc32 != other.crc32)    return false
       return true
+
+    method operator<>( other:File )->Int
+      return filepath <> other.filepath
 
     method operator/( other:File )->File
       return File( resolved.filepath / other.resolved.filepath )
