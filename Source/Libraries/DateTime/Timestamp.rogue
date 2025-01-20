@@ -1,4 +1,4 @@
-class Timestamp( value=System.time:Real64 ) [compound]
+class Timestamp( value=System.time:Real ) [compound]
   NATIVE
     nativeHeader @|#if defined(%NS%ROGUE_PLATFORM_LINUX)
                   |  #include <time.h>
