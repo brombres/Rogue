@@ -1397,7 +1397,7 @@ class Variant [compound]
       if (type != TYPE_TABLE) return TableValuesIterator<<Variant,Variant>>( null )
       return object->(as [Variant:Variant]).values
 
-    method write_json( builder:String, &formatted, &omit_commas )
+    method write_json( builder:String, &formatted, &omit_commas, &ending_newline=true )
       which (type)
         case TYPE_UNDEFINED
           noAction
@@ -1460,7 +1460,7 @@ class Variant [compound]
           builder.[ print(quad32.c.x), print(','), print(quad32.c.y), print("],[") ]
           builder.[ print(quad32.d.x), print(','), print(quad32.d.y), print("]]") ]
         case TYPE_OBJECT
-          object.write_json( builder, &=formatted, &=omit_commas )
+          object.write_json( builder, &=formatted, &=omit_commas, &!ending_newline )
         case TYPE_STRING
           write_json_string( object->(as String), builder )
         case TYPE_TABLE
@@ -1475,7 +1475,7 @@ class Variant [compound]
               endIf
               write_json_string( entry.key, builder )
               builder.print ':'
-              entry.value.write_json( builder, &=formatted, &=omit_commas )
+              entry.value.write_json( builder, &=formatted, &=omit_commas, &!ending_newline )
             endForEach
             if (formatted) builder.indent-=2; builder.println
             builder.print '}'
@@ -1492,7 +1492,7 @@ class Variant [compound]
                 else             builder.print ','
                 if (formatted) builder.println
               endIf
-              item.write_json( builder, &=formatted, &=omit_commas )
+              item.write_json( builder, &=formatted, &=omit_commas, &!ending_newline )
             endForEach
             if (formatted) builder.indent-=2; builder.println
             builder.print ']'
@@ -1500,6 +1500,8 @@ class Variant [compound]
             builder.print "[]"
           endIf
       endWhich
+
+      if (formatted and ending_newline) builder.println
 
     method write_json_string( st:String, builder:String )
       builder.print '"'
@@ -1548,7 +1550,7 @@ endClass
 
 augment Object
   METHODS
-    method write_json( builder:String, &formatted, &omit_commas )
+    method write_json( builder:String, &formatted, &omit_commas, &ending_newline=true )
       builder.[ print(''{"type":"''), print(type_name), print(''"}'') ]
 endAugment
 
