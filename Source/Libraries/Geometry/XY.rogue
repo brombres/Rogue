@@ -15,6 +15,22 @@ class XY( x:Real, y:Real ) [compound]
     method create( n:Real )->XY
       return XY(n,n)
 
+    method create( v:Variant )->XY
+      if (v.is_xy) return v->XY
+
+      if (v.is_string and v[0] == '(')
+        local xy = v->String.extract_strings( "($,$)" )
+        if (xy) return XY( xy[0]->Real, xy[1]->Real )
+        else    return XY.zero
+      endIf
+
+      if (v.is_list)               return XY( v[0]->Real, v[1]->Real )
+      elseIf (v.contains("x"))     return XY( v//x->Real, v//y->Real )
+      elseIf (v.contains("width")) return XY( v//width->Real, v//height->Real )
+      elseIf (v.contains("("))     return XY( v//w->Real, v//h->Real )
+      elseIf (v.contains("w"))     return XY( v//w->Real, v//h->Real )
+      else                         return XY.zero
+
     method operator+( a:XY, b:XY )->XY
       return XY( a.x+b.x, a.y+b.y )
 
