@@ -26,13 +26,12 @@ class Scanner : ScannerCore, Poolable
       prior.init( file )
       beginning_of_line = _scanner.location
 
-    method init( filepath:String, content:String, line=1, column=1 )
-      prior.init( filepath, content, line, column )
+    method init( filepath:String, content:String )
+      prior.init( filepath, content )
 
-    method init( _filepath, _scanner )
+    method init( _filepath:String, _scanner:Rogue::Scanner )
       prior.init( _filepath, _scanner )
       beginning_of_line = _scanner.location
-      tokens.reserve( _scanner.count / 3 )
 
     method on_return_to_pool
       @_filepath = null
