@@ -11,7 +11,7 @@ class CGenerator : Visitor
     visible_locals_fp  = Int32[]
     control_stack      = ControlStructure[]
 
-    cur_line           : Int32
+    cur_line           : Int
     current_statements : Statements
     this_statement     : Cmd
 
