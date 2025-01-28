@@ -127,16 +127,27 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
         value = -value
       endIf
 
-      # Display power of 10 exponent for numbers >= 1e16 or <= 1e-4
-      if (value >= 1000000000000000.0)
-        local pow10 = 0
-        while (value >= 10.0)
-          value /= 10.0
-          ++pow10
+      # Display power of 10 exponent for numbers >= 1e19 or <= 1e-4
+
+      # Exponential notation if >= 1E9 with 0's in lower 6+ digits.
+      if (value >= 1.0e9)
+        local n     = value.floor
+        local zeros = 0
+        while (n % 10 == 0)
+          n = (n / 10).floor
+          ++zeros
         endWhile
 
-        buffer.[ print(value), print('e'), print(pow10->Int) ]
-        return
+        if (zeros >= 6)
+          local pow10 = 0
+          while (value >= 10.0)
+            value /= 10.0
+            ++pow10
+          endWhile
+
+          buffer.[ print(value,pow10-zeros), print('e'), print(pow10->Int) ]
+          return
+        endIf
       endIf
 
       if (value < 0.00001)
