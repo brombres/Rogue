@@ -219,21 +219,28 @@ class JSONParser
     method parse_number->Variant
       consume_whitespace_and_eols
 
-      local sign = 1.0
+      local sign = 1
       if (reader.consume( '-' ))
-        sign = -1.0
+        sign = -1
         consume_whitespace_and_eols
       endIf
 
-      local n = 0.0
+      local int_n = 0
+      local real_n = 0.0
       local ch = reader.peek
+      local digits = 0
       while (reader.has_another and ch >= '0' and ch <= '9')
         reader.read
-        n = n * 10 + (ch - '0')
+        int_n = int_n * 10 + (ch - '0')
+        real_n = real_n * 10 + (ch - '0')
         ch = reader.peek
+        ++digits
       endWhile
 
+      local is_real = (digits > 19)
+
       if (reader.consume( '.' ))
+        is_real = true
         local decimal = 0.0
         local power = 0.0
         ch = reader.peek
@@ -243,10 +250,11 @@ class JSONParser
           power += 1.0
           ch = reader.peek
         endWhile
-        n += decimal / (10.0 ^ power)
+        real_n += decimal / (10.0 ^ power)
       endIf
 
       if (reader.consume( 'e' ) or reader.consume( 'E' ))
+        is_real = true
         local negexp = false
         if (not reader.consume('+') and reader.consume('-')) negexp = true
 
@@ -258,13 +266,15 @@ class JSONParser
           ch = reader.peek
         endWhile
 
-        if (negexp) n /= 10 ^ power
-        else        n *= 10 ^ power
+        if (negexp) real_n /= 10 ^ power
+        else        real_n *= 10 ^ power
       endIf
 
-      n = n * sign
-
-      return n
+      if (is_real)
+        return real_n * sign
+      else
+        return int_n * sign
+      endIf
 
     method read->Character
       return reader.read
