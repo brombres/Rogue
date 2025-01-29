@@ -1344,6 +1344,11 @@ class Variant [compound]
         return $defaultValue<<$Type>>
       endIf
 
+    method to->JSON( &formatted, &omit_commas )
+      local result = JSON()
+      write_json( result, &=formatted, &=omit_commas )
+      return result
+
     method to_optional<<$Type>>->$Type?
       if (type == TYPE_NULL or type == TYPE_UNDEFINED) return null
       return to<<$Type>>
@@ -1380,8 +1385,8 @@ class Variant [compound]
 
       return (undefined,undefined)
 
-    method to_json( &formatted, &omit_commas )->String
-      local result = String()
+    method to_json( &formatted, &omit_commas )->JSON
+      local result = JSON()
       write_json( result, &=formatted, &=omit_commas )
       return result
 
@@ -1396,7 +1401,7 @@ class Variant [compound]
       if (type != TYPE_TABLE) return TableValuesIterator<<Variant,Variant>>( null )
       return object->(as [Variant:Variant]).values
 
-    method write_json( builder:String, &formatted, &omit_commas, &ending_newline=true )
+    method write_json( builder:JSON, &formatted, &omit_commas, &ending_newline=true )
       which (type)
         case TYPE_UNDEFINED
           noAction
@@ -1502,12 +1507,12 @@ class Variant [compound]
 
       if (formatted and ending_newline) builder.println
 
-    method write_json_string( st:String, builder:String )
+    method write_json_string( st:String, builder:JSON )
       builder.print '"'
       write_json_character( (forEach in st), builder )
       builder.print '"'
 
-    method write_json_character( ch:Character, builder:String )
+    method write_json_character( ch:Character, builder:JSON )
       which (ch)
         case '"':
           builder.print( "\\\"" )
@@ -1549,7 +1554,7 @@ endClass
 
 augment Object
   METHODS
-    method write_json( builder:String, &formatted, &omit_commas, &ending_newline=true )
+    method write_json( builder:JSON, &formatted, &omit_commas, &ending_newline=true )
       builder.[ print(''{"type":"''), print(type_name), print(''"}'') ]
 endAugment
 

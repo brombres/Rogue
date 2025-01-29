@@ -692,7 +692,7 @@ class Program [singleton]
       endForEach
 
       println "Writing documentation metadata to " + output_filepath
-      File( output_filepath ).save( doc.to_json(&formatted) )
+      File( output_filepath ).save( doc->JSON(&formatted) )
 
     method set_int_bits( @int_bits )
       if (int_bits == 64)
