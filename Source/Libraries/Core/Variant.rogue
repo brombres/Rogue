@@ -979,14 +979,13 @@ class Variant [compound]
       set( Variant(key), value )
 
     method set( key:Variant, value:Variant )
-      if (key.is_number)
-        set( key->Int, value )
-      else
-        which (type)
-          case TYPE_TABLE
-            object->(as [Variant:Variant])[ key ] = value
-        endWhich
-      endIf
+      which (type)
+        case TYPE_LIST
+          if (key.is_number) set( key->Int, value )
+
+        case TYPE_TABLE
+          object->(as [Variant:Variant])[ key ] = value
+      endWhich
 
     method sort( compare_fn:(Function(Variant,Variant)->Logical) )
       # 'compare_fn' should return true if the first parameter should be positioned before the second parameter.
