@@ -1640,6 +1640,13 @@ class String : Poolable PrintWriter
         else                 return builder.cloned
       endUse
 
+    method to_escaped_unicode( additional_characters_to_escape="":String )->String
+      use builder = StringPool
+        (forEach in this).print_escaped_unicode( additional_characters_to_escape, builder )
+        if (builder == this) return this  # no escapes
+        else                 return builder.cloned
+      endUse
+
     method to_lowercase->String
       local has_uc = false
       forEach (ch in this)

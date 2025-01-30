@@ -1037,6 +1037,28 @@ class Character : CommonPrimitiveMethods [primitive]
           endIf
       endWhich
 
+    method print_escaped_unicode( additional_characters_to_escape="":String, writer=Global:PrintWriter )
+      which (this)
+        case '\\': writer.print( "\\\\" )
+        case '\0': writer.print( "\\0" )
+        case '\b': writer.print( "\\b" )
+        case '\e': writer.print( "\\e" )
+        case '\f': writer.print( "\\f" )
+        case '\n': writer.print( "\\n" )
+        case '\r': writer.print( "\\r" )
+        case '\t': writer.print( "\\t" )
+        case '\v': writer.print( "\\v" )
+        others
+          if (additional_characters_to_escape.contains(this))
+            writer.[ print("\\"), print(this) ]
+          elseIf (this < 32 or this == 127)
+            writer.print( "\\x" )
+            this->Int64.print_power_of_2( 16, 2, writer )
+          else
+            writer.print( this )
+          endIf
+      endWhich
+
     method print_to( buffer:PrintWriter )
       buffer.print( this )
 
@@ -1155,6 +1177,11 @@ class Character : CommonPrimitiveMethods [primitive]
     method to_escaped_ascii( additional_characters_to_escape="":String )->String
       local result = String(4)
       print_escaped_ascii( additional_characters_to_escape, result )
+      return result
+
+    method to_escaped_unicode( additional_characters_to_escape="":String )->String
+      local result = String(4)
+      print_escaped_unicode( additional_characters_to_escape, result )
       return result
 
     method to_lowercase->Character
