@@ -1,6 +1,6 @@
 $include Collection/Table
 
-class IndexedSet<<$DataType>>
+class IndexedSet<<$DataType>> : IteratorPreferred
   PROPERTIES
     data : [$DataType:Int]
 
@@ -26,8 +26,14 @@ class IndexedSet<<$DataType>>
       if (entry) return entry.value
       else       return null
 
+    method clear
+      data.clear
+
     method cloned->ThisType [propagated]
       return ThisType(this)
+
+    method count->Int
+      return data.count
 
     method difference( other:IndexedSet<<$DataType>> )
       remove( forEach in other.values )
@@ -54,7 +60,7 @@ class IndexedSet<<$DataType>>
 
     method print_to( buffer:PrintWriter )
       buffer.print( '{' )
-      local cur = first_entry
+      local cur = data.first_entry
       local i = 0
       while (cur)
         if (i > 0) buffer.print( ',' )
