@@ -1,0 +1,86 @@
+$include Collection/Table
+
+class IndexedSet<<$DataType>>
+  PROPERTIES
+    data : [$DataType:Int]
+
+  METHODS
+    method init
+      data = [$DataType:Int]
+
+    method init( existing:IndexedSet<<$DataType>> )
+      data = existing.data.cloned
+
+    method add( value:$DataType )->Int
+      local entry = data.find( value )
+      if (entry)
+        return entry.value
+      else
+        local index = data.count
+        data[value] = index
+        return index
+      endIf
+
+    method at( index:Int )->Int?
+      local entry = data.entry_at( index )
+      if (entry) return entry.value
+      else       return null
+
+    method cloned->ThisType [propagated]
+      return ThisType(this)
+
+    method difference( other:IndexedSet<<$DataType>> )
+      remove( forEach in other.values )
+
+    method get( key:$DataType )->Int?
+      local entry = data.find( key )
+      if (entry) return entry.value
+      else       return null
+
+    method intersection( other:IndexedSet<<$DataType>> )
+      remove( forEach in ((this - other) | (other - this)) )
+
+    method iterator->TableKeysIterator<<$DataType,Int>>
+      return data.keys
+
+    method operator|( other:IndexedSet<<$DataType>> )->IndexedSet<<$DataType>>
+      return cloned.[ union(other) ]
+
+    method operator&( other:IndexedSet<<$DataType>> )->IndexedSet<<$DataType>>
+      return cloned.[ intersection(other) ]
+
+    method operator-( other:IndexedSet<<$DataType>> )->IndexedSet<<$DataType>>
+      return cloned.[ difference(other) ]
+
+    method print_to( buffer:PrintWriter )
+      buffer.print( '{' )
+      local cur = first_entry
+      local i = 0
+      while (cur)
+        if (i > 0) buffer.print( ',' )
+        buffer.print( cur.key )
+        cur = cur.next_entry
+        ++i
+      endWhile
+      buffer.print( '}' )
+
+    method remove( key:$DataType )->Int?
+      if (not data.contains(key)) return null
+
+      local result = data.remove( key )
+
+      # Must redo index mappings of remaining entries
+      forEach (entry at index in data.entries)
+        entry.value = index
+      endForEach
+
+      return result
+
+    method set( key:$DataType, value:Int )
+      data[key] = value
+
+    method union( other:IndexedSet<<$DataType>> )
+      add( forEach in other.values )
+
+endClass
+

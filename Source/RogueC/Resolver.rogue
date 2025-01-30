@@ -4158,13 +4158,14 @@ augment
       endIf
 
       local builder = String()
-      builder.println @|Standard/Collection does not implement any of the collection protocols:
+      builder.print collection_type
+      builder.println @| does not implement any of the collection protocols:
                        |
                        |  count()->Int/count:Int + at(index:Int)->ElementType
                        |  count()->Int/count:Int + get(index:Int)->ElementType
                        |  read_another()->ElementType?
-                       |  iterator()->Standard/Collection (result must implement one of the above protocols)
-                       |  reader()->Standard/Collection (result must implement one of the above protocols)
+                       |  iterator()->CollectionType (result must implement one of the above protocols)
+                       |  reader()->CollectionType (result must implement one of the above protocols)
       throw t.error( builder )
 
     method Cmd.convert_foreach_of( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachOfControl,
@@ -4328,13 +4329,14 @@ augment
       endIf
 
       local builder = String()
-      builder.println @|Standard/Collection does not implement any of the collection protocols:
+      builder.print collection_type
+      builder.println @| does not implement any of the collection protocols:
                        |
                        |  count()->Int/count:Int + at(index:Int)->ElementType
                        |  count()->Int/count:Int + get(index:Int)->ElementType
                        |  read_another()->ElementType?
-                       |  iterator()->Standard/Collection (result must implement one of the above protocols)
-                       |  reader()->Standard/Collection (result must implement one of the above protocols)
+                       |  iterator()->CollectionType (result must implement one of the above protocols)
+                       |  reader()->CollectionType (result must implement one of the above protocols)
       throw t.error( builder )
 
 endAugment
