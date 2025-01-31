@@ -1421,11 +1421,14 @@ class Variant [compound]
         case TYPE_INT64
           builder.print( int64 )
         case TYPE_REAL32
-          builder.print( real32 )
+          if (real32 == real32->Int) builder.print( real32->Int )
+          else                       builder.print( real32 )
         case TYPE_REAL
-          builder.print( real )
+          if (real == real->Int) builder.print( real->Int )
+          else                   builder.print( real )
         case TYPE_REAL64
-          builder.print( real64 )
+          if (real64 == real64->Int) builder.print( real64->Int )
+          else                       builder.print( real64 )
         case TYPE_DEGREES
           builder.print( degrees.value )
         case TYPE_RADIANS
@@ -1435,12 +1438,23 @@ class Variant [compound]
         case TYPE_NULL
           builder.print( "null" )
         case TYPE_XY:
-          builder.[ print('['), print(xy.x), print(','), print(xy.y), print(']') ]
+          .write_json_table_begin( builder, &=formatted )
+          .write_json_table_value( builder, "x", xy.x, &=formatted, &=omit_commas, &first )
+          .write_json_table_value( builder, "y", xy.y, &=formatted, &=omit_commas )
+          .write_json_table_end( builder, &=formatted )
         case TYPE_XYZ
-          builder.[ print('['), print(xyz.x), print(','), print(xyz.y), print(','), print(xyz.z), print(']') ]
+          .write_json_table_begin( builder, &=formatted )
+          .write_json_table_value( builder, "x", xyz.x, &=formatted, &=omit_commas, &first )
+          .write_json_table_value( builder, "y", xyz.y, &=formatted, &=omit_commas )
+          .write_json_table_value( builder, "z", xyz.z, &=formatted, &=omit_commas )
+          .write_json_table_end( builder, &=formatted )
         case TYPE_XYZW
-          builder.[ print('['), print(xyzw.x), print(','), print(xyzw.y), print(','), print(xyzw.z) ]
-          builder.[ print(','), print(xyzw.w), print(']') ]
+          .write_json_table_begin( builder, &=formatted )
+          .write_json_table_value( builder, "x", xyzw.x, &=formatted, &=omit_commas, &first )
+          .write_json_table_value( builder, "y", xyzw.y, &=formatted, &=omit_commas )
+          .write_json_table_value( builder, "z", xyzw.z, &=formatted, &=omit_commas )
+          .write_json_table_value( builder, "w", xyzw.w, &=formatted, &=omit_commas )
+          .write_json_table_end( builder, &=formatted )
         case TYPE_ANCHOR
           write_json_string( Anchor(xy).name, builder )
         case TYPE_BOX
@@ -1550,6 +1564,33 @@ class Variant [compound]
             builder.print( ch )
           endIf
       endWhich
+
+    method .write_json_table_begin( builder:JSON, &formatted )
+      builder.print '{'
+      if (formatted)
+        builder.indent += 2
+        builder.println
+      endIf
+
+    method .write_json_table_value( builder:JSON, key:String, value:Variant,
+        &formatted, &omit_commas, &first )
+      if (not first)
+        if (omit_commas) builder.print ' '
+        else             builder.print ','
+        if (formatted) builder.println
+      endIf
+
+      write_json_string( key, builder )
+      builder.print ':'
+      value.write_json( builder, &=formatted, &=omit_commas, &!ending_newline )
+
+    method .write_json_table_end( builder:JSON, &formatted )
+      if (formatted)
+        builder.indent -= 2
+        builder.println
+      endIf
+      builder.print '}'
+
 endClass
 
 augment Object
