@@ -59,16 +59,7 @@ class IndexedSet<<$DataType>> : IteratorPreferred
       return cloned.[ difference(other) ]
 
     method print_to( buffer:PrintWriter )
-      buffer.print( '{' )
-      local cur = data.first_entry
-      local i = 0
-      while (cur)
-        if (i > 0) buffer.print( ',' )
-        buffer.print( cur.key )
-        cur = cur.next_entry
-        ++i
-      endWhile
-      buffer.print( '}' )
+      data.print_to( buffer )
 
     method remove( key:$DataType )->Int?
       if (not data.contains(key)) return null
@@ -84,6 +75,11 @@ class IndexedSet<<$DataType>> : IteratorPreferred
 
     method set( key:$DataType, value:Int )
       data[key] = value
+
+    method to->String
+      local result = String()
+      print_to( result )
+      return result
 
     method union( other:IndexedSet<<$DataType>> )
       add( forEach in other.values )
