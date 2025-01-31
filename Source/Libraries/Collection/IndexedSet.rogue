@@ -11,6 +11,9 @@ class IndexedSet<<$DataType>> : IteratorPreferred
     method init( existing:IndexedSet<<$DataType>> )
       data = existing.data.cloned
 
+    method cloned->ThisType
+      return IndexedSet<<$DataType>>(this)
+
     method add( value:$DataType )->Int
       local entry = data.find( value )
       if (entry)
@@ -28,9 +31,6 @@ class IndexedSet<<$DataType>> : IteratorPreferred
 
     method clear
       data.clear
-
-    method cloned->ThisType [propagated]
-      return ThisType(this)
 
     method count->Int
       return data.count
