@@ -294,6 +294,14 @@ class Timestamp( value=System.time:Real ) [compound]
     method operator==( other:Timestamp )->Logical
       return (value == other.value)
 
+    method or_newer( other:Timestamp )->Timestamp
+      if (value >= other.value) return this
+      else                      return other
+
+    method or_older( other:Timestamp )->Timestamp
+      if (value <= other.value) return this
+      else                      return other
+
     method to->Date
       return Date( year, month, day )
 
