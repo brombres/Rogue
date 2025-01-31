@@ -295,6 +295,9 @@ class Scanner : Reader<<Character>>
       while (peek.is_identifier(&=additional_characters)) buffer.print( read )
       return buffer
 
+    method scan_int( base=10:Int )->Int
+      return scan_int64->Int
+
     method scan_int64( base=10:Int )->Int64
       local is_negative = consume( '-' )
       local result : Int64
@@ -376,29 +379,7 @@ class Scanner : Reader<<Character>>
         buffer.print( value->Character )
 
       else
-        local value = read->Int
-        if ((value & 0x80) != 0)
-          # Handle UTF8 encoding
-          local ch2 = read->Int
-
-          if ((value & 0x20) == 0)
-            # %110xxxxx 10xxxxxx
-            value = value & 0x1f
-            ch2 = value & 0x3f
-            buffer.print( ((value:<<:6) | ch2)->Character )
-          else
-            # %1110xxxx 10xxxxxx 10xxxxxx
-            local ch3 = read->Int
-            value = value & 15
-            ch2 = ch2 & 0x3f
-            ch3 = ch3 & 0x3f
-            buffer.print( ((value:<<:2) | (ch2:<<:6) | ch3)->Character )
-          endIf
-
-        else
-          buffer.print( value->Character )
-        endIf
-
+        buffer.print( read )
       endIf
 
     method seek( pos:Int )
