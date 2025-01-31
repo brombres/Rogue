@@ -6,7 +6,7 @@ class Set<<$DataType>> : [$DataType:$DataType]
       this[value] = value
 
     method cloned->ThisType
-      return ThisType( this )
+      return Set<<$DataType>>( this )
 
     method difference( other:Set<<$DataType>> )
       remove( forEach in other.values )
