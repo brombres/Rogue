@@ -656,7 +656,7 @@ augment
       return Program.type_Logical
 
     method CompareOp.type->Type
-      return Program.type_Int32
+      return Program.type_Int
 
     method ContextBlock.type->Type
       return context.type
