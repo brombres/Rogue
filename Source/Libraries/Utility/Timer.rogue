@@ -89,6 +89,15 @@ class Timer
       start_time += delta_time
       return this
 
+    method remaining->Real
+      # If a count-up timer, returns 0.
+      # If count-down, return 0 <= seconds remaining <= duration.
+      if (counting_down)
+        return (duration - elapsed).clamped_low( 0 )
+      else
+        return 0
+      endIf
+
     method to->String
       return String().[ print(elapsed,2), print(" seconds") ]
 
