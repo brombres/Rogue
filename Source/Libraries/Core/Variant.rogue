@@ -27,19 +27,24 @@ class Variant [compound]
     TYPE_LAST_NUMBER  = TYPE_RADIANS
 
     # Compounds and non-numeric primitives
+
+    # Geometry
     TYPE_ANCHOR    = 20
     TYPE_BOX       = 21
     TYPE_CIRCLE    = 22
     TYPE_LINE      = 23
-    TYPE_LOGICAL   = 24
-    TYPE_QUAD32    = 25
-    TYPE_TRIANGLE  = 26
-    TYPE_XY        = 27
-    TYPE_XYZ       = 28
-    TYPE_XYZW      = 29
+    TYPE_QUAD32    = 24
+    TYPE_TRIANGLE  = 25
+    TYPE_XY        = 26
+    TYPE_XYZ       = 27
+    TYPE_XYZW      = 28
+
+    # Non-numeric primitives
+    TYPE_LOGICAL   = 30
+    TYPE_GLOBAL_ID = 31
 
     # Object-adjacent
-    TYPE_NULL      = 30
+    TYPE_NULL      = 39
 
     # Object types
     TYPE_OBJECT           = 40
@@ -70,14 +75,16 @@ class Variant [compound]
        |#define %NS%ROGUE_VARIANT_TYPE_BOX       21
        |#define %NS%ROGUE_VARIANT_TYPE_CIRCLE    22
        |#define %NS%ROGUE_VARIANT_TYPE_LINE      23
-       |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL   24
-       |#define %NS%ROGUE_VARIANT_TYPE_QUAD32    25
-       |#define %NS%ROGUE_VARIANT_TYPE_TRIANGLE  26
-       |#define %NS%ROGUE_VARIANT_TYPE_XY        27
-       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       28
-       |#define %NS%ROGUE_VARIANT_TYPE_XYZW      29
+       |#define %NS%ROGUE_VARIANT_TYPE_QUAD32    24
+       |#define %NS%ROGUE_VARIANT_TYPE_TRIANGLE  25
+       |#define %NS%ROGUE_VARIANT_TYPE_XY        26
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZ       27
+       |#define %NS%ROGUE_VARIANT_TYPE_XYZW      28
        |
-       |#define %NS%ROGUE_VARIANT_TYPE_NULL      30
+       |#define %NS%ROGUE_VARIANT_TYPE_LOGICAL   30
+       |#define %NS%ROGUE_VARIANT_TYPE_GLOBAL_ID 31
+       |
+       |#define %NS%ROGUE_VARIANT_TYPE_NULL      39
        |
        |#define %NS%ROGUE_VARIANT_TYPE_OBJECT         40
        |#define %NS%ROGUE_VARIANT_TYPE_STRING         41
@@ -98,6 +105,7 @@ class Variant [compound]
     circle    : Circle    [faux]
     color     : Color     [faux]
     degrees   : Degrees   [faux]
+    global_id : GlobalID  [faux]
     int32     : Int32     [faux]
     integer   : Int       [faux]
     int64     : Int64     [faux]
@@ -121,6 +129,7 @@ class Variant [compound]
             |  %Ns%GeometryCircle   circle;
             |  %Ns%GraphicsColor    color;
             |  %Ns%RogueDegrees     degrees;
+            |  %Ns%RogueGlobalID    global_id;
             |  %Ns%RogueInt32       int32;
             |  %Ns%RogueInt         integer;
             |  %Ns%RogueInt64       int64;
@@ -204,6 +213,9 @@ class Variant [compound]
 
     method create( value:Circle )->Variant
       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_CIRCLE, 0, {.circle=$value} }" )->Variant
+
+    method create( value:GlobalID )->Variant
+      return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_GLOBAL_ID, 0, {.global_id=$value} }" )->Variant
 
     method create( value:Triangle )->Variant
       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_TRIANGLE, 0, {.triangle=$value} }" )->Variant
@@ -432,6 +444,7 @@ class Variant [compound]
         case TYPE_CHARACTER: return character.hashcode
         case TYPE_COLOR:     return color.hashcode
         case TYPE_DEGREES:   return degrees.hashcode
+        case TYPE_GLOBAL_ID: return global_id.hashcode
         case TYPE_INT32:     return int32.hashcode
         case TYPE_INT:       return integer.hashcode
         case TYPE_INT64:     return int64.hashcode
@@ -492,6 +505,9 @@ class Variant [compound]
 
     method is_geometry->Logical
       return (type >= TYPE_ANCHOR and type <= TYPE_XYZW)
+
+    method is_global_id->Logical
+      return (type == TYPE_GLOBAL_ID)
 
     method is_int32->Logical
       return (type == TYPE_INT32)
@@ -655,6 +671,8 @@ class Variant [compound]
           return quad32 <> other.quad32
         case TYPE_CIRCLE
           return circle <> other.circle
+        case TYPE_GLOBAL_ID
+          return global_id.value <> other.global_id.value
         case TYPE_TRIANGLE
           return triangle <> other.triangle
         case TYPE_LINE
@@ -911,6 +929,7 @@ class Variant [compound]
         case TYPE_CHARACTER: character.print_to( buffer )
         case TYPE_COLOR:     color.print_to( buffer )
         case TYPE_FILE:      buffer.print( object->(as String) )
+        case TYPE_GLOBAL_ID: global_id.print_to( buffer )
         case TYPE_INT32:     int32.print_to( buffer )
         case TYPE_INT:       integer.print_to( buffer )
         case TYPE_INT64:     int64.print_to( buffer )
@@ -1090,6 +1109,15 @@ class Variant [compound]
     method to->File
       return File( this->String )
 
+    method to->GlobalID
+      which (type)
+        case TYPE_INT32:  return GlobalID(int32)
+        case TYPE_INT:    return GlobalID(integer)
+        case TYPE_INT64:  return GlobalID(int64)
+        case TYPE_STRING: return GlobalID(object->String)
+        others:           return <Undefined>
+      endWhich
+
     method to->Line
       which (type)
         case TYPE_LINE:   return line
@@ -1110,6 +1138,7 @@ class Variant [compound]
         case TYPE_BYTE:      return byte->Int32
         case TYPE_CHARACTER: return character->Int32
         case TYPE_COLOR:     return color.argb
+        case TYPE_GLOBAL_ID: return global_id.value->Int32
         case TYPE_INT32:     return int32->Int32
         case TYPE_INT:       return integer->Int32
         case TYPE_INT64:     return int64->Int32
@@ -1129,6 +1158,7 @@ class Variant [compound]
         case TYPE_BYTE:      return byte->Int
         case TYPE_CHARACTER: return character->Int
         case TYPE_COLOR:     return color.argb->Int
+        case TYPE_GLOBAL_ID: return global_id.value->Int
         case TYPE_INT32:     return int32->Int
         case TYPE_INT:       return integer->Int
         case TYPE_INT64:     return int64->Int
@@ -1148,6 +1178,7 @@ class Variant [compound]
         case TYPE_BYTE:      return byte->Int64
         case TYPE_CHARACTER: return character->Int64
         case TYPE_COLOR:     return color.argb->Int64
+        case TYPE_GLOBAL_ID: return global_id.value->Int64
         case TYPE_INT32:     return int32->Int64
         case TYPE_INT:       return integer->Int64
         case TYPE_INT64:     return int64->Int64
@@ -1465,6 +1496,8 @@ class Variant [compound]
           builder.[ print("],"), print(circle.radius), print("]") ]
         case TYPE_FILE
           write_json_string( object->(as String), builder )
+        case TYPE_GLOBAL_ID
+          write_json_string( global_id->String, builder )
         case TYPE_LINE
           builder.[ print("[["), print(line.a.x), print(','), print(line.a.y), print("],[") ]
           builder.[ print(line.b.x), print(','), print(line.b.y), print("]]") ]
