@@ -41,13 +41,21 @@ class Entity : Node<<Entity>>
 
     method draw
       .begin_draw
-      .draw
-      .end_draw
+      .dispatch_draw_bg
+      .dispatch_draw
+      .dispatch_draw_fg
+
+    method draw_bg
+
+    method draw_fg
 
     method on_draw
       noAction
 
-    method on_end_draw
+    method on_draw_bg
+      noAction
+
+    method on_draw_fg
       noAction
 
     method on_start
@@ -83,11 +91,11 @@ class Entity : Node<<Entity>>
     method .begin_draw
       if (not attributes.started) start
 
+    method .dispatch_draw
+      on_draw
+
       localize script
       while (script) script.on_draw; script .= next_script
-
-    method .draw
-      on_draw
 
       if (actions)
         while (actions and not actions.is_started) actions = actions.updated
@@ -98,10 +106,30 @@ class Entity : Node<<Entity>>
         (forEach in children).draw
       endIf
 
-    method .end_draw
-      on_end_draw
+    method .dispatch_draw_bg
+      if (actions)
+        while (actions and not actions.is_started) actions = actions.updated
+        if (actions) actions.on_draw_bg
+      endIf
 
       localize script
-      while (script) script.on_end_draw; script .= next_script
+      while (script) script.on_draw_bg; script .= next_script
+
+      on_draw_bg
+
+      draw_bg
+
+    method .dispatch_draw_fg
+      draw_fg
+
+      on_draw_fg
+
+      localize script
+      while (script) script.on_draw_fg; script .= next_script
+
+      if (actions)
+        while (actions and not actions.is_started) actions = actions.updated
+        if (actions) actions.on_draw_fg
+      endIf
 
 endClass

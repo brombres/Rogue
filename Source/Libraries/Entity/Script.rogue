@@ -12,10 +12,14 @@ class Script
     method on_draw
       noAction
 
-    method on_end_draw
+    method on_draw_bg
+      noAction
+
+    method on_draw_fg
       noAction
 
     method on_start
+      noAction
 
     method on_update
       noAction
