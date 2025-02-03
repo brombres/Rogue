@@ -37,16 +37,16 @@ class Component : Entity
     method on_begin_layout
       noAction
 
-    method on_end( e:KeyEvent )
+    method on_unhandled( e:KeyEvent )
       noAction
 
-    method on_end( e:PointerEvent )
+    method on_unhandled( e:PointerEvent )
       noAction
 
-    method on_end( e:ScrollEvent )
+    method on_unhandled( e:ScrollEvent )
       noAction
 
-    method on_end( e:TextEvent )
+    method on_unhandled( e:TextEvent )
       noAction
 
     method on_end_draw
@@ -228,7 +228,7 @@ class Component : Entity
       first_child_component?.dispatch( e )
       if (e.is_consumed) return
 
-      on_end( e )
+      on_unhandled( e )
 
     method handle( e:PointerEvent )
       if (attributes.hidden or attributes.input_disabled) return
@@ -239,7 +239,7 @@ class Component : Entity
       first_child_component?.dispatch( e )
       if (e.is_consumed) return
 
-      on_end( e )
+      on_unhandled( e )
 
     method handle( e:ScrollEvent )
       if (attributes.hidden or attributes.input_disabled) return
@@ -250,7 +250,7 @@ class Component : Entity
       first_child_component?.dispatch( e )
       if (e.is_consumed) return
 
-      on_end( e )
+      on_unhandled( e )
 
     method handle( e:TextEvent )
       if (attributes.hidden or attributes.input_disabled) return
@@ -261,7 +261,7 @@ class Component : Entity
       first_child_component?.dispatch( e )
       if (e.is_consumed) return
 
-      on_end( e )
+      on_unhandled( e )
 
     method has_keyboard_focus->Logical
       return UI.keyboard_focus is this
