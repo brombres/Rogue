@@ -12,16 +12,16 @@ class Anchor( position:XY ) [compound]
     BOTTOM        = Anchor( XY( 0.5, 1.0) )
     BOTTOM_RIGHT  = Anchor( XY( 1.0, 1.0) )
 
-    LEFT_TOP      = TOP_LEFT
-    TOP_CENTER    = TOP
-    CENTER_TOP    = TOP
-    RIGHT_TOP     = TOP_RIGHT
-    LEFT_CENTER   = LEFT
-    CENTER_LEFT   = LEFT
-    LEFT_BOTTOM   = BOTTOM_LEFT
-    BOTTOM_CENTER = BOTTOM
-    CENTER_BOTTOM = BOTTOM
-    RIGHT_BOTTOM  = BOTTOM_RIGHT
+    LEFT_TOP      = Anchor.TOP_LEFT
+    TOP_CENTER    = Anchor.TOP
+    CENTER_TOP    = Anchor.TOP
+    RIGHT_TOP     = Anchor.TOP_RIGHT
+    LEFT_CENTER   = Anchor.LEFT
+    CENTER_LEFT   = Anchor.LEFT
+    LEFT_BOTTOM   = Anchor.BOTTOM_LEFT
+    BOTTOM_CENTER = Anchor.BOTTOM
+    CENTER_BOTTOM = Anchor.BOTTOM
+    RIGHT_BOTTOM  = Anchor.BOTTOM_RIGHT
 
   GLOBAL METHODS
     method operator*( size:XY, anchor:Anchor )->XY
