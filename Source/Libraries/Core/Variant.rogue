@@ -254,6 +254,8 @@ class Variant [compound]
       which (type)
         case TYPE_LIST
           object->(as Variant[]).add( value )
+        case TYPE_TABLE
+          object->(as [Variant:Variant])[ value ] = true
       endWhich
 
     method add_all( value:Variant )
@@ -261,6 +263,15 @@ class Variant [compound]
         case TYPE_LIST
           local list = object->(as Variant[]).[ reserve(value.count) ]
           list.add( forEach in value )
+        case TYPE_TABLE
+          local table = object->(as [Variant:Variant])
+          if (value.is_table)
+            forEach (entry in value.entries)
+              table[entry.key] = entry.value
+            endForEach
+          else
+            table[forEach in value] = true
+          endIf
       endWhich
 
     method as_list->Variant[]
@@ -393,6 +404,9 @@ class Variant [compound]
       table = @{}
       this[name] = table
       return table
+
+    method exists->Logical
+      return (type != TYPE_UNDEFINED)
 
     method first->Variant
       which (type)
