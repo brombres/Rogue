@@ -1,0 +1,31 @@
+library Entity
+
+class Script
+  PROPERTIES
+    entity      : Entity
+    next_script : Script
+
+  METHODS
+    method entity->Entity
+      return @entity
+
+    method on_draw
+      noAction
+
+    method on_end_draw
+      noAction
+
+    method on_start
+
+    method on_update
+      noAction
+
+    method properties->Properties
+      return Properties( entity )
+endClass
+
+class Script2D : Script
+  METHODS
+    method entity->Entity2D [override]
+      return @entity->(as Entity2D)
+endClass

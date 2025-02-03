@@ -5,6 +5,7 @@ enum Attributes [bitflags]
     HIDDEN
     INPUT_DISABLED
     MODIFIED
-    FG
+    FOREGROUND
+    STARTED
 endEnum
 

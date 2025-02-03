@@ -8,6 +8,8 @@ uses Math/Quaternion
 $include Entity/Entity2D
 $include Entity/Entity3D
 $include Entity/Attributes
+$include Entity/Properties
+$include Entity/Script
 
 class Entity : Node<<Entity>>
   GLOBAL PROPERTIES
@@ -18,6 +20,8 @@ class Entity : Node<<Entity>>
     id         : Int
     attributes : Attributes
     actions    : Action
+    script     : Script
+    properties : Variant
 
   METHODS
     method init
@@ -30,16 +34,74 @@ class Entity : Node<<Entity>>
       id = next_id
       ++next_id
 
+    method add( script:Script )
+      script.entity = this
+      script.next_script = this.script
+      @script = script
+
+    method draw
+      .begin_draw
+      .draw
+      .end_draw
+
+    method on_draw
+      noAction
+
+    method on_end_draw
+      noAction
+
+    method on_start
+      noAction
+
     method on_update
       noAction
+
+    method properties->Properties
+      return Properties( this )
+
+    method start
+      if (not attributes.started)
+        attributes.started = true
+        localize script
+        while (script) script.on_start; script .= next_script
+        on_start
+      endIf
 
     method to->String
       if (@name) return @name
       else       return type_name
 
     method update
-      actions = actions?.updated
+      if (not attributes.started) start
+
+      localize script
+      while (script) script.on_update; script .= next_script
+      if (actions) actions = actions.updated
       on_update
       (forEach in children).update
+
+    method .begin_draw
+      if (not attributes.started) start
+
+      localize script
+      while (script) script.on_draw; script .= next_script
+
+    method .draw
+      on_draw
+
+      if (actions)
+        while (actions and not actions.is_started) actions = actions.updated
+        if (actions) actions.on_draw
+      endIf
+
+      if (count)
+        (forEach in children).draw
+      endIf
+
+    method .end_draw
+      on_end_draw
+
+      localize script
+      while (script) script.on_end_draw; script .= next_script
 
 endClass

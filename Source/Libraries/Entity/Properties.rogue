@@ -1,0 +1,40 @@
+library Entity
+
+class Properties( entity:Entity ) [compound]
+  METHODS
+    method get( name:String )->Variant
+      localize entity
+      loop
+        if (entity.@properties.contains(name)) return entity.@properties[name]
+        entity .= parent
+        if (not entity) return undefined
+      endLoop
+      return undefined
+
+    method set( name:String, value:Variant )
+      if (not entity.@properties.is_table) entity.properties = @{}
+      entity.@properties[name] = value
+
+    method to->String
+      localize entity
+
+      local table    : Variant
+      local combined : Variant
+
+      while (entity)
+        if (entity.@properties.exists)
+          if (table)
+            if (not combined) combined = @{}; combined.add_all( table )
+            combined.add_all( entity.@properties )
+          else
+            table = entity.@properties
+          endIf
+        endIf
+        entity .= parent
+      endWhile
+
+      if (combined)  return combined->String
+      elseIf (table) return table->String
+      else           return "{}"
+
+endClass
