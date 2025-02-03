@@ -111,6 +111,9 @@ class State<<$ExtendedType>>
     method is_finished->Logical
       return (duration >= 0 and t >= duration)
 
+    method is_started->Logical
+      return (prev_time > 0)
+
     method last->$ExtendedType
       # Returns the last state in this chain
       local cur = this
