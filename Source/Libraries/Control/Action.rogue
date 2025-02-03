@@ -6,5 +6,8 @@ class Action : State<<Action>>
       return true
 
     method on_draw
-      noAction
+
+    method on_draw_bg
+
+    method on_draw_fg
 endClass
