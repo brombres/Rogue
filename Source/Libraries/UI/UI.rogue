@@ -74,7 +74,7 @@ class UI : Component [singleton]
         endIf
         if (e.is_consumed) return
 
-        on_end( e )
+        on_unhandled( e )
       endTemporarily
 
     method handle( e:PointerEvent )
@@ -96,7 +96,7 @@ class UI : Component [singleton]
         endIf
         if (e.is_consumed) return
 
-        on_end( e )
+        on_unhandled( e )
       endTemporarily
 
     method handle( e:ScrollEvent )
@@ -113,7 +113,7 @@ class UI : Component [singleton]
         endIf
         if (e.is_consumed) return
 
-        on_end( e )
+        on_unhandled( e )
       endTemporarily
 
     method handle( e:TextEvent )
@@ -130,7 +130,7 @@ class UI : Component [singleton]
         endIf
         if (e.is_consumed) return
 
-        on_end( e )
+        on_unhandled( e )
       endTemporarily
 
     method set_clip( @clip )
