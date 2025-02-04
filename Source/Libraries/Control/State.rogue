@@ -134,6 +134,33 @@ class State<<$ExtendedType>>
     method progress->Real
       return which{ duration>0:progress_fn(t/duration) || 1.0 }
 
+    method started->$ExtendedType
+      if (exited)
+        # Already exited outside of updated()
+        if (concurrent_state)
+          concurrent_state = concurrent_state.started
+        endIf
+      else
+        if (not prev_time)
+          local cur_time = System.execution_time
+          if (duration)
+            on_start
+          else
+            on_execute
+            # Default will change duration to INDEFINITE and call on_start()
+            # Override on_execute() to keep INSTANT.
+          endIf
+          prev_time = cur_time
+        endIf
+
+        if (concurrent_state) concurrent_state = concurrent_state.started
+        if (not is_finished) return this->(as $ExtendedType)
+      endIf
+
+      .handle_finish
+
+      return .start_next
+
     method to->String
       return description
 
@@ -173,12 +200,31 @@ class State<<$ExtendedType>>
 
       .handle_finish
 
-      return .start_next
+      return .update_next
 
     method .handle_finish
       on_finish
 
     method .start_next->$ExtendedType
+      # Finds the successor to this state, adjusts links if necessary, and
+      # returns it or the result of a call to its started().
+      if (next_state)
+        if (concurrent_state)
+          # Attach any parallel commands remaining in this finished command to the
+          # next_state command in this chain that will be the new head.
+          next_state = next_state.also( concurrent_state )
+          concurrent_state = null
+        endIf
+        if (allow_multiple_states_per_update) return next_state.started
+        else                                  return next_state
+      elseIf (concurrent_state)
+        # .start_next() is called after updated(), which has already started 'concurrent_state' this tick.
+        return concurrent_state
+      else
+        return null
+      endIf
+
+    method .update_next->$ExtendedType
       # Finds the successor to this state, adjusts links if necessary, and
       # returns it or the result of a call to its updated().
       if (next_state)
@@ -191,7 +237,7 @@ class State<<$ExtendedType>>
         if (allow_multiple_states_per_update) return next_state.updated
         else                                  return next_state
       elseIf (concurrent_state)
-        # .start_next() is called after updated(), which has already updated 'concurrent_state' this tick.
+        # .update_next() is called after updated(), which has already updated 'concurrent_state' this tick.
         return concurrent_state
       else
         return null
