@@ -78,6 +78,15 @@ class State<<$ExtendedType>>
       endIf
       return this->(as $ExtendedType)
 
+    method call<<$method_name>>()
+      # Calls specified method on this state and all concurrent states.
+      this->(as $ExtendedType).$method_name()
+      local cur = concurrent_state
+      while (cur)
+        cur.$method_name()
+        cur .= concurrent_state
+      endWhile
+
     method change_state( new_state:$ExtendedType )
       next_state = new_state
       exit_state
