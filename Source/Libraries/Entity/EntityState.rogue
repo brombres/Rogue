@@ -1,11 +1,14 @@
 library Entity
 
-class Script
+class EntityState : State<<EntityState>>
   PROPERTIES
-    entity      : Entity
-    next_script : Script
+    entity : Entity
 
   METHODS
+    method init
+
+    method init( entity )
+
     method entity->Entity
       return @entity
 
@@ -18,18 +21,19 @@ class Script
     method on_draw_fg
       noAction
 
-    method on_start
-      noAction
-
-    method on_update
-      noAction
-
     method properties->Properties
       return Properties( entity )
 endClass
 
-class Script2D : Script
+class Entity2DState : EntityState
   METHODS
+    method init
+      prior.init
+
+    method init( entity:Entity2D )
+      prior.init( entity )
+
     method entity->Entity2D [override]
       return @entity->(as Entity2D)
 endClass
+
