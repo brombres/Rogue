@@ -74,9 +74,9 @@ class Color( argb:Int32 ) [compound]
     method operator*( other:Color )->Color
       local a = other.alpha
       local inverse_a = 1.0 - a
-      local r = red * inverse_a   + other.red *a
-      local g = green * inverse_a + other.green *a
-      local b = blue * inverse_a  + other.blue *a
+      local r = red * inverse_a   + other.red * a
+      local g = green * inverse_a + other.green * a
+      local b = blue * inverse_a  + other.blue * a
       return Color( r, g, b, alpha*inverse_a+a )
 
     method operator&( n:Int )->Color
@@ -106,6 +106,9 @@ class Color( argb:Int32 ) [compound]
     method to->String
       return argb->String(&hex)
 
+    method to->XYZW
+      return XYZW( red, green, blue, alpha )
+
     method with_alpha( a:Real )->Color
       return with_alpha_byte( (a*255)->Int )
 
@@ -116,6 +119,12 @@ class Color( argb:Int32 ) [compound]
       return Color( (Int((argb:>>:24) * a):<<:24) | (argb & 0xffFFff) )
 
 endClass
+
+augment Geometry::XYZW
+  METHODS
+    method to->Color
+      return Color( x, y, z, w )
+endAugment
 
 augment Rogue::Real
   METHODS
