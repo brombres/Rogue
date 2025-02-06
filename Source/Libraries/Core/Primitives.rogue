@@ -168,7 +168,11 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
         buffer.print builder
       endUse
 
-    method print_to( buffer:PrintWriter, decimal_places:Int32 )
+    method print_to( buffer:PrintWriter, decimal_places:Int )
+      # decimal_places
+      #   -1 - minimum required to keep precision
+      #    0 - none (and no decimal point)
+      #   >0 - decimal point + specified number of decimal digits
       local value = this
 
       if (value.is_infinite)
@@ -181,6 +185,22 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
       endIf
 
       use builder = StringPool
+        if (decimal_places == -1)
+
+          block
+            forEach (n in 1..17)
+              if (this.is_string_accurate_at(n))
+                decimal_places = n
+                escapeBlock
+              endIf
+            endForEach
+
+            decimal_places = 18
+          endBlock
+
+          builder.clear
+        endIf
+
         local is_negative = (value < 0)
         if (is_negative) value = -value
 
@@ -316,7 +336,11 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
     method print_to( buffer:PrintWriter )
       this->Real64.print_to( buffer )
 
-    method print_to( buffer:PrintWriter, decimal_places:Int32 )
+    method print_to( buffer:PrintWriter, decimal_places:Int )
+      # decimal_places
+      #   -1 - minimum required to keep precision
+      #    0 - none (and no decimal point)
+      #   >0 - decimal point + specified number of decimal digits
       this->Real64.print_to( buffer, decimal_places )
 
     method sin->Real
@@ -449,7 +473,11 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
     method print_to( buffer:PrintWriter )
       this->Real64.print_to( buffer )
 
-    method print_to( buffer:PrintWriter, decimal_places:Int32 )
+    method print_to( buffer:PrintWriter, decimal_places:Int )
+      # decimal_places
+      #   -1 - minimum required to keep precision
+      #    0 - none (and no decimal point)
+      #   >0 - decimal point + specified number of decimal digits
       this->Real64.print_to( buffer, decimal_places )
 
     method sin->Real32
