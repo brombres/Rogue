@@ -1185,7 +1185,7 @@ class CGenerator : Visitor
       writer.write_default_value( cmd.optional_type )
 
     method on_visit_node( cmd:LiteralPi )
-      writer.print pi
+      writer.print( (-1.0).acos, 15 )
       if (Program.real_bits == 32) writer.print 'f'
 
     method on_visit_node( cmd:LiteralReal )
