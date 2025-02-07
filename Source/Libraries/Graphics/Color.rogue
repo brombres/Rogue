@@ -122,8 +122,8 @@ endClass
 
 augment Geometry::XYZW
   METHODS
-    method to->Color
-      return Color( x, y, z, w )
+    method to->Graphics::Color
+      return Graphics::Color( x, y, z, w )
 endAugment
 
 augment Rogue::Real
