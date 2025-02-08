@@ -21,6 +21,9 @@ class EntityState : State<<EntityState>>
     method on_draw_fg
       noAction
 
+    method on_update_layout
+      noAction
+
     method properties->Properties
       return Properties( entity )
 endClass

@@ -3,6 +3,6 @@ library UI
 class TextStyle
   PROPERTIES
     font     : Font?
-    color    : Color?
-    bg_color : Color?
+    color    : Graphics::Color?
+    bg_color : Graphics::Color?
 endClass

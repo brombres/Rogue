@@ -72,10 +72,10 @@ class Text : Component
         builder.clear
       endIf
 
-    method bg_color->Color? [override]
+    method bg_color->Graphics::Color? [override]
       return style?.bg_color || prior.bg_color
 
-    method color->Color? [override]
+    method color->Graphics::Color? [override]
       return style?.color || prior.color
 
     method description->String
@@ -142,11 +142,11 @@ class Text : Component
     method on_draw [override]
       font?.draw( this )
 
-    method set_bg_color( color:Color? )
+    method set_bg_color( color:Graphics::Color? )
       ensure<<style>>
       style.bg_color = color
 
-    method set_color( color:Color? )
+    method set_color( color:Graphics::Color? )
       ensure<<style>>
       style.color = color
 

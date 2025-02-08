@@ -138,8 +138,9 @@ class UI : Component [singleton]
 
     method update( bounds:Box )
       temporarily UI = this
-        update
+        update_layout
         update_layout( bounds )
+        update
       endTemporarily
 
     method update_layout( bounds:Box )

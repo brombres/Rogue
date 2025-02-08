@@ -199,7 +199,7 @@ class VScrollView : Component
     method on_select_background( position:XY )
       noAction
 
-    method on_update
+    method on_update_layout [override]
       local ticks = (UI.dt * 60)->Int.clamped_low(1)
       loop (ticks) on_update_tick
 
