@@ -89,6 +89,23 @@ class IntXY( x:Int, y:Int ) [essential compound]
     method operator^( a:IntXY, b:Int )->IntXY
       return IntXY( a.x^b, a.y^b )
 
+    method operator&( a:IntXY, b:IntXY )->IntXY
+      return IntXY( a.x&b.x, a.y&b.y )
+
+    method operator&( a:IntXY, b:Int )->IntXY
+      return IntXY( a.x&b, a.y&b )
+
+    method operator|( a:IntXY, b:IntXY )->IntXY
+      return IntXY( a.x|b.x, a.y|b.y )
+
+    method operator|( a:IntXY, b:Int )->IntXY
+      return IntXY( a.x|b, a.y|b )
+
+    method operator~( a:IntXY, b:IntXY )->IntXY
+      return IntXY( a.x~b.x, a.y~b.y )
+
+    method operator~( a:IntXY, b:Int )->IntXY
+      return IntXY( a.x~b, a.y~b )
 
   METHODS
     method abs->IntXY
