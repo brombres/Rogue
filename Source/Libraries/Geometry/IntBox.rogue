@@ -322,4 +322,4 @@ augment Rogue::Box
     method to->IntBox
       return IntBox( position, size )
 
-endClass
+endAugment
