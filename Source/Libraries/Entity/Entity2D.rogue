@@ -10,6 +10,13 @@ class Entity2D : Entity
     anchor        = Anchor.CENTER : Anchor
 
   METHODS
+    method init
+      internal_size = XY(1,1)
+      @size = internal_size
+
+    method init( @internal_size )
+      @size = internal_size
+
     method scale->XY
       return size / internal_size
 
