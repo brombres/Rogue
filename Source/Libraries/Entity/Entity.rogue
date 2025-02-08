@@ -65,6 +65,9 @@ class Entity : Node<<Entity>>
     method on_update
       noAction
 
+    method on_update_layout
+      noAction
+
     method properties->Properties
       return Properties( this )
 
@@ -86,6 +89,13 @@ class Entity : Node<<Entity>>
       if (actions) actions = actions.updated
       on_update
       (forEach in children).update
+
+    method update_layout
+      if (not attributes.started) start
+
+      state?.on_update_layout
+      on_update_layout
+      (forEach in children).update_layout
 
     method .begin_draw
       if (not attributes.started) start

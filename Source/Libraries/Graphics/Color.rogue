@@ -106,8 +106,8 @@ class Color( argb:Int32 ) [compound]
     method to->String
       return argb->String(&hex)
 
-    method to->XYZW
-      return XYZW( red, green, blue, alpha )
+    method to->Geometry::XYZW
+      return Geometry::XYZW( red, green, blue, alpha )
 
     method with_alpha( a:Real )->Color
       return with_alpha_byte( (a*255)->Int )
