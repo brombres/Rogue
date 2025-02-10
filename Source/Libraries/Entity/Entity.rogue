@@ -19,7 +19,6 @@ class Entity : Node<<Entity>>
     name       : String
     id         : Int
     attributes : Attributes
-    actions    : Action
     state      : EntityState
     properties : Variant
 
@@ -86,7 +85,6 @@ class Entity : Node<<Entity>>
       if (not attributes.started) start
 
       state = state?.updated
-      if (actions) actions = actions.updated
       on_update
       (forEach in children).update
 
@@ -104,14 +102,12 @@ class Entity : Node<<Entity>>
       on_draw
 
       state?.call<<on_draw>>
-      actions?.call<<on_draw>>
 
       if (count)
         (forEach in children).draw
       endIf
 
     method .dispatch_draw_bg
-      actions?.call<<on_draw_bg>>
       state?.call<<on_draw_bg>>
 
       on_draw_bg
@@ -124,5 +120,4 @@ class Entity : Node<<Entity>>
       on_draw_fg
 
       state?.call<<on_draw_bg>>
-      actions?.call<<on_draw_bg>>
 endClass
