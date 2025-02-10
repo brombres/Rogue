@@ -13,7 +13,6 @@ class ConsoleUI : UI
     #underline_font : ConsoleUIFont
 
   PROPERTIES
-    last_update_ms       : Int
     mouse_position       : XY?
     button_pressed       = Dim<<Logical>>(2)
     is_running           : Logical
@@ -207,9 +206,4 @@ class ConsoleUI : UI
         ConsoleUICanvas.clip = null
       endIf
 
-    method update
-      local cur_ms = System.execution_time_ms
-      dt = ((cur_ms - last_update_ms) / 1000.0).clamped_high(1.0)
-      last_update_ms = cur_ms
-      prior.update
 endClass
