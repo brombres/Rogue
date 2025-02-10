@@ -21,6 +21,8 @@ class VScrollView : Component
     drag_pos    : XY
     drag_deltas = DragDelta[]
 
+    actions     : Action
+
     last_update_time : Real
 
   METHODS
