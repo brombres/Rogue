@@ -1,6 +1,6 @@
 library Entity
 
-class EntityState : State<<EntityState>>
+class EntityScript : State<<EntityScript,change_script>>
   PROPERTIES
     entity : Entity
 
@@ -28,7 +28,7 @@ class EntityState : State<<EntityState>>
       return Properties( entity )
 endClass
 
-class Entity2DState : EntityState
+class Entity2DScript : EntityScript
   METHODS
     method init
       prior.init
