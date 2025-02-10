@@ -21,6 +21,8 @@ class VScrollView : Component
     drag_pos    : XY
     drag_deltas = DragDelta[]
 
+    last_update_time : Real
+
   METHODS
     method init_object
       alignment = Anchor.TOP_LEFT
@@ -200,7 +202,11 @@ class VScrollView : Component
       noAction
 
     method on_update_layout [override]
-      local ticks = (UI.dt * 60)->Int.clamped_low(1)
+      local cur_time = System.execution_time
+      local dt = (cur_time - last_update_time).clamped_high(1.0)
+      last_update_time = cur_time
+
+      local ticks = (dt * 60)->Int.clamped_low(1)
       loop (ticks) on_update_tick
 
     method on_update_tick

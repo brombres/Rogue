@@ -38,8 +38,6 @@ class UI : Component [singleton]
     needs_layout   = true
     needs_redraw   = true
 
-    dt : Real # interval since last update, in seconds
-
     snap_to_pixel_coordinates = true
 
   METHODS
