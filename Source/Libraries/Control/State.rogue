@@ -1,6 +1,9 @@
 $include Control/ProgressFn
 
-class State<<$ExtendedType>>
+class State<<$ExtendedType>> : State<<$ExtendedType,change_state>>
+endClass
+
+class State<<$ExtendedType,$change_state>>
   DEFINITIONS
     # Duration values
     INSTANT    =  0  # one and done
@@ -87,7 +90,7 @@ class State<<$ExtendedType>>
         cur .= concurrent_state
       endWhile
 
-    method change_state( new_state:$ExtendedType )
+    method $change_state( new_state:$ExtendedType )
       next_state = new_state
       exit_state
 
