@@ -2,3 +2,4 @@ $include Control/Action
 $include Control/EasedValue
 $include Control/ProgressFn
 $include Control/State
+$include Control/Ticker
