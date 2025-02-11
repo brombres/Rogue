@@ -131,10 +131,10 @@ class State<<$ExtendedType>>
     method on_start
 
     method on_tick
-      # Called every 60th of a second (approximately).
+      # Called every 60th of a second on average.
 
     method on_update->Real
-      return 0.0
+      return 0.0 # TEST
 
     method on_update( dt:Real )
 
@@ -170,6 +170,9 @@ class State<<$ExtendedType>>
 
       return .start_next
 
+    method tick
+      on_tick
+
     method to->String
       return description
 
@@ -187,6 +190,8 @@ class State<<$ExtendedType>>
 
         local cur_time = System.execution_time
         if (not prev_time)
+          delta_time = 1.0/60.0
+          delta_ticks = 1
           if (duration)
             on_start
           else
@@ -207,7 +212,7 @@ class State<<$ExtendedType>>
         prev_time = cur_time
 
         update( delta_time )
-        loop (delta_ticks) on_tick
+        loop (delta_ticks) tick
 
         if (concurrent_state)
           concurrent_state = concurrent_state.updated
