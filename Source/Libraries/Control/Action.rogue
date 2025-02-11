@@ -2,9 +2,6 @@ $include Control/State
 
 class Action : State<<Action>>
   METHODS
-    method allow_multiple_states_per_update->Logical
-      return true
-
     method on_draw
 
     method on_draw_bg

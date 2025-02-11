@@ -1,9 +1,6 @@
-$include Control/ProgressFn
+$include Control
 
-class State<<$ExtendedType>> : State<<$ExtendedType,change_state>>
-endClass
-
-class State<<$ExtendedType,$change_state>>
+class State<<$ExtendedType>>
   DEFINITIONS
     # Duration values
     INSTANT    =  0  # one and done
@@ -42,9 +39,10 @@ class State<<$ExtendedType,$change_state>>
     next_state       : $ExtendedType
     concurrent_state : $ExtendedType
 
-    t          : Real
-    delta_time : Real
-    prev_time  : Real  # 0 = not started
+    t           : Real
+    delta_time  : Real
+    prev_time   : Real  # 0 = not started
+    time_debt   : Real
 
     exited : Logical # flag that assists when states finish outside of updated()
 
@@ -55,10 +53,6 @@ class State<<$ExtendedType,$change_state>>
     method init( progress_fn )
 
     method init( duration, progress_fn=ProgressFn.LINEAR )
-
-    method allow_multiple_states_per_update->Logical
-      # Does change_state() etc. execute immediately or on the next call to updated()?
-      return true
 
     method and_then( state:$ExtendedType )->$ExtendedType
       if (state)
@@ -90,7 +84,7 @@ class State<<$ExtendedType,$change_state>>
         cur .= concurrent_state
       endWhile
 
-    method $change_state( new_state:$ExtendedType )
+    method change_state( new_state:$ExtendedType )
       next_state = new_state
       exit_state
 
@@ -123,9 +117,6 @@ class State<<$ExtendedType,$change_state>>
     method is_finished->Logical
       return (duration >= 0 and t >= duration)
 
-    method is_started->Logical
-      return (prev_time > 0)
-
     method last->$ExtendedType
       # Returns the last state in this chain
       local cur = this
@@ -139,7 +130,13 @@ class State<<$ExtendedType,$change_state>>
 
     method on_start
 
-    method on_update
+    method on_tick
+      # Called every 60th of a second (approximately).
+
+    method on_update->Real
+      return 0.0
+
+    method on_update( dt:Real )
 
     method on_finish
 
@@ -176,6 +173,9 @@ class State<<$ExtendedType,$change_state>>
     method to->String
       return description
 
+    method update( dt:Real )
+      on_update( dt )
+
     method updated->$ExtendedType
       if (exited)
         # Already exited outside of updated()
@@ -183,6 +183,8 @@ class State<<$ExtendedType,$change_state>>
           concurrent_state = concurrent_state.updated
         endIf
       else
+        local delta_ticks = 0
+
         local cur_time = System.execution_time
         if (not prev_time)
           if (duration)
@@ -195,13 +197,17 @@ class State<<$ExtendedType,$change_state>>
         else
           delta_time = (cur_time - prev_time)
           if (delta_time > 1.0/10.0) delta_time = 1.0/60.0
+          time_debt += delta_time
+          delta_ticks = (time_debt * 60.0)->Int
+          time_debt -= delta_ticks / 60.0
           t += delta_time
           if (duration >= 0 and t > duration) t = duration
         endIf
 
         prev_time = cur_time
 
-        on_update
+        update( delta_time )
+        loop (delta_ticks) on_tick
 
         if (concurrent_state)
           concurrent_state = concurrent_state.updated
@@ -227,8 +233,7 @@ class State<<$ExtendedType,$change_state>>
           next_state = next_state.also( concurrent_state )
           concurrent_state = null
         endIf
-        if (allow_multiple_states_per_update) return next_state.started
-        else                                  return next_state
+        return next_state.started
       elseIf (concurrent_state)
         # .start_next() is called after updated(), which has already started 'concurrent_state' this tick.
         return concurrent_state
@@ -246,8 +251,7 @@ class State<<$ExtendedType,$change_state>>
           next_state = next_state.also( concurrent_state )
           concurrent_state = null
         endIf
-        if (allow_multiple_states_per_update) return next_state.updated
-        else                                  return next_state
+        return next_state.updated
       elseIf (concurrent_state)
         # .update_next() is called after updated(), which has already updated 'concurrent_state' this tick.
         return concurrent_state
@@ -274,18 +278,18 @@ endClass
 
 class StateCallWithProgress<<$ExtendedType>>( fn:Function(Real), duration, progress_fn ) : $ExtendedType [undocumented]
   METHODS
-    method on_update
+    method on_update( dt:Real )
       fn( progress )
 endClass
 
 class StateYield<<$ExtendedType>> : $ExtendedType
   PROPERTIES
-    ticks = 0
+    update_count = 0
 
   METHODS
     method is_finished->Logical
-      return ticks == 2
+      return update_count == 2
 
-    method on_update
-      ++ticks
+    method on_update( dt:Real )
+      ++update_count
 endClass

@@ -19,7 +19,7 @@ class Entity : Node<<Entity>>
     name       : String
     id         : Int
     attributes : Attributes
-    script      : EntityScript
+    script     : EntityScript
     properties : Variant
 
   METHODS
@@ -35,8 +35,8 @@ class Entity : Node<<Entity>>
 
     method change_script( new_script:EntityScript )
       new_script.entity = this
-      if (script) script.change_script( new_script )
-      else       script = new_script
+      if (script) script.change_state( new_script )
+      else        script = new_script
       new_script .= started
 
     method draw
