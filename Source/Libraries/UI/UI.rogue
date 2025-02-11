@@ -40,6 +40,8 @@ class UI : Component [singleton]
 
     snap_to_pixel_coordinates = true
 
+    ticker = Ticker()
+
   METHODS
     method init_object
       UI = this
@@ -136,9 +138,14 @@ class UI : Component [singleton]
 
     method update( bounds:Box )
       temporarily UI = this
+        ticker.update
         update_layout
         update_layout( bounds )
-        update
+        update( ticker.dt )
+        loop (ticker.ticks)
+          if (needs_layout) update_layout( bounds )
+          tick
+        endLoop
       endTemporarily
 
     method update_layout( bounds:Box )
