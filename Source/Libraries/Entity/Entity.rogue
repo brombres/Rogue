@@ -76,6 +76,12 @@ class Entity : Node<<Entity>>
     method properties->Properties
       return Properties( this )
 
+    method set_h_flip( setting:Logical )
+      attributes.h_flip = setting
+
+    method set_v_flip( setting:Logical )
+      attributes.v_flip = setting
+
     method start
       if (not attributes.started)
         attributes.started = true

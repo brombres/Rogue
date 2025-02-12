@@ -38,5 +38,14 @@ class Entity2DScript : EntityScript
 
     method entity->Entity2D [override]
       return @entity->(as Entity2D)
+
+    method position->XY
+      return @entity->(as Entity2D)?.position
+
+    method set_position( position:XY )->XY
+      if local entity = @entity->(as Entity2D)
+        entity.position = position
+      endIf
+
 endClass
 
