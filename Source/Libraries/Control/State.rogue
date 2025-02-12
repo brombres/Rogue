@@ -1,6 +1,9 @@
 $include Control
 
-class State<<$ExtendedType>>
+class State<<$ExtendedType>> : State<<$ExtendedType,change_state,exit_state>>
+endClass
+
+class State<<$ExtendedType,$change_state,$exit_state>>
   DEFINITIONS
     # Duration values
     INSTANT    =  0  # one and done
@@ -44,7 +47,7 @@ class State<<$ExtendedType>>
     prev_time   : Real  # 0 = not started
     time_debt   : Real
 
-    exited : Logical # flag that assists when states finish outside of updated()
+    is_exited   : Logical # flag that assists when states finish outside of updated()
 
   METHODS
     method init
@@ -84,9 +87,9 @@ class State<<$ExtendedType>>
         cur .= concurrent_state
       endWhile
 
-    method change_state( new_state:$ExtendedType )
+    method $change_state( new_state:$ExtendedType )
       next_state = new_state
-      exit_state
+      $exit_state
 
     method count->Int32
       local n = 1
@@ -103,8 +106,8 @@ class State<<$ExtendedType>>
       if (concurrent_state) result = "($) | ($)" (result,concurrent_state)
       return result
 
-    method exit_state
-      exited = true
+    method $exit_state
+      is_exited = true
       finish
 
     method finish
@@ -144,7 +147,7 @@ class State<<$ExtendedType>>
       return which{ duration>0:progress_fn(t/duration) || 1.0 }
 
     method started->$ExtendedType
-      if (exited)
+      if (is_exited)
         # Already exited outside of updated()
         if (concurrent_state)
           concurrent_state = concurrent_state.started
@@ -180,7 +183,7 @@ class State<<$ExtendedType>>
       on_update( dt )
 
     method updated->$ExtendedType
-      if (exited)
+      if (is_exited)
         # Already exited outside of updated()
         if (concurrent_state)
           concurrent_state = concurrent_state.updated
