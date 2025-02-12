@@ -14,8 +14,13 @@ class Entity2D : Entity
       internal_size = XY(1,1)
       @size = internal_size
 
-    method init( @internal_size )
+    method init( script:EntityScript )
+      init
+      attach_script( script )
+
+    method init( @internal_size, script=null:EntityScript )
       @size = internal_size
+      if (script) attach_script( script )
 
     method scale->XY
       return size / internal_size

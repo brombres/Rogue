@@ -7,5 +7,7 @@ enum Attributes [bitflags]
     MODIFIED
     FOREGROUND
     STARTED
+    H_FLIP
+    V_FLIP
 endEnum
 
