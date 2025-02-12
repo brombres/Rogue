@@ -750,6 +750,9 @@ class List<<$DataType>> : Poolable ListType
     method to->String
       return description
 
+    method working_copy->WorkingCopy<<$DataType>>
+      return WorkingCopy<<$DataType>>( this )
+
     method writer->ListWriter<<$DataType>>
       return ListWriter<<$DataType>>( this )
 
@@ -862,3 +865,15 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
       else                        list[ position ] = value
       ++position
 endClass
+
+class WorkingCopy<<$ElementType>>( list:$ElementType[] ) [compound]
+  METHODS
+    method on_use->$ElementType[]
+      local result = WorkList<<$ElementType>>.on_use
+      result.add( list )
+      return result
+
+    method on_end_use( working_copy:$ElementType[] )
+      WorkList<<$ElementType>>.on_end_use( working_copy )
+endClass
+
