@@ -23,8 +23,6 @@ class VScrollView : Component
 
     actions     : Action
 
-    last_update_time : Real
-
   METHODS
     method init_object
       alignment = Anchor.TOP_LEFT
@@ -124,7 +122,7 @@ class VScrollView : Component
           if (velocity.abs.max < 1)
             # We pressed and released content without dragging it.  Send a press/release event
             # to subcomponents.
-            local e_press = e.cloned.[ type=PointerEvent.PRESS ]
+            local e_press = e.cloned.[ type=<PRESS> ]
             on_select( e_press, e )
             return
           endIf
@@ -203,15 +201,7 @@ class VScrollView : Component
     method on_select_background( position:XY )
       noAction
 
-    method on_update_layout [override]
-      local cur_time = System.execution_time
-      local dt = (cur_time - last_update_time).clamped_high(1.0)
-      last_update_time = cur_time
-
-      local ticks = (dt * 60)->Int.clamped_low(1)
-      loop (ticks) on_update_tick
-
-    method on_update_tick
+    method on_tick
       if (not is_dragging and not active_scroll)
         local snap = UI.snap_to_pixel_coordinates
         if (not velocity.is_zero)

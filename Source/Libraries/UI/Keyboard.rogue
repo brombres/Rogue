@@ -57,6 +57,7 @@ enum KeyModifier [bitflags]
     SCROLL_LOCK   = 1024
 
   DEFINITIONS
+    NONE          = KeyModifier(0)
     SHIFT         = (KeyModifier.LEFT_SHIFT | KeyModifier.RIGHT_SHIFT)
     CONTROL       = (KeyModifier.LEFT_CONTROL | KeyModifier.RIGHT_CONTROL)
     ALT           = (KeyModifier.LEFT_ALT | KeyModifier.RIGHT_ALT)
@@ -228,13 +229,16 @@ enum Keycode
   GLOBAL PROPERTIES
     unshifted_keycode_to_unicode =
       ''                                       '    ,-./0123456789 ; =  '' ...
-      ''@abcdefghijklmnopqrstuvwxyz[\\]  `                               '' ...
+      '' abcdefghijklmnopqrstuvwxyz[\\]  `                               '' ...
       ''             =+-*/,.0123456789''
 
     shifted_keycode_to_unicode =
       ''                                       "    <_>?)!@#$%^&*( : +  '' ...
-      ''@ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}  ~                               '' ...
+      '' ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}  ~                               '' ...
       ''             =+-*/,.0123456789''
+
+    unicode_to_keycode     : Keycode[]
+    unicode_to_shift_state : Logical[]
 
   GLOBAL METHODS
     method keycode_to_unicode( keycode:Keycode, &is_shift_pressed )->Character
@@ -249,7 +253,7 @@ enum Keycode
           case Keycode.NUMPAD_BACKSPACE: return Character(127)
           others:                        return 0
         endWhich
-      endIf
+     endIf
       if (keycode.value >= unshifted_keycode_to_unicode.count) return 0
 
       local result : Character
@@ -259,5 +263,45 @@ enum Keycode
       if (result == ' ') return 0  # we already handled actual SPACE; others are placeholders for zero
       return result
 
+    method unicode_to_keycode( unicode:Character )->(Keycode,Logical)  # keycode, is_shifted
+      if (not @unicode_to_keycode)
+        @unicode_to_keycode    = Dim<<Keycode>>(128)
+        unicode_to_shift_state = Dim<<Logical>>(128)
+        forEach (keycode in 32..127)
+          local ucode = shifted_keycode_to_unicode[ keycode ]
+          @unicode_to_keycode[ ucode ] = keycode
+          unicode_to_shift_state[ ucode ] = true
+        endForEach
+        forEach (keycode in 32..127)
+          local ucode = unshifted_keycode_to_unicode[ keycode ]
+          @unicode_to_keycode[ ucode ] = keycode
+          unicode_to_shift_state[ ucode ] = false
+        endForEach
+        @unicode_to_keycode[8]  = Keycode.BACKSPACE
+        @unicode_to_keycode[17] = Keycode.UP_ARROW
+        @unicode_to_keycode[18] = Keycode.DOWN_ARROW
+        @unicode_to_keycode[19] = Keycode.RIGHT_ARROW
+        @unicode_to_keycode[20] = Keycode.LEFT_ARROW
+        @unicode_to_keycode['\e'] = Keycode.ESCAPE
+        @unicode_to_keycode['\t'] = Keycode.TAB
+        @unicode_to_keycode['\n'] = Keycode.ENTER
+        @unicode_to_keycode[' ']  = Keycode.SPACE
+        @unicode_to_keycode[127]  = Keycode.DELETE
+      endIf
+      if (unicode < 128) return (@unicode_to_keycode[unicode],unicode_to_shift_state[unicode])
+      else               return (Keycode.UNDEFINED,false)
+
+    method operator<>( a:Keycode, b:Keycode )->Int
+      return a.value <> b.value
+
+  METHODS
+    method operator+( value:Int )->Int
+      return this.value + value
+
+    method operator-( value:Int )->Int
+      return this.value - value
+
+    method operator|( value:Int )->Int
+      return this.value | value
 endEnum
 

@@ -167,7 +167,9 @@ class List<<$DataType>> : Poolable ListType
 
     method discarding( discard_if:(Function($DataType)->Logical) )->$DataType[]
       # Returns a copy of the list without any item that passes the query function.
-      return cloned.[ discard(discard_if) ]
+      local result = cloned
+      result.discard( discard_if )
+      return result
 
     method ensure_capacity( desired_capacity:Int )
       reserve( desired_capacity - count )
