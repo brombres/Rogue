@@ -33,11 +33,14 @@ class Entity : Node<<Entity>>
       id = next_id
       ++next_id
 
+    method attach_script( new_script:EntityScript )
+      new_script.entity = this
+      script |= new_script.started
+
     method change_script( new_script:EntityScript )
       new_script.entity = this
-      if (script) script.change_state( new_script )
-      else        script = new_script
-      new_script .= started
+      if (script) script.change_script( new_script )
+      else        script = new_script.started
 
     method draw
       .begin_draw
