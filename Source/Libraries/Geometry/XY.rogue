@@ -283,6 +283,9 @@ endClass
 
 augment Rogue::Random
   METHODS
+    method xy->Geometry::XY
+      return Geometry::XY( real, real )
+
     method xy( limit:Real )->Geometry::XY
       return Geometry::XY( real(limit), real(limit) )
 
