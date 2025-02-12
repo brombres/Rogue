@@ -503,7 +503,15 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
     method set_clip( new_clip:Box? )
       flush
-      @clip = new_clip
+      if (new_clip)
+        if local intersection = new_clip & Box(width,height)
+          @clip = intersection
+        else
+          @clip = Box(0,0,0,0)
+        endIf
+      else
+        @clip = null
+      endIf
 
     method set_cursor( new_pos:XY )
       flush

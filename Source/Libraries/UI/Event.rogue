@@ -36,7 +36,7 @@ endClass
 
 class KeyEvent : Event
   PROPERTIES
-    keycode   : Keycode   # if Keycode.UNICODE then generated event w/o keycode or scancode.
+    keycode   : Keycode
     scancode  : Int
     unicode   : Character
     is_press  : Logical

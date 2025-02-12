@@ -64,9 +64,6 @@ class Component : Entity
     method on_release_pointer_focus
       noAction
 
-    method on_update
-      noAction
-
   METHODS # Public API
     method align( @alignment )
       noAction

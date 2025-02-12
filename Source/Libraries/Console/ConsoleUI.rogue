@@ -68,7 +68,7 @@ class ConsoleUI : UI
       keep_active( 0.5 )
       prior.handle( e )
 
-    method handle( type:Int, index:Int, e:ConsoleEvent )
+    method handle( type:GlobalID, index:Int, e:ConsoleEvent )
       # Only called when e is a pointer or scroll event
       local pos = XY( e.x, e.y )
       Pointer.position = pos
@@ -87,7 +87,7 @@ class ConsoleUI : UI
       ConsoleUICanvas.resize( placement.size.x, placement.size.y )
       prior.on_resize
 
-    method on_update
+    method on_update( dt:Real ) [override]
       if (not Console.immediate_mode) return
 
       if (keep_active_timer.is_expired)
@@ -122,41 +122,41 @@ class ConsoleUI : UI
               endWhich
             endIf
             local (keycode,is_shifted) = Keycode.unicode_to_keycode( unicode )
-            local syscode              = which{ keycode==Keycode.UNICODE:unicode->Int || 0 }
-            local modifier_key_state   = which{ is_shifted:Keyboard.SHIFT_MODIFIER_FLAG || 0 }
+            local scancode             = 0
+            local modifiers = which{ is_shifted:KeyModifier.SHIFT || KeyModifier.NONE }
             Keyboard.key_pressed[ keycode ] = true
             Keyboard.key_pressed[ Keycode.LEFT_SHIFT ]  = is_shifted
             Keyboard.key_pressed[ Keycode.RIGHT_SHIFT ] = is_shifted
             if (is_control)
-              modifier_key_state |= Keyboard.CONTROL_MODIFIER_FLAG
+              modifiers |= KeyModifier.CONTROL
               Keyboard.key_pressed[ Keycode.LEFT_CONTROL ] = true
               Keyboard.key_pressed[ Keycode.RIGHT_CONTROL ] = true
             endIf
-            handle( KeyEvent(keycode,syscode,&is_press,&!is_repeat,&=modifier_key_state) )
+            handle( KeyEvent(keycode,scancode,&is_press,&!is_repeat,&=modifiers) )
             Keyboard.key_pressed[ keycode ] = false
             Keyboard.key_pressed[ Keycode.LEFT_SHIFT ]  = false
             Keyboard.key_pressed[ Keycode.RIGHT_SHIFT ] = false
             Keyboard.key_pressed[ Keycode.LEFT_CONTROL ] = false
             Keyboard.key_pressed[ Keycode.RIGHT_CONTROL ] = false
-            handle( KeyEvent(keycode,syscode,&!is_press,&!is_repeat,&=modifier_key_state) )
+            handle( KeyEvent(keycode,scancode,&!is_press,&!is_repeat,&=modifiers) )
             handle( TextEvent(unicode,null) )
 
           case ConsoleEventType.POINTER_PRESS_LEFT
-            send_release_event( PointerEvent.RIGHT, event )
-            button_pressed[ PointerEvent.LEFT ] = true
-            handle( PointerEvent.PRESS, PointerEvent.LEFT, event )
+            send_release_event( 1, event )
+            button_pressed[0] = true
+            handle( <PRESS>, <LEFT>, event )
 
           case ConsoleEventType.POINTER_PRESS_RIGHT
-            send_release_event( PointerEvent.LEFT, event )
-            button_pressed[ PointerEvent.RIGHT ] = true
-            handle( PointerEvent.PRESS, PointerEvent.RIGHT, event )
+            send_release_event( 0, event )
+            button_pressed[1] = true
+            handle( <PRESS>, PointerEvent.RIGHT, event )
 
           case ConsoleEventType.POINTER_RELEASE
-            send_release_event( PointerEvent.LEFT, event )
-            send_release_event( PointerEvent.RIGHT, event )
+            send_release_event( 0, event )
+            send_release_event( 1, event )
 
           case ConsoleEventType.POINTER_MOVE
-            handle( PointerEvent.MOVE, 0, event )
+            handle( <MOVE>, 0, event )
 
           case ConsoleEventType.SCROLL_UP
             handle( ScrollEvent(XY(0,-1)) )
@@ -197,7 +197,7 @@ class ConsoleUI : UI
     method send_release_event( index:Int, event:ConsoleEvent )
       if (not button_pressed[index]) return
       button_pressed[index] = false
-      handle( PointerEvent.RELEASE, index, event )
+      handle( <RELEASE>, index, event )
 
     method set_clip( @clip )
       if local clip_value = clip
