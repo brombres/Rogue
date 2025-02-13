@@ -848,6 +848,9 @@ class Bitmap
       local new_width   = other.width
       local new_height  = other.height
 
+      local was_premultiplied_alpha = is_premultiplied_alpha
+      unmultiply_alpha
+
       # Each ARGB component needs a separate Int + divisor + number of 0 value pixels
       use resize_row_buffer = WorkList<<Real>>
         resize_row_buffer.expand_to_count( new_width * 6 )
@@ -877,6 +880,11 @@ class Bitmap
           dest_i += new_width
         endForEach
       endUse
+
+      if (was_premultiplied_alpha)
+        premultiply_alpha
+        other.premultiply_alpha
+      endIf
 
     method resize_add_row( src_i:Int, new_width:Int, multiplier:Real, resize_row_buffer:Real[] )
       local this_width = width
