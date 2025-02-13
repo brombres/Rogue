@@ -94,7 +94,7 @@ class CSpecializer : Visitor
       # Anchor the object context if necessary
       local context = cmd.context
       if (Program.gc_auto)
-        if ((context.type.is_reference or context.type.contains_reference) and not context.is_anchored)
+        if (context.type.is_reference and not context.is_anchored)
           context = visit( context )
           local v = context.intermediate_v
           if (not v or not v.is_anchored)
@@ -139,7 +139,7 @@ class CSpecializer : Visitor
       # Anchor the object context if necessary
       local context = cmd.context
       if (Program.gc_auto)
-        if ((context.type.is_reference or context.type.contains_reference) and not context.is_anchored)
+        if (context.type.is_reference and not context.is_anchored)
           context = visit( context )
           local v = context.intermediate_v
           if (not v or not v.is_anchored)
