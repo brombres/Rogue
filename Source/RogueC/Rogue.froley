@@ -3004,6 +3004,7 @@ parser
       context_block_command
       consume_eols
       while (consume(',') or (hasAnother and not nextIs(']')))
+        consume_eols
         context_block_command
         consume_eols
       endWhile
