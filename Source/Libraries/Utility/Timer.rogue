@@ -89,6 +89,12 @@ class Timer
       start_time += delta_time
       return this
 
+    method progress->Real
+      # Count-down: returns elapsed / duration
+      # Count-up:   returns 0
+      if (counting_down) return elapsed / duration
+      else               return 0.0
+
     method remaining->Real
       # If a count-up timer, returns 0.
       # If count-down, return 0 <= seconds remaining <= duration.
