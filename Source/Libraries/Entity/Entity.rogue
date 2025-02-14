@@ -20,6 +20,7 @@ class Entity : Node<<Entity>>
     id         : Int
     attributes : Attributes
     script     : EntityScript
+    actions    : Action
     properties : Variant
 
   METHODS
@@ -113,6 +114,7 @@ class Entity : Node<<Entity>>
       if (not attributes.started) start
 
       script = script?.updated
+      if (actions) actions = actions.updated
       on_update( dt )
       (forEach in children).update( dt )
 
@@ -130,12 +132,14 @@ class Entity : Node<<Entity>>
       on_draw
 
       script?.call<<on_draw>>
+      actions?.call<<on_draw>>
 
       if (count)
         (forEach in children).draw
       endIf
 
     method .dispatch_draw_bg
+      actions?.call<<on_draw_bg>>
       script?.call<<on_draw_bg>>
 
       on_draw_bg
@@ -148,4 +152,5 @@ class Entity : Node<<Entity>>
       on_draw_fg
 
       script?.call<<on_draw_bg>>
+      actions?.call<<on_draw_bg>>
 endClass

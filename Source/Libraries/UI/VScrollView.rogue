@@ -21,8 +21,6 @@ class VScrollView : Component
     drag_pos    : XY
     drag_deltas = DragDelta[]
 
-    actions     : Action
-
   METHODS
     method init_object
       alignment = Anchor.TOP_LEFT
