@@ -29,6 +29,15 @@ class Entity : Node<<Entity>>
     method init( name )
       noAction
 
+    method init( existing:Entity )
+      name        = existing.name
+      attributes  = existing.attributes
+      script      = existing.script
+      @properties = existing.@properties.cloned
+
+    method cloned->ThisType [propagated]
+      return ThisType( this )
+
     method init_object
       id = next_id
       ++next_id

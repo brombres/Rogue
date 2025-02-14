@@ -22,6 +22,15 @@ class Entity2D : Entity
       @size = internal_size
       if (script) attach_script( script )
 
+    method init( existing:Entity2D )
+      prior.init( existing )
+      @size          = existing.size
+      @internal_size = existing.internal_size
+      @position      = existing.position
+      @z             = existing.z
+      @rotation      = existing.rotation
+      @anchor        = existing.anchor
+
     method scale->XY
       return size / internal_size
 
