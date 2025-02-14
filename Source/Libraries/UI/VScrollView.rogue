@@ -213,7 +213,7 @@ class VScrollView : Component
         endIf
 
         if (clamp_to_bounds)
-          local bottom_offset = bottom_offset
+          localize bottom_offset
           local _offset = content_offset
           if (_offset.y > 0)
             if (_offset.abs.y < 1)

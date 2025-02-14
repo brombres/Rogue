@@ -50,9 +50,13 @@ class UI : Component [singleton]
       return 16
 
     method draw [override]
-      temporarily UI = this
-        prior.draw
-      endTemporarily
+      if (needs_redraw)
+        needs_redraw = false
+
+        temporarily UI = this
+          prior.draw
+        endTemporarily
+      endIf
 
     method font->Font
       return default_font

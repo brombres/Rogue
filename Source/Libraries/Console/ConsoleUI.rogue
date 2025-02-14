@@ -177,9 +177,8 @@ class ConsoleUI : UI
         is_running = true
         while (is_running)
           update( Box(Console.width,Console.height) )
-          draw
-
           if (needs_redraw) keep_active( 1.0 )
+          draw
 
           System.sleep( 1.0/60.0 )
         endWhile
