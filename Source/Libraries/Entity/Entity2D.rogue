@@ -2,43 +2,38 @@ library Entity
 
 class Entity2D : Entity
   PROPERTIES
-    size          : XY
-    internal_size : XY
-    position      : XY
-    z             : Real
-    rotation      : Radians
-    anchor        = Anchor.CENTER : Anchor
+    nominal_size : XY
+    scale        = XY(1,1)
+    position     : XY
+    z            : Real
+    rotation     : Radians
+    anchor       = Anchor.CENTER : Anchor
 
   METHODS
     method init
-      internal_size = XY(1,1)
-      @size = internal_size
+      nominal_size = XY(1,1)
 
     method init( script:EntityScript )
       init
       attach_script( script )
 
-    method init( @internal_size, script=null:EntityScript )
-      @size = internal_size
+    method init( nominal_size, script=null:EntityScript )
       if (script) attach_script( script )
 
     method init( existing:Entity2D )
       prior.init( existing )
-      @size          = existing.size
-      @internal_size = existing.internal_size
-      @position      = existing.position
-      @z             = existing.z
-      @rotation      = existing.rotation
-      @anchor        = existing.anchor
-
-    method scale->XY
-      return size / internal_size
+      @size         = existing.size
+      @nominal_size = existing.nominal_size
+      @position     = existing.position
+      @z            = existing.z
+      @rotation     = existing.rotation
+      @anchor       = existing.anchor
 
     method scale_to_fill( bounds:Box )
-      scale = (bounds.size / internal_size).max
+      scale = (bounds.size / nominal_size).max
 
     method scale_to_fit( bounds:Box )
-      scale = (bounds.size / internal_size).min
+      scale = (bounds.size / nominal_size).min
 
     method set_rotation( @rotation )
 
@@ -49,9 +44,15 @@ class Entity2D : Entity
       @rotation = Degrees(degrees)->Radians
 
     method set_scale( scale:Real )
-      size = internal_size * scale
+      @scale = scale
 
-    method set_scale( scale:XY )
-      size = internal_size * scale
+    method set_scale( @scale )
+      noAction
+
+    method set_size( nominal_size )
+      scale = XY(1.0)
+
+    method size->XY
+      return nominal_size * scale
 
 endClass
