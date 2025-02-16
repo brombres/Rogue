@@ -231,6 +231,15 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
         buffer.print( builder )
       endUse
 
+    method progress( a:Real64, b:Real64, &clamp=true )->Real64
+      # Returns the progress of this number along the interval from a to b.
+      # Examples:
+      #   pi.progress(0,2*pi) -> 0.5
+      if (a == b) return Real64(1.0)
+      local result = (this-a) / (b-a)
+      if (clamp) return result.clamped( 0, 1 )
+      else       return result
+
     method sin->Real64
       return native("sin($this)")->Real64
 
@@ -342,6 +351,15 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
       #    0 - none (and no decimal point)
       #   >0 - decimal point + specified number of decimal digits
       this->Real64.print_to( buffer, decimal_places )
+
+    method progress( a:Real, b:Real, &clamp=true )->Real
+      # Returns the progress of this number along the interval from a to b.
+      # Examples:
+      #   pi.progress(0,2*pi) -> 0.5
+      if (a == b) return 1.0
+      local result = (this-a) / (b-a)
+      if (clamp) return result.clamped( 0, 1 )
+      else       return result
 
     method sin->Real
       return this->REAL_TYPE.sin
@@ -479,6 +497,15 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
       #    0 - none (and no decimal point)
       #   >0 - decimal point + specified number of decimal digits
       this->Real64.print_to( buffer, decimal_places )
+
+    method progress( a:Real32, b:Real32, &clamp=true )->Real32
+      # Returns the progress of this number along the interval from a to b.
+      # Example:
+      #   pi.progress(0,2*pi) -> 0.5
+      if (a == b) return Real32(1.0)
+      local result = (this-a) / (b-a)
+      if (clamp) return result.clamped( 0, 1 )
+      else       return result
 
     method sin->Real32
       return native("sinf($this)")->Real32
@@ -651,7 +678,7 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
         buffer.print( ('0'+this)->Character )
       endIf
 
-    method progress( a:Int64, b:Int64 )->Real
+    method progress( a:Int64, b:Int64, &clamp=true )->Real
       # Returns the progress of this number along the interval from a to b.
       # Examples:
       #   1.progress(1,5) -> 0.00
@@ -661,7 +688,9 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
       #   5.progress(1,5) -> 1.00
       #   2.progress(5,1) -> 0.75
       if (a == b) return 1.0
-      return Real(this-a) / Real(b-a)
+      local result = Real(this-a) / Real(b-a)
+      if (clamp) return result.clamped( 0, 1 )
+      else       return result
 
     method real_bits->Real64
       return native("*((%Ns%RogueReal64*)&$this)")->Real64
@@ -773,8 +802,19 @@ class Int : CommonPrimitiveMethods<<Int>> [primitive]
     method print_to( buffer:PrintWriter )
       this->INT_TYPE.print_to( buffer )
 
-    method progress( a:Int, b:Int )->Real
-      return this->INT_TYPE.progress( a, b )
+    method progress( a:Int, b:Int, &clamp=true )->Real
+      # Returns the progress of this number along the interval from a to b.
+      # Examples:
+      #   1.progress(1,5) -> 0.00
+      #   2.progress(1,5) -> 0.25
+      #   3.progress(1,5) -> 0.50
+      #   4.progress(1,5) -> 0.75
+      #   5.progress(1,5) -> 1.00
+      #   2.progress(5,1) -> 0.75
+      if (a == b) return 1.0
+      local result = Real(this-a) / Real(b-a)
+      if (clamp) return result.clamped( 0, 1 )
+      else       return result
 
     method real_bits->REAL_TYPE
       return this->INT_TYPE.real_bits
@@ -882,13 +922,19 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
         buffer.print( ('0'+this)->Character )
       endIf
 
-    method progress( a:Int, b:Int )->Real
+    method progress( a:Int32, b:Int32, &clamp=true )->Real
       # Returns the progress of this number along the interval from a to b.
       # Examples:
+      #   1.progress(1,5) -> 0.00
       #   2.progress(1,5) -> 0.25
+      #   3.progress(1,5) -> 0.50
+      #   4.progress(1,5) -> 0.75
+      #   5.progress(1,5) -> 1.00
       #   2.progress(5,1) -> 0.75
       if (a == b) return 1.0
-      return Real(this-a) / Real(b-a)
+      local result = Real(this-a) / Real(b-a)
+      if (clamp) return result.clamped( 0, 1 )
+      else       return result
 
     method real_bits->Real32
       return native("*((%Ns%RogueReal32*)&$this)")->Real32
