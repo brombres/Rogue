@@ -168,6 +168,12 @@ class RadiansXYZ( value:XYZ ) [compound]
       return value
 endClass
 
+augment Rogue::Real
+  METHODS
+    method lerp( a:XYZ, b:XYZ )->XYZ
+      return XYZ( this.lerp(a.x,b.x), this.lerp(a.y,b.y), this.lerp(a.z,b.z) )
+endAugment
+
 augment Rogue::Random
   METHODS
     method xyz->XYZ:

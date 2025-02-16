@@ -281,6 +281,12 @@ class XY( x:Real, y:Real ) [compound]
       return XY(y,x)
 endClass
 
+augment Rogue::Real
+  METHODS
+    method lerp( a:XY, b:XY )->XY
+      return XY( this.lerp(a.x,b.x), this.lerp(a.y,b.y) )
+endAugment
+
 augment Rogue::Random
   METHODS
     method xy->Geometry::XY
