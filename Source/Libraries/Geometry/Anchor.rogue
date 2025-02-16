@@ -23,6 +23,16 @@ class Anchor( position:XY ) [compound]
     CENTER_BOTTOM = Anchor.BOTTOM
     RIGHT_BOTTOM  = Anchor.BOTTOM_RIGHT
 
+    TL = Anchor.TOP_LEFT
+    T  = Anchor.TOP
+    TR = Anchor.TOP_RIGHT
+    L  = Anchor.LEFT
+    C  = Anchor.CENTER
+    R  = Anchor.BOTTOM_RIGHT
+    BL = Anchor.BOTTOM_LEFT
+    B  = Anchor.BOTTOM
+    BR = Anchor.BOTTOM
+
   GLOBAL METHODS
     method operator*( size:XY, anchor:Anchor )->XY
       # size * anchor -> delta (or the anchor position within the area (0,0,size))
