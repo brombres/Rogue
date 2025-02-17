@@ -43,9 +43,7 @@ class State<<$ExtendedType,$change_state,$exit_state>>
     concurrent_state : $ExtendedType
 
     t           : Real
-    delta_time  : Real
     prev_time   : Real  # 0 = not started
-    time_debt   : Real
 
     is_exited   : Logical # flag that assists when states finish outside of updated()
 
@@ -133,9 +131,6 @@ class State<<$ExtendedType,$change_state,$exit_state>>
 
     method on_start
 
-    method on_tick
-      # Called every 60th of a second on average.
-
     method on_update->Real
       return 0.0 # TEST
 
@@ -173,9 +168,6 @@ class State<<$ExtendedType,$change_state,$exit_state>>
 
       return .start_next
 
-    method tick
-      on_tick
-
     method to->String
       return description
 
@@ -189,12 +181,10 @@ class State<<$ExtendedType,$change_state,$exit_state>>
           concurrent_state = concurrent_state.updated
         endIf
       else
-        local delta_ticks = 0
-
         local cur_time = System.execution_time
+        local dt : Real
         if (not prev_time)
-          delta_time = 1.0/60.0
-          delta_ticks = 1
+          dt = 1.0/60.0
           if (duration)
             on_start
           else
@@ -203,19 +193,15 @@ class State<<$ExtendedType,$change_state,$exit_state>>
             # Override on_execute() to keep INSTANT.
           endIf
         else
-          delta_time = (cur_time - prev_time)
-          if (delta_time > 1.0/10.0) delta_time = 1.0/60.0
-          time_debt += delta_time
-          delta_ticks = (time_debt * 60.0)->Int
-          time_debt -= delta_ticks / 60.0
-          t += delta_time
+          dt = (cur_time - prev_time)
+          if (dt > 1.0/10.0) dt = 1.0/60.0
+          t += dt
           if (duration >= 0 and t > duration) t = duration
         endIf
 
         prev_time = cur_time
 
-        update( delta_time )
-        loop (delta_ticks) tick
+        update( dt )
 
         if (concurrent_state)
           concurrent_state = concurrent_state.updated
@@ -243,7 +229,7 @@ class State<<$ExtendedType,$change_state,$exit_state>>
         endIf
         return next_state.started
       elseIf (concurrent_state)
-        # .start_next() is called after updated(), which has already started 'concurrent_state' this tick.
+        # .start_next() is called after updated(), which has already started 'concurrent_state'.
         return concurrent_state
       else
         return null
@@ -261,7 +247,7 @@ class State<<$ExtendedType,$change_state,$exit_state>>
         endIf
         return next_state.updated
       elseIf (concurrent_state)
-        # .update_next() is called after updated(), which has already updated 'concurrent_state' this tick.
+        # .update_next() is called after updated(), which has already updated 'concurrent_state'.
         return concurrent_state
       else
         return null

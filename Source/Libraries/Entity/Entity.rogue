@@ -74,9 +74,6 @@ class Entity : Node<<Entity>>
     method on_start
       noAction
 
-    method on_tick
-      noAction
-
     method on_update( dt:Real )
       noAction
 
@@ -98,13 +95,6 @@ class Entity : Node<<Entity>>
         script = script?.started
         on_start
       endIf
-
-    method tick
-      if (not attributes.started) start
-
-      # Note: script is ticked via script.updated() call in update()
-      on_tick
-      (forEach in children).tick
 
     method to->String
       if (@name) return @name
