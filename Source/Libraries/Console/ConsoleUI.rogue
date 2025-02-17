@@ -19,7 +19,7 @@ class ConsoleUI : UI
 
     max_events_processed = 512
     max_event_window_ms  = 8
-    update_timer         = Timer()
+    update_timeout       = Timer()
     keep_active_timer    = Timer(1.0)
 
   METHODS
@@ -97,11 +97,11 @@ class ConsoleUI : UI
         if (not has_event) return
       endIf
 
-      update_timer.init( max_event_window_ms / 1000.0 )
+      update_timeout.init( max_event_window_ms / 1000.0 )
 
       loop max_events_processed
 
-        if (update_timer.is_expired) escapeLoop
+        if (update_timeout.is_expired) escapeLoop
 
         if (not Console.immediate_mode) escapeLoop
         if (not Console.has_another_event) escapeLoop
