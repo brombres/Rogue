@@ -1,0 +1,46 @@
+class UpdateTimer( interval:Real, threshold:Real, max_dt:Real, time_fn:Function->Real ) [compound]
+  PROPERTIES
+    prev_time   : Real
+    time_debt   : Real
+    dt          : Real
+    delta_ticks : Int
+
+  GLOBAL METHODS
+    method create( ticks_per_second=60:Int, tolerance=0.05:Real, max_dt=0.1:Real,
+                   time_fn=null:Function->Real )->UpdateTimer
+
+      local interval = 1.0 / ticks_per_second
+
+      return UpdateTimer( interval, interval*(1.0-tolerance), max_dt, time_fn )
+
+  METHODS
+    method update->Int [mutating]
+      local cur_time : Real
+      if (time_fn) cur_time = time_fn()
+      else         cur_time = System.execution_time
+
+      local result = update( cur_time - prev_time )
+      prev_time = cur_time
+      return result
+
+    method update( dt )->Int [mutating]
+
+      time_debt += dt
+
+      if (dt > max_dt or prev_time == 0)
+        dt = interval
+        delta_ticks = 1
+        time_debt = 0
+
+        if (prev_time == 0) prev_time = 1
+        # prev_time will not be updated if update(dt) is called directly;
+        # ensure it doesn't stay at 0.
+      elseIf (time_debt >= threshold)
+        delta_ticks = (time_debt / interval).clamped_low(1.0)->Int
+        time_debt -= delta_ticks * interval
+      else
+        delta_ticks = 0
+      endIf
+
+      return delta_ticks
+endClass
