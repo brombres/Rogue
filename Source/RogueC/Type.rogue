@@ -337,6 +337,12 @@ class Type : Cmd
       p.attributes.augmented = true
 
     method add_extended_property( p:Property )
+      if local existing_p = properties[p.name]
+        if (not p.type.instance_of(existing_p.type))
+          throw p.t.error( "Redeclared property '$' type $ is not instance of inherited type $."...
+            (p.name,p.type,existing_p.type) )
+        endIf
+      endIf
       properties[p.name] = p
 
     method all_template_parameters_are_dummy_values->Logical
