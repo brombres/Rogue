@@ -2019,8 +2019,16 @@ augment
          |{
          |  %Ns%RogueObject** ref = (%Ns%RogueObject**)singleton_ref;
          |  %Ns%RogueRuntimeType* type = (%Ns%RogueRuntimeType*) _type;
-         |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( *ref, new_singleton );
-         |  *ref = (%Ns%RogueObject*)new_singleton;
+         |  if (type->fn_on_singleton_change)
+         |  {
+         |    %Ns%RogueObject* old_singleton = *ref;
+         |    *ref = (%Ns%RogueObject*)new_singleton;
+         |    if (old_singleton != new_singleton) type->fn_on_singleton_change( old_singleton, new_singleton );
+         |  }
+         |  else
+         |  {
+         |    *ref = (%Ns%RogueObject*)new_singleton;
+         |  }
          |}
          |
          |void* %Ns%Rogue_release( void* obj )
