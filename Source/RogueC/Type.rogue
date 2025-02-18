@@ -1827,6 +1827,13 @@ class Type : Cmd
             if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace))
               if (not missing_only or not methods.contains(aspect_m.signature))
                 if (this_is_abstract or not aspect_m.attributes.is_abstract)
+                  if (aspect_m.parameters.count == 0 and aspect_m.name == "init_object")
+                    if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append))
+                      throw aspect_m.t.error(
+                      "In aspects and augments, init_object() must be declared either [append] or [insert]. For example, 'method init_object [append]'."
+                      )
+                    endIf
+                  endIf
                   incorporate( aspect_m, &is_augment=incorporated_aspect.attributes.is_augment )
                 endIf
               endIf
