@@ -3,8 +3,8 @@ $include Control/State
 class Action : State<<Action>>
   METHODS
     method on_draw
+      noAction
 
-    method on_draw_bg
-
-    method on_draw_fg
+    method on_draw( &bg )
+      noAction
 endClass
