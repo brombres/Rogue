@@ -218,7 +218,7 @@ class CWriter : BufferedPrintWriter
           @|
            |typedef struct %Ns%RogueRuntimeType %Ns%RogueRuntimeType;
            |typedef void (*%Ns%RogueFn_Object)(void*);
-           |typedef void (*%Ns%RogueFn_Object_Object)(void*,void*);
+           |typedef void (*%Ns%RogueFn_Object_Object_Logical)(void*,void*,%Ns%RogueLogical);
            |
            |typedef struct %Ns%RogueObject %Ns%RogueObject;
            |typedef struct %Ns%RogueString %Ns%RogueString;
@@ -244,7 +244,7 @@ class CWriter : BufferedPrintWriter
            |  %Ns%RogueFn_Object fn_init;
            |  %Ns%RogueFn_Object fn_gc_trace;
            |  %Ns%RogueFn_Object fn_on_cleanup;
-           |  %Ns%RogueFn_Object_Object fn_on_singleton_change;
+           |  %Ns%RogueFn_Object_Object_Logical fn_on_singleton_change;
            |};
            |
            |typedef struct %Ns%RogueCallFrame

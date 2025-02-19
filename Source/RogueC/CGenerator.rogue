@@ -2007,11 +2007,12 @@ augment
          |  if (*((%Ns%RogueObject**)singleton_ref)) return *((%Ns%RogueObject**)singleton_ref);
          |  %Ns%RogueRuntimeType* type = (%Ns%RogueRuntimeType*) _type;
          |  %Ns%RogueObject* obj = (%Ns%RogueObject*)%Ns%Rogue_create_object( type, 0 );
+         |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( 0, obj, 1 );
          |  (*((%Ns%RogueObject**)singleton_ref)) = obj;
          |
          |  %Ns%Rogue_init_object( type, obj );
          |  if (type->fn_init) type->fn_init(obj);  // call init() if it exists
-         |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( 0, obj );
+         |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( 0, obj, 0 );
          |  return obj;
          |}
          |
@@ -2022,8 +2023,16 @@ augment
          |  if (type->fn_on_singleton_change)
          |  {
          |    %Ns%RogueObject* old_singleton = *ref;
-         |    *ref = (%Ns%RogueObject*)new_singleton;
-         |    if (old_singleton != new_singleton) type->fn_on_singleton_change( old_singleton, new_singleton );
+         |    if (old_singleton != new_singleton)
+         |    {
+         |      type->fn_on_singleton_change( old_singleton, new_singleton, 1 );
+         |      *ref = (%Ns%RogueObject*)new_singleton;
+         |      type->fn_on_singleton_change( old_singleton, new_singleton, 0 );
+         |    }
+         |    else
+         |    {
+         |      *ref = (%Ns%RogueObject*)new_singleton;
+         |    }
          |  }
          |  else
          |  {
@@ -2430,7 +2439,7 @@ augment
           # fn_on_singleton_change
           c_writer.print ", "
           if (type.m_on_singleton_change)
-            c_writer.print "(%Ns%RogueFn_Object_Object)"
+            c_writer.print "(%Ns%RogueFn_Object_Object_Logical)"
             c_writer.print type.m_on_singleton_change.c_name
           else
             c_writer.print '0'
