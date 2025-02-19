@@ -16,15 +16,15 @@ class Finalizer : Visitor
       forEach (lib in Program.libraries)
         forEach (type in lib.types)
 
-          # on_singleton_change(old_singleton:Type,new_singleton:Type)
+          # on_singleton_change(old_singleton:Type,new_singleton:Type,before:Logical)
           if (type.attributes.is_singleton)
             local full_type = "$::$"(type.library_context,type.name)
-            type.m_on_singleton_change = type.global_methods["on_singleton_change($,$)"(full_type,full_type)]
+            type.m_on_singleton_change = type.global_methods["on_singleton_change($,$,Rogue::Logical)"(full_type,full_type)]
 
             if (not type.m_on_singleton_change)
               forEach (m in type.global_methods)
                 if (m.name == "on_singleton_change")
-                  throw m.t.error( "Incorrect signature - expected on_singleton_change(old_singleton:$,new_singleton:$)" ...
+                  throw m.t.error( "Incorrect signature - expected on_singleton_change(old_singleton:$,new_singleton:$,&before)" ...
                     (type,type) )
                 endIf
               endForEach
