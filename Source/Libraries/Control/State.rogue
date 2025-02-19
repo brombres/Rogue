@@ -85,6 +85,15 @@ class State<<$ExtendedType,$change_state,$exit_state>>
         cur .= concurrent_state
       endWhile
 
+    method call<<$method_name,$ArgType>>( arg:$ArgType )
+      # Calls specified method on this state and all concurrent states.
+      this->(as $ExtendedType).$method_name( arg )
+      local cur = concurrent_state
+      while (cur)
+        cur.$method_name( arg )
+        cur .= concurrent_state
+      endWhile
+
     method $change_state( new_state:$ExtendedType )
       next_state = new_state
       $exit_state

@@ -54,21 +54,17 @@ class Entity : Node<<Entity>>
 
     method draw
       .begin_draw
-      .dispatch_draw_bg
+      .dispatch_draw( &bg )
       .dispatch_draw
-      .dispatch_draw_fg
+      .dispatch_draw( &!bg )
 
-    method draw_bg
-
-    method draw_fg
+    method draw( &bg )
+      noAction
 
     method on_draw
       noAction
 
-    method on_draw_bg
-      noAction
-
-    method on_draw_fg
+    method on_draw( &bg )
       noAction
 
     method on_start
@@ -128,19 +124,20 @@ class Entity : Node<<Entity>>
         (forEach in children).draw
       endIf
 
-    method .dispatch_draw_bg
-      actions?.call<<on_draw_bg>>
-      script?.call<<on_draw_bg>>
+    method .dispatch_draw( &bg )
+      if (bg)
+        actions?.call<<on_draw,Logical>>( true )
+        script?.call<<on_draw,Logical>>( true )
 
-      on_draw_bg
+        on_draw( &bg )
 
-      draw_bg
+        draw( &bg )
+      else
+        draw( &!bg )
 
-    method .dispatch_draw_fg
-      draw_fg
+        on_draw( &!bg )
 
-      on_draw_fg
-
-      script?.call<<on_draw_bg>>
-      actions?.call<<on_draw_bg>>
+        script?.call<<on_draw,Logical>>( false )
+        actions?.call<<on_draw,Logical>>( false )
+      endIf
 endClass
