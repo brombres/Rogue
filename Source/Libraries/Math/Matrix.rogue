@@ -133,7 +133,7 @@ class Matrix( ...
     method mode_2dx( width:Real, height:Real, depth_scale=1.0:Real,
         perspective_center=XY(0.5,0.5):XY, &invert_y,
         &homogeneous_depth=Matrix.homogeneous_depth, &left_handed=Matrix.left_handed )->Matrix
-      local nominal_z = ((width^2 + height^2).sqrt * depth_scale).floor
+      local nominal_z = ((width^2 + height^2).sqrt * depth_scale).floor.or_larger( 1000 )
       local max_z = -nominal_z * 2
       local k = (nominal_z + 1) * 2
       local left = ((-2 * width) / k)  * perspective_center.x
