@@ -151,7 +151,10 @@ class UI : Component [singleton]
       temporarily UI = this
         position = bounds.position
         if (needs_layout or bounds.size != size)
-          needs_layout = false
+          if (needs_layout)
+            needs_layout = false
+            needs_redraw = true
+          endIf
           begin_layout
           resolve_layout_size( bounds.size )
           perform_layout( position )
