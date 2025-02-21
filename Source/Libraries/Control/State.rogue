@@ -13,8 +13,8 @@ class State<<$ExtendedType,$change_state,$exit_state>>
     method create( fn:Function() )->$ExtendedType
       return StateCall<<$ExtendedType>>( fn )
 
-    method create( fn:Function(Real), duration:Real, progress_fn=ProgressFn.LINEAR:Function(Real)->Real )->$ExtendedType
-      return StateCallWithProgress<<$ExtendedType>>( fn, duration, progress_fn )
+    method create( fn:Function(Real), duration:Real )->$ExtendedType
+      return StateCallWithProgress<<$ExtendedType>>( fn, duration )
 
     method operator+( a:$ExtendedType, b:$ExtendedType )->$ExtendedType
       if (not a) return b
@@ -37,7 +37,6 @@ class State<<$ExtendedType,$change_state,$exit_state>>
 
   PROPERTIES
     duration    : Real
-    progress_fn = ProgressFn.LINEAR : Function(Real)->Real
 
     next_state       : $ExtendedType
     concurrent_state : $ExtendedType
@@ -51,9 +50,7 @@ class State<<$ExtendedType,$change_state,$exit_state>>
     method init
       noAction
 
-    method init( progress_fn )
-
-    method init( duration, progress_fn=ProgressFn.LINEAR )
+    method init( duration )
 
     method and_then( state:$ExtendedType )->$ExtendedType
       if (state)
@@ -148,7 +145,7 @@ class State<<$ExtendedType,$change_state,$exit_state>>
     method on_finish
 
     method progress->Real
-      return which{ duration>0:progress_fn(t/duration) || 1.0 }
+      return which{ duration>0:t/duration || 1.0 }
 
     method started->$ExtendedType
       if (is_exited)
@@ -279,7 +276,7 @@ class StateCall<<$ExtendedType>>( fn:Function(), duration=$ExtendedType.INSTANT 
       fn()
 endClass
 
-class StateCallWithProgress<<$ExtendedType>>( fn:Function(Real), duration, progress_fn ) : $ExtendedType [undocumented]
+class StateCallWithProgress<<$ExtendedType>>( fn:Function(Real), duration ) : $ExtendedType [undocumented]
   METHODS
     method on_update( dt:Real )
       fn( progress )
