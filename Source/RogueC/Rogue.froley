@@ -207,6 +207,7 @@ SYMBOL_QUESTION_2SLASH       ?//
 SYMBOL_QUESTION_ARROW        ?->
 SYMBOL_QUESTION_DOT          ?.
 SYMBOL_QUESTION_DOT_SQUARE   ?.[
+SYMBOL_QUESTION_BRACKETS     ?[]
 SYMBOL_QUESTION_SQUARE       ?[
 SYMBOL_RIGHT_SHIFT           :>>:
 SYMBOL_RIGHT_SHIFT_EQUALS    :>>:=
@@ -933,7 +934,7 @@ parser
 
 - id_or_type
   pathed_name
-  if (nextIs("<<") or nextIs("[]") or nextIs('?')) remaining_type
+  if (nextIs("<<") or nextIs("[]") or nextIs('?') or nextIs('?[]')) remaining_type
 
 - type
   on '('
@@ -1022,11 +1023,14 @@ parser
   list_or_optional_type
 
 - list_or_optional_type
-  while (nextIs("[]") or nextIs('?'))
+  while (nextIs("[]") or nextIs('?') or nextIs('?[]'))
     on "[]"
       create Type(element_type:Type)
     elseOn '?'
       create Type(core_type:Type,optional="true":Logical)
+    elseOn '?[]'
+      create Type(core_type:Type,optional="true":Logical)
+      create Type(element_type:Type)
     endOn
   endWhile
 
@@ -1065,10 +1069,10 @@ parser
 - remaining_template_access
   template_args
 
-  if (nextIs("[]") or nextIs('?'))
+  if (nextIs("[]") or nextIs('?') or nextIs('?[]'))
     # We now know we're parsing a templated type, not a templated method.
     create Type(name:String,type_args:TemplateArgs)
-    while (nextIs("[]") or nextIs('?'))
+    while (nextIs("[]") or nextIs('?') or nextIs('?[]'))
       on "[]"
         create Type(element_type:Type)
       elseOn '?'
@@ -3111,13 +3115,13 @@ parser
       if (nextIs("<<"))
         remaining_template_access
         return
-      elseIf (nextIs("[]"))
+      elseIf (nextIs('[]') or nextIs('?[]'))
         remaining_type
         type_access_or_typed_literal_list
         return
       elseIf (nextIs('?'))
         on '?'
-          if (nextIs('(') or nextIs('?') or nextIs("[]"))
+          if (nextIs('(') or nextIs('?') or nextIs('[]') or nextIs('?[]'))
             # Optional type constructor / optional type / optional list type
             createNull
             create Type(name:String,type_args:TemplateArgs)
@@ -3503,7 +3507,7 @@ parser
 - anonymous_tuple_or_tuple_type
   savePosition
   anonymous_tuple
-  if (nextIs("[]") or nextIs('?'))
+  if (nextIs("[]") or nextIs('?') or nextIs('?[]'))
     # Tuple list type or optional tuple type
     restorePosition
     type
@@ -3531,7 +3535,7 @@ parser
 - named_tuple_or_tuple_type
   savePosition
   named_tuple
-  if (nextIs("[]") or nextIs('?'))
+  if (nextIs("[]") or nextIs('?') or nextIs('?[]'))
     # Tuple list type or optional tuple type
     restorePosition
     type
