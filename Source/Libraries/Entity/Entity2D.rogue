@@ -29,6 +29,9 @@ class Entity2D : Entity
       @rotation     = existing.rotation
       @anchor       = existing.anchor
 
+    method reset_size( nominal_size )
+      scale = XY(1.0)
+
     method scale_to_fill( bounds:Box )
       scale = (bounds.size / nominal_size).max
 
@@ -49,8 +52,10 @@ class Entity2D : Entity
     method set_scale( @scale )
       noAction
 
-    method set_size( nominal_size )
-      scale = XY(1.0)
+    method set_size( size:XY )
+      scale = size / nominal_size
+
+    method set_size( nominal_size, scale )
 
     method size->XY
       return nominal_size * scale
