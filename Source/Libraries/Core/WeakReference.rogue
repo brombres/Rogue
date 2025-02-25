@@ -41,7 +41,7 @@ endClass
 class WeakReference<<$DataType>> : WeakReference
   METHODS
     method object->$DataType
-      return native( "$this->object" )->$DataType
+      return native( "$this->object" )->Object->(as $DataType)
 
     method operator==( other_object:Object )->Logical
       if local other = other_object->(as WeakReference<<$DataType>>)
