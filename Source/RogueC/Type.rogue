@@ -587,7 +587,7 @@ class Type : Cmd
           (aspect_m.return_type,existing_m.return_type) )
         endIf
 
-        if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
+        if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace)
           forEach (aspect_p at i in aspect_m.parameters)
             local existing_p = existing_m.parameters[i]
             if (aspect_p.name != existing_p.name)
@@ -616,6 +616,8 @@ class Type : Cmd
           existing_m.statements = aspect_m.statements
         elseIf (aspect_m.attributes.is_append)
           existing_m.statements.add( forEach in aspect_m.statements )
+        elseIf (aspect_m.attributes.is_replace)
+          existing_m.statements.[clear].add( forEach in aspect_m.statements )
         elseIf (existing_m.type_context is not this or (is_augment and this.name!="Routine") or aspect_m.attributes.is_replace)
           global_methods[ aspect_m.signature ] = aspect_m
           aspect_m.attributes.is_global = true
@@ -649,7 +651,7 @@ class Type : Cmd
           (aspect_m.return_type,existing_m.return_type) )
         endIf
 
-        if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
+      if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace)
           forEach (aspect_p at i in aspect_m.parameters)
             local existing_p = existing_m.parameters[i]
             if (aspect_p.name != existing_p.name)
@@ -677,6 +679,8 @@ class Type : Cmd
           existing_m.statements = aspect_m.statements
         elseIf (aspect_m.attributes.is_append and existing_m.type_context is this)
           existing_m.statements.add( forEach in aspect_m.statements )
+        elseIf (aspect_m.attributes.is_replace and existing_m.type_context is this)
+          existing_m.statements.[clear].add( forEach in aspect_m.statements )
         elseIf (existing_m.type_context is not this)
           methods[ aspect_m.signature ] = aspect_m
           aspect_m.overridden_method = existing_m
