@@ -5,30 +5,33 @@ $include Codec/PNG
 augment Graphics::Bitmap
   GLOBAL METHODS
     method decode_bmp( bytes:Byte[] )->Bitmap
-      if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      return BMPDecoder.decode( bytes )
+      if ($target("macOS")) return MacOS.decode_bitmap( bytes )
+      else                  return BMPDecoder.decode( bytes )
 
     method decode_jpeg( bytes:Byte[] )->Bitmap
-      if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      return JPEGDecoder().decode( bytes )
+      if ($target("macOS")) return MacOS.decode_bitmap( bytes )
+      else                  return JPEGDecoder().decode( bytes )
 
     method decode_png( bytes:Byte[] )->Bitmap
-      if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      return PNGDecoder().decode( bytes )
+      if ($target("macOS")) return MacOS.decode_bitmap( bytes )
+      else                  return PNGDecoder().decode( bytes )
 
   METHODS
     method to_jpeg_bytes( quality=75:Int )->Byte[]
-      if (System.is_macos) return MacOS.to_jpeg_bytes( this )
-      return JPEGEncoder().encode( this, null, quality )
+      if ($target("macOS")) return MacOS.to_jpeg_bytes( this )
+      else                  return JPEGEncoder().encode( this, null, quality )
 
     method to_png_bytes->Byte[]
-      if (System.is_macos) return MacOS.to_png_bytes( this )
-      return PNGEncoder().encode( this, null )
+      if ($target("macOS")) return MacOS.to_png_bytes( this )
+      else                  return PNGEncoder().encode( this, null )
 
     method to_tiff_bytes->Byte[]
-      if (System.is_macos) return MacOS.to_tiff_bytes( this )
-      Global.error.println "ERROR: No software TIFF encoder available."
-      return null
+      if ($target("macOS"))
+        return MacOS.to_tiff_bytes( this )
+      else
+        Global.error.println "ERROR: No software TIFF encoder available."
+        return null
+      endIf
 endAugment
 
 augment FreeTypeFace
