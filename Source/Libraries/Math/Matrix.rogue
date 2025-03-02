@@ -359,7 +359,6 @@ class Matrix( ...
       )
 
     method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Radians, internal_size:XY )->Matrix
-      # Returns a transformation matrix that will position a [0,0 1x1] coordinate box in 2D+ space
       local ix   = 1.0 / internal_size.x
       local iy   = 1.0 / internal_size.y
       local cos0 = rotation.cos
@@ -371,6 +370,25 @@ class Matrix( ...
         0,                 0,                1, 0,  # column 3
         ((((cos0*size.x)*a.x) + ((-sin0*size.y)*a.y)) + position.x),
         ((((sin0*size.x)*a.x) + ((cos0*size.y)*a.y)) + position.y),
+        position.z,
+        1
+      )
+
+    method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Radians,
+        internal_size:XY, h_flip:Logical, v_flip:Logical )->Matrix
+      local cos0 = rotation.cos
+      local sin0 = rotation.sin
+      local a    = (XY(0.5,0.5) - anchor.position) * internal_size
+      local scale = size / internal_size
+      local center = XY(-0.5,-0.5) * internal_size
+      local flip_x = which{ h_flip:-1 || 1 }
+      local flip_y = which{ v_flip:-1 || 1 }
+      return Matrix(
+        ((cos0 * scale.x) * flip_x),  ((sin0 * scale.x) * flip_x), 0, 0,
+        ((-sin0 * scale.y) * flip_y), ((cos0 * scale.y) * flip_y), 0, 0,
+        0,                            0,                           1, 0,
+        (((((cos0 * scale.x) * flip_x) * center.x) + (((-sin0 * scale.y) * flip_y) * center.y)) + ((((cos0 * scale.x) * a.x) + ((-sin0 * scale.y) * a.y)) + position.x)),
+        (((((sin0 * scale.x) * flip_x) * center.x) + (((cos0 * scale.y) * flip_y) * center.y)) + ((((sin0 * scale.x) * a.x) + ((cos0 * scale.y) * a.y)) + position.y)),
         position.z,
         1
       )
