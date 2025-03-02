@@ -265,6 +265,12 @@ class Node<<$ExtendedNodeType>> : IteratorPreferred
 
       return result
 
+    method replace_child( old_child:$ExtendedNodeType, new_child:$ExtendedNodeType )
+      if local index = locate( old_child )
+        insert( new_child, index )
+        old_child.detach
+      endIf
+
     method set_first( node:$ExtendedNodeType )
       if (first_child) remove_first
       insert( node )
