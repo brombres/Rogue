@@ -59,7 +59,10 @@ class Entity : Node<<Entity>>
       .dispatch_draw( &!bg )
 
     method draw( &bg )
-      noAction
+      if (bg == not attributes.foreground) .draw_entity
+
+    method h_flip->Logical
+      return attributes.h_flip
 
     method on_draw
       noAction
@@ -111,6 +114,9 @@ class Entity : Node<<Entity>>
       on_update_layout
       (forEach in children).update_layout
 
+    method v_flip->Logical
+      return attributes.v_flip
+
     method .begin_draw
       if (not attributes.started) start
 
@@ -140,4 +146,7 @@ class Entity : Node<<Entity>>
         script?.call<<on_draw,Logical>>( false )
         actions?.call<<on_draw,Logical>>( false )
       endIf
+
+    method .draw_entity
+      noAction
 endClass
