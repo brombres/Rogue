@@ -17,6 +17,7 @@ class VBox : Component
       return XY(w,h)
 
     method perform_layout( position )
+      localize anchor
       local total_h = 0.0
       local w = 0.0
       use components = WorkList<<Component>>
@@ -29,10 +30,13 @@ class VBox : Component
         endForEach
 
         local pos = XY.zero
-        pos.y = Box(XY(w,total_h)).positioned_within( content_bounds, alignment ).position.y
+        pos.y = Box(XY(w,total_h)).positioned_within( content_bounds, anchor ).position.y
         forEach (component in components)
           component.perform_layout(
-            component.bounds.positioned_within( Box(pos,size.x,component.size.y), alignment ).position
+            component.bounds.positioned_within(
+              Box(pos,size.x,component.size.y),
+              which{ component.@anchor || anchor }
+            ).position
           )
           pos.y += component.size.y
         endForEach
@@ -46,14 +50,14 @@ class VBox : Component
 
         use info_list = WorkList<<ComponentSizeInfo>>
 
-          # Determine the min & max widths of all child components.
+          # Determine the min & max heights of all child components.
           local total_weight : Real
           forEach (component in components)
-            local min_size = component.resolve_layout_size( XY.zero, &limited )
-            local max_size = component.resolve_layout_size( available_size, &limited )
-            if (min_size == max_size)
+            local min_size = component.resolve_layout_size( available_size.xv, &limited )
+            local max_size = component.resolve_layout_size( available_size,    &limited )
+            if (min_size.y == max_size.y)
               available_size.y -= min_size.y
-            elseIf (component.weight)
+            elseIf (component.weight.y)
               total_weight += component.weight.y
               info_list.add( ComponentSizeInfo(component, &=min_size, &=max_size) )
             endIf
@@ -77,12 +81,14 @@ class VBox : Component
                   # Component's max size falls short of its share. Let it keep its max size and
                   # remove it from the list by not rewriting it.
                   available_size.y -= info.max_size.y
+                  total_weight -= info.component.weight.y
                   repeat = true
                 elseIf (info.min_size.y > h)
                   # Component's min size exceeds its share. Assign it its min size and
                   # remove it from the list by not rewriting it.
                   info.component.size.y = info.min_size.y
                   available_size.y -= info.min_size.y
+                  total_weight -= info.component.weight.y
                   repeat = true
                 else
                   # Component can size at least as big as its proportional share; keep it for the next pass.
@@ -94,7 +100,7 @@ class VBox : Component
             endWhile
           endBlock
 
-          # Assign remaining components their proportional share of available width.
+          # Assign remaining components their proportional share of available height.
           block
             local remaining_height = available_size.y
             local remaining_count = info_list.count

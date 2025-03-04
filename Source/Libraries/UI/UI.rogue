@@ -54,6 +54,9 @@ class UI : Component [singleton]
         prior.draw
       endTemporarily
 
+    method filler->Component
+      return Component()
+
     method font->Font
       return default_font
 
@@ -135,6 +138,9 @@ class UI : Component [singleton]
 
     method set_clip( @clip )
       noAction
+
+    method spacer( w=0:Int, h=0:Int )->Component
+      return Component( XY(w,h) )
 
     method update( bounds:Box )
       update_timer.update

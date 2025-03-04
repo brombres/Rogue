@@ -5,6 +5,7 @@ class Component : Entity
     position       : XY
     size           : XY
 
+    anchor         : Anchor?
     alignment      : Anchor?
     layout_mode    : LayoutModeXY
     layout_size    : XY
@@ -79,6 +80,17 @@ class Component : Entity
         endIf
       endIf
 
+    method anchor->Anchor
+      if local result = @anchor
+        return result
+      else
+        if local parent_component = parent->(as Component)
+          return parent_component.alignment
+        else
+          return Anchor.CENTER
+        endIf
+      endIf
+
     method begin_layout
       on_begin_layout
       use components = WorkList<<Component>>
@@ -91,7 +103,6 @@ class Component : Entity
 
     method bounds->Box
       return Box( position, size )
-      #return Box( position, size ).relative_to( anchor )
 
     method capture_pointer_focus->Logical
       if (UI.pointer_focus and UI.pointer_focus is not this) return false
@@ -161,21 +172,6 @@ class Component : Entity
       else
         return position
       endIf
-
-    method draw
-      on_draw
-
-      localize content_display_bounds
-      local new_clip = which{ UI.clip:UI.clip & content_display_bounds || content_display_bounds }
-      if (UI.snap_to_pixel_coordinates) new_clip .= floor
-      temporarily UI.clip = new_clip
-        use components = WorkList<<Component>>
-          collect_child_display_components( components )
-          (forEach in components).draw
-        endUse
-      endTemporarily
-
-      on_end_draw
 
     method end_layout
       on_end_layout
@@ -303,11 +299,16 @@ class Component : Entity
       return UIGeneratedStack( this ).[ add(rhs) ]
 
     method perform_layout( position )
+      localize anchor
       localize content_bounds
       use components = WorkList<<Component>>
         collect_child_display_components( components )
         forEach (component in components)
-          component.perform_layout( component.bounds.positioned_within(content_bounds,alignment).position )
+          local bounds = component.bounds.positioned_within(
+            content_bounds,
+            which{ component.@anchor || anchor }
+          )
+          component.perform_layout( bounds.position )
         endForEach
       endUse
 
@@ -412,6 +413,9 @@ class Component : Entity
         (forEach in components).resolve_layout_size( available_size )
       endUse
 
+    method set_anchor( @anchor )
+      noAction
+
     method set_aspect_fill( layout_size )
       layout_mode = LayoutModeXY( LayoutMode.ASPECT_FILL, LayoutMode.ASPECT_FILL )
 
@@ -419,7 +423,6 @@ class Component : Entity
       layout_mode.y = LayoutMode.ASPECT_FILL
 
     method set_aspect_fill_width( layout_size )
-      layout_size.x = w
       layout_mode.x = LayoutMode.ASPECT_FILL
 
     method set_aspect_fit( layout_size )
@@ -429,7 +432,6 @@ class Component : Entity
       layout_mode.y = LayoutMode.ASPECT_FIT
 
     method set_aspect_fit_width( layout_size )
-      layout_size.x = w
       layout_mode.x = LayoutMode.ASPECT_FIT
 
     method set_content( content:Component )
@@ -473,6 +475,19 @@ class Component : Entity
 
     method split_h( split_position:Real, components:Component[], component_i:Int )
       noAction
+
+    method .dispatch_draw [override]
+      if (count)
+        localize content_display_bounds
+        local new_clip = which{ UI.clip:UI.clip & content_display_bounds || content_display_bounds }
+        if (UI.snap_to_pixel_coordinates) new_clip .= floor
+        temporarily UI.clip = new_clip
+          use components = WorkList<<Component>>
+            collect_child_display_components( components )
+            (forEach in components).draw
+          endUse
+        endTemporarily
+      endIf
 
 endClass
 
