@@ -148,7 +148,6 @@ class UI : Component [singleton]
 
     method update( bounds:Box, dt:Real )
       temporarily UI = this
-        update_layout
         update_layout( bounds )
         update( dt )
       endTemporarily
