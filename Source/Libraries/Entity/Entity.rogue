@@ -53,6 +53,7 @@ class Entity : Node<<Entity>>
       else        script = new_script.started
 
     method draw
+      if (attributes.hidden) return
       .begin_draw
       .handle_draw( &bg )
       .handle_draw
@@ -76,14 +77,14 @@ class Entity : Node<<Entity>>
     method on_update( dt:Real )
       noAction
 
-    method on_update_layout
-      noAction
-
     method properties->Properties
       return Properties( this )
 
     method set_h_flip( setting:Logical )
       attributes.h_flip = setting
+
+    method set_is_visible( setting:Logical )
+      attributes.hidden = not setting
 
     method set_v_flip( setting:Logical )
       attributes.v_flip = setting
@@ -107,15 +108,11 @@ class Entity : Node<<Entity>>
       on_update( dt )
       (forEach in children).update( dt )
 
-    method update_layout
-      if (not attributes.started) start
-
-      script?.on_update_layout
-      on_update_layout
-      (forEach in children).update_layout
-
     method v_flip->Logical
       return attributes.v_flip
+
+    method is_visible->Logical
+      return not attributes.hidden
 
     method .begin_draw
       if (not attributes.started) start
@@ -126,6 +123,8 @@ class Entity : Node<<Entity>>
       endIf
 
     method .handle_draw
+      if (attributes.hidden) return
+
       on_draw
 
       script?.call<<on_draw>>
@@ -134,6 +133,8 @@ class Entity : Node<<Entity>>
       .dispatch_draw
 
     method .handle_draw( &bg )
+      if (attributes.hidden) return
+
       if (bg)
         actions?.call<<on_draw,Logical>>( true )
         script?.call<<on_draw,Logical>>( true )

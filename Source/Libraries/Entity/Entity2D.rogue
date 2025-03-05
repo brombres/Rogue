@@ -22,7 +22,7 @@ class Entity2D : Entity
 
     method init( existing:Entity2D )
       prior.init( existing )
-      @size         = existing.size
+      @scale        = existing.scale
       @nominal_size = existing.nominal_size
       @position     = existing.position
       @z            = existing.z

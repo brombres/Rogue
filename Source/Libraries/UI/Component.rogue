@@ -13,6 +13,8 @@ class Component : Entity
     weight         = XY(1,1)
     layout_params  : ParameterNames
 
+    opacity        = 1.0
+
   METHODS # Overrides
     method init
       noAction
