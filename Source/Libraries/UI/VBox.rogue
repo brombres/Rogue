@@ -107,7 +107,9 @@ class VBox : Component
             forEach (info in info_list)
               local h = remaining_height
               if (remaining_count > 1)
-                h = h * info.component.weight.y / total_weight
+                local weight = info.component.weight.y
+                h = h * weight / total_weight
+                total_weight -= weight
                 if (snap) h .= floor
               endIf
               info.component.size.y = h

@@ -105,7 +105,9 @@ class HBox : Component
             forEach (info in info_list)
               local w = remaining_width
               if (remaining_count > 1)
-                w = w * info.component.weight.x / total_weight
+                local weight = info.component.weight.x
+                w = w * weight / total_weight
+                total_weight -= weight
                 if (snap) w .= floor
               endIf
               info.component.size.x = w
