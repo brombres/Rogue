@@ -1,0 +1,23 @@
+library UI
+
+class Overlay : Component
+  PROPERTIES
+    offset = XY(0,0)  # proportional 0.0-1.0
+    scale  = XY(1,1)
+
+  METHODS
+    method perform_layout( position ) [override]
+      prior.perform_layout( position + content_bounds.size * offset )
+
+    method resolve_child_layout_sizes [override]
+      local available_size = content_size
+      local is_scaled = (scale != XY(1,1))
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+        forEach (component in components)
+          local full_size = component.resolve_layout_size( available_size )
+          if (is_scaled) component.resolve_layout_size( full_size * scale )
+        endForEach
+      endUse
+endClass
+
