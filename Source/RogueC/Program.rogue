@@ -61,6 +61,7 @@ class Program [singleton]
     type_Variant           : Type
     type_Exception         : Type
     type_TypeID            : Type
+    type_GlobalID          : Type
     type_TableType         : Type
     type_TypeInfo          : Type
     type_NativeProperty    : Type
@@ -136,6 +137,7 @@ class Program [singleton]
       type_TableType = Type( t, "TableType", Attribute.ASPECT )
       type_Exception = Type( t, "Exception", Attribute.OBJECT )
       type_TypeID    = Type( t, "TypeID", Attribute.COMPOUND )
+      type_GlobalID  = Type( t, "GlobalID", Attribute.COMPOUND )
       type_IteratorPreferred = Type( t, "IteratorPreferred", Attribute.ASPECT )
 
       type_NativeProperty = Type( t, "RogueCNativeProperty", Attribute.PRIMITIVE )
