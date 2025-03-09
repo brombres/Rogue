@@ -5304,7 +5304,36 @@ class CmdGlobalID : Cmd
   METHODS
     method init( t, name )
       name = "<$>"(name)
+
+      local is_new_label = not Program.labels.contains( this )
       Program.labels.add( this )
+      if (Program.type_GlobalID.properties_organized and is_new_label)
+        # Patch type GlobalID to include this new ID.
+        local type = Program.type_GlobalID
+        type.categories.add(
+          Category(
+            t,
+            name,
+            Args(t),
+            null,
+            null
+          )
+        )
+        type.definitions[name] = EnumValueDef( t, LiteralInt(t,type.definitions.count+1) )
+        type.global_properties//categories.initial_value->(as TypedLiteralList).list.add(
+          Access( t, name )
+        )
+        forEach (statement as Which in type.methods["to<<Rogue::String>>()"].body.statements)
+          statement.cases.add(
+            WhichCase(
+              t,
+              Args( t, Access(t,name) ),
+              Statements( t, Return(t,LiteralString(t,name)) )
+            )
+          )
+          escapeForEach
+        endForEach
+      endIf
 
     method init( existing:CmdGlobalID )
       prior.init( existing )
