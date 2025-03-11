@@ -16,7 +16,6 @@ $include UI/Label
 $include UI/LayoutMode
 $include UI/MetaComponent
 $include UI/Overlay
-$include UI/ParameterNames
 $include UI/Text
 $include UI/TextBox
 $include UI/TextStyle

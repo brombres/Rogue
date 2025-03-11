@@ -6,7 +6,7 @@ class Text : Component
     style : TextStyle
 
   METHODS
-    method init( text:String )
+    method init( text=String():String )
       if (text.count <= 1)
         value = text
         return
@@ -58,6 +58,8 @@ class Text : Component
         endUse
 
       endUse
+
+      on_begin_layout  # set initial size
 
     method .add_builder( builder:String )
       if (builder.count)
@@ -133,14 +135,28 @@ class Text : Component
       endIf
 
     method on_begin_layout [override]
-      if (not attributes.modified) return
-      attributes.modified = false
+      local sz = font?.measure(value || "")
 
-      fixed_size =  font?.measure(value || "")
-      size = layout_size
+      if (layout_mode.x == LayoutMode.FIXED_SIZE)
+        if (layout_mode.y == LayoutMode.FIXED_SIZE)
+          fixed_size =  font?.measure(value || "")
+          size = layout_size
+        else
+          fixed_width =  font?.measure(value || "").x
+          size.x = layout_size.x
+        endIf
+      elseIf (layout_mode.y == LayoutMode.FIXED_SIZE)
+        fixed_height = font?.measure(value || "").y
+        size.y = layout_size.y
+      endIf
 
     method on_draw [override]
-      font?.draw( this )
+      localize font
+      if (font)
+        font.draw( this )
+      else
+        println "ERROR: UI.default_font is undefined."
+      endIf
 
     method set_bg_color( color:Graphics::Color? )
       ensure<<style>>
@@ -154,11 +170,21 @@ class Text : Component
       ensure<<style>>
       if (style.font != font)
         style.font = font
-        attributes.modified = true
       endIf
 
     method set_value( @value )
-      attributes.modified = true
+
+    method shrink_to_fit [override]
+      # To allow shrink_to_fit behavior the actual layout mode must be set to expand_to_fill.
+      layout_mode = LayoutModeXY( LayoutMode.EXPAND_TO_FILL, LayoutMode.EXPAND_TO_FILL )
+
+    method shrink_to_fit_height [override]
+      # To allow shrink_to_fit behavior the actual layout mode must be set to expand_to_fill.
+      layout_mode.y = LayoutMode.EXPAND_TO_FILL
+
+    method shrink_to_fit_width [override]
+      # To allow shrink_to_fit behavior the actual layout mode must be set to expand_to_fill.
+      layout_mode.x = LayoutMode.EXPAND_TO_FILL
 
     method split_h( split_position:Real, components:Component[], component_i:Int ) [override]
       local left, center, right : Text
