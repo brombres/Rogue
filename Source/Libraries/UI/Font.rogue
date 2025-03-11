@@ -10,7 +10,8 @@ class Font [abstract]
     method init( existing:Font )
       name = existing.name
 
-    method cloned->Font [abstract]
+    method cloned->ThisType
+      return ThisType( this )
 
     method draw( text:Text ) [abstract]
 
@@ -35,33 +36,36 @@ class Font [abstract]
 
     method measure( ch:Character )->XY  [abstract]
 
-    method measure( text:String, i1=0:Int, count=-1:Int )->XY
-      if (count == -1) count = text.count - i1
+    method measure( text:String, i1=null:Int?, count=null:Int? )->XY
+      if (not i1)    i1 = 0
+      if (not count) count = text.count - i1.value
 
-      local max_w = 0.0
-      local w     = 0.0
-      local h     = 0.0
-      local row_h = 0.0
+      block i1=i1.value, count=count.value
+        local max_w = 0.0
+        local w     = 0.0
+        local h     = 0.0
+        local row_h = 0.0
 
-      forEach (i in i1..<i1+count)
-        local ch = text[i]
-        if (ch == '\n')
-          max_w .= or_larger( w )
-          w = 0
-          row_h .= or_larger( measure(ch).y )
-          h += row_h
-          row_h = 0
-        else
-          local ch_size = measure(ch)
-          w += ch_size.x
-          row_h .= or_larger( ch_size.y )
-        endIf
-      endForEach
+        forEach (i in i1..<i1+count)
+          local ch = text[i]
+          if (ch == '\n')
+            max_w .= or_larger( w )
+            w = 0
+            row_h .= or_larger( measure(ch).y )
+            h += row_h
+            row_h = 0
+          else
+            local ch_size = measure(ch)
+            w += ch_size.x
+            row_h .= or_larger( ch_size.y )
+          endIf
+        endForEach
 
-      max_w .= or_larger( w )
-      h += row_h
+        max_w .= or_larger( w )
+        h += row_h
 
-      return XY( max_w, h )
+        return XY( max_w, h )
+      endBlock
 
 endClass
 

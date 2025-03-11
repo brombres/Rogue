@@ -8,9 +8,6 @@ class Label : Component
     method init( content:Component )
       set_content( content )
 
-    method init_object
-      alignment = Anchor.CENTER
-
     method set_text( text:String )
       content = Text( text )
 

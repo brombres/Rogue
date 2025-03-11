@@ -11,7 +11,7 @@ class Component : Entity
     layout_size    : XY
     content_offset : XY
     weight         = XY(1,1)
-    layout_params  : ParameterNames
+    font           : Font
 
     opacity        = 1.0
 
@@ -22,8 +22,8 @@ class Component : Entity
     method init( child:Component )
       add( child )
 
-    method init( _fixed_size:XY )
-      fixed_size( _fixed_size )
+    method init( fixed_size:XY )
+      this.fixed_size = fixed_size
 
     method on( e:KeyEvent )
       noAction
@@ -214,6 +214,7 @@ class Component : Entity
       return null
 
     method font->Font
+      if (@font) return @font
       return parent->(as Component)?.font
 
     method handle( e:KeyEvent )
