@@ -5372,3 +5372,9 @@ class WeakRef : Cmd
       return "WeakRef($)" (%expression)
 
 endClass
+
+class AttributeDeprecated : Cmd
+  METHODS
+    method description->String
+      return "AttributeDeprecated"
+endClass

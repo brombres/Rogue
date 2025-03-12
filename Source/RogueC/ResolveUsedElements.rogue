@@ -273,12 +273,21 @@ class ResolveUsedElements : InspectionVisitor
       endTemporarily
 
     method on_visit_node( cmd:CallProcedure )
+      if (cmd.info.attributes.is_deprecated)
+        Program.print_warning( cmd.t, "Call to deprecated procedure $."(cmd.info.signature) )
+      endIf
       visit( cmd.info )
 
     method on_visit_node( cmd:CallDynamicMethod )
+      if (cmd.info.attributes.is_deprecated)
+        Program.print_warning( cmd.t, "Call to deprecated method $."(cmd.info.signature) )
+      endIf
       visit_dynamic_call( cmd.info )
 
     method on_visit_node( cmd:CallThisDynamicMethod )
+      if (cmd.info.attributes.is_deprecated)
+        Program.print_warning( cmd.t, "Call to deprecated method $."(cmd.info.signature) )
+      endIf
       visit_dynamic_call( cmd.info )
 
     method visit_dynamic_call( info:Procedure )

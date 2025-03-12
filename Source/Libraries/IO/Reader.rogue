@@ -16,7 +16,7 @@ class Reader<<$DataType>> [abstract aspect]
     method on_end_use
       close
 
-    method position->Int [fallback]
+    method position->Int
       return @position
 
     method read->$DataType [abstract]
