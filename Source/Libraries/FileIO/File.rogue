@@ -408,6 +408,35 @@ class File( filepath:String ) [compound]
       endIf
       return false
 
+    method is_different_than( other:File )->Logical
+      # Returns false if 'this' and 'other' both exist, are the same size, and contain the same bytes.
+      local file = resolved
+      other .= resolved
+
+      if (file.exists xor other.exists) return true
+      if (not file.exists) return false
+
+      if (filepath == other.filepath)   return false
+
+      if (file.size != other.size)      return true
+
+      local reader_a = file.reader
+      local reader_b = other.reader
+      use file_buffer_a=WorkList<<Byte,A>>, file_buffer_b=WorkList<<Byte,B>>
+        file_buffer_a.reserve( 1024 )
+        file_buffer_b.reserve( 1024 )
+        while (reader_a.has_another)  # both files are the same length
+          reader_a.read( file_buffer_a.[clear], 1024 )
+          reader_b.read( file_buffer_b.[clear], 1024 )
+          local n = file_buffer_a.count
+          if (native("0 != memcmp($file_buffer_a->as_bytes, $file_buffer_b->as_bytes, $n)")->Logical)
+            return true
+          endIf
+        endWhile
+      endUse
+
+      return false
+
     method is_folder->Logical
       if (filepath == "") return false
 
@@ -525,19 +554,8 @@ class File( filepath:String ) [compound]
     method matches( pattern:FilePattern, &ignore_case )->Logical
       return pattern.matches( filepath, &=ignore_case )
 
-    method operator==( other:File )->Logical
-      # Returns true if 'this' and 'other' both exist, are the same size, and have the same CRC32.
-      local file = resolved
-      other .= resolved
-
-      if (file.exists xor other.exists) return false
-      if (not file.exists) return true
-
-      if (filepath == other.filepath)   return true
-
-      if (file.size != other.size)      return false
-      if (file.crc32 != other.crc32)    return false
-      return true
+    method operator==( other:File )->Logical [deprecated]
+      return not is_different_than( other )
 
     method operator<>( other:File )->Int
       return filepath <> other.filepath
