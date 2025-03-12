@@ -171,7 +171,7 @@ class File( filepath:String ) [compound]
 
       local dest = this.with_destination( destination )
       if (if_newer and not this.is_newer_than(destination)) return 0
-      if (if_different and this == dest) return 0
+      if (if_different and not this.is_different_than(dest)) return 0
 
       if (verbose) println "$ -> $" (this,dest)
 
@@ -554,8 +554,10 @@ class File( filepath:String ) [compound]
     method matches( pattern:FilePattern, &ignore_case )->Logical
       return pattern.matches( filepath, &=ignore_case )
 
-    method operator==( other:File )->Logical [deprecated]
-      return not is_different_than( other )
+    method operator==( other:File )->Logical
+      if (filepath == other.filepath) return true
+      if (resolved.filepath == other.resolved.filepath) return true
+      return false
 
     method operator<>( other:File )->Int
       return filepath <> other.filepath
