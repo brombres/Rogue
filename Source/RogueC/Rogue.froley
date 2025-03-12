@@ -772,6 +772,7 @@ parser
   on @"abstract"   -> AttributeAbstract
   on @"api"        -> AttributeEssential  # [api] is the same as [essential] for methods
   on @"append"     -> AttributeAppend
+  on @"deprecated" -> AttributeDeprecated
   on @"essential"  -> AttributeEssential
   on @"fallback"   -> AttributeFallback
   on @"insert"     -> AttributeInsert
@@ -780,7 +781,7 @@ parser
   on @"preferred"  -> AttributePreferred
   on @"propagated" -> AttributePropagated
   on @"replace"    -> AttributeReplace
-  syntaxError "Illegal procedure attribute. Expected one or more of [abstract api append essential fallback insert mutating override preferred propagated replace]."
+  syntaxError "Illegal procedure attribute. Expected one or more of [abstract api append essential deprecated fallback insert mutating override preferred propagated replace]."
 
 - procedure_body
   multi_line_statements

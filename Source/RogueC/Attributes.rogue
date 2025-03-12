@@ -52,6 +52,7 @@ class Attribute
     INTERNAL_ID        = (Int64(1):<<:47)
     DELETED            = (Int64(1):<<:48)
     UNDOCUMENTED       = (Int64(1):<<:49)
+    DEPRECATED         = (Int64(1):<<:50)
 endClass
 
 class Attributes : CmdList
@@ -105,6 +106,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE<< is_internal_id,       Attribute.INTERNAL_ID >>
   ROGUE_ATTRIBUTE<< deleted,              Attribute.DELETED >>
   ROGUE_ATTRIBUTE<< undocumented,         Attribute.UNDOCUMENTED >>
+  ROGUE_ATTRIBUTE<< is_deprecated,        Attribute.DEPRECATED >>
 
   PROPERTIES
     flags : Int64
@@ -141,7 +143,7 @@ endClass
 augment
   METHODS
     method Cmd.attribute_flags->Int64
-      return 0
+      throw t.error( "[INTERNAL] $.attribute_flags->Int64 not defined in Attributes.rogue."(type_name) )
 
     method AttributeAbstract.attribute_flags->Int64
       return Attribute.ABSTRACT
@@ -161,11 +163,17 @@ augment
     method AttributeCompound.attribute_flags->Int64
       return Attribute.COMPOUND
 
+    method AttributeDeprecated.attribute_flags->Int64
+      return Attribute.DEPRECATED
+
     method AttributeEssential.attribute_flags->Int64
       return Attribute.ESSENTIAL
 
     method AttributeExport.attribute_flags->Int64
       return Attribute.EXPORT
+
+    method AttributeFallback.attribute_flags->Int64
+      return Attribute.FALLBACK
 
     method AttributeFaux.attribute_flags->Int64
       return Attribute.FAUX

@@ -4,6 +4,8 @@ class Text : Component
   PROPERTIES
     value : String
     style : TextStyle
+    shrink_to_fit_text_x : Logical
+    shrink_to_fit_text_y : Logical
 
   METHODS
     method init( text=String():String )
@@ -174,16 +176,16 @@ class Text : Component
 
     method set_value( @value )
 
-    method shrink_to_fit [override]
-      # To allow shrink_to_fit behavior the actual layout mode must be set to expand_to_fill.
-      layout_mode = LayoutModeXY( LayoutMode.EXPAND_TO_FILL, LayoutMode.EXPAND_TO_FILL )
+    method shrink_to_fit_text
+      shrink_to_fit_text_width
+      shrink_to_fit_text_height
 
-    method shrink_to_fit_height [override]
-      # To allow shrink_to_fit behavior the actual layout mode must be set to expand_to_fill.
+    method shrink_to_fit_text_height
+      shrink_to_fit_text_y = true
       layout_mode.y = LayoutMode.EXPAND_TO_FILL
 
-    method shrink_to_fit_width [override]
-      # To allow shrink_to_fit behavior the actual layout mode must be set to expand_to_fill.
+    method shrink_to_fit_text_width
+      shrink_to_fit_text_x = true
       layout_mode.x = LayoutMode.EXPAND_TO_FILL
 
     method split_h( split_position:Real, components:Component[], component_i:Int ) [override]

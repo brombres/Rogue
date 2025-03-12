@@ -418,7 +418,7 @@ class BasicSocketReader : Reader<<Byte>>
       if (not has_another) return 0
       return native( "$this->read_buffer[$this->buffer_pos]" )->Byte
 
-    method position->Int [fallback]
+    method position->Int
       return @position
 
     method read->Byte

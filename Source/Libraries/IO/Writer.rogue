@@ -20,7 +20,7 @@ class Writer<<$DataType>> [abstract aspect]
       close
       return err
 
-    method position->Int [fallback]
+    method position->Int
       return @position
 
     method reset

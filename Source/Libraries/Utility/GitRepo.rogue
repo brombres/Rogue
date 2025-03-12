@@ -36,16 +36,10 @@ class GitRepo( url:String, folder:File ) [compound]
   #   repo.delete_branch( "test_branch_1", &verbose )
   GLOBAL METHODS
     method create( folder:File )->GitRepo
-      local result = Process.run( "cd $ && git remote show -n origin"(folder.esc), &env )
+      local result = Process.run( "cd $ && git remote get-url origin"(folder.esc), &env )
       local output = result->String
       if (result.success)
-        local lines = output.split( '\n' )
-        if local url = lines.find( $.contains("URL:") )
-          url = url.after_first( ':' ).trimmed
-          return GitRepo( url, folder )
-        else
-          throw Error( "Failed to locate Git repo origin URL." )
-        endIf
+        return GitRepo( output.trimmed, folder )
       else
         throw Error( "Git operation failed: " + output )
       endIf
