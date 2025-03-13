@@ -169,6 +169,23 @@ class Table<<$KeyType,$ValueType>> : TableType
       endWhile
       return result
 
+    method map<<$NewTableType>>( fn=null:Function($KeyType,$ValueType,$NewTableType) )->$NewTableType
+      if (not fn)
+        fn = function( key:$KeyType, value:$ValueType, table:$NewTableType )
+          table[key] = value
+        endFunction
+      endIf
+
+      local result : $NewTableType
+      if ($NewTableType isType Variant) result = @{}
+      else                              ensure<<result>>
+
+      forEach (entry in entries)
+        fn( entry.key, entry.value, result )
+      endForEach
+
+      return result
+
     method operator==( other:[$KeyType:$ValueType] )->Logical
       if (count != other.count) return false
 

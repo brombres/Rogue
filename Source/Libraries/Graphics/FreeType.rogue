@@ -68,14 +68,14 @@ class FreeTypeFace
         endForEach
       endForEach
 
-      return null
+      return FreeTypeFace( name, height, &initialize, &error="Unable to locate font file '$'."(name) )
 
     method create( names:String[], height:Int, search_folders=null:String[] )->FreeTypeFace
       forEach (name in names)
         local result = FreeTypeFace( name, height, search_folders )
-        if (result) return result
+        if (not result.error) return result
       endForEach
-      return null
+      return FreeTypeFace( "[Candidate List]", height, &initialize, &error="Unable to locate font file '$'."(filepath) )
 
   PROPERTIES
     filepath   : String
@@ -93,11 +93,14 @@ class FreeTypeFace
     native "FT_Face ft_face;"
 
   METHODS
-    method init( filepath, height, initialize:Logical )
+    method init( filepath, height, initialize:Logical, error=null )
       # 'initialize' is a dummy argument to disambiguate from create(filepath,height).
+      if (error) return
       init( filepath, Byte[](File(filepath)), height )
 
-    method init( filepath, data, height )
+    method init( filepath, data, height, error=null )
+      if (error) return
+
       ft_height = height
 
       if (not native("%Ns%Rogue_freetype_library")->Logical)
