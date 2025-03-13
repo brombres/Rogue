@@ -441,7 +441,13 @@ class List<<$DataType>> : Poolable ListType
       endForEach
       return null
 
-    method map<<$ToType>>( map_fn:(Function($DataType)->$ToType) )->$ToType[]
+    method map<<$ToType>>( map_fn=null:(Function($DataType)->$ToType) )->$ToType[]
+      if (not map_fn)
+        map_fn = function( element:$DataType )->$ToType
+          return element->$ToType
+        endFunction
+      endIf
+
       local result = $ToType[]( capacity )
       forEach (element in this) result.add( map_fn(element) )
       return result

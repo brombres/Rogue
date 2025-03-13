@@ -643,6 +643,40 @@ class Variant [compound]
           return null
       endWhich
 
+    method map_list<<$NewListElementType>>( fn=null:Function(Variant)->$NewListElementType )->$NewListElementType[]
+      if (not fn)
+        fn = function( element:Variant )->$NewListElementType
+          return element->$NewListElementType
+        endFunction
+      endIf
+
+      which (type)
+        case TYPE_LIST
+          return object->(as Variant[]).map<<$NewListElementType>>( fn )
+        case TYPE_TABLE
+          local result = $NewListElementType[].[ reserve(count) ]
+          forEach (element in this)
+            result.add( fn(element) )
+          endForEach
+          return result
+        others
+          return undefined
+      endWhich
+
+    method map_table<<$NewTableType>>( fn=null:Function(Variant,Variant,$NewTableType) )->$NewTableType
+      if (not fn)
+        fn = function( key:Variant, value:Variant, table:$NewTableType )
+          table[key] = value
+        endFunction
+      endIf
+
+      which (type)
+        case TYPE_TABLE
+          return object->(as [Variant:Variant]).map<<$NewTableType>>( fn )
+        others
+          return undefined
+      endWhich
+
     method operator?->Logical
       if (type == TYPE_NULL or type == TYPE_UNDEFINED) return false
       return this->Logical
