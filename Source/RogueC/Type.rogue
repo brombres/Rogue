@@ -281,6 +281,7 @@ class Type : Cmd
       endIf
       m.attributes.is_global = true
       global_methods[ m.signature ] = m
+      if (m.name.contains("<<")) global_method_template_instances.add( m.name )
 
     method add( m:Method )
       local existing = methods[m.signature]
@@ -293,6 +294,7 @@ class Type : Cmd
         endIf
       endIf
       methods[ m.signature ] = m
+      if (m.name.contains("<<")) method_template_instances.add( m.name )
 
     method add_base_type_id( id:Int )
       if (not base_type_ids.contains(id)) base_type_ids.add( id )
