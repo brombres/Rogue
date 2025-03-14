@@ -142,7 +142,7 @@ class FreeTypeFace
 
       forEach (ch in new_characters)
         if (not ch.bitmap)
-          if (0 != native("FT_Load_Char( $this->ft_face, $ch->character, FT_LOAD_RENDER )")->Int32)
+          if (0 != native("FT_Load_Char( $this->ft_face, $ch->unicode, FT_LOAD_RENDER )")->Int32)
             # Error / glyph does not exist
             ch.init( Bitmap(1,height,Color(0x00FFffFF)), 0, 1 )
           else
@@ -185,17 +185,17 @@ class FreeTypeFace
 
       if (native("FT_HAS_KERNING($this->ft_face)")->Logical)
         forEach (info_1 in new_characters)
-          native @|FT_UInt glyph_index_1 = FT_Get_Char_Index( $this->ft_face, $info_1->character );
+          native @|FT_UInt glyph_index_1 = FT_Get_Char_Index( $this->ft_face, $info_1->unicode );
           forEach (info_2 in new_characters)
             local kern_x : Int
-            native @|FT_UInt glyph_index_2 = FT_Get_Char_Index( $this->ft_face, $info_2->character );
+            native @|FT_UInt glyph_index_2 = FT_Get_Char_Index( $this->ft_face, $info_2->unicode );
                     |FT_Vector  delta;
                     |FT_Get_Kerning( $this->ft_face, glyph_index_1, glyph_index_2, FT_KERNING_DEFAULT, &delta );
                     |$kern_x = delta.x >> 6;
             if (kern_x)
               ensure<<kerning>>
-              ensure<<kerning[info_1.character]>>
-              kerning[ info_1.character ][ info_2.character ] = kern_x
+              ensure<<kerning[info_1.unicode]>>
+              kerning[ info_1.unicode ][ info_2.unicode ] = kern_x
             endIf
           endForEach
         endForEach
@@ -222,9 +222,9 @@ class FreeTypeFace
         local w = ch.bitmap.width
         local h = ch.bitmap.height
         local kerning_index = 0
-        if (kerning and kerning.contains(ch.character))
+        if (kerning and kerning.contains(ch.unicode))
           kerning_index = kerning_list.count
-          local alts = kerning[ch.character]
+          local alts = kerning[ch.unicode]
           kerning_list.add( alts.count )
           forEach (entry in alts.entries)
             kerning_list.add( entry.key )
@@ -232,7 +232,7 @@ class FreeTypeFace
           endForEach
         endIf
 
-        font.add( BitmapFontCharacterInfo(ch.character,ch.offset_x,ch.advance_x,kerning_index,Box(cursor_x,0,w,h)) )
+        font.add( BitmapFontCharacterInfo(ch.unicode,ch.offset_x,ch.advance_x,kerning_index,Box(cursor_x,0,w,h)) )
 
         cursor_x += ch.bitmap.width
       endForEach
@@ -255,7 +255,7 @@ class FreeTypeFace
           local max_height = 0
           max_offset = 0
           forEach (ch in characters)
-            block ch = ch.character
+            block ch = ch.unicode
               if (0 == native("FT_Load_Char( $this->ft_face, $ch, FT_LOAD_RENDER )")->Int32)
                 local h      = native( "(%Ns%RogueInt)$this->ft_face->glyph->bitmap.rows" )->Int
                 local offset = native( "(%Ns%RogueInt)-$this->ft_face->glyph->bitmap_top" )->Int
@@ -271,7 +271,7 @@ class FreeTypeFace
           # offset and the max offset is taken into account, the adjusted height still does not
           # exceed our max height.
           forEach (ch in characters)
-            block ch = ch.character
+            block ch = ch.unicode
               if (0 == native("FT_Load_Char( $this->ft_face, $ch, FT_LOAD_RENDER )")->Int32)
                 local h      = native( "(%Ns%RogueInt)$this->ft_face->glyph->bitmap.rows" )->Int
                 local offset = native( "(%Ns%RogueInt)-$this->ft_face->glyph->bitmap_top" )->Int
@@ -315,19 +315,22 @@ class FreeTypeCharacter
   #   endIf
   # endForEach
   PROPERTIES
-    character : Character
+    unicode   : Character
     bitmap    : Bitmap
     offset_x  : Int
     advance_x : Int
 
   METHODS
-    method init( character )
+    method init( unicode )
 
     method init( bitmap, offset_x, advance_x )
 
-    method init( character, bitmap, offset_x, advance_x )
+    method init( unicode, bitmap, offset_x, advance_x )
+
+    method character->Character [deprecated]
+      return unicode
 
     method to->String
-      return character->String
+      return unicode->String
 endClass
 
