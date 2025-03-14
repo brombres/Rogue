@@ -433,6 +433,10 @@ class Variant [compound]
     method get( index:Int )->Variant
       return get( Variant(index) )
 
+    method get( key:Character )->Variant
+      # Make sure that Characters get mapped to Strings, not Ints
+      return get( key->String )
+
     method get( key:String )->Variant
       return get( Variant(key) )
 
@@ -1041,6 +1045,10 @@ class Variant [compound]
         case TYPE_TABLE
           set( Variant(index), value )
       endWhich
+
+    method set( key:Character, value:Variant )
+      # Make sure that Characters get mapped to Strings, not Ints
+      set( key->String, value )
 
     method set( key:String, value:Variant ) [preferred]
       set( Variant(key), value )
