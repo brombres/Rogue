@@ -199,7 +199,7 @@ class VScrollView : Component
     method on_select_background( position:XY )
       noAction
 
-    method on_update( dt:Real )
+    method on_update [override]
       if (not is_dragging and not active_scroll)
         local snap = UI.snap_to_pixel_coordinates
         if (not velocity.is_zero)

@@ -42,6 +42,7 @@ class State<<$ExtendedType,$change_state,$exit_state>>
     concurrent_state : $ExtendedType
 
     t           : Real
+    dt          : Real  # time since last update
     prev_time   : Real  # 0 = not started
 
     is_exited   : Logical # flag that assists when states finish outside of updated()
@@ -132,15 +133,12 @@ class State<<$ExtendedType,$change_state,$exit_state>>
 
     method on_execute
       # Override to automatically make duration INSTANT
-      duration = INDEFINITE  # only happeens when not overridden
+      duration = INDEFINITE  # only happens when not overridden
       on_start  # start an indefinite state
 
     method on_start
 
-    method on_update->Real
-      return 0.0 # TEST
-
-    method on_update( dt:Real )
+    method on_update
 
     method on_finish
 
@@ -177,8 +175,8 @@ class State<<$ExtendedType,$change_state,$exit_state>>
     method to->String
       return description
 
-    method update( dt:Real )
-      on_update( dt )
+    method update
+      on_update
 
     method updated->$ExtendedType
       if (is_exited)
@@ -188,7 +186,6 @@ class State<<$ExtendedType,$change_state,$exit_state>>
         endIf
       else
         local cur_time = System.execution_time
-        local dt : Real
         if (not prev_time)
           dt = 1.0/60.0
           if (duration)
@@ -207,7 +204,7 @@ class State<<$ExtendedType,$change_state,$exit_state>>
 
         prev_time = cur_time
 
-        update( dt )
+        update
 
         if (concurrent_state)
           concurrent_state = concurrent_state.updated
@@ -278,7 +275,7 @@ endClass
 
 class StateCallWithProgress<<$ExtendedType>>( fn:Function(Real), duration ) : $ExtendedType [undocumented]
   METHODS
-    method on_update( dt:Real )
+    method on_update
       fn( progress )
 endClass
 
@@ -290,6 +287,6 @@ class StateYield<<$ExtendedType>> : $ExtendedType
     method is_finished->Logical
       return update_count == 2
 
-    method on_update( dt:Real )
+    method on_update
       ++update_count
 endClass

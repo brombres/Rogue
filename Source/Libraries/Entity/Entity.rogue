@@ -73,8 +73,7 @@ class Entity : Node<<Entity>>
     method on_start
       noAction
 
-    method on_update( dt:Real )
-      noAction
+    method on_update
 
     method properties->Properties
       return Properties( this )
@@ -99,13 +98,13 @@ class Entity : Node<<Entity>>
       if (@name) return @name
       else       return type_name
 
-    method update( dt:Real )
+    method update
       if (not attributes.started) start
 
       script = script?.updated
       if (actions) actions = actions.updated
-      on_update( dt )
-      (forEach in children).update( dt )
+      on_update
+      (forEach in children).update
 
     method v_flip->Logical
       return attributes.v_flip
