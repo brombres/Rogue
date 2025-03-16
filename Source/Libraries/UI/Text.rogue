@@ -61,7 +61,7 @@ class Text : Component
 
       endUse
 
-      on_begin_layout  # set initial size
+      on_layout  # set initial size
 
     method .add_builder( builder:String )
       if (builder.count)
@@ -136,7 +136,7 @@ class Text : Component
         return XY.zero
       endIf
 
-    method on_begin_layout [override]
+    method on_layout [override]
       local sz = font?.measure(value || "")
 
       if (layout_mode.x == LayoutMode.FIXED_SIZE)
@@ -206,9 +206,9 @@ class Text : Component
       if (left) components.insert( left, component_i )
 
       # Have the new child components set their size
-      if (left) left.on_begin_layout
-      center.on_begin_layout
-      if (right) right.on_begin_layout
+      if (left) left.on_layout
+      center.on_layout
+      if (right) right.on_layout
 
     method to->String
       return description
