@@ -15,7 +15,7 @@ class EntityScript : State<<EntityScript,change_script,exit_script>>
     method on_draw
       noAction
 
-    method on_draw( &bg )
+    method on_draw_fg
       noAction
 
     method on_update_layout

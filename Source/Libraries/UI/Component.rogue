@@ -482,8 +482,17 @@ class Component : Entity
         if (UI.snap_to_pixel_coordinates) new_clip .= floor
         temporarily UI.clip = new_clip
           use components = WorkList<<Component>>
+            # Draw descendent Components
             collect_child_display_components( components )
             (forEach in components).draw
+
+            # Draw non-Component child entities
+            forEach (child in children)
+              if (child not instanceOf Component)
+                child.draw
+              endIf
+            endForEach
+
           endUse
         endTemporarily
       endIf
