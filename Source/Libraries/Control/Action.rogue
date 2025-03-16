@@ -5,6 +5,6 @@ class Action : State<<Action>>
     method on_draw
       noAction
 
-    method on_draw( &bg )
+    method on_draw_fg
       noAction
 endClass

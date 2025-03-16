@@ -55,12 +55,11 @@ class Entity : Node<<Entity>>
     method draw
       if (attributes.hidden) return
       .begin_draw
-      .handle_draw( &bg )
       .handle_draw
-      .handle_draw( &!bg )
+      .handle_draw( &fg )
 
-    method draw( &bg )
-      if (bg == not attributes.foreground) .draw_entity
+    method draw( &fg )
+      if (fg == attributes.foreground) .draw_entity
 
     method h_flip->Logical
       return attributes.h_flip
@@ -68,7 +67,7 @@ class Entity : Node<<Entity>>
     method on_draw
       noAction
 
-    method on_draw( &bg )
+    method on_draw_fg
       noAction
 
     method on_start
@@ -122,33 +121,25 @@ class Entity : Node<<Entity>>
         (forEach in children).draw
       endIf
 
-    method .handle_draw
+    method .handle_draw( &fg )
       if (attributes.hidden) return
 
-      on_draw
+      if (fg)
+        if (attributes.foreground) .draw_entity
 
-      script?.call<<on_draw>>
-      actions?.call<<on_draw>>
+        on_draw_fg
 
-      .dispatch_draw
-
-    method .handle_draw( &bg )
-      if (attributes.hidden) return
-
-      if (bg)
-        actions?.call<<on_draw,Logical>>( true )
-        script?.call<<on_draw,Logical>>( true )
-
-        on_draw( &bg )
-
-        draw( &bg )
+        script?.call<<on_draw_fg>>
+        actions?.call<<on_draw_fg>>
       else
-        draw( &!bg )
+        if (not attributes.foreground) .draw_entity
 
-        on_draw( &!bg )
+        on_draw
 
-        script?.call<<on_draw,Logical>>( false )
-        actions?.call<<on_draw,Logical>>( false )
+        script?.call<<on_draw>>
+        actions?.call<<on_draw>>
+
+        .dispatch_draw
       endIf
 
     method .draw_entity
