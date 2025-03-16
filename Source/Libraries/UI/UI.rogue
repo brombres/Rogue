@@ -40,8 +40,6 @@ class UI : Component [singleton]
 
     snap_to_pixel_coordinates = true
 
-    update_timer = UpdateTimer()
-
   METHODS
     method init_object
       UI = this
@@ -143,13 +141,9 @@ class UI : Component [singleton]
       return Component( XY(w,h) )
 
     method update( bounds:Box )
-      update_timer.update
-      update( bounds, update_timer.dt )
-
-    method update( bounds:Box, dt:Real )
       temporarily UI = this
         update_layout( bounds )
-        update( dt )
+        update
       endTemporarily
 
     method update_layout( bounds:Box )
