@@ -1709,6 +1709,12 @@ class Resolver : Poolable, Visitor
         throw cmd.t.error( "Illegal use of 'this' in a global context. 'this' can only be used in the context of an instance object." )
       endIf
 
+    method on_visit( cmd:ThisTypeAccess )->Cmd
+      cmd.this_type = this_type
+      cmd.this_type.organize
+      cmd.args = visit( cmd.args )->(as Args)
+      return resolve_type_access( cmd.t, cmd.this_type, cmd.args )
+
     method on_validate( cmd:Throw )->Cmd
       if (not cmd.exception.require_type.instance_of(Program.type_Exception))
         throw cmd.exception.t.error( "Thrown value must be instanceOf Exception." )

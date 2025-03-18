@@ -3360,8 +3360,8 @@ parser
   on "$defaultValue" "<<" type ">>"               -> DefaultValue(of_type:Type)
 
   on "ThisType"
-    create Type(name="ThisType":String)
-    produce TypeContext(type:Type)
+    optional_args
+    produce ThisTypeAccess(args:Args)
   endOn
 
   on '$thisType'
