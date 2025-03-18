@@ -1021,7 +1021,7 @@ class Parser : ParserCore, Poolable
       Program.print_warning( _cur_t, deprecation_warning )
       return 1
 
-    method print_stack_top
+    method print_stack_top->Int
       if (_cmd_stack.count)
         if (_cmd_stack.last is null)
           println "STACK null"
@@ -1033,8 +1033,9 @@ class Parser : ParserCore, Poolable
       else
         println "STACK []"
       endIf
+      return 0
 
-    method print_stack_top_2
+    method print_stack_top_2->Int
       if (_cmd_stack.count >= 2)
         local cmd = _cmd_stack[_cmd_stack.count-2]
         if (cmd) println "STACK [$] $, $"(cmd.t.source_position,cmd,_cmd_stack.last)
@@ -1042,6 +1043,7 @@ class Parser : ParserCore, Poolable
       else
         print_stack_top
       endIf
+      return 0
 
     method print_trace
       @trace _next_t
