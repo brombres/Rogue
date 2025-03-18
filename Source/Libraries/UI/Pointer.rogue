@@ -37,6 +37,9 @@ class Pointer [singleton]
             if (index == 0) position = e.position
         endWhich
 
+      elseIf (e.is_leave)
+        position = null
+
       endIf
 
     method closest_pointer_index( pos:XY )->Int?
