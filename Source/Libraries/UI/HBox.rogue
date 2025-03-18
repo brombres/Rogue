@@ -41,8 +41,7 @@ class HBox : Component
         endForEach
       endUse
 
-    method resolve_child_layout_sizes [override]
-      local available_size = content_size
+    method resolve_child_layout_sizes( available_size:XY ) [override]
       use components = WorkList<<Component>>
         collect_child_display_components( components )
 
