@@ -184,6 +184,9 @@ class PointerEvent : Event
     method init
       prior.init
 
+    method init( type )
+      prior.init
+
     method init( type, position, delta, index, cancelled=false )
       prior.init
 
@@ -203,6 +206,12 @@ class PointerEvent : Event
 
     method is_drag_stop->Logical
       return (this.type == <DRAG_STOP>)
+
+    method is_enter->Logical
+      return (this.type == <ENTER>)
+
+    method is_leave->Logical
+      return (this.type == <LEAVE>)
 
     method is_move->Logical
       return (this.type == <MOVE>)
@@ -253,8 +262,10 @@ class PointerEvent : Event
         case <DRAG_START>: buffer.print( "drag start" )
         case <DRAG_MOVE>:  buffer.print( "drag move" )
         case <DRAG_STOP>:  buffer.print( "drag stop" )
+        case <ENTER>:      buffer.print( "enter" )
+        case <LEAVE>:      buffer.print( "leave" )
       endWhich
-      buffer.[ print(" at "), print(position) ]
+      if (not (is_enter or is_leave)) buffer.[ print(" at "), print(position) ]
       if (is_consumed) buffer.print( " (consumed)" )
 
       return buffer
