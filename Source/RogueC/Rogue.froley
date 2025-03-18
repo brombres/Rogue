@@ -151,6 +151,7 @@ META_ROGUE_VERSION    $rogueVersion   [meta]
 META_SOURCE_FILEPATH  $sourceFilepath [meta]
 META_SOURCE_LINE      $sourceLine     [meta]
 META_TARGET           $target         [meta]
+META_THIS_TYPE        $thisType       [meta]
 META_THIS_LIBRARY     $thisLibrary    [meta]
 META_THIS_MODULE      $thisModule     [meta]
 META_UPPERCASE        $uppercase      [meta]
@@ -885,7 +886,7 @@ parser
 
 - procedure_return_type
   if (not consume('->')) produceNull
-  if (consume("this") or consume("ThisType"))
+  if (consume("this") or consume("ThisType") or consume("$thisType"))
     procedure_returns_this = true
     produceNull
   endIf
@@ -1173,6 +1174,11 @@ parser
     on PLACEHOLDER -> Identifier(name=content)
   endIf
   on "ThisType"
+    produce Identifier(name="ThisType":String)
+  endOn
+  on '$thisType'
+    # This just needs to be parsed past - $thisType replaced at the token level
+    # in Cmd (search for META_THIS_TYPE).
     produce Identifier(name="ThisType":String)
   endOn
   syntaxError "Identifier expected."
@@ -3354,6 +3360,13 @@ parser
   on "$defaultValue" "<<" type ">>"               -> DefaultValue(of_type:Type)
 
   on "ThisType"
+    create Type(name="ThisType":String)
+    produce TypeContext(type:Type)
+  endOn
+
+  on '$thisType'
+    # This just needs to be parsed past - $thisType replaced at the token level
+    # in Cmd (search for META_THIS_TYPE).
     create Type(name="ThisType":String)
     produce TypeContext(type:Type)
   endOn

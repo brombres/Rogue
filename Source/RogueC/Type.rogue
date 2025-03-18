@@ -1752,7 +1752,6 @@ class Type : Cmd
             m.overridden_method = base_m
           else
             if (base_m.attributes.is_propagated)
-              # 'ThisType' -> (actual type)
               add( base_m.propagated_to(this).[overridden_method=m] )
             else
               add( base_m )

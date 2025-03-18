@@ -36,8 +36,8 @@ class Entity : Node<<Entity>>
       script      = existing.script
       @properties = existing.@properties.cloned
 
-    method cloned->ThisType [propagated]
-      return ThisType( this )
+    method cloned->$thisType [propagated]
+      return $thisType( this )
 
     method init_object
       id = next_id

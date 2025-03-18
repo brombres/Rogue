@@ -264,7 +264,7 @@ class Resolver : Poolable, Visitor
 
     method on_validate( cmd:Binary )->Cmd
       local result = cmd.left.require_type.resolve_binary_op(cmd,this)
-      return result.dispatch<<on_fold_constants,ThisType,Cmd>>( this )
+      return result.dispatch<<on_fold_constants,$thisType,Cmd>>( this )
 
     method on_visit( cmd:Block )->Cmd
       local cmd_control_structure = ControlStructure( cmd.t, cmd.statements, ControlType.BLOCK )

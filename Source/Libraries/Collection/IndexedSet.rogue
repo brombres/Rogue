@@ -11,7 +11,7 @@ class IndexedSet<<$DataType>> : IteratorPreferred
     method init( existing:IndexedSet<<$DataType>> )
       data = existing.data.cloned
 
-    method cloned->ThisType
+    method cloned->$thisType
       return IndexedSet<<$DataType>>(this)
 
     method add( value:$DataType )->Int

@@ -44,15 +44,15 @@ class Visitor
       #     cmd.right = visit(cmd.right)
       #     return cmd
       if (cmd is null) return null
-      return cmd.dispatch<<on_visit,ThisType,Cmd>>( this )
+      return cmd.dispatch<<on_visit,$thisType,Cmd>>( this )
 
     method visit_children( cmd:Cmd ) [propagated]
       # Call from 'on_visit()' or 'on_visit_node()' handler to visit subtrees.
-      cmd.dispatch<<on_visit_children,ThisType>>( this )
+      cmd.dispatch<<on_visit_children,$thisType>>( this )
 
     method visit_node( cmd:Cmd )->Cmd [propagated]
       # Primarily for internal use - see on_visit(Cmd) for usage.
-      cmd.dispatch<<on_visit_node,ThisType>>( this )
+      cmd.dispatch<<on_visit_node,$thisType>>( this )
       return cmd
 
     method visit( m:Library )
@@ -101,7 +101,7 @@ class Visitor
 
     method validate( cmd:Cmd )->Cmd [propagated]
       if (cmd is null) return null
-      return cmd.dispatch<<on_validate,ThisType,Cmd>>( this )
+      return cmd.dispatch<<on_validate,$thisType,Cmd>>( this )
 
     method on_visit_children( cmd:Cmd )
       # Overloaded automatically by the Froley compiler
