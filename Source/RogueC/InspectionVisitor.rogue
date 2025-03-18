@@ -57,14 +57,14 @@ class InspectionVisitor<<$ReturnType>>
 
     method visit( cmd:Cmd )->$ReturnType [propagated]
       if (cmd is null) return $defaultValue<<$ReturnType>>
-      return cmd.dispatch<<on_visit,ThisType,$ReturnType>>( this )
+      return cmd.dispatch<<on_visit,$thisType,$ReturnType>>( this )
 
     method visit_node( cmd:Cmd ) [propagated]
-      cmd.dispatch<<on_visit_node,ThisType>>( this )
+      cmd.dispatch<<on_visit_node,$thisType>>( this )
 
     method visit_children( cmd:Cmd )->$ReturnType [propagated]
       # Call from 'on_visit()' or 'on_visit_node()' handler to visit subtrees.
-      return cmd.dispatch<<on_visit_children,ThisType,$ReturnType>>( this )
+      return cmd.dispatch<<on_visit_children,$thisType,$ReturnType>>( this )
 
     method on_visit( cmd:Cmd )->$ReturnType
       # Default per-node InspectionVisitor call sequence.

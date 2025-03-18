@@ -11,8 +11,8 @@ class Cmd( t:Token )
     method init( existing:Cmd )
       t = existing.t
 
-    method cloned->ThisType [propagated]
-      return ThisType(this)
+    method cloned->$thisType [propagated]
+      return $thisType(this)
 
     method add( cmd:Cmd )
       throw UnsupportedOperationError()
@@ -1674,13 +1674,17 @@ class Method : Procedure
       if (statements is null)
         local tokens = source_tokens.tokens
         contingent
-          sufficient ((forEach in tokens).type == TokenType.KEYWORD_THIS_TYPE)
+          forEach (t in tokens)
+            sufficient (t.type == TokenType.KEYWORD_THIS_TYPE or t.type == TokenType.META_THIS_TYPE)
+          endForEach
           escapeContingent
 
         satisfied
           local specialized_tokens = Token[]( tokens.count * 1.1 )
           forEach (t in tokens)
             if (t.type == TokenType.KEYWORD_THIS_TYPE)
+              specialized_tokens.add( type_context.name_tokens )
+            elseIf (t.type == TokenType.META_THIS_TYPE)
               specialized_tokens.add( type_context.name_tokens )
             else
               specialized_tokens.add( t )

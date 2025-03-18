@@ -18,8 +18,8 @@ class Event
       is_consumed = existing.is_consumed
       timestamp   = existing.timestamp
 
-    method cloned->ThisType [propagated]
-      return ThisType( this )
+    method cloned->$thisType [propagated]
+      return $thisType( this )
 
     method consume
       is_consumed = true
@@ -27,7 +27,7 @@ class Event
     method release [propagated]
       --refcount
       if (refcount == 0)
-        ObjectPool<<ThisType>>.on_end_use( this )
+        ObjectPool<<$thisType>>.on_end_use( this )
       endIf
 
     method retain

@@ -5,7 +5,7 @@ class Set<<$DataType>> : [$DataType:$DataType]
     method add( value:$DataType )
       this[value] = value
 
-    method cloned->ThisType
+    method cloned->$thisType
       return Set<<$DataType>>( this )
 
     method difference( other:Set<<$DataType>> )

@@ -114,14 +114,14 @@ class Node<<$ExtendedNodeType>> : IteratorPreferred
       endIf
 
     method dispatch_on<<$VisitorType>>( visitor:$VisitorType )->$ExtendedNodeType [propagated]
-      if (ThisType instanceOf $ExtendedNodeType)
+      if ($thisType instanceOf $ExtendedNodeType)
         return visitor.on( this )
       else
         return null
       endIf
 
     method dispatch_on_visit<<$VisitorType>>( visitor:$VisitorType ) [propagated]
-      if (ThisType instanceOf $ExtendedNodeType)
+      if ($thisType instanceOf $ExtendedNodeType)
         visitor.on_visit( this )
         visitor.visit_children( this )
       endIf
@@ -368,7 +368,7 @@ class NodeVisitor<<$ExtendedNodeType>>
   METHODS
     method on( node:$ExtendedNodeType )->$ExtendedNodeType [propagated]
       # Default handler - overload for specialized `node` types if desired.
-      if (ThisType isType NodeVisitor<<$ExtendedNodeType>>)
+      if ($thisType isType NodeVisitor<<$ExtendedNodeType>>)
         return node  # This on() only kicks in for an extended class
       else
         node.dispatch_on_visit( this )
@@ -380,7 +380,7 @@ class NodeVisitor<<$ExtendedNodeType>>
       noAction
 
     method visit( node:$ExtendedNodeType )->$ExtendedNodeType [propagated]
-      if (ThisType isType NodeVisitor<<$ExtendedNodeType>>)
+      if ($thisType isType NodeVisitor<<$ExtendedNodeType>>)
         return node  # This visit() only kicks in for an extended class
       else
         if (node is null) return null
@@ -389,7 +389,7 @@ class NodeVisitor<<$ExtendedNodeType>>
 
     method visit_children( node:$ExtendedNodeType ) [propagated]
       # Overload this method to handle extended node types if desired
-      if (ThisType isType NodeVisitor<<$ExtendedNodeType>>)
+      if ($thisType isType NodeVisitor<<$ExtendedNodeType>>)
         return # This visit() only kicks in for an extended class
       else
         if (node is null) return

@@ -10,8 +10,8 @@ class Font [abstract]
     method init( existing:Font )
       name = existing.name
 
-    method cloned->ThisType
-      return ThisType( this )
+    method cloned->$thisType
+      return $thisType( this )
 
     method draw( text:Text ) [abstract]
 
