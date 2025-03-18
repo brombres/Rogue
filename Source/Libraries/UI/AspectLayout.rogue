@@ -1,0 +1,30 @@
+library UI
+
+class AspectLayout : Component
+  PROPERTIES
+    alternates = AlternateAspectLayout[]
+
+  METHODS
+    method add_alternate( component:Component, min_aspect_ratio=0:Real )
+      alternates.add( AlternateAspectLayout(component,min_aspect_ratio) )
+      alternates.sort( $1.min_aspect_ratio < $2.min_aspect_ratio )
+
+    method resolve_layout_size( available_size:XY, &limited )->XY
+      local ar = available_size.x / available_size.y
+      local best = alternates.first
+      forEach (alt in alternates from 1)
+        if (ar >= alt.min_aspect_ratio) best = alt
+      endForEach
+
+      if (count == 0 or first_child is not best.component)
+        clear
+        add( best.component )
+        best.component.begin_layout
+      endIf
+
+      return prior.resolve_layout_size( available_size, &=limited )
+
+endClass
+
+class AlternateAspectLayout( component:Component, min_aspect_ratio:Real ) [compound]
+endClass

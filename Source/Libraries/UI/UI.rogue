@@ -5,6 +5,7 @@ uses Control
 uses Entity
 uses Geometry
 
+$include UI/AspectLayout
 $include UI/Border
 $include UI/Component
 $include UI/ComponentSizeInfo
