@@ -758,5 +758,8 @@ class Visitor
     method on_visit_children( cmd:WeakRef )
       cmd.expression = visit(cmd.expression)
 
+    method on_visit_children( cmd:ThisTypeAccess )
+      cmd.args = visit(cmd.args)->(as Args)
+
 endClass
 

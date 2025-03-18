@@ -1171,4 +1171,9 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.expression)
       return result
 
+    method on_visit_children( cmd:ThisTypeAccess )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      return result
+
 endClass

@@ -1675,16 +1675,14 @@ class Method : Procedure
         local tokens = source_tokens.tokens
         contingent
           forEach (t in tokens)
-            sufficient (t.type == TokenType.KEYWORD_THIS_TYPE or t.type == TokenType.META_THIS_TYPE)
+            sufficient (t.type == TokenType.META_THIS_TYPE)
           endForEach
           escapeContingent
 
         satisfied
           local specialized_tokens = Token[]( tokens.count * 1.1 )
           forEach (t in tokens)
-            if (t.type == TokenType.KEYWORD_THIS_TYPE)
-              specialized_tokens.add( type_context.name_tokens )
-            elseIf (t.type == TokenType.META_THIS_TYPE)
+            if (t.type == TokenType.META_THIS_TYPE)
               specialized_tokens.add( type_context.name_tokens )
             else
               specialized_tokens.add( t )
@@ -5381,4 +5379,22 @@ class AttributeDeprecated : Cmd
   METHODS
     method description->String
       return "AttributeDeprecated"
+endClass
+
+class ThisTypeAccess : Cmd
+  PROPERTIES
+    this_type : Type
+    args      : Args
+
+  METHODS
+    method init( t, args )
+
+    method init( existing:ThisTypeAccess )
+      prior.init( existing )
+      if (existing.args) args = existing.args.cloned
+      this_type = existing.this_type
+
+    method description->String
+      return "ThisTypeAccess($)" (%args)
+
 endClass
