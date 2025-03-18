@@ -1706,3 +1706,33 @@ augment TableValuesIterator<<Rogue::Variant,Rogue::Variant>>
       return Variant(to_list)
 endAugment
 
+augment String
+  METHODS
+    method to->Variant [override]
+      return Variant( this )
+endAugment
+
+augment Variant[]
+  METHODS
+    method to->Variant [override]
+      return Variant( this )
+endAugment
+
+augment [Variant:Variant]
+  METHODS
+    method to->Variant [override]
+      return Variant( this )
+endAugment
+
+augment List
+  METHODS
+    method to->Variant
+      return map<<Variant>>
+endAugment
+
+augment CommonCompoundMethods
+  METHODS
+    method to->Variant
+      return undefined
+      #return Variant( Boxed.create_box(this) )
+endAugment

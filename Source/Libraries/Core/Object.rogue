@@ -30,5 +30,8 @@ class Object
     method to->String
       return type_name
 
+    method to->Variant
+      return Variant( this )
+
 endClass
 
