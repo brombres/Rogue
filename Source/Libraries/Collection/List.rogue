@@ -772,17 +772,8 @@ class List<<$DataType>> : Poolable ListType
     method to->String
       return description
 
-      #{
     method to->Variant
       return map<<Variant>>
-      }#
-      #{
-      if ($isReference<<$DataType>> or $isPrimitive<<$DataType>>)
-        return map<<Variant>>
-      else
-        return undefined
-      endIf
-      }#
 
     method working_copy->WorkingCopy<<$DataType>>
       return WorkingCopy<<$DataType>>( this )

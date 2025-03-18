@@ -1444,9 +1444,4 @@ class PrimitiveFormat( n:Int, d:Int, sign:Logical, spaces:Logical, zeros:Logical
 endClass
 
 class CommonCompoundMethods [aspect]
-  #{
-  METHODS
-    method to->Variant
-      return undefined
-      }#
 endClass

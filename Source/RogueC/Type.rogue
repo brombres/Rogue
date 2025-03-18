@@ -1337,6 +1337,29 @@ class Type : Cmd
             endIf
           endBlock
 
+          block m = methods["to<<Rogue::Variant>>()"]
+            if (not m)
+              local boxed_type = Type( t, "Boxed", this )
+              m = Method( t, this, "to<<Rogue::Variant>>" )
+              m.return_type = Program.type_Variant
+              m.statements.add(
+                Return(
+                  t,
+                  TypeAccess(
+                    t,
+                    Program.type_Variant,
+                    Args(
+                      t,
+                      TypeAccess( t, boxed_type, Args(t, This( t, this )) )
+                    )
+                  )
+                )
+              )
+              m.organize
+              methods[ m.signature ] = m
+            endIf
+          endBlock
+
           block m = methods["to<<Rogue::String>>()"]
             if (not m)
               m = Method( t, this, "to<<Rogue::String>>" )

@@ -330,14 +330,8 @@ class Table<<$KeyType,$ValueType>> : TableType
       print_to( result )
       return result
 
-      #{
     method to->Variant
-      if ($isReference<<$DataType>> or $isPrimitive<<$DataType>>)
-        return map<<Variant>>
-      else
-        return undefined
-      endIf
-      }#
+      return map<<Variant>>
 
     method to_list->$ValueType[]
       return values.to_list
