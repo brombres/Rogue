@@ -1732,7 +1732,4 @@ endAugment
 
 augment CommonCompoundMethods
   METHODS
-    method to->Variant
-      return undefined
-      #return Variant( Boxed.create_box(this) )
 endAugment

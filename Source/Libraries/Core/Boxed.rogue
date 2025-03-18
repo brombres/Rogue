@@ -1,8 +1,5 @@
 class Boxed [abstract]
   METHODS
-    method create_box<<$DataType>>( value:$DataType )->Boxed<<$DataType>>
-      return Boxed<<$DataType>>( value )
-
     method size->Int32  [abstract]
 
     method to->String
