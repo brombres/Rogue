@@ -1531,10 +1531,22 @@ class Type : Cmd
           endIf
         endBlock
 
+        # enum to->Object
         block m = methods["to<<Rogue::Object>>()"]
           if (not m)
             m = Method( t, this, "to<<Rogue::Object>>" )
             m.return_type = Program.type_Object
+            m.statements.add( Return(t,Access(t,"to<<Rogue::String>>")) )
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
+
+        # enum to->Variant
+        block m = methods["to<<Rogue::Variant>>()"]
+          if (not m)
+            m = Method( t, this, "to<<Rogue::Variant>>" )
+            m.return_type = Program.type_Variant
             m.statements.add( Return(t,Access(t,"to<<Rogue::String>>")) )
             m.organize
             methods[ m.signature ] = m
