@@ -87,7 +87,7 @@ class ConsoleUI : UI
       ConsoleUICanvas.resize( placement.size.x, placement.size.y )
       prior.on_resize
 
-    method on_update( dt:Real ) [override]
+    method on_update [override]
       if (not Console.immediate_mode) return
 
       if (keep_active_timer.is_expired)
