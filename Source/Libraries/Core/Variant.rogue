@@ -1036,6 +1036,16 @@ class Variant [compound]
     method remove_last->Variant
       return remove_at( count - 1 )
 
+    method resize( n:Int, default_value=0:Variant )
+      # Resizes this list to contain 'n' elements. Any new elements are set to 'default_value.cloned'.
+      if (not this.is_list) return
+
+      local list = object->(as Variant[])
+      list.discard_from( n )
+      loop (n - list.count)
+        list.add( default_value.cloned )
+      endLoop
+
     method set( index:Int, value:Variant )
       which (type)
         case TYPE_LIST
