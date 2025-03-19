@@ -1,4 +1,4 @@
-$define VERSION "2.35"
+$define VERSION "2.36"
 $define DATE    "March 19, 2025"
 
 library RogueC
