@@ -249,13 +249,6 @@ class Variant [compound]
       local data = [Variant:Variant]
       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_TABLE, (%Ns%RogueObject*)$data }" )->Variant
 
-    method dim( n:Int, default_value=0:Variant )->Variant
-      # Creates and returns a Variant list of 'n' elements ("dimensions"), all set to 'default_value.cloned'.
-      local result = @[]
-      local list = result.object->(as Variant[]).[ reserve(n) ]
-      loop (n) list.add( default_value.cloned )
-      return result
-
   METHODS
     method add( value:Variant )
       which (type)
@@ -1042,6 +1035,16 @@ class Variant [compound]
 
     method remove_last->Variant
       return remove_at( count - 1 )
+
+    method resize( n:Int, default_value=0:Variant )
+      # Resizes this list to contain 'n' elements. Any new elements are set to 'default_value.cloned'.
+      if (not this.is_list) return
+
+      local list = object->(as Variant[])
+      list.discard_from( n )
+      loop (n - list.count)
+        list.add( default_value.cloned )
+      endLoop
 
     method set( index:Int, value:Variant )
       which (type)
