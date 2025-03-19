@@ -249,6 +249,13 @@ class Variant [compound]
       local data = [Variant:Variant]
       return native( "(%Ns%RogueVariant) { %NS%ROGUE_VARIANT_TYPE_TABLE, (%Ns%RogueObject*)$data }" )->Variant
 
+    method dim( n:Int, default_value=0:Variant )->Variant
+      # Creates and returns a Variant list of 'n' elements ("dimensions"), all set to 'default_value.cloned'.
+      local result = @[]
+      local list = result.object->(as Variant[]).[ reserve(n) ]
+      loop (n) list.add( default_value.cloned )
+      return result
+
   METHODS
     method add( value:Variant )
       which (type)
