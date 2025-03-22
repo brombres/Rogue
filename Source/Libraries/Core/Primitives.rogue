@@ -27,8 +27,10 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
 
     method format( fmt:String )->String
       # fmt
-      #   C-esque "[attributes][N][.][D]" - attributes must come before
-      #   optional "N.D" but can otherwise be in any order.
+      #   SYNTAX: [+|-|0|,|%][N][.D][%|,]
+      #   C-esque "[attributes][N][.D]" - most attributes must come
+      #   before optional "N.D" but can otherwise be in any order.
+      #   '%' and ',' can come at beginning or at end.
       #
       #   'N' - Minimum whole digits before decimal point
       #   '.' - Include decimal (fractional) value in output.
@@ -38,11 +40,15 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
       #   ' ' - Insert any padding between sign and number.
       #   '0' - Pad whole portion with 0's instead of spaces
       #   ',' - Add commas.
+      #   '%' - Format as percent with implied value = value * 100.
       local info = PrimitiveFormat( fmt )
+      local value = this
+      if (info.percent) value *= 100
+
       if (info.d == -1)
         block
           forEach (n in 1..17)
-            if (this.is_string_accurate_at(n))
+            if (value.is_string_accurate_at(n))
               info.d = n
               escapeBlock
             endIf
@@ -52,10 +58,10 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
         endBlock
       endIf
 
-      local st = this->String( info.d )
+      local st = value->String( info.d )
       local whole_st = st.before_first('.')->Int64.format( info.subset(&n,&zeros,&commas,&sign,&spaces)->String )
       if (info.d) st = "$$" (whole_st,st.from_first('.'))
-      elseIf (info.sign and this >= 0) st = "+" + st
+      elseIf (info.sign and value >= 0) st = "+" + st
 
       return st
 
@@ -290,8 +296,10 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
 
     method format( fmt:String )->String
       # fmt
-      #   C-esque "[attributes][N][.][D]" - attributes must come before
-      #   optional "N.D" but can otherwise be in any order.
+      #   SYNTAX: [+|-|0|,|%][N][.D][%|,]
+      #   C-esque "[attributes][N][.D]" - most attributes must come
+      #   before optional "N.D" but can otherwise be in any order.
+      #   '%' and ',' can come at beginning or at end.
       #
       #   'N' - Minimum whole digits before decimal point
       #   '.' - Include decimal (fractional) value in output.
@@ -301,6 +309,7 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
       #   ' ' - Insert any padding between sign and number.
       #   '0' - Pad whole portion with 0's instead of spaces
       #   ',' - Add commas.
+      #   '%' - Format as percent with implied value = value * 100.
       return this->REAL_TYPE.format( fmt )
 
     method hashcode->Int
@@ -408,8 +417,10 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
 
     method format( fmt:String )->String
       # fmt
-      #   C-esque "[attributes][N][.][D]" - attributes must come before
-      #   optional "N.D" but can otherwise be in any order.
+      #   SYNTAX: [+|-|0|,|%][N][.D][%|,]
+      #   C-esque "[attributes][N][.D]" - most attributes must come
+      #   before optional "N.D" but can otherwise be in any order.
+      #   '%' and ',' can come at beginning or at end.
       #
       #   'N' - Minimum whole digits before decimal point
       #   '.' - Include decimal (fractional) value in output.
@@ -419,26 +430,8 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
       #   ' ' - Insert any padding between sign and number.
       #   '0' - Pad whole portion with 0's instead of spaces
       #   ',' - Add commas.
-      local info = PrimitiveFormat( fmt )
-      if (info.d == -1)
-        block
-          forEach (n in 1..17)
-            if (this.is_string_accurate_at(n))
-              info.d = n
-              escapeBlock
-            endIf
-          endForEach
-
-          info.d = 18
-        endBlock
-      endIf
-
-      local st = this->String( info.d )
-      local whole_st = st.before_first('.')->Int64.format( info.subset(&n,&zeros,&commas,&sign,&spaces)->String )
-      if (info.d) st = "$$" (whole_st,st.from_first('.'))
-      elseIf (info.sign and this >= 0) st = "+" + st
-
-      return st
+      #   '%' - Format as percent with implied value = value * 100.
+      return this->Real64.format( fmt )
 
     method hashcode->Int
       return integer_bits.hashcode
@@ -531,17 +524,22 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
   METHODS
     method format( fmt:String, bits=64:Int )->String
       # fmt
-      #   C-esque "[attributes][N]" - attributes must come before optional "N"
-      #   but can otherwise be in any order.
+      #   SYNTAX: [+|-|0|,|%][N][,]
       #
-      #   'N' - Minimum digits
+      #   C-esque "[attributes][N]" - most attributes must come
+      #   before optional "N" but can otherwise be in any order.
+      #   [,|x|b] can come at beginning or at end.
       #
-      #   '$' - Use base 16.
-      #   '%' - Use base 2.
-      #   '+' - Always add leading +/- sign in base 10.
-      #   ' ' - Insert any padding between sign and number in base 10.
-      #   '0' - Pad whole portion with 0's instead of spaces
-      #   ',' - Add commas in base 10.
+      #   'N' - Minimum whole digits before decimal point
+      #   '.' - Include decimal (fractional) value in output.
+      #   'D' - Number of digits after decimal point.
+      #
+      #   'b' - Format in base 2 (binary).
+      #   'x' - Format in base 16 (hexadecimal).
+      #   '+' - Always add leading +/- sign.
+      #   ' ' - Insert any padding between sign and number.
+      #   '0' - Pad whole portion with 0's instead of spaces.
+      #   ',' - Add commas.
       local info = PrimitiveFormat( fmt )
 
       local digits = info.n
@@ -771,17 +769,22 @@ class Int : CommonPrimitiveMethods<<Int>> [primitive]
   METHODS
     method format( fmt:String )->String
       # fmt
-      #   C-esque "[attributes][N]" - attributes must come before optional "N"
-      #   but can otherwise be in any order.
+      #   SYNTAX: [+|-|0|,|%][N][,]
       #
-      #   'N' - Minimum digits
+      #   C-esque "[attributes][N]" - most attributes must come
+      #   before optional "N" but can otherwise be in any order.
+      #   [,|x|b] can come at beginning or at end.
       #
-      #   '$' - Use base 16.
-      #   '%' - Use base 2.
-      #   '+' - Always add leading +/- sign in base 10.
-      #   ' ' - Insert any padding between sign and number in base 10.
-      #   '0' - Pad whole portion with 0's instead of spaces
-      #   ',' - Add commas in base 10.
+      #   'N' - Minimum whole digits before decimal point
+      #   '.' - Include decimal (fractional) value in output.
+      #   'D' - Number of digits after decimal point.
+      #
+      #   'b' - Format in base 2 (binary).
+      #   'x' - Format in base 16 (hexadecimal).
+      #   '+' - Always add leading +/- sign.
+      #   ' ' - Insert any padding between sign and number.
+      #   '0' - Pad whole portion with 0's instead of spaces.
+      #   ',' - Add commas.
       return this->INT_TYPE.format( fmt )
 
     method hashcode->Int
@@ -858,6 +861,23 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
 
   METHODS
     method format( fmt:String )->String
+      # fmt
+      #   SYNTAX: [+|-|0|,|%][N][,]
+      #
+      #   C-esque "[attributes][N]" - most attributes must come
+      #   before optional "N" but can otherwise be in any order.
+      #   [,|x|b] can come at beginning or at end.
+      #
+      #   'N' - Minimum whole digits before decimal point
+      #   '.' - Include decimal (fractional) value in output.
+      #   'D' - Number of digits after decimal point.
+      #
+      #   'b' - Format in base 2 (binary).
+      #   'x' - Format in base 16 (hexadecimal).
+      #   '+' - Always add leading +/- sign.
+      #   ' ' - Insert any padding between sign and number.
+      #   '0' - Pad whole portion with 0's instead of spaces.
+      #   ',' - Add commas.
       return Int64( this ).format( fmt, 32 )
 
     method hashcode->Int
@@ -1285,6 +1305,23 @@ class Byte : CommonPrimitiveMethods<<Byte>> [primitive]
 
   METHODS
     method format( fmt:String )->String
+      # fmt
+      #   SYNTAX: [+|-|0|,|%][N][,]
+      #
+      #   C-esque "[attributes][N]" - most attributes must come
+      #   before optional "N" but can otherwise be in any order.
+      #   [,|x|b] can come at beginning or at end.
+      #
+      #   'N' - Minimum whole digits before decimal point
+      #   '.' - Include decimal (fractional) value in output.
+      #   'D' - Number of digits after decimal point.
+      #
+      #   'b' - Format in base 2 (binary).
+      #   'x' - Format in base 16 (hexadecimal).
+      #   '+' - Always add leading +/- sign.
+      #   ' ' - Insert any padding between sign and number.
+      #   '0' - Pad whole portion with 0's instead of spaces.
+      #   ',' - Add commas.
       return Int64( this ).format( fmt, 8 )
 
     method hashcode->Int
@@ -1383,22 +1420,34 @@ class CommonPrimitiveMethods<<$DataType>> : CommonPrimitiveMethods [aspect]
 endClass
 
 class PrimitiveFormat( n:Int, d:Int, sign:Logical, spaces:Logical, zeros:Logical, commas:Logical,
-    binary:Logical, hex:Logical ) [compound]
+    binary:Logical, hex:Logical, percent:Logical ) [compound]
   GLOBAL METHODS
     method create( fmt:String )->PrimitiveFormat
       local chars = fmt->Character[]
-      local result = PrimitiveFormat(0,-1,false,false,false,false,false,false)
+      local result = PrimitiveFormat(0,-1,false,false,false,false,false,false,false)
       while (chars.count)
         which (chars.first)
-          case '+': result.sign   = true
-          case ' ': result.spaces = true
-          case '0': result.zeros  = true
-          case ',': result.commas = true
-          case '%': result.binary = true
-          case '$': result.hex    = true
-          others:   escapeWhile  # only thing left is N.D
+          case '+': result.sign    = true
+          case ' ': result.spaces  = true
+          case '0': result.zeros   = true
+          case ',': result.commas  = true
+          case '%': result.percent = true
+          case 'b': result.binary  = true
+          case 'x': result.hex     = true
+          others:   escapeWhile  # arrived at N.D
         endWhich
         chars.remove_first
+      endWhile
+
+      while (chars.count)
+        which (chars.last)
+          case ',': result.commas  = true
+          case '%': result.percent = true
+          case 'b': result.binary  = true
+          case 'x': result.hex     = true
+          others:   escapeWhile  # arrived at N.D
+        endWhich
+        chars.remove_last
       endWhile
 
       local n_d = String(chars)
@@ -1411,14 +1460,15 @@ class PrimitiveFormat( n:Int, d:Int, sign:Logical, spaces:Logical, zeros:Logical
 
   METHODS
     method description->String
-      return "$.$ sign:$ spaces:$ zeros:$ commas:$ binary:$ hex:$" (n,d,sign,spaces,zeros,commas,binary,hex)
+      return "$.$ sign:$ spaces:$ zeros:$ commas:$ binary:$ hex:$ percent:$"...
+             (n,d,sign,spaces,zeros,commas,binary,hex,percent)
 
     method fill->Character
       if (zeros) return '0'
       else       return ' '
 
     method subset( &n, &sign, &spaces, &zeros, &commas )->PrimitiveFormat
-      local result = PrimitiveFormat(0,-1,false,false,false,false,false,false)
+      local result = PrimitiveFormat(0,-1,false,false,false,false,false,false,false)
       if (n)      result.n = this.n
       if (sign)   result.sign   = this.sign
       if (spaces) result.spaces = this.spaces
