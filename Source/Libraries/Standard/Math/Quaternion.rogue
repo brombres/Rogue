@@ -212,11 +212,6 @@ class Quaternion( x=0:Real, y=0:Real, z=0:Real, w=1.0:Real ) [compound]
         return linear_tween( target,t )
       endIf
 
-      #{
-    method radians->RadiansXYZ
-      return this->RadiansXYZ
-      }#
-
     method rotated( by_angles:RadiansXYZ )->Quaternion
       return this * Quaternion(by_angles)
 
