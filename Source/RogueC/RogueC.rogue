@@ -173,6 +173,7 @@ class RogueC
         Program.include( forEach in command//args, &api=api_includes )
       else
         Program.add_include_search_path( libraries_folder, &is_library )
+        Program.add_include_search_path( libraries_folder/"Standard", &is_library )
         Program.include( "StandardMacros" )
         Program.include( forEach in command//args, &api=api_includes )
         Program.include( "Standard" )

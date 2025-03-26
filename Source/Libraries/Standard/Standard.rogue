@@ -1,10 +1,9 @@
-$include StandardMacros
-$include Codec/UTF16String
-$include Core
-$include Collection
-$include Console
-$include IO
-$include Math
+$include Standard/Codec/UTF16String
+$include Standard/Core
+$include Standard/Collection
+$include Standard/Console
+$include Standard/IO
+$include Standard/Math
 
 # RogueC auto-includes Variant and JSON if they are referenced during tokenization.
 

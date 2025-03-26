@@ -13,7 +13,7 @@ augment Build
 
     BUILD_MODE       = "release"
     LAUNCHER_FOLDER  = "/usr/local/bin"
-    ROGUEC_FLAGS     = "--main --gc=manual"
+    ROGUEC_FLAGS     = "--main --gc=manual --libraries=Build/Libraries/Standard"
     CC_FLAGS_UNIX    = ""
     CC_FLAGS_WINDOWS = "/bigobj"
 endAugment
