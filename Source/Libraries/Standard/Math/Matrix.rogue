@@ -45,6 +45,8 @@
 #   #     0   0   0   1
 uses Geometry [export]
 
+$include Math/Quaternion
+
 class Matrix( ...
     r0c0:Real, r1c0:Real, r2c0:Real, r3c0:Real,
     r0c1:Real, r1c1:Real, r2c1:Real, r3c1:Real,
@@ -322,60 +324,37 @@ class Matrix( ...
       m.r3c3 =                 1
       return m
 
-    method transform( size:XY, anchor:Anchor )->Matrix
-      # Performs a partial 2D transform for size and anchor. The typical full
-      # tranform set for a [0,0 1x1] box in the order they'd be pushed on
-      # a transform stack:
-      #
+    method transform( position:XYZ, size:XY, anchor:Anchor, internal_size:XY, h_flip:Logical, v_flip:Logical )->Matrix
+      # Returns a matrix encoding the following transformations in order of effect:
+      #   translate( (XY(0.5,0.5)-anchor.position) * internal_size )  # Put the anchor at (0,0)
+      #   scale( size / internal_size )
+      #   if (h_flip) scale_x( -1 )
+      #   if (v_flip) scale_y( -1 )
       #   translate( position )
-      #   rotate_z( rotation )
-      #   scale( size )                   # peformed by this method
-      #   translate( -anchor.position )   # peformed by this method
-      #
-      # Use transform(position,size,anchor,rotation) to perform all transforms at once
-      # in 2DX space. Use this method combined with other transforms if other transformations
-      # are needed, such as rotation around the x or y axis.
-      local a = -anchor.position
+      local a    = (XY(0.5,0.5) - anchor.position) * internal_size
+      local scale = size / internal_size
+      local center = XY(-0.5,-0.5) * internal_size
+      local flip_x = which{ h_flip:-1 || 1 }
+      local flip_y = which{ v_flip:-1 || 1 }
       return Matrix(
-        size.x, 0, 0, 0,
-        0, size.y, 0, 0,
-        0, 0, 1, 0,
-        (size.x * a.x), (size.y * a.y), 0, 1
-      )
-
-    method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Radians )->Matrix
-      # Returns a transformation matrix that will position a [0,0 1x1] coordinate box in 2D+ space
-      local cos0 = rotation.cos
-      local sin0 = rotation.sin
-      local a    = -anchor.position
-      return Matrix(
-        (cos0*size.x),  (sin0*size.x), 0, 0,  # column 1
-        (-sin0*size.y), (cos0*size.y), 0, 0,  # column 2
-        0,              0,             1, 0,  # column 3
-        ((((cos0*size.x)*a.x) + ((-sin0*size.y)*a.y)) + position.x),
-        ((((sin0*size.x)*a.x) + ((cos0*size.y)*a.y)) + position.y),
-        position.z,
-        1
-      )
-
-    method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Radians, internal_size:XY )->Matrix
-      local ix   = 1.0 / internal_size.x
-      local iy   = 1.0 / internal_size.y
-      local cos0 = rotation.cos
-      local sin0 = rotation.sin
-      local a    = -anchor.position
-      return Matrix(
-        (cos0*size.x)*ix,  (sin0*size.x)*ix, 0, 0,  # column 1
-        (-sin0*size.y)*iy, (cos0*size.y)*iy, 0, 0,  # column 2
-        0,                 0,                1, 0,  # column 3
-        ((((cos0*size.x)*a.x) + ((-sin0*size.y)*a.y)) + position.x),
-        ((((sin0*size.x)*a.x) + ((cos0*size.y)*a.y)) + position.y),
+        ((scale.x) * flip_x),  0,                    0, 0,
+        0,                     ((scale.y) * flip_y), 0, 0,
+        0,                     0,                    1, 0,
+        (((scale.x * flip_x) * center.x) + ((scale.x * a.x) + position.x)),
+        (((scale.y * flip_y) * center.y) + ((scale.y * a.y) + position.y)),
         position.z,
         1
       )
 
     method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Radians,
         internal_size:XY, h_flip:Logical, v_flip:Logical )->Matrix
+      # Returns a matrix encoding the following transformations in order of effect:
+      #   translate( (XY(0.5,0.5)-anchor.position) * internal_size )  # Put the anchor at (0,0)
+      #   scale( size / internal_size )
+      #   if (h_flip) scale_x( -1 )
+      #   if (v_flip) scale_y( -1 )
+      #   rotate_z( rotation )
+      #   translate( position )
       local cos0 = rotation.cos
       local sin0 = rotation.sin
       local a    = (XY(0.5,0.5) - anchor.position) * internal_size
@@ -392,6 +371,24 @@ class Matrix( ...
         position.z,
         1
       )
+
+    method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Quaternion,
+        internal_size:XY, h_flip:Logical, v_flip:Logical )->Matrix
+      # Returns a matrix encoding the following transformations in order of effect:
+      #   translate( -anchor.position * internal_size )  # Put anchor at origin
+      #   scale( size / internal_size )
+      #   if (h_flip) scale_x( -1 )
+      #   if (v_flip) scale_y( -1 )
+      #   rotate( rotation )
+      #   translate( position )
+      local m = Matrix.translate( position )
+      m *= rotation->Matrix
+      local scale = size/internal_size
+      if (h_flip) scale.x = -scale.x
+      if (v_flip) scale.y = -scale.y
+      m *= Matrix.scale( scale )
+      m *= Matrix.translate( -anchor.position * internal_size )
+      return m
 
     method transform( position:XYZ, size:XY )->Matrix
       return Matrix(
