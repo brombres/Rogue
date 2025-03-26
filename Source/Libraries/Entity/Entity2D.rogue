@@ -28,6 +28,33 @@ class Entity2D : Entity
       @rotation     = existing.rotation
       @anchor       = existing.anchor
 
+    method anchor_top_left
+      anchor = Anchor.TOP_LEFT
+
+    method anchor_top
+      anchor = Anchor.TOP
+
+    method anchor_top_right
+      anchor = Anchor.TOP_RIGHT
+
+    method anchor_left
+      anchor = Anchor.LEFT
+
+    method anchor_center
+      anchor = Anchor.CENTER
+
+    method anchor_right
+      anchor = Anchor.RIGHT
+
+    method anchor_bottom_left
+      anchor = Anchor.BOTTOM_LEFT
+
+    method anchor_bottom
+      anchor = Anchor.BOTTOM
+
+    method anchor_bottom_right
+      anchor = Anchor.BOTTOM_RIGHT
+
     method reset_size( nominal_size, scale=XY(1.0) )
 
     method scale_to_fill( bounds:Box )
