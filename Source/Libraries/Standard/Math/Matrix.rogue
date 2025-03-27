@@ -324,7 +324,7 @@ class Matrix( ...
       m.r3c3 =                 1
       return m
 
-    method transform( position:XYZ, size:XY, anchor:Anchor, internal_size:XY, h_flip:Logical, v_flip:Logical )->Matrix
+    method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, h_flip:Logical, v_flip:Logical )->Matrix
       # Returns a matrix encoding the following transformations in order of effect:
       #   translate( (XY(0.5,0.5)-anchor.position) * internal_size )  # Put the anchor at (0,0)
       #   scale( size / internal_size )
@@ -346,14 +346,14 @@ class Matrix( ...
         1
       )
 
-    method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Radians,
-        internal_size:XY, h_flip:Logical, v_flip:Logical )->Matrix
+    method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, rotation:Radians,
+                      h_flip:Logical, v_flip:Logical )->Matrix
       # Returns a matrix encoding the following transformations in order of effect:
       #   translate( (XY(0.5,0.5)-anchor.position) * internal_size )  # Put the anchor at (0,0)
       #   scale( size / internal_size )
       #   if (h_flip) scale_x( -1 )
       #   if (v_flip) scale_y( -1 )
-      #   rotate_z( rotation )
+      #   rotate_z( rotation )   # 2D rotation
       #   translate( position )
       local cos0 = rotation.cos
       local sin0 = rotation.sin
@@ -372,14 +372,14 @@ class Matrix( ...
         1
       )
 
-    method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Quaternion,
-        internal_size:XY, h_flip:Logical, v_flip:Logical )->Matrix
+    method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, rotation:Quaternion,
+                      h_flip:Logical, v_flip:Logical )->Matrix
       # Returns a matrix encoding the following transformations in order of effect:
       #   translate( -anchor.position * internal_size )  # Put anchor at origin
       #   scale( size / internal_size )
       #   if (h_flip) scale_x( -1 )
       #   if (v_flip) scale_y( -1 )
-      #   rotate( rotation )
+      #   rotate( rotation )   # 3D rotation
       #   translate( position )
       local m = Matrix.translate( position )
       m *= rotation->Matrix
@@ -390,10 +390,10 @@ class Matrix( ...
       m *= Matrix.translate( -anchor.position * internal_size )
       return m
 
-    method transform( position:XYZ, size:XY )->Matrix
+    method transform( position:XYZ, scale:XY )->Matrix
       return Matrix(
-        (size.x),   0,          0,          0,  # column 1
-        0,          (size.y),   0,          0,  # column 2
+        (scale.x),  0,          0,          0,  # column 1
+        0,          (scale.y),  0,          0,  # column 2
         0,          0,          1,          0,  # column 3
         position.x, position.y, position.z, 1   # column 4
       )
@@ -467,6 +467,9 @@ class Matrix( ...
 
     method get( index:Int32 )->Real
       return native( "(&$this.r0c0)[ $index ]" )->Real
+
+    method inverse_transpose->Matrix
+      return this.inverted.transposed
 
     method inverted->Matrix
       local det = 0.0
@@ -715,6 +718,14 @@ class Matrix( ...
         buffer.println
       endForEach
       return buffer
+
+    method transposed->Matrix
+      return Matrix(
+        r0c0, r0c1, r0c2, r0c3,
+        r1c0, r1c1, r1c2, r1c3,
+        r2c0, r2c1, r2c2, r2c3,
+        r3c0, r3c1, r3c2, r3c3
+      )
 
   GLOBAL METHODS
     method whole_digit_count( value:Real )->Int32
