@@ -58,13 +58,13 @@ class Entity2D : Entity
     method reset_size( nominal_size, scale=XY(1.0) )
 
     method rotation_x->Radians
-      return rotation->RadiansXYZ.x
+      return rotation->RadiansXYZ.value.x
 
     method rotation_y->Radians
-      return rotation->RadiansXYZ.y
+      return rotation->RadiansXYZ.value.y
 
     method rotation_z->Radians
-      return rotation->RadiansXYZ.z
+      return rotation->RadiansXYZ.value.z
 
     method scale_to_fill( bounds:Box )
       scale = (bounds.size / nominal_size).max
@@ -81,13 +81,19 @@ class Entity2D : Entity
       @rotation = Quaternion( radians )
 
     method set_rotation_x( radians:Radians )
-      @rotation = Quaternion( RadiansXYZ(radians,0,0) )
+      local rotation_xyz = rotation->RadiansXYZ
+      rotation_xyz.value.x = radians
+      @rotation = Quaternion( rotation_xyz )
 
     method set_rotation_y( radians:Radians )
-      @rotation = Quaternion( RadiansXYZ(0,radians,0) )
+      local rotation_xyz = rotation->RadiansXYZ
+      rotation_xyz.value.y = radians
+      @rotation = Quaternion( rotation_xyz )
 
     method set_rotation_z( radians:Radians )
-      @rotation = Quaternion( RadiansXYZ(0,0,radians) )
+      local rotation_xyz = rotation->RadiansXYZ
+      rotation_xyz.value.z = radians
+      @rotation = Quaternion( rotation_xyz )
 
     method set_scale( scale:Real )
       @scale = scale
