@@ -1594,7 +1594,11 @@ class Resolver : Poolable, Visitor
       local type_template = cmd.library_context.find_template( cmd.t, type_template_name, cmd.name, &extended_search )
       if (type_template)
         temporarily Program.current_library = cmd.library_context
-          return visit( TypeAccess(cmd.t, Type(cmd.t,type_template,cmd.library_context,cmd.type_args), cmd.args) )
+          if (cmd.library_context is not type_template.library_context)
+            cmd.type_args.find_types
+          endIf
+          local type = Type( cmd.t, type_template, type_template.library_context, cmd.type_args )
+          return visit( TypeAccess(cmd.t, type, cmd.args) )
         endTemporarily
       endIf
 

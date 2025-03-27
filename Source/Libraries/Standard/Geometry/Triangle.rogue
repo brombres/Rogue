@@ -102,3 +102,9 @@ class Triangle<<$DataType>>( a:$DataType, b:$DataType, c:$DataType ) [compound]
     method description->String
       return "($,$,$)" (a,b,c)
 endClass
+
+augment Geometry::Triangle<<Geometry::XYZ>>
+  METHODS
+    method normal->XYZ
+      return (b - a).cross( c - a ).normalized
+endAugment
