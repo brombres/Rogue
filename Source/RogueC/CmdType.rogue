@@ -182,7 +182,15 @@ augment
 
       if (suppress_error) return null
 
-      throw t.error( "No $.to->$ conversion or $($) constructor exists."(this_type,target_type,target_type,this_type) )
+      local a = this_type.name
+      local b = target_type.name
+      if (a == b)
+        a = this_type.scoped_name
+        b = target_type.scoped_name
+      endIf
+
+      #println StackTrace()
+      throw t.error( "No $.to->$ conversion or $($) constructor exists."(a,b,b,a) )
 
     method GenericFunctionDefinition.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions, &coerce )->Cmd [override]
       local fn_type = target_type->(as FunctionType)
@@ -864,7 +872,12 @@ augment
       local type_template_name = "$<<$>>"(name,type_args.count)
       local type_template = library_context.find_template( t, type_template_name, name, &extended_search )
       if (type_template)
-        local type = Type( t, type_template, library_context, type_args )
+        if (library_context is not type_template.library_context)
+          temporarily Program.current_library = library_context
+            type_args.find_types
+          endTemporarily
+        endIf
+        local type = Type( t, type_template, type_template.library_context, type_args )
         if (type and (args or type.attributes.is_singleton)) return type
       endIf
 

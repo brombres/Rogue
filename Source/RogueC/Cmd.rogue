@@ -2081,6 +2081,13 @@ class TemplateArgs : CmdList
     method description->String
       return "TemplateArgs" + list_description
 
+    method find_types
+      forEach (i of this)
+        if local arg_type = type(i)
+          arg_type.scoped_name  # cache type in context of current scope
+        endIf
+      endForEach
+
     method get( index:Int32 )->TokenList
       return list[index]->(as TokenList)
 
