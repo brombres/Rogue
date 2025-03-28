@@ -132,12 +132,12 @@ class Matrix( ...
 
       return m
 
-    method mode_2dx( width:Real, height:Real, depth_scale=1.0:Real,
+    method mode_2dx( width:Real, height:Real, depth_scale=1.0:Real, nominal_z=null:Real?,
         perspective_center=XY(0.5,0.5):XY, &invert_y,
         &homogeneous_depth=Matrix.homogeneous_depth, &left_handed=Matrix.left_handed )->Matrix
-      local nominal_z = ((width^2 + height^2).sqrt * depth_scale).floor.or_larger( 1000 )
-      local max_z = -nominal_z * 2
-      local k = (nominal_z + 1) * 2
+      if (not nominal_z) nominal_z = ((width^2 + height^2).sqrt * depth_scale).floor.or_larger( 500 )
+      local max_z = -nominal_z.value * 2
+      local k = (nominal_z.value + 1) * 2
       local left = ((-2 * width) / k)  * perspective_center.x
       local top  = ((-2 * height) / k) * perspective_center.y
       local right = left + 2*width/k
@@ -147,7 +147,7 @@ class Matrix( ...
 
       return ...
         Matrix.frustum( left, right, bottom, top, 1, (-max_z*k)/3, &=homogeneous_depth, &=left_handed ) ...
-        * Matrix.translate( XYZ(-width*perspective_center.x,-height*perspective_center.y,-nominal_z) )
+        * Matrix.translate( XYZ(-width*perspective_center.x,-height*perspective_center.y,-nominal_z.value) )
 
     method orthographic( left:Real, right:Real, bottom:Real, top:Real, near:Real, far:Real, offset=0.0:Real,
       homogeneous_depth=Matrix.homogeneous_depth:Logical, &left_handed=Matrix.left_handed )->Matrix
@@ -324,7 +324,8 @@ class Matrix( ...
       m.r3c3 =                 1
       return m
 
-    method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, h_flip:Logical, v_flip:Logical )->Matrix
+    method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, scale_z:Real,
+                      h_flip:Logical, v_flip:Logical )->Matrix
       # Returns a matrix encoding the following transformations in order of effect:
       #   translate( (XY(0.5,0.5)-anchor.position) * internal_size )  # Put the anchor at (0,0)
       #   scale( size / internal_size )
@@ -337,16 +338,16 @@ class Matrix( ...
       local flip_x = which{ h_flip:-1 || 1 }
       local flip_y = which{ v_flip:-1 || 1 }
       return Matrix(
-        ((scale.x) * flip_x),  0,                    0, 0,
-        0,                     ((scale.y) * flip_y), 0, 0,
-        0,                     0,                    1, 0,
+        ((scale.x) * flip_x),  0,                    0,       0,
+        0,                     ((scale.y) * flip_y), 0,       0,
+        0,                     0,                    scale_z, 0,
         (((scale.x * flip_x) * center.x) + ((scale.x * a.x) + position.x)),
         (((scale.y * flip_y) * center.y) + ((scale.y * a.y) + position.y)),
         position.z,
         1
       )
 
-    method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, rotation:Radians,
+    method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, scale_z:Real, rotation:Radians,
                       h_flip:Logical, v_flip:Logical )->Matrix
       # Returns a matrix encoding the following transformations in order of effect:
       #   translate( (XY(0.5,0.5)-anchor.position) * internal_size )  # Put the anchor at (0,0)
@@ -365,14 +366,14 @@ class Matrix( ...
       return Matrix(
         ((cos0 * scale.x) * flip_x),  ((sin0 * scale.x) * flip_x), 0, 0,
         ((-sin0 * scale.y) * flip_y), ((cos0 * scale.y) * flip_y), 0, 0,
-        0,                            0,                           1, 0,
+        0,                            0,                     scale_z, 0,
         (((((cos0 * scale.x) * flip_x) * center.x) + (((-sin0 * scale.y) * flip_y) * center.y)) + ((((cos0 * scale.x) * a.x) + ((-sin0 * scale.y) * a.y)) + position.x)),
         (((((sin0 * scale.x) * flip_x) * center.x) + (((cos0 * scale.y) * flip_y) * center.y)) + ((((sin0 * scale.x) * a.x) + ((cos0 * scale.y) * a.y)) + position.y)),
         position.z,
         1
       )
 
-    method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, rotation:Quaternion,
+    method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, scale_z:Real, rotation:Quaternion,
                       h_flip:Logical, v_flip:Logical )->Matrix
       # Returns a matrix encoding the following transformations in order of effect:
       #   translate( -anchor.position * internal_size )  # Put anchor at origin
@@ -383,18 +384,21 @@ class Matrix( ...
       #   translate( position )
       local m = Matrix.translate( position )
       m *= rotation->Matrix
-      local scale = size/internal_size
+      local scale = XYZ( size/internal_size, scale_z )
       if (h_flip) scale.x = -scale.x
       if (v_flip) scale.y = -scale.y
-      m *= Matrix.scale( scale )
-      m *= Matrix.translate( -anchor.position * internal_size )
+
+      #m *= Matrix.scale( scale )
+      #m *= Matrix.translate( -anchor.position * internal_size )
+      m *= Matrix.transform( -anchor.position * internal_size, scale )
+
       return m
 
-    method transform( position:XYZ, scale:XY )->Matrix
+    method transform( position:XYZ, scale:XYZ )->Matrix
       return Matrix(
-        (scale.x),  0,          0,          0,  # column 1
-        0,          (scale.y),  0,          0,  # column 2
-        0,          0,          1,          0,  # column 3
+        scale.x,    0,          0,          0,  # column 1
+        0,          scale.y,    0,          0,  # column 2
+        0,          0,          scale.z,    0,  # column 3
         position.x, position.y, position.z, 1   # column 4
       )
 

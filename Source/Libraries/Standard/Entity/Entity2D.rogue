@@ -6,6 +6,7 @@ class Entity2D : Entity
     scale        = XY(1,1)
     position     : XY
     z            : Real
+    scale_z      = 1.0
     rotation     = Quaternion()
     anchor       = Anchor.CENTER : Anchor
 
@@ -97,9 +98,14 @@ class Entity2D : Entity
 
     method set_scale( scale:Real )
       @scale = scale
+      scale_z = scale
 
     method set_scale( @scale )
       noAction
+
+    method set_scale( scale:XYZ )
+      @scale = scale->XY
+      scale_z = scale.z
 
     method set_size( size:XY )
       scale = size / nominal_size
