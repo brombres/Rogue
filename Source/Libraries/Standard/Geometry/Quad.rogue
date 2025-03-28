@@ -9,6 +9,9 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
       return Quad( bounds.top_left, bounds.top_right, bounds.bottom_right, bounds.bottom_left )
 
   METHODS
+    method at( p:XY )->XY
+      return a + p * (c - a)
+
     method bounds->Box
       return this->Box
 
