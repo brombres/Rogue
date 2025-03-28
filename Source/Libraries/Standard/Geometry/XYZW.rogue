@@ -78,6 +78,9 @@ class XYZW( x:Real, y:Real, z:Real, w=1:Real ) [compound]
     method to->String
       return "[$,$,$,$]" (x,y,z,w)
 
+    method to->Variant
+      return @{ x, y, z, w }
+
     method to->XY
       return XY(x,y)
 
