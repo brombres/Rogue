@@ -14,16 +14,17 @@ class UpdateTimer( interval:Real, threshold:Real, max_dt:Real, time_fn:Function-
       return UpdateTimer( interval, interval*(1.0-tolerance), max_dt, time_fn )
 
   METHODS
-    method update->Int [mutating]
+    method update->(dt:Real,delta_ticks:Int) [mutating]
       local cur_time : Real
       if (time_fn) cur_time = time_fn()
       else         cur_time = System.execution_time
 
-      local result = update( cur_time - prev_time )
+      update( cur_time - prev_time )
       prev_time = cur_time
-      return result
 
-    method update( dt )->Int [mutating]
+      return (dt,delta_ticks)
+
+    method update( dt )->(dt:Real,delta_ticks:Int) [mutating]
 
       time_debt += dt
 
@@ -42,5 +43,5 @@ class UpdateTimer( interval:Real, threshold:Real, max_dt:Real, time_fn:Function-
         delta_ticks = 0
       endIf
 
-      return delta_ticks
+      return (dt,delta_ticks)
 endClass
