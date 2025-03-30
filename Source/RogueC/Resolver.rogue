@@ -836,7 +836,11 @@ class Resolver : Poolable, Visitor
         local core_type = expression_type.properties["value"].type
         local v = add_local( Local(cmd.t, cmd.name, DummyInitialValue, core_type) )
         cmd_if.statements.add( SetLocal(v,ContextAccess(expression.t,expression,"value"),&initial_assignment) )
-        cmd_if.statements.add( forEach in cmd.statements )
+        if (cmd.statements instanceOf CmdList)
+          cmd_if.statements.add( forEach in cmd.statements )
+        else
+          cmd_if.statements.add( cmd.statements )
+        endIf
 
         pop_scope
         return visit( cmd_if )
