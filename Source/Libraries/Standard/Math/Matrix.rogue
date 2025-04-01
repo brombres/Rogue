@@ -325,7 +325,7 @@ class Matrix( ...
       return m
 
     method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, scale_z:Real,
-                      h_flip:Logical, v_flip:Logical )->Matrix
+                      &h_flip, &v_flip )->Matrix
       # Returns a matrix encoding the following transformations in order of effect:
       #   translate( (XY(0.5,0.5)-anchor.position) * internal_size )  # Put the anchor at (0,0)
       #   scale( size / internal_size )
@@ -348,7 +348,7 @@ class Matrix( ...
       )
 
     method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, scale_z:Real, rotation:Radians,
-                      h_flip:Logical, v_flip:Logical )->Matrix
+                      &h_flip, &v_flip )->Matrix
       # Returns a matrix encoding the following transformations in order of effect:
       #   translate( (XY(0.5,0.5)-anchor.position) * internal_size )  # Put the anchor at (0,0)
       #   scale( size / internal_size )
@@ -374,7 +374,7 @@ class Matrix( ...
       )
 
     method transform( position:XYZ, anchor:Anchor, size:XY, internal_size:XY, scale_z:Real, rotation:Quaternion,
-                      h_flip:Logical, v_flip:Logical )->Matrix
+                      &h_flip, &v_flip )->Matrix
       # Returns a matrix encoding the following transformations in order of effect:
       #   translate( -anchor.position * internal_size )  # Put anchor at origin
       #   scale( size / internal_size )
@@ -384,23 +384,15 @@ class Matrix( ...
       #   translate( position )
       local m = Matrix.translate( position )
       m *= rotation->Matrix
+
       local scale = XYZ( size/internal_size, scale_z )
       if (h_flip) scale.x = -scale.x
       if (v_flip) scale.y = -scale.y
+      m *= Matrix.scale( scale )
 
-      #m *= Matrix.scale( scale )
-      #m *= Matrix.translate( -anchor.position * internal_size )
-      m *= Matrix.transform( -anchor.position * internal_size, scale )
+      m *= Matrix.translate( -anchor.position * internal_size )
 
       return m
-
-    method transform( position:XYZ, scale:XYZ )->Matrix
-      return Matrix(
-        scale.x,    0,          0,          0,  # column 1
-        0,          scale.y,    0,          0,  # column 2
-        0,          0,          scale.z,    0,  # column 3
-        position.x, position.y, position.z, 1   # column 4
-      )
 
     method translate( delta:XY )->Matrix
       local m = identity
