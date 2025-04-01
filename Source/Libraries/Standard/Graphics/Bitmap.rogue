@@ -706,61 +706,84 @@ class Bitmap
       fill( Triangle(quad.a,quad.b,quad.c), color )
       fill( Triangle(quad.a,quad.c,quad.d), color )
 
-    method non_transparent_bounds->Box?
+    method non_transparent_bounds( &top, &left, &bottom, &right )->Box?
+      if (not (top or left or bottom or right))
+        top = true
+        left = true
+        bottom = true
+        right = true
+      endIf
+
       local w_limit = width
       local h_limit = height
 
       local top_h = 1
-      block y1 = 0
-        while (top_h < h_limit)
-          if (not all_pixels_are_transparent(Box(0,y1,w_limit,1)))
-            --top_h
-            escapeWhile
-          endIf
-          ++top_h
-          ++y1
-        endWhile
-      endBlock
+      if (top)
+        block y1 = 0
+          while (top_h < h_limit)
+            if (not all_pixels_are_transparent(Box(0,y1,w_limit,1)))
+              --top_h
+              escapeWhile
+            endIf
+            ++top_h
+            ++y1
+          endWhile
+        endBlock
+      else
+        top_h = 0
+      endIf
 
       if (top_h == h_limit) return null
 
       local bottom_h = 1
-      block y2 = h_limit - 1
-        loop
-          if (not all_pixels_are_transparent(Box(0,y2,w_limit,1)))
-            --bottom_h
-            escapeLoop
-          endIf
-          --y2
-          ++bottom_h
-        endLoop
-      endBlock
+      if (bottom)
+        block y2 = h_limit - 1
+          loop
+            if (not all_pixels_are_transparent(Box(0,y2,w_limit,1)))
+              --bottom_h
+              escapeLoop
+            endIf
+            --y2
+            ++bottom_h
+          endLoop
+        endBlock
+      else
+        bottom_h = 0
+      endIf
 
       local result_h = h_limit - (top_h + bottom_h)
 
       local left_w = 1
-      block x1 = 0
-        loop
-          if (not all_pixels_are_transparent(Box(x1,top_h,1,result_h)))
-            --left_w
-            escapeLoop
-          endIf
-          ++left_w
-          ++x1
-        endLoop
-      endBlock
+      if (left)
+        block x1 = 0
+          loop
+            if (not all_pixels_are_transparent(Box(x1,top_h,1,result_h)))
+              --left_w
+              escapeLoop
+            endIf
+            ++left_w
+            ++x1
+          endLoop
+        endBlock
+      else
+        left_w = 0
+      endIf
 
       local right_w = 1
-      block x2 = w_limit - 1
-        loop
-          if (not all_pixels_are_transparent(Box(x2,top_h,1,result_h)))
-            --right_w
-            escapeLoop
-          endIf
-          --x2
-          ++right_w
-        endLoop
-      endBlock
+      if (right)
+        block x2 = w_limit - 1
+          loop
+            if (not all_pixels_are_transparent(Box(x2,top_h,1,result_h)))
+              --right_w
+              escapeLoop
+            endIf
+            --x2
+            ++right_w
+          endLoop
+        endBlock
+      else
+        right_w = 0
+      endIf
 
       local result_w = w_limit - (left_w + right_w)
 
@@ -1124,8 +1147,8 @@ class Bitmap
       Global.error.println "ERROR: No TIFF encoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment method Graphics::Bitmap.to_tiff_bytes->Byte[] to utilize an alternate decoder."
       return null
 
-    method trim->Logical
-      if local bounds = non_transparent_bounds
+    method trim( &top, &left, &bottom, &right )->Logical
+      if local bounds = non_transparent_bounds( &=top, &=left, &=bottom, &=right )
         if (bounds == Box(size)) return false
         crop( bounds )
         return true
