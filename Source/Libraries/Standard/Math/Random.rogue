@@ -45,7 +45,7 @@ class Random [singleton]
       return Random( this )
 
     method reset( seed, stream=0x14057b7e_f767814f:Int64 )
-      # Resets the Random generator ot use the specified seed and optional stream parameter.
+      # Resets the Random generator to use the specified seed and optional stream parameter.
       # 'stream' defaults to 0x14057b7e_f767814f. If you pass an explicit value, note that
       # the canonical PCG algorithm performs 'stream = (stream :<<: 1) | 1' but this
       # implementation only performs 'stream | 1'. This ensures that 'stream' isn't modified
