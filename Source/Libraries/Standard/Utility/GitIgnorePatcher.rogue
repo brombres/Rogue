@@ -63,6 +63,11 @@ class GitIgnorePatcher
         return false
       endIf
 
+    method add( section_name:String, patterns:String[] )->Logical
+      local result = true
+      result = add( section_name, forEach in patterns ) and result
+      return result
+
     method print_new_entries( prefix="":String )
       local need_newline = false
       forEach (section in sections)
