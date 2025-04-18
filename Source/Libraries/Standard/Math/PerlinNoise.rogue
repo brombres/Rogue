@@ -1,0 +1,78 @@
+class PerlinNoise [singleton]
+  PROPERTIES
+    permutation_table = Int[]
+
+  METHODS
+    method init
+      use_default_settings
+
+    method generate( width:Int, height:Int, frequency=8.0:Real, output=Real[]:Real[] )->Real[]
+      # Generates a width×height list of 2D Perlin noise values, each -1..1.
+      #
+      # frequency
+      #   How “zoomed” the noise is; increase for larger features.
+      output.reserve( width * height )
+      if (width <= 0 or height <= 0) return output
+
+      local x_factor = frequency / width
+      local y_factor = frequency / height
+      forEach (j in 0..<height)
+        forEach (i in 0..<width)
+          output.add( .perlin_noise(i*x_factor,j*y_factor) )
+        endForEach
+      endForEach
+
+      return output
+
+    method randomize( random=Random:Random )
+      permutation_table.clear
+      permutation_table.add( forEach in 0..255 )
+      permutation_table.shuffle( random )
+
+    method use_default_settings
+      permutation_table.reserve( 256 )
+      permutation_table.add( forEach in default_permutation_values )
+
+    method .fade( t:Real )->Real
+      # Fade curve: 6t^5 - 15t^4 + 10t^3
+      return t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
+
+    method .gradient( hash:Int, x:Real, y:Real )->Real
+      # Calculate dot product between pseudorandom gradient vector and distance vector (x,y)
+      local h = hash & 7
+      local u = which{ (h<4):x || y }
+      local v = which{ (h<4):y || x }
+      return which{ (h&1):-u || u } + which{ (h&2):-v || v}
+
+    method .perlin_noise( x:Real, y:Real )->Real
+      local xi = x.floor->Int & 255
+      local yi = y.floor->Int & 255
+      local xf = x - x.floor
+      local yf = y - y.floor
+      local u = .fade( xf )
+      local v = .fade( yf )
+
+      local aa = permutation_table[(permutation_table[xi        ] + yi    ) & 255];
+      local ab = permutation_table[(permutation_table[xi        ] + yi + 1) & 255];
+      local ba = permutation_table[(permutation_table[(xi+1)&255] + yi    ) & 255];
+      local bb = permutation_table[(permutation_table[(xi+1)&255] + yi + 1) & 255];
+
+      local x1 = u.lerp( .gradient(aa,xf,yf),   .gradient(ba,xf-1,yf) )
+      local x2 = u.lerp( .gradient(ab,xf,yf-1), .gradient(bb,xf-1,yf-1) )
+
+      return v.lerp( x1, x2 )
+
+  GLOBAL PROPERTIES
+    default_permutation_values = Byte[](
+      "97A0895B5A0F830DC95F6035C2E907E18C24671E458E086325F0150A17BE0694"...
+      "F778EA4B001AC53E5EFCDBCB75230B2039B12158ED953857AE147D88ABA844AF"...
+      "4AA547868B301BA64D929EE7536FE57A3CD385E6DC695C29372EF528F4668F36"...
+      "41193FA101D85049D14C84BBD05912A9C8C4878274BC9F56A4646DC6ADBA0340"...
+      "34D9E2FA7C7B05CA2693767EFF5255D4CFCE3BE32F103A11B6BD1C2ADFB7AAD5"...
+      "77F898022C9AA346DD99659BA72BAC09811627FD13626C6E4F71E0E8B2B97068"...
+      "DAF661E4FB22F2C1EED2900CBFB3A2F1513391EBF90EEF6B31C0D61FB5C76A9D"...
+      "B854CCB07379322D7F0496FE8AECCD5DDE72431D1848F38D80C34E42D73D9CB4",
+      &hex
+    )
+endClass
+
