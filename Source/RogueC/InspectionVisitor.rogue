@@ -449,15 +449,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.upkeep)
       return result
 
-    method on_visit_children( cmd:Local )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.type)
-      if (result?) return result
-      result = visit(cmd.initial_value)
-      if (result?) return result
-      result = visit(cmd.initial_value_tokens)
-      return result
-
     method on_visit_children( cmd:LocalDeclarations )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.declarations)
@@ -517,6 +508,15 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.attributes)
       if (result?) return result
       result = visit(cmd.body)
+      return result
+
+    method on_visit_children( cmd:Local )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type)
+      if (result?) return result
+      result = visit(cmd.initial_value)
+      if (result?) return result
+      result = visit(cmd.initial_value_tokens)
       return result
 
     method on_visit_children( cmd:Property )->$ReturnType

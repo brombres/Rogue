@@ -87,4 +87,9 @@ class ExceptionAnalyzer : InspectionVisitor
       visit( cmd.catches )
       return false
 
+    method on_visit_children( cmd:Local )->Logical
+      return false
+
+    method on_visit_children( cmd:Property )->Logical
+      return false
 endClass
