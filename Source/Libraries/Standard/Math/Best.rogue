@@ -22,7 +22,7 @@ class Best<<$DataType,$ScoreType>>( better_fn:Function($ScoreType,$ScoreType)->L
     exists : Logical
 
   METHODS
-    method clear
+    method clear [mutating]
       exists = false
 
     method consider( candidate_value:$DataType, candidate_score:$ScoreType )->Logical [mutating]
@@ -62,7 +62,7 @@ class Best<<$DataType>>( better_fn:Function($DataType,$DataType)->Logical ) [com
     exists : Logical
 
   METHODS
-    method clear
+    method clear [mutating]
       exists = false
 
     method consider( candidate_value:$DataType )->Logical [mutating]
