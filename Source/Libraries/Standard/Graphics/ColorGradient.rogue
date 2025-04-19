@@ -1,0 +1,65 @@
+library Graphics
+
+class ColorGradient( top_left:Color, top_right:Color, bottom_left:Color, bottom_right:Color ) [compound]
+  GLOBAL METHODS
+    method create( solid_color:Color )->ColorGradient
+      return ColorGradient( solid_color, solid_color, solid_color, solid_color )
+
+    method create( top_color:Color, bottom_color:Color )->ColorGradient
+      return ColorGradient( top_color, top_color, bottom_color, bottom_color )
+
+  METHODS
+    method clip( old_bounds:Box, new_bounds:Box ) [mutating]
+      if (new_bounds.size.x < old_bounds.size.x)
+        local top_lerp = ColorLerp( top_left, top_right, old_bounds.size.x )
+        local bottom_lerp = ColorLerp( bottom_left, bottom_right, old_bounds.size.x )
+        local crop_left = new_bounds.position.x - old_bounds.position.x
+        if (crop_left > 0)
+          top_lerp.skip( crop_left )
+          bottom_lerp.skip( crop_left )
+        endIf
+
+        top_left = top_lerp.read_another.value
+        if (new_bounds.size.x == 1)
+          top_right = top_left
+        else
+          top_lerp.skip( new_bounds.size.x - 2 )
+          top_right = top_lerp.read_another.value
+        endIf
+
+        bottom_left = bottom_lerp.read_another.value
+        if (new_bounds.size.x == 1)
+          bottom_right = bottom_left
+        else
+          bottom_lerp.skip( new_bounds.size.x - 2 )
+          bottom_right = bottom_lerp.read_another.value
+        endIf
+      endIf
+
+      if (new_bounds.size.y < old_bounds.size.y)
+        local left_lerp = ColorLerp( top_left, bottom_left, old_bounds.size.y )
+        local right_lerp = ColorLerp( top_right, bottom_right, old_bounds.size.y )
+
+        local crop_top = new_bounds.position.y - old_bounds.position.y
+        if (crop_top > 0)
+          left_lerp.skip( crop_top )
+          right_lerp.skip( crop_top )
+        endIf
+
+        top_left = left_lerp.read_another.value
+        if (new_bounds.size.y == 1)
+          bottom_left = top_left
+        else
+          left_lerp.skip( new_bounds.size.y - 2 )
+          bottom_left = left_lerp.read_another.value
+        endIf
+
+        top_right = right_lerp.read_another.value
+        if (new_bounds.size.y == 1)
+          bottom_right = top_right
+        else
+          right_lerp.skip( new_bounds.size.y - 2 )
+          bottom_right = right_lerp.read_another.value
+        endIf
+      endIf
+endClass

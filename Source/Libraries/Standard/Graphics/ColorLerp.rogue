@@ -1,0 +1,38 @@
+library Graphics
+
+class IntLerp( a:Int, b:Int, steps:Int, index=0:Int ) [compound]
+  METHODS
+    method read_another->Int? [mutating]
+      if (steps == 0) return a
+      local result = a + ((b - a) * index) / (steps - 1)
+      ++index
+      return result
+
+    method skip( n:Int ) [mutating]
+      index += n
+endClass
+
+class ColorLerp( a:IntLerp, r:IntLerp, g:IntLerp, b:IntLerp ) [compound]
+  GLOBAL METHODS
+    method create( a:Color, b:Color, steps:Int )->ColorLerp
+      return ColorLerp(
+        IntLerp( a.alpha_byte, b.alpha_byte, steps ),
+        IntLerp( a.red_byte,   b.red_byte,   steps ),
+        IntLerp( a.green_byte, b.green_byte, steps ),
+        IntLerp( a.blue_byte,  b.blue_byte,  steps )
+      )
+
+  METHODS
+    method read_another->Color? [mutating]
+      local a = a.read_another.value & 255
+      local r = r.read_another.value & 255
+      local g = g.read_another.value & 255
+      local b = b.read_another.value & 255
+      return Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
+
+    method skip( n:Int ) [mutating]
+      a.skip( n )
+      r.skip( n )
+      g.skip( n )
+      b.skip( n )
+endClass
