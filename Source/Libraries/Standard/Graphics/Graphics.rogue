@@ -31,4 +31,6 @@ uses Geometry [export]
 
 $include Graphics/Bitmap
 $include Graphics/Color
+$include Graphics/ColorGradient
+$include Graphics/ColorLerp
 $include Graphics/HSV

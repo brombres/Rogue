@@ -383,69 +383,23 @@ class Bitmap
       blit( Box(x1,y1-1,1,h+2), this, XY(x1-1,y1-1) )  # left
       blit( Box(x2,y1-1,1,h+2), this, XY(x2+1,y1-1) )  # right
 
-    method fill( box:Box, color:Color )
-      local x1 = box.position.x->Int
-      local y1 = box.position.y->Int
-      local x_limit = x1 + box.size.x->Int
-      local y_limit = y1 + box.size.y->Int
+    method fill( box:Box, color:Color, channel_mask=0xFFFFFFFF:Int32 )
+      SolidColorBitmapFillFn.color = color
+      fill( box, SolidColorBitmapFillFn, &=channel_mask )
 
-      local w = width
-      local h = height
+    method fill( box:Box, color_gradient:ColorGradient, channel_mask=0xFFFFFFFF:Int32 )
+      if local in_bounds = box & Box(this.size)
 
-      if (x1 < 0) x1 = 0
-      if (y1 < 0) y1 = 0
-      if (x_limit >= w) x_limit = w
-      if (y_limit >= h) y_limit = h
+        color_gradient.clip( box, in_bounds )
 
-      if (x1 >= x_limit or y1 >= y_limit) return
+        ColorGradientBitmapFillFn.gradient = color_gradient
+        fill( box, ColorGradientBitmapFillFn, &=channel_mask )
+      endIf
 
-      local argb = color.argb
-      local row_width = x_limit - x1
-      local row_skip = width - row_width
-      local rows = y_limit - y1
-
-      native @|%Ns%RogueInt32* dest = ($pixels->as_int32s + $y1*$w + $x1) - 1;
-              |while (--$rows >= 0)
-              |{
-              |  for (int i=$row_width; --i>=0; )
-              |  {
-              |    *(++dest) = $argb;
-              |  }
-              |  dest += $row_skip;
-              |}
-
-    method fill( box:Box, color:Color, channel_mask:Int )
-      local x1 = box.position.x->Int
-      local y1 = box.position.y->Int
-      local x_limit = x1 + box.size.x->Int
-      local y_limit = y1 + box.size.y->Int
-
-      local w = width
-      local h = height
-
-      if (x1 < 0) x1 = 0
-      if (y1 < 0) y1 = 0
-      if (x_limit >= w) x_limit = w
-      if (y_limit >= h) y_limit = h
-
-      if (x1 >= x_limit or y1 >= y_limit) return
-
-      local argb = color.argb & channel_mask
-      local row_width = x_limit - x1
-      local row_skip = width - row_width
-      local rows = y_limit - y1
-
-      native @|%Ns%RogueInt32* dest = ($pixels->as_int32s + $y1*$w + $x1);
-              |%Ns%RogueInt32  inverse_mask = ~$channel_mask;
-              |while (--$rows >= 0)
-              |{
-              |  for (int i=$row_width; --i>=0; )
-              |  {
-              |    *dest = (*dest & inverse_mask) | $argb;
-              |    ++dest;
-              |  }
-              |  dest += $row_skip;
-              |}
+    method fill( box:Box, fn:BitmapFillFn, channel_mask=0xFFFFFFFF:Int32 )
+      if local bounds = box & Box(this.size)
+        fn( this, bounds, &=channel_mask )
+      endIf
 
     method fill( triangle:Triangle, color:Color )
       local top    = triangle.a.floor
@@ -458,7 +412,8 @@ class Bitmap
       if (bottom.y < middle.y) swapValues( middle, bottom )
 
       if (bottom.y < 0 or top.y >= height) return
-      if (top.x.or_larger(middle.x).or_larger(bottom.x) < 0 or top.x.or_smaller(middle.x).or_smaller(middle.x) >= width) return
+      if (top.x.or_larger(middle.x).or_larger(bottom.x) < 0 or
+          top.x.or_smaller(middle.x).or_smaller(middle.x) >= width) return
 
       local width      = this.width
       local height     = this.height
@@ -1115,10 +1070,16 @@ class Bitmap
       local tiles = Bitmap[]( tiles_wide * tiles_high )
       local w = width / tiles_wide
       local h = height / tiles_high
+      local remaining_h = height
       forEach (y in 0..<tiles_high)
+        local cur_h = h.or_smaller( remaining_h )
+        local remaining_w = width
         forEach (x in 0..<tiles_wide)
-          tiles.add( Bitmap(this,Box(x*w,y*h,w,h)) )
+          local cur_w = w.or_smaller( remaining_w )
+          tiles.add( Bitmap(this,Box(x*w,y*h,cur_w,cur_h)) )
+          remaining_w -= cur_w
         endForEach
+        remaining_h -= cur_h
       endForEach
       return tiles
 
@@ -1335,6 +1296,85 @@ class RequireAllTransparentPixels : BitmapBlitFn [singleton]
        |  src_limit  += $width;
        |}
       success = true
+
+endClass
+
+class BitmapFillFn
+  METHODS
+    method call( bitmap:Bitmap, bounds:Box, channel_mask=0xFFFFFFFF:Int32 )
+      noAction
+endClass
+
+class SolidColorBitmapFillFn : BitmapFillFn [singleton]
+  PROPERTIES
+    color : Color
+
+  METHODS
+    method call( bitmap:Bitmap, bounds:Box, channel_mask=0xFFFFFFFF:Int32 )
+      local x1 = bounds.position.x->Int
+      local y1 = bounds.position.y->Int
+      local x_limit = x1 + bounds.size.x->Int
+      local y_limit = y1 + bounds.size.y->Int
+
+      local w = bitmap.width
+
+      local row_width = x_limit - x1
+      local row_skip = bitmap.width - row_width
+      local rows = y_limit - y1
+      local argb = color.argb & channel_mask
+
+      local inverse_mask = !channel_mask
+
+      native
+      @|%Ns%RogueInt32* data = ($bitmap->pixels->as_int32s + $y1*$w + $x1) - 1;
+       |while (--$rows >= 0)
+       |{
+       |  for (int i=$row_width; --i>=0; )
+       |  {
+       |    RogueInt32 existing = *(++data);
+       |    *data = (existing & $inverse_mask) | $argb;
+       |  }
+       |  data += $row_skip;
+       |}
+endClass
+
+class ColorGradientBitmapFillFn : BitmapFillFn [singleton]
+  PROPERTIES
+    gradient : ColorGradient
+
+  METHODS
+    method call( bitmap:Bitmap, bounds:Box, channel_mask=0xFFFFFFFF:Int32 )
+      local x1 = bounds.position.x->Int
+      local y1 = bounds.position.y->Int
+      local x_limit = x1 + bounds.size.x->Int
+      local y_limit = y1 + bounds.size.y->Int
+
+
+      local row_width = x_limit - x1
+      local row_skip = bitmap.width - row_width
+      local rows = y_limit - y1
+
+      local inverse_mask = !channel_mask
+      local w = bitmap.width
+
+      local left = ColorLerp( gradient.top_left, gradient.bottom_left, rows )
+      local right = ColorLerp( gradient.top_right, gradient.bottom_right, rows )
+
+      native @|%Ns%RogueInt32* data = ($bitmap->pixels->as_int32s + $y1*$w + $x1) - 1;
+
+      loop (rows)
+        local mid = ColorLerp( left.read_another.value, right.read_another.value, row_width )
+        local n = row_width
+        native
+        @|while (--$n >= 0)
+         |{
+            local argb = mid.read_another.value.argb
+        native
+        @|  RogueInt32 existing = *(++data);
+         |  *data = (existing & $inverse_mask) | ($argb & $channel_mask);
+         |}
+         |data += $row_skip;
+      endLoop
 
 endClass
 
