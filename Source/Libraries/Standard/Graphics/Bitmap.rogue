@@ -387,13 +387,14 @@ class Bitmap
       SolidColorBitmapFillFn.color = color
       fill( box, SolidColorBitmapFillFn, &=channel_mask )
 
-    method fill( box:Box, color_gradient:ColorGradient, channel_mask=0xFFFFFFFF:Int32 )
+    method fill( box:Box, color_gradient:ColorGradient, fn=ColorGradientBitmapFillFn:ColorGradientBitmapFillFn,
+        channel_mask=0xFFFFFFFF:Int32 )
       if local in_bounds = box & Box(this.size)
 
         color_gradient.clip( box, in_bounds )
 
-        ColorGradientBitmapFillFn.gradient = color_gradient
-        fill( box, ColorGradientBitmapFillFn, &=channel_mask )
+        fn.gradient = color_gradient
+        fill( box, fn, &=channel_mask )
       endIf
 
     method fill( box:Box, fn:BitmapFillFn, channel_mask=0xFFFFFFFF:Int32 )
@@ -1372,6 +1373,51 @@ class ColorGradientBitmapFillFn : BitmapFillFn [singleton]
         native
         @|  RogueInt32 existing = *(++data);
          |  *data = (existing & $inverse_mask) | ($argb & $channel_mask);
+         |}
+         |data += $row_skip;
+      endLoop
+
+endClass
+
+class ColorGradientMultiplyBitmapFillFn : ColorGradientBitmapFillFn [singleton]
+  PROPERTIES
+    gradient : ColorGradient
+
+  METHODS
+    method call( bitmap:Bitmap, bounds:Box, channel_mask=0xFFFFFFFF:Int32 )
+      local x1 = bounds.position.x->Int
+      local y1 = bounds.position.y->Int
+      local x_limit = x1 + bounds.size.x->Int
+      local y_limit = y1 + bounds.size.y->Int
+
+
+      local row_width = x_limit - x1
+      local row_skip = bitmap.width - row_width
+      local rows = y_limit - y1
+
+      local inverse_mask = !channel_mask
+      local w = bitmap.width
+
+      local left = ColorLerp( gradient.top_left, gradient.bottom_left, rows )
+      local right = ColorLerp( gradient.top_right, gradient.bottom_right, rows )
+
+      native @|%Ns%RogueInt32* data = ($bitmap->pixels->as_int32s + $y1*$w + $x1) - 1;
+
+      loop (rows)
+        local mid = ColorLerp( left.read_another.value, right.read_another.value, row_width )
+        local n = row_width
+        native
+        @|while (--$n >= 0)
+         |{
+            local argb = mid.read_another.value.argb
+        native
+        @|  RogueInt32 existing = *(++data);
+         |  RogueInt32 a = ((((existing >> 24) & 255) * (($argb >> 24) & 255)) / 255);
+         |  RogueInt32 r = ((((existing >> 16) & 255) * (($argb >> 16) & 255)) / 255);
+         |  RogueInt32 g = ((((existing >> 8)  & 255) * (($argb >> 8)  & 255)) / 255);
+         |  RogueInt32 b = ((( existing        & 255) * ( $argb        & 255)) / 255);
+         |  RogueInt32 multiplied = (a << 24) | (r << 16) | (g << 8) | b;
+         |  *data = (existing & $inverse_mask) | (multiplied & $channel_mask);
          |}
          |data += $row_skip;
       endLoop
