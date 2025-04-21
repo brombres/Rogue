@@ -5,8 +5,8 @@ An ergonomic object-oriented high-level language that compiles to C.
 
 About     | Current Release
 ----------|-----------------------
-Version   | 2.36
-Date      | March 19, 2025
+Version   | 2.37
+Date      | April 20, 2025
 Platforms | Windows, macOS, Linux
 License   | [MIT License](LICENSE)
 
