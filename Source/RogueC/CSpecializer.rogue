@@ -252,11 +252,13 @@ class CSpecializer : Visitor
       if (not cmd.c_name) cmd.c_name = "$_$"(cmd.name,cmd.index)
 
     method on_visit( cmd:LogicalAnd )->Cmd
-      if (cmd.left.needs_decomposition or cmd.right.needs_decomposition)
+      local decompose_left  = cmd.left.needs_decomposition
+      local decompose_right = cmd.right.needs_decomposition
+      if (decompose_left or decompose_right)
         local t = cmd.t
 
         local left = cmd.left
-        left.intermediate_v = cmd.intermediate_v
+        if (decompose_left) left.intermediate_v = cmd.intermediate_v
         cmd.left = visit( left )
         local v = left.intermediate_v
         if (not v)
@@ -269,7 +271,7 @@ class CSpecializer : Visitor
           endIf
         endIf
         cmd.intermediate_v = v
-        cmd.right.intermediate_v = v
+        if (decompose_right) cmd.right.intermediate_v = v
 
         local statements = Statements( t, SetLocal(t,v,cmd.right) )
         insert( visit( If(t, GetLocal(t,v), statements, null) ) )
@@ -310,7 +312,7 @@ class CSpecializer : Visitor
           endIf
         endIf
         cmd.intermediate_v = v
-        cmd.right.intermediate_v = v
+        if (decompose_right) cmd.right.intermediate_v = v
 
         local statements = Statements( t, SetLocal(t,v,cmd.right) )
         insert( visit( If(t, LogicalNot(t,GetLocal(t,v)), statements, null) ) )
