@@ -28,6 +28,14 @@ class ListRewriter<<$DataType>>( list:$DataType[], read_index=0:Int, write_index
         return null
       endIf
 
+    method to->String
+      return to->String[]->String
+
+    method to->String[]
+      local parts = String[]( write_index )
+      parts.add( "" + list[forEach in 0..<write_index] )
+      return parts
+
     method write( value:$DataType ) [mutating]
       if (write_index == read_index)
         # We're adding more items to the list then it originally had.
