@@ -257,6 +257,16 @@ class XY( x:Real, y:Real ) [compound]
     method rotated( angle:Radians )->XY
       return XY( magnitude, radians + angle )
 
+    method scaled_to_fill( other:XY )->XY
+      # Linearly scales this XY size so that the smallest dimension matches the
+      # smallest dimension of the specified other size.
+      return this * (other/this).max
+
+    method scaled_to_fit( other:XY )->XY
+      # Linearly scales this XY size so that the largest dimension matches the
+      # largest dimension of the specified other size.
+      return this * (other/this).min
+
     method side( line:Line )->Int32
       # Returns 0 if on the line, 1 if on the same side as line.normal points out of,
       # and -1 if on the opposite side

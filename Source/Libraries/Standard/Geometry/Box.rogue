@@ -34,8 +34,14 @@ class Box( position:XY, size:XY ) [essential compound]
     method at( anchor:Anchor )->XY
       return position + anchor * size
 
+    method at( proportional_subset:Box )->Box
+      return Box(
+        position + proportional_subset.position * size,
+        proportional_subset.size * size
+      )
+
     method at( proportional_position:XY )->XY
-      return position + XY( proportional_position * XY(size) )
+      return position + proportional_position * size
 
     method at( u:Real, v:Real )->XY
       return position + XY(u*size.x,v*size.y)
@@ -248,6 +254,12 @@ class Box( position:XY, size:XY ) [essential compound]
 
     method rotated( angle:Radians )->Quad
       return this->Quad.rotated( angle )
+
+    method scaled_to_fill( other:Box )->Box
+      return Box( position, size * (other.size/this.size).max )
+
+    method scaled_to_fit( other:Box )->Box
+      return Box( position, size * (other.size/this.size).min )
 
     method subset( subset_size:XY, anchor=Anchor.CENTER:Anchor )->Box
       return Box( position + anchor * (size-subset_size), subset_size )
