@@ -53,10 +53,16 @@ class UI : Component [singleton]
         prior.draw
       endTemporarily
 
-    method filler->Component
-      return Component()
+    method filler( &h, &v )->Component
+      local component = Component()
+      if (h xor v)
+        if (h) component.fixed_height = 0  # horizontal filler has fixed height 0
+        else   component.fixed_width  = 0  # vice-versa
+      endIf
+      return component
 
     method font->Font
+      if (@font) return @font
       return default_font
 
     method handle( e:KeyEvent )
@@ -151,14 +157,18 @@ class UI : Component [singleton]
       temporarily UI = this
         position = bounds.position
         if (needs_layout or bounds.size != size)
-          if (needs_layout)
+          loop 2
+            #if (needs_layout)
             needs_layout = false
             needs_redraw = true
-          endIf
-          begin_layout
-          resolve_layout_size( bounds.size )
-          perform_layout( position )
-          end_layout
+            #endIf
+            begin_layout
+            resolve_layout_size( bounds.size )
+            perform_layout( position )
+            end_layout
+
+            if (not needs_layout) escapeLoop
+          endLoop
         endIf
       endTemporarily
 

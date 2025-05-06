@@ -5,4 +5,9 @@ class TextStyle
     font     : Font?
     color    : Graphics::Color?
     bg_color : Graphics::Color?
+
+  METHODS
+    method draw( font:Font, text:Text, bounds:Box )
+      font.draw( text.value, bounds )
+
 endClass
