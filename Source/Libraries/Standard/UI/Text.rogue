@@ -6,6 +6,7 @@ class Text : Component
     style : TextStyle
     shrink_to_fit_text_x : Logical
     shrink_to_fit_text_y : Logical
+    layout_mode = LayoutModeXY( LayoutMode.FIXED_SIZE, LayoutMode.FIXED_SIZE )
 
   METHODS
     method init( text=String():String )
@@ -174,7 +175,12 @@ class Text : Component
         style.font = font
       endIf
 
-    method set_value( @value )
+    method set_value( new_value:String )
+      if (not new_value) new_value = ""
+      if (new_value != @value)
+        @value = new_value
+        request_layout
+      endIf
 
     method shrink_to_fit_text
       shrink_to_fit_text_width
