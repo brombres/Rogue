@@ -258,8 +258,20 @@ class Box( position:XY, size:XY ) [essential compound]
     method scaled_to_fill( other:Box )->Box
       return Box( position, size * (other.size/this.size).max )
 
+    method scaled_to_fill( other_size:XY )->Box
+      return Box( position, size * (other_size/this.size).max )
+
     method scaled_to_fit( other:Box )->Box
       return Box( position, size * (other.size/this.size).min )
+
+    method scaled_to_fit( other_size:XY )->Box
+      return Box( position, size * (other_size/this.size).min )
+
+    method scaled_to_height( height:Real )->Box
+      return Box( position, size * (height/this.size.y) )
+
+    method scaled_to_width( width:Real )->Box
+      return Box( position, size * (width/this.size.x) )
 
     method subset( subset_size:XY, anchor=Anchor.CENTER:Anchor )->Box
       return Box( position + anchor * (size-subset_size), subset_size )
