@@ -290,6 +290,21 @@ class XY( x:Real, y:Real ) [compound]
     method to->Variant
       return @{ x, y }
 
+    method with_degrees( degrees:Degrees )->XY
+      return XY( magnitude, degrees )
+
+    method with_magnitude( r:Real )->XY
+      return XY( r, radians )
+
+    method with_radians( radians:Radians )->XY
+      return XY( magnitude, radians )
+
+    method with_x( x:Real )->XY
+      return XY( x, y )
+
+    method with_y( y:Real )->XY
+      return XY( x, y )
+
     method xv->XY
       return XY(x,0)
 
