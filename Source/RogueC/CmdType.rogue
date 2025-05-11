@@ -664,6 +664,18 @@ augment
       return Program.type_Logical
 
     method CompareOp.type->Type
+      local left_type = left.type
+      local right_type = right.type
+      if (not left_type)  return right_type
+      if (not right_type) return left_type
+      if (left_type is right_type) return left_type
+
+      if (left_type is Program.type_Real64 or right_type is Program.type_Real64) return Program.type_Real64
+      if (left_type is Program.type_Real or right_type is Program.type_Real) return Program.type_Real
+      if (left_type is Program.type_Real32 or right_type is Program.type_Real32) return Program.type_Real32
+
+      if (left_type is Program.type_Int64 or right_type is Program.type_Int64) return Program.type_Int64
+
       return Program.type_Int
 
     method ContextBlock.type->Type
