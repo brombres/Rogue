@@ -267,6 +267,12 @@ class XY( x:Real, y:Real ) [compound]
       # largest dimension of the specified other size.
       return this * (other/this).min
 
+    method scaled_to_height( height:Real )->XY
+      return this * (height/this.y)
+
+    method scaled_to_width( width:Real )->XY
+      return this * (width/this.x)
+
     method side( line:Line )->Int32
       # Returns 0 if on the line, 1 if on the same side as line.normal points out of,
       # and -1 if on the opposite side
