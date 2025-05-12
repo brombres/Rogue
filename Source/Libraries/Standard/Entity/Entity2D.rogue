@@ -70,8 +70,14 @@ class Entity2D : Entity
     method scale_to_fill( bounds:Box )
       scale = (bounds.size / nominal_size).max
 
+    method scale_to_fill( size:XY )
+      scale = (size / nominal_size).max
+
     method scale_to_fit( bounds:Box )
       scale = (bounds.size / nominal_size).min
+
+    method scale_to_fit( size:XY )
+      scale = (size / nominal_size).min
 
     method set_rotation( @rotation )
 
