@@ -1544,14 +1544,18 @@ class String : Poolable PrintWriter
       forEach (ch in this) result.add( ch )
       return result
 
-    method to->Int32( base=10:Int )
+    method to->Int32( base=10:Int, from=0:Int )
       if (count == 0) return 0
       if (this.contains(','))
-        use builder = StringPool
-          forEach (ch in this)
-            if (ch != ',') builder.print ch
+        use filtered = StringPool
+          forEach (ch at i in this)
+            if (ch != ',')
+              filtered.print ch
+            else
+              if (i <= from) --from
+            endIf
           endForEach
-          return builder->Int
+          return filtered->Int( &=from )
         endUse
       endIf
 
@@ -1559,7 +1563,7 @@ class String : Poolable PrintWriter
       # Roll our own conversion.
       local result   : Int32
       local negative = false
-      local i1 = 0
+      local i1 = from
       while (i1 < count and this[i1] == '-') ++i1; negative = not negative
       forEach (ch in this from i1)
         local n = ch.to_number( base )
@@ -1569,24 +1573,28 @@ class String : Poolable PrintWriter
       if (negative) result = -result
       return result
 
-    method to->Int( base=10:Int )
-      return this->INT_TYPE( &=base )->Int
+    method to->Int( base=10:Int, from=0:Int )
+      return this->INT_TYPE( &=base, &=from )->Int
 
-    method to->Int64( base=10:Int )
+    method to->Int64( base=10:Int, from=0:Int )
       if (count == 0) return 0
       if (this.contains(','))
-        use builder = StringPool
-          forEach (ch in this)
-            if (ch != ',') builder.print ch
+        use filtered = StringPool
+          forEach (ch at i in this)
+            if (ch != ',')
+              filtered.print ch
+            else
+              if (i <= from) --from
+            endIf
           endForEach
-          return builder->Int64
+          return filtered->Int64( &=from )
         endUse
       endIf
 
       # strtoll() clamps large numbers to Int64.MAXIMUM. Roll our own conversion.
       local result   : Int64
       local negative = false
-      local i1 = 0
+      local i1 = from
       while (i1 < count and this[i1] == '-') ++i1; negative = not negative
       forEach (ch in this from i1)
         local n = ch.to_number( base )
@@ -1599,25 +1607,29 @@ class String : Poolable PrintWriter
     method to->Object
       return this
 
-    method to->Real32
-      return this->Real64->Real32
+    method to->Real32( from=0:Int )
+      return this->Real64( &=from )->Real32
 
-    method to->Real
-      return this->Real64->Real
+    method to->Real( from=0:Int )
+      return this->Real64( &=from )->Real
 
-    method to->Real64
+    method to->Real64( from=0:Int )
       if (count == 0) return 0
 
       if (this.contains(','))
         use filtered = StringPool
-          forEach (ch in this)
-            if (ch != ',') filtered.print ch
+          forEach (ch at i in this)
+            if (ch != ',')
+              filtered.print ch
+            else
+              if (i <= from) --from
+            endIf
           endForEach
-          return filtered->Real64
+          return filtered->Real64( &=from )
         endUse
       endIf
 
-      return native( "strtod( (char*)$this->data->as_utf8, 0 )" )->Real64
+      return native( "strtod( ((char*)$this->data->as_utf8)+(int)$from, 0 )" )->Real64
 
     method to->String
       return this
