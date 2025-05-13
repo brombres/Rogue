@@ -473,6 +473,11 @@ class Component : Entity
       prior.set_structure_modified( setting )
       if (setting) request_layout
 
+    method set_weight( @weight )
+
+    method set_weight( weight:Real )
+      @weight = XY( weight, weight )
+
     method shrink_to_fit
       layout_mode = LayoutModeXY( LayoutMode.SHRINK_TO_FIT, LayoutMode.SHRINK_TO_FIT )
 

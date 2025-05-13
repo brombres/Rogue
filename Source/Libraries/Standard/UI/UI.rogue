@@ -53,8 +53,9 @@ class UI : Component [singleton]
         prior.draw
       endTemporarily
 
-    method filler( &h, &v )->Component
+    method filler( content=null:Component, &h, &v )->Component
       local component = Component()
+      if (content) component.add( content )
       if (h xor v)
         if (h) component.fixed_height = 0  # horizontal filler has fixed height 0
         else   component.fixed_width  = 0  # vice-versa
@@ -144,8 +145,11 @@ class UI : Component [singleton]
     method set_clip( @clip )
       noAction
 
-    method spacer( w=0:Int, h=0:Int )->Component
-      return Component( XY(w,h) )
+    method spacer( content=null:Component, w=0:Int, h=0:Int )->Component
+      local result = Component()
+      if (content) result.add( content )
+      result.fixed_size = XY( w, h )
+      return result
 
     method update( bounds:Box )
       temporarily UI = this
