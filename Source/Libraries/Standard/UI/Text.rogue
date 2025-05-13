@@ -169,12 +169,6 @@ class Text : Component
       ensure<<style>>
       style.color = color
 
-    method set_font( font:Font? )
-      ensure<<style>>
-      if (style.font != font)
-        style.font = font
-      endIf
-
     method set_value( new_value:String )
       if (not new_value) new_value = ""
       if (new_value != @value)

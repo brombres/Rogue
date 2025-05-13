@@ -7,6 +7,17 @@ class TextStyle
     bg_color : Graphics::Color?
 
   METHODS
+    method init
+      noAction
+
+    method init( existing:TextStyle )
+      font     = existing.font
+      color    = existing.color
+      bg_color = existing.bg_color
+
+    method cloned->TextStyle [propagated]
+      return $thisType( this )
+
     method draw( font:Font, text:Text, bounds:Box )
       font.draw( text.value, bounds )
 
