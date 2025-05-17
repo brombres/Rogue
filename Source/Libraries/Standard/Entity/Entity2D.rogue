@@ -81,8 +81,14 @@ class Entity2D : Entity
 
     method set_rotation( @rotation )
 
+    method set_rotation( degrees:Degrees )
+      set_rotation_z( degrees )
+
     method set_rotation( degrees:DegreesXYZ )
       @rotation = Quaternion( degrees )
+
+    method set_rotation( radians:Radians )
+      set_rotation_z( radians )
 
     method set_rotation( radians:RadiansXYZ )
       @rotation = Quaternion( radians )

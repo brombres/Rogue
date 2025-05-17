@@ -29,7 +29,7 @@ class ListRewriter<<$DataType>>( list:$DataType[], read_index=0:Int, write_index
       endIf
 
     method to->String
-      return to->String[]->String
+      return this->String[]->String
 
     method to->String[]
       local parts = String[]( write_index )

@@ -35,6 +35,7 @@ class Entity : Node<<Entity>>
       attributes  = existing.attributes
       script      = existing.script
       @properties = existing.@properties.cloned
+      add( (forEach in existing.children).cloned )
 
     method cloned->$thisType [propagated]
       return $thisType( this )
