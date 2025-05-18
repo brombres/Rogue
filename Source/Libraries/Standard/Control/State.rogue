@@ -115,6 +115,16 @@ class State<<$ExtendedType,$change_state,$exit_state>>
       is_exited = true
       finish
 
+    method find_active<<$FindType>>()->$ExtendedType
+      # Returns any active state (this or a concurrent_state) that is
+      # instanceOf $FindType.
+      local cur = this->(as $ExtendedType)
+      while (cur)
+        if (cur instanceOf $FindType) return cur
+        cur .= concurrent_state
+      endWhile
+      return null
+
     method finish
       if (duration < 0) duration = 0
       t = duration
