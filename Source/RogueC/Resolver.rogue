@@ -1423,7 +1423,12 @@ class Resolver : Poolable, Visitor
 
     method on_visit( cmd:New )->Cmd
       local context = visit( cmd.type_expression )
-      return visit( TypeAccess(cmd.t, context.require_type, cmd.args) )
+      local of_type = context.require_type
+      if (cmd.args)
+        return visit( TypeAccess(cmd.t, of_type, cmd.args) )
+      else
+        return CreateObject( cmd.t, of_type, null )
+      endIf
 
     method on_visit( cmd:NextIteration )->Cmd
       forEach (control_structure in control_stack step -1)

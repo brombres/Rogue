@@ -3393,7 +3393,7 @@ parser
     produce WeakRef(expression)
   endOn
 
-  on "new" "<<" expression ">>" args -> New(type_expression,args:Args)
+  on "new" "<<" expression ">>" optional_args -> New(type_expression,args:Args)
 
   on "$isCompound"  "<<" type ">>" -> IsCompound(operand)
   on "$isEnum"      "<<" type ">>" -> IsEnum(operand)
