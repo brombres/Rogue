@@ -841,6 +841,9 @@ augment
     method Negate.type->Type
       return operand.type
 
+    method New.type->Type
+      return type_expression.type
+
     method ListIndexedAccess.type->Type
       local context_type = context.type
       if (context_type and context_type.is_enum) return context_type

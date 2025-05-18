@@ -30,7 +30,7 @@ class Entity : Node<<Entity>>
     method init( name )
       noAction
 
-    method init( existing:Entity )
+    method init_clone( existing:Entity )
       name        = existing.name
       attributes  = existing.attributes
       script      = existing.script
@@ -38,7 +38,7 @@ class Entity : Node<<Entity>>
       add( (forEach in existing.children).cloned )
 
     method cloned->$thisType [propagated]
-      return $thisType( this )
+      return new<<$thisType>>.init_clone( this )
 
     method init_object
       id = next_id

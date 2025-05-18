@@ -20,8 +20,8 @@ class Entity2D : Entity
     method init( nominal_size, script=null:EntityScript )
       if (script) attach_script( script )
 
-    method init( existing:Entity2D )
-      prior.init( existing )
+    method init_clone( existing:Entity2D )
+      prior.init_clone( existing )
       @scale        = existing.scale
       @nominal_size = existing.nominal_size
       @position     = existing.position
