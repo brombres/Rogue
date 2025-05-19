@@ -25,6 +25,32 @@ class Box( position:XY, size:XY ) [essential compound]
       # box, but provided to ensure that Box(B) == B.
       return existing
 
+    method create( v:Variant )->Box
+      if (v.is_box) return v->Box
+      if (v.is_list) return Box( v[0]->Real, v[1]->Real, v[2]->Real, v[3]->Real )
+
+      local position : XY
+      local size     : XY
+
+      if (v.contains("x"))
+        position.x = v//x->Real
+        position.y = v//y->Real
+      elseIf (v.contains("position"))
+        position = v//position->XY
+      endIf
+
+      if (v.contains("width"))
+        size.x = v//width->Real
+        size.y = v//height->Real
+      elseIf (v.contains("w"))
+        size.x = v//w->Real
+        size.y = v//h->Real
+      elseIf (v.contains("size"))
+        size = v//size->XY
+      endIf
+
+      return Box( position, size )
+
     method from_corners( top_left:XY, bottom_right:XY )->Box
       local tl = top_left.or_smaller( bottom_right )
       local br = top_left.or_larger( bottom_right )
@@ -290,6 +316,9 @@ class Box( position:XY, size:XY ) [essential compound]
 
     method to->String
       return "[$,$ $x$]" (position.x,position.y,size.x,size.y)
+
+    method to->Variant
+      return Variant( this )
 
     method top->Real
       return this.position.y

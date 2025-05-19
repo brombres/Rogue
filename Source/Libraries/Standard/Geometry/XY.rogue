@@ -288,7 +288,7 @@ class XY( x:Real, y:Real ) [compound]
       return "($,$)"(x,y)
 
     method to->Variant
-      return @{ x, y }
+      return Variant(this)
 
     method with_degrees( degrees:Degrees )->XY
       return XY( magnitude, degrees )
