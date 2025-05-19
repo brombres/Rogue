@@ -27,7 +27,8 @@ class State<<$ExtendedType,$change_state,$exit_state>>
       return a.also( b )
 
     method wait( duration:Real )->$ExtendedType
-      return StateWait<<$ExtendedType>>( duration )
+      if (duration <= 0) return wait_for( () => true )
+      else               return StateWait<<$ExtendedType>>( duration )
 
     method wait_for( condition:Function->Logical, duration=$ExtendedType.INDEFINITE:Real )->$ExtendedType
       return StateWaitFor<<$ExtendedType>>( condition, duration )
