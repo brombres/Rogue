@@ -1,6 +1,7 @@
 library Geometry
 
 $include Geometry/Anchor
+$include Geometry/BezierCurve
 $include Geometry/Box
 $include Geometry/Circle
 $include Geometry/Corners

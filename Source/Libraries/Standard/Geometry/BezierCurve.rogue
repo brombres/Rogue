@@ -1,0 +1,74 @@
+library Geometry
+
+class BezierCurve
+  PROPERTIES
+    control_points = XY[](5)
+    work_points    = XY[](5)
+    curve_points   = XY[]
+    is_modified    = false
+
+  METHODS
+    method cloned->BezierCurve
+      local result = BezierCurve()
+      result.control_points.[clear].add( control_points )
+      result.is_modified = true
+      return result
+
+    method add( point:XY )
+      control_points.add( point )
+      is_modified = true
+
+    method at( t:Real )->XY
+      work_points.[clear].add( control_points )
+      while (work_points.count > 1)
+        local next = work_points.remove_last
+        forEach (cur at index in work_points step -1)
+          work_points[ index ] = Line(cur,next).at( t )
+          next = cur
+        endForEach
+      endWhile
+      return work_points[0]
+
+    method clear
+      control_points.clear
+      curve_points.clear
+      is_modified = false
+
+    method count->Int
+      return control_points.count
+
+    method first->XY
+      return control_points.first
+
+    method get( index:Int )->XY
+      return control_points[ index ]
+
+    method last->XY
+      return control_points.last
+
+    method set( index:Int, new_value:XY )
+      if (control_points[index] != new_value) is_modified = true
+      control_points[ index ] = new_value
+
+    method description->String
+      return control_points->String
+
+    method to->XY[]
+      return update_curve
+
+    method update_curve->XY[]
+      if (not is_modified) return curve_points
+      is_modified = false
+
+      curve_points.clear
+
+      curve_points.add( control_points.first )
+      local t_step = 1.0 / (control_points.last - control_points.first).abs.max.ceiling
+      forEach (t in t_step ..< 1.0 step t_step)
+        curve_points.add( at(t) )
+      endForEach
+      curve_points.add( control_points.last )
+
+      return curve_points
+
+endClass
