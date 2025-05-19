@@ -70,6 +70,11 @@ class EasedValue<<$DataType>> : TargetValue<<$DataType>>
       local duration_ms = (duration*1000)->Int
       return ((System.execution_time_ms - start_time_ms)->Real / duration_ms).clamped( 0, 1 )
 
+    method reset( new_initial_value:Real, new_target_value:Real, duration=null:Real? )
+      if (duration) this.duration = duration.value
+      value = new_initial_value
+      target_value = new_target_value
+
     method set_target_value( new_target_value:$DataType )->this
       if (target_value == new_target_value) return this
       initial_value = value
