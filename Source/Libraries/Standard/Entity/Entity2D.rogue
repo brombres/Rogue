@@ -79,6 +79,12 @@ class Entity2D : Entity
     method scale_to_fit( size:XY )
       scale = (size / nominal_size).min
 
+    method scale_to_height( height:Real )
+      scale = height / nominal_size.y
+
+    method scale_to_width( width:Real )
+      scale = width / nominal_size.x
+
     method set_rotation( @rotation )
 
     method set_rotation( degrees:Degrees )
