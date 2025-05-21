@@ -2596,6 +2596,7 @@ parser
 
 - temporarily
   on "temporarily"
+    consume_eols
     beginList
       temporary_assignment
       while (consume(','))
