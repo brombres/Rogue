@@ -58,17 +58,27 @@ class Entity : Node<<Entity>>
       .begin_draw
       .handle_draw
       .handle_draw( &fg )
-
-    method draw( &fg )
-      if (fg == attributes.foreground) .draw_entity
+      .end_draw
 
     method h_flip->Logical
       return attributes.h_flip
+
+    method on_begin_draw
+      noAction
+
+    method on_begin_update
+      noAction
 
     method on_draw
       noAction
 
     method on_draw_fg
+      noAction
+
+    method on_end_draw
+      noAction
+
+    method on_end_update
       noAction
 
     method on_start
@@ -100,12 +110,14 @@ class Entity : Node<<Entity>>
       else       return type_name
 
     method update
-      if (not attributes.started) start
+      .begin_update
 
       script = script?.updated
       if (actions) actions = actions.updated
       on_update
       (forEach in children).update
+
+      .end_update
 
     method v_flip->Logical
       return attributes.v_flip
@@ -115,11 +127,22 @@ class Entity : Node<<Entity>>
 
     method .begin_draw
       if (not attributes.started) start
+      on_begin_draw
+
+    method .begin_update
+      if (not attributes.started) start
+      on_begin_update
 
     method .dispatch_draw
       if (count)
         (forEach in children).draw
       endIf
+
+    method .end_draw
+      on_end_draw
+
+    method .end_update
+      on_end_update
 
     method .handle_draw( &fg )
       if (attributes.hidden) return
