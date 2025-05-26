@@ -1748,22 +1748,20 @@ parser
   endOn
 
 - inline_which
-  on "which"
+  consume_eols
+  mustConsume '{'
+  consume_eols
+  beginList
+    inline_which_case
     consume_eols
-    mustConsume '{'
-    consume_eols
-    beginList
+    while (consume("||"))
+      consume_eols
       inline_which_case
       consume_eols
-      while (consume("||"))
-        consume_eols
-        inline_which_case
-        consume_eols
-      endWhile
-    createList InlineWhichCases
-    mustConsume '}'
-    produce InlineWhich(cases:InlineWhichCases)
-  endOn
+    endWhile
+  createList InlineWhichCases
+  mustConsume '}'
+  produce InlineWhich(cases:InlineWhichCases)
 
 - inline_which_case
   inline_which_expression
@@ -3194,7 +3192,14 @@ parser
     endIf
     return
   endOn
-  onPeek "which" inline_which: return
+
+  on "which"
+    inline_which
+    return
+  elseOn '?:'
+    inline_which
+    return
+  endOn
 
   # '(Function...)' type
   onPeek '('
