@@ -66,10 +66,17 @@ class ProgressFn
                         t *= 2
                         if (t < 1) return 0.5 * t * t * t
                         t -= 2
-                        return 0.5 * (t * t *t + 2)
+                        return 0.5 * (t * t * t + 2)
                       endFunction
     CUBIC_IN        = function(t:Real)->Real: return t * t * t
     CUBIC_OUT       = function(t:Real)->Real: --t; return 1 + t * t * t
+
+    CUBIC_INVERSE     = function(p:Real)->Real
+                          if (p < 0.5) return (p / 4).cube_root
+                          else         return 1 + ((p - 1) / 4).cube_root
+                        endFunction
+    CUBIC_IN_INVERSE  = function(p:Real)->Real: return p.cube_root
+    CUBIC_OUT_INVERSE = function(p:Real)->Real: return 1 + (p - 1.0).cube_root
 
     ELASTIC         = function(t:Real)->Real
                         if( t < 0.45 )
