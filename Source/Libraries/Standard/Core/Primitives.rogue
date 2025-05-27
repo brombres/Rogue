@@ -19,6 +19,9 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
     method cos->Real64
       return native("cos($this)")->Real64
 
+    method cube_root->Real64
+      return native("cbrt($this)")->Real64
+
     method exp->Real64
       return native("exp($this)")->Real64
 
@@ -288,6 +291,9 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
     method cos->Real
       return this->REAL_TYPE.cos
 
+    method cube_root->Real
+      return this->REAL_TYPE.cube_root
+
     method exp->Real
       return this->REAL_TYPE.exp
 
@@ -408,6 +414,9 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
 
     method cos->Real32
       return native("cosf($this)")->Real32
+
+    method cube_root->Real32
+      return native("cbrtf($this)")->Real32
 
     method exp->Real32
       return native("expf($this)")->Real32
