@@ -2,19 +2,19 @@ library UI
 
 class Border : Component
   PROPERTIES
-    is_proportional              : Logical
-    left, top, right, bottom     : Real
-    .left, .top, .right, .bottom : Real
+    is_proportional                      : Logical
+    left, top, right, bottom             : Real  # original pixel or proportional values
+    left_px, top_px, right_px, bottom_px : Real  # current pixel values derived from 'left' etc.
 
   METHODS
     method content_size_to_layout_size( content_size:XY )->XY
-      return content_size + XY(.left+.right,.top+.bottom)
+      return content_size + XY(left_px+right_px,top_px+bottom_px)
 
     method content_position->XY
-      return XY(.left,.top)
+      return XY(left_px,top_px)
 
     method content_size->XY
-      return (size - XY(.left+.right,.top+.bottom)).clamped_low(XY(0,0))
+      return (size - XY(left_px+right_px,top_px+bottom_px)).clamped_low(XY(0,0))
 
     method fixed
       is_proportional = false
@@ -24,15 +24,15 @@ class Border : Component
 
     method resolve_layout_size( available_size:XY, &limited )->XY [override]
       if (is_proportional)
-        .left = left * available_size.x
-        .top = top * available_size.y
-        .right = right * available_size.x
-        .bottom = bottom * available_size.y
+        left_px = left * available_size.x
+        top_px = top * available_size.y
+        right_px = right * available_size.x
+        bottom_px = bottom * available_size.y
       else
-        .left = left
-        .top = top
-        .right = right
-        .bottom = bottom
+        left_px = left
+        top_px = top
+        right_px = right
+        bottom_px = bottom
       endIf
       return prior.resolve_layout_size( available_size, &=limited )
 

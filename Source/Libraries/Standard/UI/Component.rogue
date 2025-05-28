@@ -41,7 +41,7 @@ class Component : Entity
       # Called at the beginning of layout
       noAction
 
-    method on_layout( layout_size:XY )
+    method on_layout_size( layout_size:XY )
       # Called when this component's size has been set but before
       # child component sizes are set.
       noAction
@@ -412,9 +412,8 @@ class Component : Entity
       return sz
 
     method resolve_child_layout_sizes
-      local sz = content_size
-      on_layout( sz )
-      resolve_child_layout_sizes( sz )
+      on_layout_size( size )
+      resolve_child_layout_sizes( content_size )
 
     method resolve_child_layout_sizes( available_size:XY )
       use components = WorkList<<Component>>
@@ -449,14 +448,17 @@ class Component : Entity
 
     method set_fixed_size( layout_size )
       layout_mode = LayoutModeXY( LayoutMode.FIXED_SIZE, LayoutMode.FIXED_SIZE )
+      size = layout_size
 
     method set_fixed_height( h:Real )
       layout_size.y = h
       layout_mode.y = LayoutMode.FIXED_SIZE
+      size.y = h
 
     method set_fixed_width( w:Real )
       layout_size.x = w
       layout_mode.x = LayoutMode.FIXED_SIZE
+      size.x = w
 
     method set_proportional_size( layout_size )
       layout_mode = LayoutModeXY( LayoutMode.PROPORTIONAL, LayoutMode.PROPORTIONAL )
