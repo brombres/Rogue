@@ -81,6 +81,8 @@ class Widget : Component
 
     method on_select
 
+    method on_select( on_select_callback )
+
     method release_pointer_focus
       if (has_pointer_focus)
         if (widget_state != WidgetState.DISABLED) widget_state = WidgetState.IDLE

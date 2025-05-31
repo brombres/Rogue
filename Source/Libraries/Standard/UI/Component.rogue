@@ -94,6 +94,24 @@ class Component : Entity
         endIf
       endIf
 
+    method aspect_fill( aspect_size )
+      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FILL, LayoutMode.ASPECT_FILL )
+
+    method aspect_fill_height( aspect_size )
+      layout_mode.y = LayoutMode.ASPECT_FILL
+
+    method aspect_fill_width( aspect_size )
+      layout_mode.x = LayoutMode.ASPECT_FILL
+
+    method aspect_fit( aspect_size )
+      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FIT, LayoutMode.ASPECT_FIT )
+
+    method aspect_fit_height( aspect_size )
+      layout_mode.y = LayoutMode.ASPECT_FIT
+
+    method aspect_fit_width( aspect_size )
+      layout_mode.x = LayoutMode.ASPECT_FIT
+
     method begin_layout
       on_layout
       use components = WorkList<<Component>>
@@ -426,24 +444,6 @@ class Component : Entity
 
     method set_anchor( @anchor )
       noAction
-
-    method set_aspect_fill( aspect_size )
-      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FILL, LayoutMode.ASPECT_FILL )
-
-    method set_aspect_fill_height( aspect_size )
-      layout_mode.y = LayoutMode.ASPECT_FILL
-
-    method set_aspect_fill_width( aspect_size )
-      layout_mode.x = LayoutMode.ASPECT_FILL
-
-    method set_aspect_fit( aspect_size )
-      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FIT, LayoutMode.ASPECT_FIT )
-
-    method set_aspect_fit_height( aspect_size )
-      layout_mode.y = LayoutMode.ASPECT_FIT
-
-    method set_aspect_fit_width( aspect_size )
-      layout_mode.x = LayoutMode.ASPECT_FIT
 
     method set_content( content:Component )
       remove_children
