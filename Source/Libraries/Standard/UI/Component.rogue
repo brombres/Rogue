@@ -9,6 +9,7 @@ class Component : Entity
     alignment      : Anchor?
     layout_mode    : LayoutModeXY
     layout_size    : XY
+    aspect_size    : XY
     content_offset : XY
     weight         = XY(1,1)
     font           : Font
@@ -345,7 +346,8 @@ class Component : Entity
         case SHRINK_TO_FIT
           noAction
         case ASPECT_FIT
-          local fit_x = (available_size.y / (layout_size.y || 1.0)) * layout_size.x
+          local available_y = ?:{ layout_mode.y==LayoutMode.FIXED_SIZE:layout_size.y || available_size.y }
+          local fit_x = (available_y / (aspect_size.y || 1.0)) * aspect_size.x
           if (snap) fit_x .= floor
           if (layout_mode.y == LayoutMode.ASPECT_FILL or fit_x <= available_size.x)
             sz.x = fit_x
@@ -354,9 +356,9 @@ class Component : Entity
           endIf
         case ASPECT_FILL
           if (layout_mode.y != LayoutMode.ASPECT_FIT)
-            local scale_x = (available_size.x / (layout_size.x || 1.0))
-            local scale_y = (available_size.y / (layout_size.y || 1.0))
-            sz.x = scale_x.or_larger(scale_y) * layout_size.x
+            local scale_x = (available_size.x / (aspect_size.x || 1.0))
+            local scale_y = (available_size.y / (aspect_size.y || 1.0))
+            sz.x = scale_x.or_larger(scale_y) * aspect_size.x
             if (snap) sz.x .= floor
           endIf
         case PROPORTIONAL
@@ -373,7 +375,8 @@ class Component : Entity
         case SHRINK_TO_FIT
           noAction
         case ASPECT_FIT
-          local fit_y = (available_size.x / (layout_size.x || 1.0)) * layout_size.y
+          local available_x = ?:{ layout_mode.x==LayoutMode.FIXED_SIZE:layout_size.x || available_size.x }
+          local fit_y = (available_x / (aspect_size.x || 1.0)) * aspect_size.y
           if (snap) fit_y .= floor
           if (layout_mode.x == LayoutMode.ASPECT_FILL or fit_y <= available_size.y)
             sz.y = fit_y
@@ -382,9 +385,9 @@ class Component : Entity
           endIf
         case ASPECT_FILL
           if (layout_mode.x != LayoutMode.ASPECT_FIT)
-            local scale_x = (available_size.x / (layout_size.x || 1.0))
-            local scale_y = (available_size.y / (layout_size.y || 1.0))
-            sz.y = scale_x.or_larger(scale_y) * layout_size.y
+            local scale_x = (available_size.x / (aspect_size.x || 1.0))
+            local scale_y = (available_size.y / (aspect_size.y || 1.0))
+            sz.y = scale_x.or_larger(scale_y) * aspect_size.y
             if (snap) sz.y .= floor
           endIf
         case PROPORTIONAL
@@ -424,22 +427,22 @@ class Component : Entity
     method set_anchor( @anchor )
       noAction
 
-    method set_aspect_fill( layout_size )
+    method set_aspect_fill( aspect_size )
       layout_mode = LayoutModeXY( LayoutMode.ASPECT_FILL, LayoutMode.ASPECT_FILL )
 
-    method set_aspect_fill_height( layout_size )
+    method set_aspect_fill_height( aspect_size )
       layout_mode.y = LayoutMode.ASPECT_FILL
 
-    method set_aspect_fill_width( layout_size )
+    method set_aspect_fill_width( aspect_size )
       layout_mode.x = LayoutMode.ASPECT_FILL
 
-    method set_aspect_fit( layout_size )
+    method set_aspect_fit( aspect_size )
       layout_mode = LayoutModeXY( LayoutMode.ASPECT_FIT, LayoutMode.ASPECT_FIT )
 
-    method set_aspect_fit_height( layout_size )
+    method set_aspect_fit_height( aspect_size )
       layout_mode.y = LayoutMode.ASPECT_FIT
 
-    method set_aspect_fit_width( layout_size )
+    method set_aspect_fit_width( aspect_size )
       layout_mode.x = LayoutMode.ASPECT_FIT
 
     method set_content( content:Component )

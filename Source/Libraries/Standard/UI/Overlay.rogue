@@ -7,7 +7,7 @@ class Overlay : Component
 
   METHODS
     method perform_layout( position ) [override]
-      prior.perform_layout( position + content_bounds.size * offset )
+      prior.perform_layout( Box(position + content_bounds.size * offset, size).relative_to(anchor).position )
 
     method resolve_child_layout_sizes( available_size:XY ) [override]
       local is_scaled = (scale != XY(1,1))
