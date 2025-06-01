@@ -45,6 +45,7 @@ class State<<$ExtendedType,$change_state,$exit_state>>
     t           : Real
     dt          : Real  # time since last update
     prev_time   : Real  # 0 = not started
+    timescale   = 1.0
 
     is_exited   : Logical # flag that assists when states finish outside of updated()
 
@@ -209,7 +210,7 @@ class State<<$ExtendedType,$change_state,$exit_state>>
         else
           dt = (cur_time - prev_time)
           if (dt > 1.0/10.0) dt = 1.0/60.0
-          t += dt
+          t += dt * timescale
           if (duration >= 0 and t > duration) t = duration
         endIf
 
