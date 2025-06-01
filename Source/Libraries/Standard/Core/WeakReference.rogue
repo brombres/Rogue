@@ -34,7 +34,7 @@ class WeakReference [essential]
 
   GLOBAL METHODS
     method operator?( ref:WeakReference )->Logical
-      return native( "!!$ref->object" )->Logical
+      return native( "$ref && !!$ref->object" )->Logical
 
 endClass
 
