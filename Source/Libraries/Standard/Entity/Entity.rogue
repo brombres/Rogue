@@ -155,12 +155,12 @@ class Entity : Node<<Entity>>
         script?.call<<on_draw_fg>>
         actions?.call<<on_draw_fg>>
       else
-        if (not attributes.foreground) .draw_entity
-
         on_draw
 
         script?.call<<on_draw>>
         actions?.call<<on_draw>>
+
+        if (not attributes.foreground) .draw_entity
 
         .dispatch_draw
       endIf

@@ -16,7 +16,7 @@ class HFlow : Component
 
       return layout_cursor
 
-    method on_layout
+    method on_begin_layout
       layout_finished = false
 
     method perform_layout( position )

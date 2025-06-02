@@ -157,7 +157,7 @@ class VScrollView : Component
         allow_momentum_scroll = true
       endIf
 
-    method on_layout
+    method on_begin_layout
       if (not tracks_bottom and bottom_offset)
         tracks_bottom = (content_offset.y <= bottom_offset)
       endIf
