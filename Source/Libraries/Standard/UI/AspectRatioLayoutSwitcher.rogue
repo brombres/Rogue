@@ -1,6 +1,6 @@
 library UI
 
-class AspectLayout : Component
+class AspectRatioLayoutSwitcher : Component
   PROPERTIES
     alternates = AlternateAspectLayout[]
 
