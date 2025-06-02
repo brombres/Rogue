@@ -1,10 +1,20 @@
 $include Control/State
 
 class Action : State<<Action>>
+  GLOBAL PROPERTIES
+    global_timescale = 1.0
+
+  PROPERTIES
+    timescale = 1.0
+
+
   METHODS
     method on_draw
       noAction
 
     method on_draw_fg
       noAction
+
+    method timescale->Real
+      return global_timescale * @timescale
 endClass

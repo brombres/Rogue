@@ -45,7 +45,6 @@ class State<<$ExtendedType,$change_state,$exit_state>>
     t           : Real
     dt          : Real  # time since last update
     prev_time   : Real  # 0 = not started
-    timescale   = 1.0
 
     is_exited   : Logical # flag that assists when states finish outside of updated()
 
@@ -183,6 +182,9 @@ class State<<$ExtendedType,$change_state,$exit_state>>
       .handle_finish
 
       return .start_next
+
+    method timescale->Real
+      return 1.0
 
     method to->String
       return description
