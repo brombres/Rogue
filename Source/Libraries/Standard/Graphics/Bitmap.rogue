@@ -774,23 +774,30 @@ class Bitmap
       # alpha value - so Color(255,192,0,127) becomes Color(127,95,0,127).
       if (is_premultiplied_alpha) return
 
+      native
+      @|RogueInt32* data = $pixels->as_int32s - 1;
+       |int count = $width * $height;
+       |while (--count >= 0)
+       |{
+       |  RogueInt32 argb = *(++data);
+       |  int a = (argb >> 24) & 255;
+       |  if (a)
+       |  {
+       |    int r = (argb >> 16) & 255;
+       |    int g = (argb >> 8)  & 255;
+       |    int b = argb & 255;
+       |    r = (r * a) / 255;
+       |    g = (g * a) / 255;
+       |    b = (b * a) / 255;
+       |    *data = (a<<24) | (r<<16) | (g<<8) | b;
+       |  }
+       |  else
+       |  {
+       |    *data = 0;
+       |  }
+       |}
+
       is_premultiplied_alpha = true
-      forEach (i of pixels)
-        local argb = pixels[i].argb
-        local a = argb :>>>: 24 & 255
-        if (a)
-          local r = argb :>>>: 16 & 255
-          local g = argb :>>>: 8 & 255
-          local b = argb & 255
-          r = (r * a) / 255
-          g = (g * a) / 255
-          b = (b * a) / 255
-          local premultiplied_argb = (a:<<:24) | (r:<<:16) | (g:<<:8) | b
-          pixels[i] = Color( premultiplied_argb )
-        else
-          pixels[i] = Color( 0 )
-        endIf
-      endForEach
 
     method reframe( new_width:Int, new_height:Int, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )
       crop( new_width, new_height, anchor, &=pad_color )
@@ -1130,17 +1137,56 @@ class Bitmap
       # component values may not be exactly the same as before.
       if (not is_premultiplied_alpha) return
 
+      native
+      @|RogueInt32* data = $pixels->as_int32s - 1;
+       |int count = $width * $height;
+       |while (--count >= 0)
+       |{
+       |  RogueInt32 argb = *(++data);
+       |  int a = (argb >> 24) & 255;
+       |  if (a)
+       |  {
+       |    int r = (((argb>>16) & 255) * 255 + (a>>1)) / a;
+       |    int g = (((argb>>8) & 255) * 255 + (a>>1)) / a;
+       |    int b = ((argb & 255) * 255 + (a>>1)) / a;
+       |    *data = (a<<24) | (r<<16) | (g<<8) | b;
+       |  }
+       |}
+
       is_premultiplied_alpha = false
-      forEach (i of pixels)
-        local argb = pixels[i].argb
-        local a = (argb:>>>:24) & 255
-        if (a)
-          local r = ((argb:>>>:16) & 255) * 255 / a
-          local g = ((argb:>>>:8) & 255) * 255 / a
-          local b = (argb & 255) * 255 / a
-          pixels[i] = Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
-        endIf
-      endForEach
+
+    method validate_premultiplied_alpha
+      # Checks for pixels that
+      if (not is_premultiplied_alpha) return
+
+      native
+      @|RogueInt32* data = $pixels->as_int32s - 1;
+       |int count = $width * $height;
+       |while (--count >= 0)
+       |{
+       |  RogueInt32 argb = *(++data);
+       |  int a = (argb >> 24) & 255;
+       |  if (a)
+       |  {
+       |    int r = (argb >> 16) & 255;
+       |    int g = (argb >> 8)  & 255;
+       |    int b = argb & 255;
+       |    if (r > a || g > a || b > a)
+       |    {
+       |      r = (r * 255 + (a>>1)) / a;
+       |      g = (g * 255 + (a>>1)) / a;
+       |      b = (b * 255 + (a>>1)) / a;
+       |      if (r > 255) r = 255;
+       |      if (g > 255) g = 255;
+       |      if (b > 255) b = 255;
+       |      *data = (a<<24) | (r<<16) | (g<<8) | b;
+       |    }
+       |  }
+       |  else
+       |  {
+       |    *data = 0;
+       |  }
+       |}
 
 endClass
 
@@ -1461,7 +1507,12 @@ augment Rogue::MacOS
        |}
        |#endif
 
-      if (result) result.[ swap_red_and_blue, is_premultiplied_alpha=true, unmultiply_alpha ]
+      if (result)
+        result.swap_red_and_blue
+        result.is_premultiplied_alpha = true
+        result.validate_premultiplied_alpha
+        result.unmultiply_alpha
+      endIf
       return result
 
     method encode_bitmap( bitmap:Graphics::Bitmap, type:Graphics::BitmapEncodingType )->Byte[]
