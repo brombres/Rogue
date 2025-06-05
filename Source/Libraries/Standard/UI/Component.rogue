@@ -12,9 +12,9 @@ class Component : Entity
     aspect_size    : XY
     content_offset : XY
     weight         = XY(1,1)
-    font           : Font
-
     opacity        = 1.0
+    font           : Font
+    reference      : Component
 
   METHODS # Overrides
     method init
@@ -380,11 +380,11 @@ class Component : Entity
             if (snap) sz.x .= floor
           endIf
         case PROPORTIONAL
-          sz.x = available_size.x * layout_size.x
+          if (reference) sz.x = reference.size.x * layout_size.x
+          else           sz.x = available_size.x * layout_size.x
           if (snap) sz.x .= floor
         case FIXED_SIZE
           sz.x = layout_size.x
-        #case PARAMETER
       endWhich
 
       which (layout_mode.y)
@@ -409,11 +409,11 @@ class Component : Entity
             if (snap) sz.y .= floor
           endIf
         case PROPORTIONAL
-          sz.y = available_size.y * layout_size.y
+          if (reference) sz.y = reference.size.y * layout_size.y
+          else           sz.y = available_size.y * layout_size.y
           if (snap) sz.y .= floor
         case FIXED_SIZE
           sz.y = layout_size.y
-        #case PARAMETER
       endWhich
 
       size = sz
@@ -466,13 +466,22 @@ class Component : Entity
     method set_proportional_size( layout_size )
       layout_mode = LayoutModeXY( LayoutMode.PROPORTIONAL, LayoutMode.PROPORTIONAL )
 
+    method set_proportional_size( reference, layout_size:XY )
+      set_proportional_size( layout_size )
+
     method set_proportional_height( h:Real )
       layout_size.y = h
       layout_mode.y = LayoutMode.PROPORTIONAL
 
+    method set_proportional_height( reference, h:Real )
+      set_proportional_height( h )
+
     method set_proportional_width( w:Real )
       layout_size.x = w
       layout_mode.x = LayoutMode.PROPORTIONAL
+
+    method set_proportional_width( reference, w:Real )
+      set_proportional_width( w )
 
     method set_structure_modified( setting:Logical ) [override]
       prior.set_structure_modified( setting )

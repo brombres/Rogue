@@ -7,7 +7,6 @@ enum LayoutMode
   PROPORTIONAL
   SHRINK_TO_FIT
   FIXED_SIZE
-  PARAMETER
 endEnum
 
 class LayoutModeXY( x:LayoutMode, y:LayoutMode ) [compound]
