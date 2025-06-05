@@ -17,10 +17,6 @@ class EndScopePatcher : Visitor [singleton]
       control_stack.remove_last
       return cmd
 
-    #method on_visit( cmd:Escape )->Cmd
-      #if ((forEach in control_stack).catches(cmd)) return cmd
-      #return patched_statements( cmd )
-
     method on_visit( cmd:Return )->Cmd
       if (cmd.result)
         # return expression
@@ -59,6 +55,12 @@ class EndScopePatcher : Visitor [singleton]
 
     method on_visit( cmd:Throw )->Cmd
       return patched_statements( cmd )
+
+    method on_visit_children( cmd:FunctionDefinition )
+      noAction
+
+    method on_visit_children( cmd:GenericFunctionDefinition )
+      noAction
 
     method patched_statements( cmd:Cmd )->Cmd
       return Statements( cmd.t, resolver.visit(insert_cmd.cloned), cmd )
