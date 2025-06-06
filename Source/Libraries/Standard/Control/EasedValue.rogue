@@ -47,6 +47,9 @@ class TargetValue<<$DataType>> [abstract]
       return target_value
 endClass
 
+class EasedValue : EasedValue<<Real>>
+endClass
+
 class EasedValue<<$DataType>> : TargetValue<<$DataType>>
   PROPERTIES
     initial_value : $DataType
@@ -56,10 +59,10 @@ class EasedValue<<$DataType>> : TargetValue<<$DataType>>
     duration_fn   : Function($DataType)->Real
 
   METHODS
-    method init( initial_value, duration=0.5, progress_fn=ProgressFn.QUADRATIC, duration_fn=null )
-      @target_value = initial_value
+    method init( initial_value, target_value:Real, duration:Real, progress_fn=ProgressFn.QUADRATIC, duration_fn=null )
+      set_target_value( target_value )
 
-    method init( initial_value, duration_fn, progress_fn=ProgressFn.QUADRATIC )
+    method init( initial_value, duration=0.5, progress_fn=ProgressFn.QUADRATIC, duration_fn=null )
       @target_value = initial_value
 
     method delta->$DataType
