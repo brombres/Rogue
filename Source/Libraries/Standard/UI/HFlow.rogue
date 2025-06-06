@@ -11,7 +11,7 @@ class HFlow : Component
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
       resolve_child_layout_sizes
 
-      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) size.x = available_size.x
+      if (sizing_mode.x == SizingMode.SHRINK_TO_FIT) size.x = available_size.x
       perform_layout( XY.zero )
 
       return layout_cursor

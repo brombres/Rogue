@@ -1,6 +1,6 @@
 library UI
 
-enum LayoutMode
+enum SizingMode
   EXPAND_TO_FILL
   ASPECT_FIT
   ASPECT_FILL
@@ -9,5 +9,5 @@ enum LayoutMode
   FIXED_SIZE
 endEnum
 
-class LayoutModeXY( x:LayoutMode, y:LayoutMode ) [compound]
+class SizingModeXY( x:SizingMode, y:SizingMode ) [compound]
 endClass

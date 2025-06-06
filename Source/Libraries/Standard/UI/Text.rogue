@@ -6,7 +6,7 @@ class Text : Component
     style : TextStyle
     shrink_to_fit_text_x : Logical
     shrink_to_fit_text_y : Logical
-    layout_mode = LayoutModeXY( LayoutMode.FIXED_SIZE, LayoutMode.FIXED_SIZE )
+    sizing_mode = SizingModeXY( SizingMode.FIXED_SIZE, SizingMode.FIXED_SIZE )
 
   METHODS
     method init( text=String():String )
@@ -140,15 +140,15 @@ class Text : Component
     method on_begin_layout [override]
       local sz = font?.measure(value || "")
 
-      if (layout_mode.x == LayoutMode.FIXED_SIZE)
-        if (layout_mode.y == LayoutMode.FIXED_SIZE)
+      if (sizing_mode.x == SizingMode.FIXED_SIZE)
+        if (sizing_mode.y == SizingMode.FIXED_SIZE)
           fixed_size =  font?.measure(value || "")
           size = layout_size
         else
           fixed_width =  font?.measure(value || "").x
           size.x = layout_size.x
         endIf
-      elseIf (layout_mode.y == LayoutMode.FIXED_SIZE)
+      elseIf (sizing_mode.y == SizingMode.FIXED_SIZE)
         fixed_height = font?.measure(value || "").y
         size.y = layout_size.y
       endIf
@@ -182,11 +182,11 @@ class Text : Component
 
     method shrink_to_fit_text_height
       shrink_to_fit_text_y = true
-      layout_mode.y = LayoutMode.EXPAND_TO_FILL
+      sizing_mode.y = SizingMode.EXPAND_TO_FILL
 
     method shrink_to_fit_text_width
       shrink_to_fit_text_x = true
-      layout_mode.x = LayoutMode.EXPAND_TO_FILL
+      sizing_mode.x = SizingMode.EXPAND_TO_FILL
 
     method split_h( split_position:Real, components:Component[], component_i:Int ) [override]
       local left, center, right : Text

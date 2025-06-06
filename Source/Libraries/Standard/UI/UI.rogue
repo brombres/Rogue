@@ -14,7 +14,7 @@ $include UI/Font
 $include UI/HBox
 $include UI/HFlow
 $include UI/Label
-$include UI/LayoutMode
+$include UI/SizingMode
 $include UI/MetaComponent
 $include UI/Overlay
 $include UI/Text

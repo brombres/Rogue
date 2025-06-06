@@ -2,12 +2,35 @@ library UI
 
 class Overlay : Component
   PROPERTIES
-    offset = XY(0,0)  # proportional 0.0-1.0
+    offset = XY(0,0)
     scale  = XY(1,1)
+    uses_proportional_offset : Logical
+    anchor = Anchor.TOP_LEFT : Anchor?
+    position_reference       : Component
 
   METHODS
-    method perform_layout( position ) [override]
-      prior.perform_layout( Box(position + content_bounds.size * offset, size).relative_to(anchor).position )
+    method display_position->XY
+      if (position_reference) return position
+      else                    return prior.display_position
+
+    method match_bounds( position_reference:Component )
+      set_proportional_offset( position_reference, XY(0,0) )
+      set_proportional_size( position_reference, XY(1,1) )
+
+    method perform_layout( inline_position:XY ) [override]
+      if (position_reference)
+        if (uses_proportional_offset)
+          position = position_reference.display_position + offset * position_reference.size
+        else
+          position = position_reference.display_position + offset
+        endIf
+      elseIf (uses_proportional_offset)
+        position = Box( inline_position + offset * size, size ).relative_to( anchor ).position
+      else
+        position = Box( inline_position + offset, size ).relative_to( anchor ).position
+      endIf
+
+      prior.perform_layout( position )
 
     method resolve_child_layout_sizes( available_size:XY ) [override]
       local is_scaled = (scale != XY(1,1))
@@ -18,5 +41,18 @@ class Overlay : Component
           if (is_scaled) component.resolve_layout_size( full_size * scale )
         endForEach
       endUse
+
+    method set_offset( @offset )
+      uses_proportional_offset = false
+
+    method set_proportional_offset( @offset )
+      uses_proportional_offset = true
+
+    method set_offset( position_reference, offset:XY )
+      set_offset( offset )
+
+    method set_proportional_offset( position_reference, offset:XY )
+      set_proportional_offset( offset )
+
 endClass
 

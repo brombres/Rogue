@@ -7,14 +7,14 @@ class Component : Entity
 
     anchor         : Anchor?
     alignment      : Anchor?
-    layout_mode    : LayoutModeXY
+    sizing_mode    : SizingModeXY
     layout_size    : XY
     aspect_size    : XY
     content_offset : XY
     weight         = XY(1,1)
     opacity        = 1.0
     font           : Font
-    reference      : Component
+    size_reference : Component
 
   METHODS # Overrides
     method init
@@ -95,22 +95,22 @@ class Component : Entity
       endIf
 
     method aspect_fill( aspect_size )
-      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FILL, LayoutMode.ASPECT_FILL )
+      sizing_mode = SizingModeXY( SizingMode.ASPECT_FILL, SizingMode.ASPECT_FILL )
 
     method aspect_fill_height( aspect_size )
-      layout_mode.y = LayoutMode.ASPECT_FILL
+      sizing_mode.y = SizingMode.ASPECT_FILL
 
     method aspect_fill_width( aspect_size )
-      layout_mode.x = LayoutMode.ASPECT_FILL
+      sizing_mode.x = SizingMode.ASPECT_FILL
 
     method aspect_fit( aspect_size )
-      layout_mode = LayoutModeXY( LayoutMode.ASPECT_FIT, LayoutMode.ASPECT_FIT )
+      sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT, SizingMode.ASPECT_FIT )
 
     method aspect_fit_height( aspect_size )
-      layout_mode.y = LayoutMode.ASPECT_FIT
+      sizing_mode.y = SizingMode.ASPECT_FIT
 
     method aspect_fit_width( aspect_size )
-      layout_mode.x = LayoutMode.ASPECT_FIT
+      sizing_mode.x = SizingMode.ASPECT_FIT
 
     method begin_layout
       on_begin_layout
@@ -204,13 +204,13 @@ class Component : Entity
       endUse
 
     method expand_to_fill
-      layout_mode = LayoutModeXY( LayoutMode.EXPAND_TO_FILL, LayoutMode.EXPAND_TO_FILL )
+      sizing_mode = SizingModeXY( SizingMode.EXPAND_TO_FILL, SizingMode.EXPAND_TO_FILL )
 
     method expand_to_fill_height
-      layout_mode.y = LayoutMode.EXPAND_TO_FILL
+      sizing_mode.y = SizingMode.EXPAND_TO_FILL
 
     method expand_to_fill_width
-      layout_mode.x = LayoutMode.EXPAND_TO_FILL
+      sizing_mode.x = SizingMode.EXPAND_TO_FILL
 
     method find( at_position:XY )->Entity
       if (not display_bounds.contains(at_position)) return null
@@ -358,59 +358,59 @@ class Component : Entity
       local sz = available_size
       local snap = UI.snap_to_pixel_coordinates
 
-      which (layout_mode.x)
+      which (sizing_mode.x)
         case EXPAND_TO_FILL
           noAction
         case SHRINK_TO_FIT
           noAction
         case ASPECT_FIT
-          local available_y = ?:{ layout_mode.y==LayoutMode.FIXED_SIZE:layout_size.y || available_size.y }
+          local available_y = ?:{ sizing_mode.y==SizingMode.FIXED_SIZE:layout_size.y || available_size.y }
           local fit_x = (available_y / (aspect_size.y || 1.0)) * aspect_size.x
           if (snap) fit_x .= floor
-          if (layout_mode.y == LayoutMode.ASPECT_FILL or fit_x <= available_size.x)
+          if (sizing_mode.y == SizingMode.ASPECT_FILL or fit_x <= available_size.x)
             sz.x = fit_x
           else
             sz.x = available_size.x
           endIf
         case ASPECT_FILL
-          if (layout_mode.y != LayoutMode.ASPECT_FIT)
+          if (sizing_mode.y != SizingMode.ASPECT_FIT)
             local scale_x = (available_size.x / (aspect_size.x || 1.0))
             local scale_y = (available_size.y / (aspect_size.y || 1.0))
             sz.x = scale_x.or_larger(scale_y) * aspect_size.x
             if (snap) sz.x .= floor
           endIf
         case PROPORTIONAL
-          if (reference) sz.x = reference.size.x * layout_size.x
-          else           sz.x = available_size.x * layout_size.x
+          if (size_reference) sz.x = size_reference.size.x * layout_size.x
+          else                sz.x = available_size.x * layout_size.x
           if (snap) sz.x .= floor
         case FIXED_SIZE
           sz.x = layout_size.x
       endWhich
 
-      which (layout_mode.y)
+      which (sizing_mode.y)
         case EXPAND_TO_FILL
           sz.y = available_size.y
         case SHRINK_TO_FIT
           noAction
         case ASPECT_FIT
-          local available_x = ?:{ layout_mode.x==LayoutMode.FIXED_SIZE:layout_size.x || available_size.x }
+          local available_x = ?:{ sizing_mode.x==SizingMode.FIXED_SIZE:layout_size.x || available_size.x }
           local fit_y = (available_x / (aspect_size.x || 1.0)) * aspect_size.y
           if (snap) fit_y .= floor
-          if (layout_mode.x == LayoutMode.ASPECT_FILL or fit_y <= available_size.y)
+          if (sizing_mode.x == SizingMode.ASPECT_FILL or fit_y <= available_size.y)
             sz.y = fit_y
           else
             sz.y = available_size.y
           endIf
         case ASPECT_FILL
-          if (layout_mode.x != LayoutMode.ASPECT_FIT)
+          if (sizing_mode.x != SizingMode.ASPECT_FIT)
             local scale_x = (available_size.x / (aspect_size.x || 1.0))
             local scale_y = (available_size.y / (aspect_size.y || 1.0))
             sz.y = scale_x.or_larger(scale_y) * aspect_size.y
             if (snap) sz.y .= floor
           endIf
         case PROPORTIONAL
-          if (reference) sz.y = reference.size.y * layout_size.y
-          else           sz.y = available_size.y * layout_size.y
+          if (size_reference) sz.y = size_reference.size.y * layout_size.y
+          else                sz.y = available_size.y * layout_size.y
           if (snap) sz.y .= floor
         case FIXED_SIZE
           sz.y = layout_size.y
@@ -418,11 +418,11 @@ class Component : Entity
 
       size = sz
 
-      if (layout_mode.x == LayoutMode.SHRINK_TO_FIT or layout_mode.y == LayoutMode.SHRINK_TO_FIT)
+      if (sizing_mode.x == SizingMode.SHRINK_TO_FIT or sizing_mode.y == SizingMode.SHRINK_TO_FIT)
         local min_size = minimum_layout_size( content_size, &=limited )
         min_size = content_size_to_layout_size( min_size )
-        if (layout_mode.x == LayoutMode.SHRINK_TO_FIT) sz.x = min_size.x
-        if (layout_mode.y == LayoutMode.SHRINK_TO_FIT) sz.y = min_size.y
+        if (sizing_mode.x == SizingMode.SHRINK_TO_FIT) sz.x = min_size.x
+        if (sizing_mode.y == SizingMode.SHRINK_TO_FIT) sz.y = min_size.y
         size = sz
       endIf
 
@@ -450,37 +450,37 @@ class Component : Entity
       add( content )
 
     method set_fixed_size( layout_size )
-      layout_mode = LayoutModeXY( LayoutMode.FIXED_SIZE, LayoutMode.FIXED_SIZE )
+      sizing_mode = SizingModeXY( SizingMode.FIXED_SIZE, SizingMode.FIXED_SIZE )
       size = layout_size
 
     method set_fixed_height( h:Real )
       layout_size.y = h
-      layout_mode.y = LayoutMode.FIXED_SIZE
+      sizing_mode.y = SizingMode.FIXED_SIZE
       size.y = h
 
     method set_fixed_width( w:Real )
       layout_size.x = w
-      layout_mode.x = LayoutMode.FIXED_SIZE
+      sizing_mode.x = SizingMode.FIXED_SIZE
       size.x = w
 
     method set_proportional_size( layout_size )
-      layout_mode = LayoutModeXY( LayoutMode.PROPORTIONAL, LayoutMode.PROPORTIONAL )
+      sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL, SizingMode.PROPORTIONAL )
 
-    method set_proportional_size( reference, layout_size:XY )
+    method set_proportional_size( size_reference, layout_size:XY )
       set_proportional_size( layout_size )
 
     method set_proportional_height( h:Real )
       layout_size.y = h
-      layout_mode.y = LayoutMode.PROPORTIONAL
+      sizing_mode.y = SizingMode.PROPORTIONAL
 
-    method set_proportional_height( reference, h:Real )
+    method set_proportional_height( size_reference, h:Real )
       set_proportional_height( h )
 
     method set_proportional_width( w:Real )
       layout_size.x = w
-      layout_mode.x = LayoutMode.PROPORTIONAL
+      sizing_mode.x = SizingMode.PROPORTIONAL
 
-    method set_proportional_width( reference, w:Real )
+    method set_proportional_width( size_reference, w:Real )
       set_proportional_width( w )
 
     method set_structure_modified( setting:Logical ) [override]
@@ -493,13 +493,13 @@ class Component : Entity
       @weight = XY( weight, weight )
 
     method shrink_to_fit
-      layout_mode = LayoutModeXY( LayoutMode.SHRINK_TO_FIT, LayoutMode.SHRINK_TO_FIT )
+      sizing_mode = SizingModeXY( SizingMode.SHRINK_TO_FIT, SizingMode.SHRINK_TO_FIT )
 
     method shrink_to_fit_height
-      layout_mode.y = LayoutMode.SHRINK_TO_FIT
+      sizing_mode.y = SizingMode.SHRINK_TO_FIT
 
     method shrink_to_fit_width
-      layout_mode.x = LayoutMode.SHRINK_TO_FIT
+      sizing_mode.x = SizingMode.SHRINK_TO_FIT
 
     method split_h( split_position:Real, components:Component[], component_i:Int )
       noAction
