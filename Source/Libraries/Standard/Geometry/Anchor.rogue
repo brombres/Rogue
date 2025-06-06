@@ -34,6 +34,9 @@ class Anchor( position:XY ) [compound]
     BR = Anchor.BOTTOM
 
   GLOBAL METHODS
+    method create( px:Real, py:Real )->Anchor
+      return Anchor( XY(px,py) )
+
     method operator*( size:XY, anchor:Anchor )->XY
       # size * anchor -> delta (or the anchor position within the area (0,0,size))
       # Display.size * Anchor.TOP_LEFT     -> XY(0,0)

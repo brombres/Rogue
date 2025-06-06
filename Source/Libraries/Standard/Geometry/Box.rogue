@@ -75,8 +75,8 @@ class Box( position:XY, size:XY ) [essential compound]
     method at_random( gen=Random:Random )->XY
       return XY(gen.real64(position.x,size.x+position.x),gen.real64(position.y,size.y+position.y))
 
-    method bottom->Real
-      return this.position.y + this.size.y
+    method bottom->XY
+      return at( 0.5, 1.0 )
 
     method bottom_left->XY
       return (position + XY(0,size.y))
@@ -198,8 +198,8 @@ class Box( position:XY, size:XY ) [essential compound]
     method intersects( triangle:Triangle )->Logical
       return this->Quad.intersects( triangle )
 
-    method left->Real
-      return this.position.x
+    method left->XY
+      return at( 0.0, 0.5 )
 
     method leftmost( width:Real )->Box
       if (width < 0) width = size.x + width
@@ -267,8 +267,8 @@ class Box( position:XY, size:XY ) [essential compound]
       # - Box(640,480,100,100).relative_to(Anchor.BOTTOM_RIGHT) places the bottom-right corner of the box on (640,480)
       return Box( position - anchor * size, size )
 
-    method right->Real
-      return this.position.x + this.size.x
+    method right->XY
+      return at( 1.0, 0.5 )
 
     method rightmost( width:Real )->Box
       if (width < 0) width = size.x + width
@@ -320,8 +320,8 @@ class Box( position:XY, size:XY ) [essential compound]
     method to->Variant
       return Variant( this )
 
-    method top->Real
-      return this.position.y
+    method top->XY
+      return at( 0.5, 0.0 )
 
     method top_left->XY
       return position
