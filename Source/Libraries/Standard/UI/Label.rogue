@@ -1,17 +1,8 @@
 library UI
 
-class Label : Component
+class Label : Text
   METHODS
-    method init( text:String )
-      init( Text(text) )
-
-    method init( content:Component )
-      set_content( content )
-
-    method set_text( text:String )
-      content = Text( text )
-
-    method set_text( text:Text )
-      content = text
+    method init_object
+      aspect_fit_text_height
+      shrink_to_fit_text_width
 endClass
-

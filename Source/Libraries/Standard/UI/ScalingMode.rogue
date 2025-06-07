@@ -1,0 +1,11 @@
+library UI
+
+enum ScalingMode
+  CATEGORIES
+    NONE
+    SHRINK_TO_FIT
+    ASPECT_FIT
+endEnum
+
+class ScalingModeXY( x:ScalingMode, y:ScalingMode ) [compound]
+endClass

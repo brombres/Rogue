@@ -4,9 +4,8 @@ class Text : Component
   PROPERTIES
     value : String
     style : TextStyle
-    shrink_to_fit_text_x : Logical
-    shrink_to_fit_text_y : Logical
-    sizing_mode = SizingModeXY( SizingMode.FIXED_SIZE, SizingMode.FIXED_SIZE )
+    scaling_mode = ScalingModeXY( ScalingMode.NONE, ScalingMode.NONE )
+    sizing_mode  = SizingModeXY( SizingMode.FIXED_SIZE, SizingMode.FIXED_SIZE )
 
   METHODS
     method init( text=String():String )
@@ -77,6 +76,18 @@ class Text : Component
         builder.clear
       endIf
 
+    method aspect_fit_text
+      aspect_fit_text_width
+      aspect_fit_text_height
+
+    method aspect_fit_text_height
+      scaling_mode.y = ScalingMode.ASPECT_FIT
+      sizing_mode.y = SizingMode.EXPAND_TO_FILL
+
+    method aspect_fit_text_width
+      scaling_mode.x = ScalingMode.ASPECT_FIT
+      sizing_mode.x = SizingMode.EXPAND_TO_FILL
+
     method bg_color->Graphics::Color? [override]
       return style?.bg_color || prior.bg_color
 
@@ -110,6 +121,18 @@ class Text : Component
         endIf
       endForEach
       return null
+
+    method fixed_height_text
+      scaling_mode.y = ScalingMode.NONE
+      sizing_mode.y = SizingMode.FIXED_SIZE
+
+    method fixed_size_text
+      fixed_width_text
+      fixed_height_text
+
+    method fixed_width_text
+      scaling_mode.x = ScalingMode.NONE
+      sizing_mode.x = SizingMode.FIXED_SIZE
 
     method font->Font
       if (style and style.font)
@@ -181,11 +204,11 @@ class Text : Component
       shrink_to_fit_text_height
 
     method shrink_to_fit_text_height
-      shrink_to_fit_text_y = true
+      scaling_mode.y = ScalingMode.SHRINK_TO_FIT
       sizing_mode.y = SizingMode.EXPAND_TO_FILL
 
     method shrink_to_fit_text_width
-      shrink_to_fit_text_x = true
+      scaling_mode.x = ScalingMode.SHRINK_TO_FIT
       sizing_mode.x = SizingMode.EXPAND_TO_FILL
 
     method split_h( split_position:Real, components:Component[], component_i:Int ) [override]

@@ -20,10 +20,7 @@ class Widget : Component
       prior.init( component )
 
     method init( label:String )
-      init( Label(label) )
-
-    method init( label:Text )
-      init( Label(label,font) )
+      prior.init( Label(label) )
 
     method handle_select
       on_select
@@ -101,11 +98,5 @@ class Widget : Component
       if (not is_disabled) widget_state = WidgetState.IDLE
 
     method set_on_select( on_select_callback )
-
-    method set_label( text:String )
-      label = Text( text )
-
-    method set_label( component:Component )
-      content = component
 
 endClass
