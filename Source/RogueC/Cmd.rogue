@@ -5239,6 +5239,7 @@ class ConditionalContext : Cmd
     context   : Cmd
     original  : Cmd
     v_context : Local
+    clone     : ConditionalContext  # Managed by ConditionalAccess for special cloning behavior
 
   METHODS
     method init( t, context )
@@ -5247,8 +5248,12 @@ class ConditionalContext : Cmd
     method init( existing:ConditionalContext )
       prior.init( existing )
       if (existing.context) context = existing.context.cloned
-      original = existing.original
-      v_context = existing.v_context
+      original = existing.original.cloned
+      #v_context = existing.v_context
+
+    method cloned->ConditionalContext [override]
+      if (clone) return clone
+      return ConditionalContext( this )
 
     method description->String
       return "ConditionalContext($)" (%context)
@@ -5268,12 +5273,14 @@ class ConditionalAccess : Cmd
     method init( existing:ConditionalAccess )
       prior.init( existing )
 
-      # context and access are not cloned in order to preserve their interlinked
-      # structure
-      context = existing.context
-      access = existing.access
-      v_result = existing.v_result
-      cmd_if = existing.cmd_if
+      # The 'access' subtree has a link (somewhere) to the same ConditionalContext
+      # object that this object directly references.
+      context = existing.context.cloned # Sets cached context.clone
+      context.clone = context           # Cache cloned object
+      access = existing.access.cloned   # Gets same copy of context.clone
+      context.clone = null              # Clear cached clone for any future cloning
+      #v_result = existing.v_result
+      #cmd_if = existing.cmd_if
 
     method description->String
       return "ConditionalAccess($,$)" (%context,%access)
