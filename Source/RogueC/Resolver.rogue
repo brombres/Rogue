@@ -702,6 +702,7 @@ class Resolver : Poolable, Visitor
     method on_visit( cmd:FunctionDefinition )->Cmd
       local type = cmd.resolve_type
 
+      # Implicit variable capture
       local var_collector = ImplicitWithVarCollector(cmd.lib)
       forEach (param in cmd.parameters)
         var_collector.visible_locals.add( param.name )
@@ -716,6 +717,8 @@ class Resolver : Poolable, Visitor
             endForEach
           endIf
 
+          sufficient (unknown_id == "THIS")
+
           local access = resolve_access( cmd.t, null, unknown_id, null, &suppress_error )
           necessary (access)   # The ID has to exist in this outer scope
           necessary (not access.is_type_context)          # Don't 'with' type names
@@ -724,7 +727,11 @@ class Resolver : Poolable, Visitor
 
         satisfied
           ensure <<cmd.with_values>>( cmd.t )
-          cmd.with_values.add( WithValue(cmd.t,unknown_id,null) )
+          if (unknown_id == "THIS")
+            cmd.with_values.add( WithValue(cmd.t,"THIS",This(cmd.t,this_type)) )
+          else
+            cmd.with_values.add( WithValue(cmd.t,unknown_id,null) )
+          endIf
 
         endContingent
       endForEach

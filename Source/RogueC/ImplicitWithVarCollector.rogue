@@ -20,4 +20,8 @@ class ImplicitWithVarCollector( lib:Library ) : ScopeVisitor
       endIf
       visit_children( cmd )
       return cmd
+
+    method on_visit( cmd:This )->Cmd
+      if (not unknown_identifiers.contains("THIS")) unknown_identifiers.add( "THIS" )
+      return Access( cmd.t, "THIS" )
 endClass
