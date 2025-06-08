@@ -4,18 +4,7 @@ class State<<$ExtendedType>> : State<<$ExtendedType,change_state,exit_state>>
 endClass
 
 class State<<$ExtendedType,$change_state,$exit_state>>
-  DEFINITIONS
-    # Duration values
-    INSTANT    =  0  # one and done
-    INDEFINITE = -1  # action loops until finish() called or overridden is_finished()->true [default]
-
   GLOBAL METHODS
-    method create( fn:Function() )->$ExtendedType
-      return StateCall<<$ExtendedType>>( fn )
-
-    method create( fn:Function(Real), duration:Real )->$ExtendedType
-      return StateCallWithProgress<<$ExtendedType>>( fn, duration )
-
     method operator+( a:$ExtendedType, b:$ExtendedType )->$ExtendedType
       if (not a) return b
       if (not b) return a
@@ -26,34 +15,14 @@ class State<<$ExtendedType,$change_state,$exit_state>>
       if (not b) return a
       return a.also( b )
 
-    method wait( duration:Real )->$ExtendedType
-      if (duration <= 0) return wait_for( () => true )
-      else               return StateWait<<$ExtendedType>>( duration )
-
-    method wait_for( condition:Function->Logical, duration=$ExtendedType.INDEFINITE:Real )->$ExtendedType
-      return StateWaitFor<<$ExtendedType>>( condition, duration )
-
-    method yield->$ExtendedType
-      return StateYield<<$ExtendedType>>()
-
   PROPERTIES
-    duration    : Real
-
     next_state       : $ExtendedType
     concurrent_state : $ExtendedType
 
-    t           : Real
-    dt          : Real  # time since last update
-    prev_time   : Real  # 0 = not started
-
+    is_started  : Logical
     is_exited   : Logical # flag that assists when states finish outside of updated()
 
   METHODS
-    method init
-      noAction
-
-    method init( duration )
-
     method and_then( state:$ExtendedType )->$ExtendedType
       if (state)
         local cur = this
@@ -127,14 +96,13 @@ class State<<$ExtendedType,$change_state,$exit_state>>
       return null
 
     method finish
-      if (duration < 0) duration = 0
-      t = duration
+      is_exited = true
 
     method insert_next( state:$ExtendedType )
       if (state) next_state = state.and_then( next_state )
 
     method is_finished->Logical
-      return (duration >= 0 and t >= duration)
+      return is_exited
 
     method last->$ExtendedType
       # Returns the last state in this chain
@@ -142,19 +110,11 @@ class State<<$ExtendedType,$change_state,$exit_state>>
       while (cur.next_state ) cur = cur.next_state
       return cur
 
-    method on_execute
-      # Override to automatically make duration INSTANT
-      duration = INDEFINITE  # only happens when not overridden
-      on_start  # start an indefinite state
-
     method on_start
 
     method on_update
 
     method on_finish
-
-    method progress->Real
-      return which{ duration>0:t/duration || 1.0 }
 
     method started->$ExtendedType
       if (is_exited)
@@ -163,16 +123,9 @@ class State<<$ExtendedType,$change_state,$exit_state>>
           concurrent_state = concurrent_state.started
         endIf
       else
-        if (not prev_time)
-          local cur_time = System.execution_time
-          if (duration)
-            on_start
-          else
-            on_execute
-            # Default will change duration to INDEFINITE and call on_start()
-            # Override on_execute() to keep INSTANT.
-          endIf
-          prev_time = cur_time
+        if (not is_started)
+          is_started = true
+          on_start
         endIf
 
         if (concurrent_state) concurrent_state = concurrent_state.started
@@ -183,8 +136,6 @@ class State<<$ExtendedType,$change_state,$exit_state>>
 
       return .start_next
 
-    method timescale->Real
-      return 1.0
 
     method to->String
       return description
@@ -199,24 +150,10 @@ class State<<$ExtendedType,$change_state,$exit_state>>
           concurrent_state = concurrent_state.updated
         endIf
       else
-        local cur_time = System.execution_time
-        if (not prev_time)
-          dt = 1.0/60.0
-          if (duration)
-            on_start
-          else
-            on_execute
-            # Default will change duration to INDEFINITE and call on_start()
-            # Override on_execute() to keep INSTANT.
-          endIf
-        else
-          dt = (cur_time - prev_time)
-          if (dt > 1.0/10.0) dt = 1.0/60.0
-          t += dt * timescale
-          if (duration >= 0 and t > duration) t = duration
+        if (not is_started)
+          is_started = true
+          on_start
         endIf
-
-        prev_time = cur_time
 
         update
 

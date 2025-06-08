@@ -1,0 +1,161 @@
+class ProgressState<<$ExtendedType>> : ProgressState<<$ExtendedType,change_state,exit_state>>
+endClass
+
+class ProgressState<<$ExtendedType,$change_state,$exit_state>> : State<<$ExtendedType,$change_state,$exit_state>>
+  DEFINITIONS
+    # Duration values
+    INSTANT    =  0  # one and done
+    INDEFINITE = -1  # action loops until finish() called or overridden is_finished()->true [default]
+
+  GLOBAL METHODS
+    method create( fn:Function() )->$ExtendedType
+      return ProgressStateCall<<$ExtendedType>>( fn )
+
+    method create( fn:Function(Real), duration:Real )->$ExtendedType
+      return ProgressStateCallWithProgress<<$ExtendedType>>( fn, duration )
+
+    method wait( duration:Real )->$ExtendedType
+      if (duration <= 0) return wait_for( () => true )
+      else               return ProgressStateWait<<$ExtendedType>>( duration )
+
+    method wait_for( condition:Function->Logical, duration=$ExtendedType.INDEFINITE:Real )->$ExtendedType
+      return ProgressStateWaitFor<<$ExtendedType>>( condition, duration )
+
+    method yield->$ExtendedType
+      return ProgressStateYield<<$ExtendedType>>()
+
+  PROPERTIES
+    duration    : Real
+
+    t           : Real
+    dt          : Real  # time since last update
+    prev_time   : Real  # 0 = not started
+
+  METHODS
+    method init
+      noAction
+
+    method init( duration )
+
+    method finish [override]
+      if (duration < 0) duration = 0
+      t = duration
+
+    method is_finished->Logical
+      return (duration >= 0 and t >= duration)
+
+    method on_execute
+      # Override to automatically make duration INSTANT
+      duration = INDEFINITE  # only happens when not overridden
+      on_start  # start an indefinite state
+
+    method progress->Real
+      return which{ duration>0:t/duration || 1.0 }
+
+    method started->$ExtendedType
+      # Starts the state if not already started, which can call on_execute(),
+      # but does not call update().
+      if (is_exited)
+        # Already exited outside of updated()
+        if (concurrent_state)
+          concurrent_state = concurrent_state.started
+        endIf
+      else
+        if (not prev_time)
+          local cur_time = System.execution_time
+          if (duration)
+            on_start
+          else
+            on_execute
+            # Default will change duration to INDEFINITE and call on_start()
+            # Override on_execute() to keep INSTANT.
+          endIf
+          prev_time = cur_time
+        endIf
+
+        if (concurrent_state) concurrent_state = concurrent_state.started
+        if (not is_finished) return this->(as $ExtendedType)
+      endIf
+
+      .handle_finish
+
+      return .start_next
+
+    method timescale->Real
+      return 1.0
+
+    method updated->$ExtendedType [override]
+      if (is_exited)
+        # Already exited outside of updated()
+        if (concurrent_state)
+          concurrent_state = concurrent_state.updated
+        endIf
+      else
+        local cur_time = System.execution_time
+        if (not prev_time)
+          dt = 1.0/60.0
+          if (duration)
+            on_start
+          else
+            on_execute
+            # Default will change duration to INDEFINITE and call on_start()
+            # Override on_execute() to keep INSTANT.
+          endIf
+        else
+          dt = (cur_time - prev_time)
+          if (dt > 1.0/10.0) dt = 1.0/60.0
+          t += dt * timescale
+          if (duration >= 0 and t > duration) t = duration
+        endIf
+
+        prev_time = cur_time
+
+        update
+
+        if (concurrent_state)
+          concurrent_state = concurrent_state.updated
+        endIf
+
+        if (not is_finished) return this->(as $ExtendedType)
+      endIf
+
+      .handle_finish
+
+      return .update_next
+
+endClass
+
+# The following are [undocumented] because otherwise they up the API doc generator
+
+class ProgressStateWait<<$ExtendedType>>( duration ) : $ExtendedType [undocumented];
+
+class ProgressStateWaitFor<<$ExtendedType>>( condition:Function->Logical, duration=$ExtendedType.INDEFINITE )
+  : $ExtendedType [undocumented]
+  METHODS
+    method is_finished->Logical
+      return condition()
+endClass
+
+class ProgressStateCall<<$ExtendedType>>( fn:Function(), duration=$ExtendedType.INSTANT ) : $ExtendedType [undocumented]
+  METHODS
+    method on_execute
+      fn()
+endClass
+
+class ProgressStateCallWithProgress<<$ExtendedType>>( fn:Function(Real), duration ) : $ExtendedType [undocumented]
+  METHODS
+    method on_update
+      fn( progress )
+endClass
+
+class ProgressStateYield<<$ExtendedType>> : $ExtendedType
+  PROPERTIES
+    update_count = 0
+
+  METHODS
+    method is_finished->Logical
+      return update_count == 2
+
+    method on_update
+      ++update_count
+endClass

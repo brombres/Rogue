@@ -1,6 +1,6 @@
 $include Control/State
 
-class Action : State<<Action>>
+class Action : ProgressState<<Action,replace_action,end_action>>
   GLOBAL PROPERTIES
     global_timescale = 1.0
 
@@ -15,6 +15,6 @@ class Action : State<<Action>>
     method on_draw_fg
       noAction
 
-    method timescale->Real
+    method timescale->Real [override]
       return global_timescale * @timescale
 endClass

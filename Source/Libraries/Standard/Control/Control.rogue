@@ -1,5 +1,6 @@
 $include Control/Action
 $include Control/EasedValue
 $include Control/ProgressFn
+$include Control/ProgressState
 $include Control/State
 $include Control/UpdateTimer
