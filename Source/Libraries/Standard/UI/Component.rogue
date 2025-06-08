@@ -26,6 +26,33 @@ class Component : Entity
     method init( fixed_size:XY )
       this.fixed_size = fixed_size
 
+    method anchor_top_left
+      anchor = Anchor.TOP_LEFT
+
+    method anchor_top
+      anchor = Anchor.TOP
+
+    method anchor_top_right
+      anchor = Anchor.TOP_RIGHT
+
+    method anchor_left
+      anchor = Anchor.LEFT
+
+    method anchor_center
+      anchor = Anchor.CENTER
+
+    method anchor_right
+      anchor = Anchor.RIGHT
+
+    method anchor_bottom_left
+      anchor = Anchor.BOTTOM_LEFT
+
+    method anchor_bottom
+      anchor = Anchor.BOTTOM
+
+    method anchor_bottom_right
+      anchor = Anchor.BOTTOM_RIGHT
+
     method on( e:KeyEvent )
       noAction
 
@@ -448,6 +475,12 @@ class Component : Entity
     method set_content( content:Component )
       remove_children
       add( content )
+
+    method set_content_offset( new_content_offset:XY )
+      if (content_offset != new_content_offset)
+        @content_offset = new_content_offset
+        request_redraw
+      endIf
 
     method set_fixed_size( layout_size )
       sizing_mode = SizingModeXY( SizingMode.FIXED_SIZE, SizingMode.FIXED_SIZE )
