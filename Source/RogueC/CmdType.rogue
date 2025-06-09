@@ -401,6 +401,9 @@ augment
     method GetLocal.is_simple->Logical
       return true
 
+    method GetProperty.is_simple->Logical
+      return context.is_simple
+
     method GetGlobalProperty.is_simple->Logical
       return true
 
