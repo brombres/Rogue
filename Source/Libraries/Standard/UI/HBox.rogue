@@ -54,11 +54,13 @@ class HBox : Component
             local max_size = component.resolve_layout_size( available_size,    &limited )
             if (min_size.x == max_size.x)
               available_size.x -= min_size.x
-            elseIf (component.weight.x)
+            else
               total_weight += component.weight.x
               info_list.add( ComponentSizeInfo(component, &=min_size, &=max_size) )
             endIf
           endForEach
+
+          if (total_weight == 0) total_weight = 1.0
 
           local snap = UI.snap_to_pixel_coordinates
 
@@ -79,6 +81,7 @@ class HBox : Component
                   # remove it from the list by not rewriting it.
                   available_size.x -= info.max_size.x
                   total_weight -= info.component.weight.x
+                  if (total_weight == 0) total_weight = 1.0
                   repeat = true
                 elseIf (info.min_size.x > w)
                   # Component's min size exceeds its share. Assign it its min size,
@@ -88,6 +91,7 @@ class HBox : Component
                   info.component.resolve_layout_size( info.component.size, &limited )
                   available_size.x -= info.min_size.x
                   total_weight -= info.component.weight.x
+                  if (total_weight == 0) total_weight = 1.0
                   repeat = true
                 else
                   # Component can size at least as big as its proportional share; keep it for the next pass.
@@ -99,24 +103,51 @@ class HBox : Component
             endWhile
           endBlock
 
-          # Assign remaining components their proportional share of available width.
+          # Assign remaining weighted components their proportional share of available width.
           block
             local remaining_width = available_size.x
             local remaining_count = info_list.count
             forEach (info in info_list)
-              local w = remaining_width
-              if (remaining_count > 1)
-                local weight = info.component.weight.x
-                w = w * weight / total_weight
-                total_weight -= weight
-                if (snap) w .= floor
+              if (info.component.weight.x)
+                local w = remaining_width
+                if (remaining_count > 1)
+                  local weight = info.component.weight.x
+                  w = w * weight / total_weight
+                  total_weight -= weight
+                  if (snap) w .= floor
+                endIf
+                info.component.size.x = w
+                info.component.resolve_layout_size( info.component.size, &limited )
+                remaining_width -= w
+                --remaining_count
               endIf
-              info.component.size.x = w
-              info.component.resolve_layout_size( info.component.size, &limited )
-              remaining_width -= w
-              --remaining_count
             endForEach
           endBlock
+
+          # Treat remaining unweighted components as being equally weighted and
+          # assign them a proportional share of remaining width.
+          block
+            total_weight = 0
+            if ((forEach in info_list).component.weight.x == 0) ++total_weight
+
+            local remaining_width = available_size.x
+            local remaining_count = info_list.count
+            forEach (info in info_list)
+              if (info.component.weight.x == 0)
+                local w = remaining_width
+                if (remaining_count > 1)
+                  w = w / total_weight
+                  --total_weight
+                  if (snap) w .= floor
+                endIf
+                info.component.size.x = w
+                info.component.resolve_layout_size( info.component.size, &limited )
+                remaining_width -= w
+                --remaining_count
+              endIf
+            endForEach
+          endBlock
+
         endUse
 
         # All child components have their own size set or assigned; have them recursively

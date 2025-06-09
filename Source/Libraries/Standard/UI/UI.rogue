@@ -56,7 +56,7 @@ class UI : Component [singleton]
       endTemporarily
 
     method filler( content=null:Component, &h, &v )->Component
-      local component = Component()
+      local component = Component().[ weight=0 ]
       if (content) component.add( content )
       if (h xor v)
         if (h) component.fixed_height = 0  # horizontal filler has fixed height 0

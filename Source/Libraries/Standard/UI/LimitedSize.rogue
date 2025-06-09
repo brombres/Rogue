@@ -37,14 +37,10 @@ class LimitedSize : Component
 
       if (is_proportional)
         local display_size = Display.size
-@trace "1 before ", available_size, maximum_height, display_size
         if (minimum_width)  available_size.x .= clamped_low( minimum_width.value * display_size.x )
         if (minimum_height) available_size.y .= clamped_low( minimum_height.value * display_size.y )
         if (maximum_width)  available_size.x .= clamped_high( maximum_width.value * display_size.x )
         if (maximum_height) available_size.y .= clamped_high( maximum_height.value * display_size.y )
-8675
-available_size.y .= clamped_high( 0.5 * display_size.y )
-@trace "1 after ", available_size, maximum_height
       else
         if (minimum_width)  available_size.x .= clamped_low( minimum_width.value )
         if (minimum_height) available_size.y .= clamped_low( minimum_height.value )

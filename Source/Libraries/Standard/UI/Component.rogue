@@ -2,6 +2,7 @@ library UI
 
 class Component : Entity
   PROPERTIES
+    debug : Logical
     position       : XY
     size           : XY
 

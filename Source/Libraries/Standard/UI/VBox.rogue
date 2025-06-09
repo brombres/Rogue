@@ -55,11 +55,13 @@ class VBox : Component
             local max_size = component.resolve_layout_size( available_size,    &limited )
             if (min_size.y == max_size.y)
               available_size.y -= min_size.y
-            elseIf (component.weight.y)
+            else
               total_weight += component.weight.y
               info_list.add( ComponentSizeInfo(component, &=min_size, &=max_size) )
             endIf
           endForEach
+
+          if (total_weight == 0) total_weight = 1.0
 
           local snap = UI.snap_to_pixel_coordinates
 
@@ -69,7 +71,7 @@ class VBox : Component
               repeat = false
               local remaining_height = available_size.y
               local remaining_count = info_list.count
-              forEach (info in rewriter=info_list.rewriter)
+              forEach (info at i in rewriter=info_list.rewriter)
                 local h = remaining_height
                 if (remaining_count > 1)
                   h = h * info.component.weight.y / total_weight
@@ -80,6 +82,7 @@ class VBox : Component
                   # remove it from the list by not rewriting it.
                   available_size.y -= info.max_size.y
                   total_weight -= info.component.weight.y
+                  if (total_weight == 0) total_weight = 1.0
                   repeat = true
                 elseIf (info.min_size.y > h)
                   # Component's min size exceeds its share. Assign it its min size,
@@ -89,6 +92,7 @@ class VBox : Component
                   info.component.resolve_layout_size( info.component.size, &limited )
                   available_size.y -= info.min_size.y
                   total_weight -= info.component.weight.y
+                  if (total_weight == 0) total_weight = 1.0
                   repeat = true
                 else
                   # Component can size at least as big as its proportional share; keep it for the next pass.
@@ -100,24 +104,51 @@ class VBox : Component
             endWhile
           endBlock
 
-          # Assign remaining components their proportional share of available height.
+          # Assign remaining weighted components their proportional share of available height.
           block
             local remaining_height = available_size.y
             local remaining_count = info_list.count
             forEach (info in info_list)
-              local h = remaining_height
-              if (remaining_count > 1)
-                local weight = info.component.weight.y
-                h = h * weight / total_weight
-                total_weight -= weight
-                if (snap) h .= floor
+              if (info.component.weight.y)
+                local h = remaining_height
+                if (remaining_count > 1)
+                  local weight = info.component.weight.y
+                  h = h * weight / total_weight
+                  total_weight -= weight
+                  if (snap) h .= floor
+                endIf
+                info.component.size.y = h
+                info.component.resolve_layout_size( info.component.size, &limited )
+                remaining_height -= h
+                --remaining_count
               endIf
-              info.component.size.y = h
-              info.component.resolve_layout_size( info.component.size, &limited )
-              remaining_height -= h
-              --remaining_count
             endForEach
           endBlock
+
+          # Treat remaining unweighted components as being equally weighted and
+          # assign them a proportional share of remaining height.
+          block
+            total_weight = 0
+            if ((forEach in info_list).component.weight.y == 0) ++total_weight
+
+            local remaining_height = available_size.y
+            local remaining_count = info_list.count
+            forEach (info in info_list)
+              if (info.component.weight.y == 0)
+                local h = remaining_height
+                if (remaining_count > 1)
+                  h = h / total_weight
+                  --total_weight
+                  if (snap) h .= floor
+                endIf
+                info.component.size.y = h
+                info.component.resolve_layout_size( info.component.size, &limited )
+                remaining_height -= h
+                --remaining_count
+              endIf
+            endForEach
+          endBlock
+
         endUse
 
         # All child components have their own size set or assigned; have them recursively
