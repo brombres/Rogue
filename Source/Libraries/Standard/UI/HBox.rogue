@@ -8,7 +8,7 @@ class HBox : Component
       use components = WorkList<<Component>>
         collect_child_display_components( components )
         forEach (component as Component in components)
-          local sz = component.resolve_layout_size( available_size, &=limited )
+          local sz = component.resolve_layout_size( available_size.yv, &=limited )
           w += sz.x
           h .= or_larger( sz.y )
         endForEach
@@ -81,9 +81,11 @@ class HBox : Component
                   total_weight -= info.component.weight.x
                   repeat = true
                 elseIf (info.min_size.x > w)
-                  # Component's min size exceeds its share. Assign it its min size and
+                  # Component's min size exceeds its share. Assign it its min size,
+                  # re-resolve its size to allow width to adjust accordingly, and
                   # remove it from the list by not rewriting it.
                   info.component.size.x = info.min_size.x
+                  info.component.resolve_layout_size( info.component.size, &limited )
                   available_size.x -= info.min_size.x
                   total_weight -= info.component.weight.x
                   repeat = true
@@ -110,6 +112,7 @@ class HBox : Component
                 if (snap) w .= floor
               endIf
               info.component.size.x = w
+              info.component.resolve_layout_size( info.component.size, &limited )
               remaining_width -= w
               --remaining_count
             endForEach

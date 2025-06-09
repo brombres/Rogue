@@ -1,0 +1,77 @@
+library UI
+
+class LimitedSize : Component
+  PROPERTIES
+    minimum_width   : Real?
+    minimum_height  : Real?
+    maximum_width   : Real?
+    maximum_height  : Real?
+    is_proportional : Logical  # limits are proportional to display size
+
+  METHODS
+    method proportional
+      is_proportional = true
+
+    method set_maximum_height( height:Real )
+      @maximum_height  = height
+
+    method set_maximum_size( size:XY )
+      @maximum_width   = size.x
+      @maximum_height  = size.y
+
+    method set_maximum_width( width:Real )
+      @maximum_width   = width
+
+    method set_minimum_height( height:Real )
+      @minimum_height  = height
+
+    method set_minimum_size( size:XY )
+      @minimum_width   = size.x
+      @minimum_height  = size.y
+
+    method set_minimum_width( width:Real )
+      @minimum_width   = width
+
+    method resolve_layout_size( available_size:XY, &limited )->XY
+      local snap = (UI.snap_to_pixel_coordinates)
+
+      if (is_proportional)
+        local display_size = Display.size
+@trace "1 before ", available_size, maximum_height, display_size
+        if (minimum_width)  available_size.x .= clamped_low( minimum_width.value * display_size.x )
+        if (minimum_height) available_size.y .= clamped_low( minimum_height.value * display_size.y )
+        if (maximum_width)  available_size.x .= clamped_high( maximum_width.value * display_size.x )
+        if (maximum_height) available_size.y .= clamped_high( maximum_height.value * display_size.y )
+8675
+available_size.y .= clamped_high( 0.5 * display_size.y )
+@trace "1 after ", available_size, maximum_height
+      else
+        if (minimum_width)  available_size.x .= clamped_low( minimum_width.value )
+        if (minimum_height) available_size.y .= clamped_low( minimum_height.value )
+        if (maximum_width)  available_size.x .= clamped_high( maximum_width.value )
+        if (maximum_height) available_size.y .= clamped_high( maximum_height.value )
+      endIf
+
+      if (snap) available_size .= floor
+
+      local sz = prior.resolve_layout_size( available_size, &=limited )
+
+      if (is_proportional)
+        local display_size = Display.size
+        if (minimum_width)  sz.x .= clamped_low( minimum_width.value * display_size.x )
+        if (minimum_height) sz.y .= clamped_low( minimum_height.value * display_size.y )
+        if (maximum_width)  sz.x .= clamped_high( maximum_width.value * display_size.x )
+        if (maximum_height) sz.y .= clamped_high( maximum_height.value * display_size.y )
+      else
+        if (minimum_width)  sz.x .= clamped_low( minimum_width.value )
+        if (minimum_height) sz.y .= clamped_low( minimum_height.value )
+        if (maximum_width)  sz.x .= clamped_high( maximum_width.value )
+        if (maximum_height) sz.y .= clamped_high( maximum_height.value )
+      endIf
+
+      if (snap) sz .= floor
+      size = sz
+
+      return sz
+
+endClass

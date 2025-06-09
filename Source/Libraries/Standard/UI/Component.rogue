@@ -416,7 +416,7 @@ class Component : Entity
 
       which (sizing_mode.y)
         case EXPAND_TO_FILL
-          sz.y = available_size.y
+          noAction
         case SHRINK_TO_FIT
           noAction
         case ASPECT_FIT
@@ -433,16 +433,15 @@ class Component : Entity
             local scale_x = (available_size.x / (aspect_size.x || 1.0))
             local scale_y = (available_size.y / (aspect_size.y || 1.0))
             sz.y = scale_x.or_larger(scale_y) * aspect_size.y
-            if (snap) sz.y .= floor
           endIf
         case PROPORTIONAL
           if (size_reference) sz.y = size_reference.size.y * layout_size.y
           else                sz.y = available_size.y * layout_size.y
-          if (snap) sz.y .= floor
         case FIXED_SIZE
           sz.y = layout_size.y
       endWhich
 
+      if (snap) sz .= floor
       size = sz
 
       if (sizing_mode.x == SizingMode.SHRINK_TO_FIT or sizing_mode.y == SizingMode.SHRINK_TO_FIT)
@@ -450,6 +449,7 @@ class Component : Entity
         min_size = content_size_to_layout_size( min_size )
         if (sizing_mode.x == SizingMode.SHRINK_TO_FIT) sz.x = min_size.x
         if (sizing_mode.y == SizingMode.SHRINK_TO_FIT) sz.y = min_size.y
+        if (snap) sz .= floor
         size = sz
       endIf
 

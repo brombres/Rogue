@@ -14,6 +14,7 @@ $include UI/Font
 $include UI/HBox
 $include UI/HFlow
 $include UI/Label
+$include UI/LimitedSize
 $include UI/MetaComponent
 $include UI/Overlay
 $include UI/ScalingMode
@@ -145,6 +146,12 @@ class UI : Component [singleton]
 
     method set_clip( @clip )
       noAction
+
+    method spacer( fixed_size:XY, content=null:Component )->Component
+      local result = Component()
+      if (content) result.add( content )
+      result.fixed_size = fixed_size
+      return result
 
     method spacer( content=null:Component, w=0:Int, h=0:Int )->Component
       local result = Component()

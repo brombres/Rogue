@@ -9,7 +9,7 @@ class VBox : Component
         collect_child_display_components( components )
 
         forEach (component in components)
-          local sz = component.resolve_layout_size( available_size, &=limited )
+          local sz = component.resolve_layout_size( available_size.xv, &=limited )
           w .= or_larger( sz.x )
           h += sz.y
         endForEach
@@ -82,9 +82,11 @@ class VBox : Component
                   total_weight -= info.component.weight.y
                   repeat = true
                 elseIf (info.min_size.y > h)
-                  # Component's min size exceeds its share. Assign it its min size and
+                  # Component's min size exceeds its share. Assign it its min size,
+                  # re-resolve its size to allow width to adjust accordingly, and
                   # remove it from the list by not rewriting it.
                   info.component.size.y = info.min_size.y
+                  info.component.resolve_layout_size( info.component.size, &limited )
                   available_size.y -= info.min_size.y
                   total_weight -= info.component.weight.y
                   repeat = true
@@ -111,6 +113,7 @@ class VBox : Component
                 if (snap) h .= floor
               endIf
               info.component.size.y = h
+              info.component.resolve_layout_size( info.component.size, &limited )
               remaining_height -= h
               --remaining_count
             endForEach
