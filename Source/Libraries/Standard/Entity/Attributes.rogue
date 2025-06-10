@@ -2,7 +2,8 @@ library Entity
 
 enum Attributes [bitflags]
   CATEGORIES
-    HIDDEN
+    INVISIBLE
+    INTANGIBLE
     INPUT_DISABLED
     MODIFIED
     FOREGROUND

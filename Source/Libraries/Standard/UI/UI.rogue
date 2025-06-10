@@ -73,7 +73,7 @@ class UI : Component [singleton]
         if (e.is_consumed) return
 
         if (keyboard_focus)
-          if (not keyboard_focus.attributes.hidden and not keyboard_focus.attributes.input_disabled)
+          if (not keyboard_focus.attributes.intangible)
             keyboard_focus.handle( e )
           else
             keyboard_focus.release_keyboard_focus
@@ -95,7 +95,7 @@ class UI : Component [singleton]
         if (e.is_consumed) return
 
         if (pointer_focus)
-          if (not pointer_focus.attributes.hidden and not pointer_focus.attributes.input_disabled)
+          if (not pointer_focus.attributes.intangible)
             pointer_focus.handle( e )
           else
             pointer_focus.release_pointer_focus

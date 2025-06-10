@@ -54,7 +54,7 @@ class Entity : Node<<Entity>>
       else        script = new_script.started
 
     method draw
-      if (attributes.hidden) return
+      if (attributes.invisible) return
       .begin_draw
       .handle_draw
       .handle_draw( &fg )
@@ -64,7 +64,14 @@ class Entity : Node<<Entity>>
       return attributes.h_flip
 
     method hide
-      attributes.hidden = true
+      attributes.invisible = true
+      attributes.intangible = true
+
+    method is_tangible->Logical
+      return not attributes.intangible
+
+    method is_visible->Logical
+      return not attributes.invisible
 
     method on_begin_draw
       noAction
@@ -95,14 +102,18 @@ class Entity : Node<<Entity>>
     method set_h_flip( setting:Logical )
       attributes.h_flip = setting
 
+    method set_is_tangible( setting:Logical )
+      attributes.intangible = not setting
+
     method set_is_visible( setting:Logical )
-      attributes.hidden = not setting
+      attributes.invisible = not setting
 
     method set_v_flip( setting:Logical )
       attributes.v_flip = setting
 
     method show
-      attributes.hidden = false
+      attributes.invisible = false
+      attributes.intangible = false
 
     method start
       if (not attributes.started)
@@ -128,9 +139,6 @@ class Entity : Node<<Entity>>
     method v_flip->Logical
       return attributes.v_flip
 
-    method is_visible->Logical
-      return not attributes.hidden
-
     method .begin_draw
       if (not attributes.started) start
       on_begin_draw
@@ -151,7 +159,7 @@ class Entity : Node<<Entity>>
       on_end_update
 
     method .handle_draw( &fg )
-      if (attributes.hidden) return
+      if (attributes.invisible) return
 
       if (fg)
         if (attributes.foreground) .draw_entity

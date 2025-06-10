@@ -181,7 +181,7 @@ class VScrollView : Component
         # This may capture pointer focus
 
         if (UI.pointer_focus)
-          if (not UI.pointer_focus.attributes.hidden and not UI.pointer_focus.attributes.input_disabled)
+          if (not UI.pointer_focus.attributes.intangible)
             UI.pointer_focus.handle( e_release )
           else
             UI.pointer_focus.release_pointer_focus

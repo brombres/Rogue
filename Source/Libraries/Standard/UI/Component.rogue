@@ -157,16 +157,16 @@ class Component : Entity
       UI.pointer_focus = this
       return true
 
-    method collect_child_display_components( list:Component[] )
+    method collect_child_display_components( list:Component[], &only_visible )
       # Collect child components that need to be laid out, skipping any meta-components.
-      (forEach as Component in children).collect_display_components( list )
+      (forEach as Component in children).collect_display_components( list, &=only_visible )
 
-    method collect_display_components( list:Component[] )
-      if (not attributes.hidden)
+    method collect_display_components( list:Component[], &only_visible )
+      if (not only_visible or not attributes.invisible)
         if (is_display_component)
           list.add( this )
         else
-          collect_child_display_components( list )
+          collect_child_display_components( list, &=only_visible )
         endIf
       endIf
 
@@ -264,7 +264,7 @@ class Component : Entity
       return parent->(as Component)?.font
 
     method handle( e:KeyEvent )
-      if (attributes.hidden or attributes.input_disabled) return
+      if (attributes.intangible) return
 
       on( e )
       if (e.is_consumed) return
@@ -275,7 +275,7 @@ class Component : Entity
       on_unhandled( e )
 
     method handle( e:PointerEvent )
-      if (attributes.hidden or attributes.input_disabled) return
+      if (attributes.intangible) return
 
       on( e )
       if (e.is_consumed) return
@@ -286,7 +286,7 @@ class Component : Entity
       on_unhandled( e )
 
     method handle( e:ScrollEvent )
-      if (attributes.hidden or attributes.input_disabled) return
+      if (attributes.intangible) return
 
       on( e )
       if (e.is_consumed) return
@@ -297,7 +297,7 @@ class Component : Entity
       on_unhandled( e )
 
     method handle( e:TextEvent )
-      if (attributes.hidden or attributes.input_disabled) return
+      if (attributes.intangible) return
 
       on( e )
       if (e.is_consumed) return
@@ -545,7 +545,7 @@ class Component : Entity
         temporarily UI.clip = new_clip
           use components = WorkList<<Component>>
             # Draw descendent Components
-            collect_child_display_components( components )
+            collect_child_display_components( components, &only_visible )
             (forEach in components).draw
 
             # Draw non-Component child entities
