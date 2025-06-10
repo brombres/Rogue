@@ -107,7 +107,7 @@ class VBox : Component
           # Assign remaining weighted components their proportional share of available height.
           block
             local remaining_height = available_size.y
-            local remaining_count = info_list.count
+            local remaining_count = info_list.count( $.component.weight.y > 0 )
             forEach (info in info_list)
               if (info.component.weight.y)
                 local h = remaining_height
@@ -118,35 +118,38 @@ class VBox : Component
                   if (snap) h .= floor
                 endIf
                 info.component.size.y = h
-                info.component.resolve_layout_size( info.component.size, &limited )
                 remaining_height -= h
                 --remaining_count
+              else
+                # Set zero-weight component height to 0 for now.
+                info.component.size.y = 0
               endIf
+              info.component.resolve_layout_size( info.component.size, &limited )
             endForEach
-          endBlock
 
-          # Treat remaining unweighted components as being equally weighted and
-          # assign them a proportional share of remaining height.
-          block
-            total_weight = 0
-            if ((forEach in info_list).component.weight.y == 0) ++total_weight
+            if (remaining_height)
+              # Treat remaining unweighted components as being equally weighted and
+              # assign them a proportional share of remaining height.
+              total_weight = 0
+              if ((forEach in info_list).component.weight.y == 0) ++total_weight
 
-            local remaining_height = available_size.y
-            local remaining_count = info_list.count
-            forEach (info in info_list)
-              if (info.component.weight.y == 0)
-                local h = remaining_height
-                if (remaining_count > 1)
-                  h = h / total_weight
-                  --total_weight
-                  if (snap) h .= floor
+              remaining_count = info_list.count( $.component.weight.y == 0 )
+              forEach (info in info_list)
+                if (info.component.weight.y == 0)
+                  local h = remaining_height
+                  if (remaining_count > 1)
+                    h = h / total_weight
+                    --total_weight
+                    if (snap) h .= floor
+                  endIf
+                  info.component.size.y = h
+                  info.component.resolve_layout_size( info.component.size, &limited )
+                  remaining_height -= h
+                  --remaining_count
                 endIf
-                info.component.size.y = h
-                info.component.resolve_layout_size( info.component.size, &limited )
-                remaining_height -= h
-                --remaining_count
-              endIf
-            endForEach
+              endForEach
+
+            endIf
           endBlock
 
         endUse

@@ -106,7 +106,7 @@ class HBox : Component
           # Assign remaining weighted components their proportional share of available width.
           block
             local remaining_width = available_size.x
-            local remaining_count = info_list.count
+            local remaining_count = info_list.count( $.component.weight.x > 0 )
             forEach (info in info_list)
               if (info.component.weight.x)
                 local w = remaining_width
@@ -117,35 +117,38 @@ class HBox : Component
                   if (snap) w .= floor
                 endIf
                 info.component.size.x = w
-                info.component.resolve_layout_size( info.component.size, &limited )
                 remaining_width -= w
                 --remaining_count
+              else
+                # Set zero-weight component width to 0 for now.
+                info.component.size.x = 0
               endIf
+              info.component.resolve_layout_size( info.component.size, &limited )
             endForEach
-          endBlock
 
-          # Treat remaining unweighted components as being equally weighted and
-          # assign them a proportional share of remaining width.
-          block
-            total_weight = 0
-            if ((forEach in info_list).component.weight.x == 0) ++total_weight
+            if (remaining_width)
+              # Treat remaining unweighted components as being equally weighted and
+              # assign them a proportional share of remaining width.
+              total_weight = 0
+              if ((forEach in info_list).component.weight.x == 0) ++total_weight
 
-            local remaining_width = available_size.x
-            local remaining_count = info_list.count
-            forEach (info in info_list)
-              if (info.component.weight.x == 0)
-                local w = remaining_width
-                if (remaining_count > 1)
-                  w = w / total_weight
-                  --total_weight
-                  if (snap) w .= floor
+              remaining_count = info_list.count( $.component.weight.x == 0 )
+              forEach (info in info_list)
+                if (info.component.weight.x == 0)
+                  local w = remaining_width
+                  if (remaining_count > 1)
+                    w = w / total_weight
+                    --total_weight
+                    if (snap) w .= floor
+                  endIf
+                  info.component.size.x = w
+                  info.component.resolve_layout_size( info.component.size, &limited )
+                  remaining_width -= w
+                  --remaining_count
                 endIf
-                info.component.size.x = w
-                info.component.resolve_layout_size( info.component.size, &limited )
-                remaining_width -= w
-                --remaining_count
-              endIf
-            endForEach
+              endForEach
+
+            endIf
           endBlock
 
         endUse
