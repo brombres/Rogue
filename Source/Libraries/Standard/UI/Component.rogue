@@ -2,19 +2,20 @@ library UI
 
 class Component : Entity
   PROPERTIES
-    position       : XY
-    size           : XY
+    position        : XY
+    size            : XY
 
-    anchor         : Anchor?
-    alignment      : Anchor?
-    sizing_mode    : SizingModeXY
-    layout_size    : XY
-    aspect_size    : XY
-    content_offset : XY
-    weight         = XY(1,1)
-    opacity        = 1.0
-    font           : Font
-    size_reference : Component
+    anchor          : Anchor?
+    alignment       : Anchor?
+    sizing_mode     : SizingModeXY
+    layout_size     : XY
+    aspect_size     : XY
+    content_offset  : XY
+    weight          = XY(1,1)
+    opacity         = 1.0
+    content_opacity = 1.0
+    font            : Font
+    size_reference  : Component
 
   METHODS # Overrides
     method init
@@ -182,6 +183,13 @@ class Component : Entity
     method content_bounds->Box
       return Box( content_position, content_size )
 
+    method content_opacity->Real
+      if local parent_component = parent->(as Component)
+        return parent_component.content_opacity * @content_opacity
+      else
+        return @content_opacity
+      endIf
+
     method content_position->XY
       return XY.zero
 
@@ -339,6 +347,13 @@ class Component : Entity
         next_component = next_entity->(as Component)
       endWhile
       return next_component
+
+    method opacity->Real
+      if local parent_component = parent->(as Component)
+        return parent_component.content_opacity * @opacity
+      else
+        return @opacity
+      endIf
 
     method operator+( rhs:Component )->Component
       return UIGeneratedHBox( this ).[ add(rhs) ]
