@@ -2,7 +2,7 @@ library RogueC
 
 augment Cmd
   GLOBAL METHODS
-    method common_type( t:Token, a:Type, b:Type )->Type
+    method common_type( t:Token, a:Type, b:Type, &using_unresolved_types )->Type
       if (a is b) return a
       if (not a or not b) return null
       if (a.is_primitive and b.is_primitive)
@@ -23,17 +23,25 @@ augment Cmd
         return Program.type_Int   # any mismatched pair Logical/Byte/Character/Int32/Int -> Int
       elseIf (a is Program.type_String or b is Program.type_String)
         return Program.type_String
-      elseIf (a.is_reference)
-        if (not b.is_reference) return a
-        if (a.instance_of(b)) return b
-        if (b.instance_of(a)) return a
-      elseIf (b.is_reference)
-        return b
-      elseIf (a.is_compound)
-        if (not b.is_compound) return a
-      elseIf (b.is_compound)
-        if (not a.is_compound) return b
+      else
+        if (using_unresolved_types)
+          # We can't reliably check to see if the types are instance_of() one another, etc.
+          return null
+        else
+          if (a.is_reference)
+            if (not b.is_reference) return a
+            if (a.instance_of(b)) return b
+            if (b.instance_of(a)) return a
+          elseIf (b.is_reference)
+            return b
+          elseIf (a.is_compound)
+            if (not b.is_compound) return a
+          elseIf (b.is_compound)
+            if (not a.is_compound) return b
+          endIf
+        endIf
       endIf
+
       throw t.error( "Incompatible types $ and $."(a,b) )
 
     method common_op_type( t:Token, a:Type, b:Type )->Type
@@ -768,6 +776,29 @@ augment
 
     method IsType.type->Type
       return Program.type_Logical
+
+    method KeyValuePairList.type->Type
+      if (count == 0) return null
+
+      local common_key_type : Type
+      local common_value_type : Type
+      forEach (arg at i in this)
+        local key_type = arg.key.type
+        local value_type = arg.value.type
+        if (not key_type or not value_type) return null
+
+        common_key_type =
+          which{
+            common_key_type:Cmd.common_type(t,common_key_type,key_type,&using_unresolved_types) || key_type
+          }
+        common_value_type =
+          which{
+            common_value_type:Cmd.common_type(t,common_value_type,value_type,&using_unresolved_types) || value_type
+          }
+        if (not common_key_type or not common_value_type) return null
+      endForEach
+
+      return Type( t, common_key_type, common_value_type )
 
     method LiteralCharacter.type->Type
       return Program.type_Character
