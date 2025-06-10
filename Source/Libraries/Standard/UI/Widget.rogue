@@ -6,8 +6,10 @@ endEnum
 
 class Widget : Component
   PROPERTIES
-    widget_state       : WidgetState
+    state              : WidgetState
     on_select_callback : Function
+    select_count       : Int
+    just_once          : Logical
 
   METHODS
     method init
@@ -27,16 +29,16 @@ class Widget : Component
       if (on_select_callback) on_select_callback()
 
     method is_disabled->Logical
-      return (widget_state == WidgetState.DISABLED)
+      return (state == WidgetState.DISABLED)
 
     method is_idle->Logical
-      return (widget_state == WidgetState.IDLE)
+      return (state == WidgetState.IDLE)
 
     method is_pressed->Logical
-      return (widget_state == WidgetState.PRESSED)
+      return (state == WidgetState.PRESSED)
 
     method is_targeted->Logical
-      return (widget_state == WidgetState.TARGETED)
+      return (state == WidgetState.TARGETED)
 
     method on( e:PointerEvent )
       if (is_disabled) return
@@ -49,7 +51,7 @@ class Widget : Component
       if (e.is_press)
         if (contains_e)
           if (capture_pointer_focus)
-            widget_state = WidgetState.PRESSED
+            state = WidgetState.PRESSED
             e.consume
           endIf
         else
@@ -58,45 +60,60 @@ class Widget : Component
       elseIf (e.is_release)
         if (contains_e and has_pointer_focus)
           prior.release_pointer_focus
-          widget_state = WidgetState.TARGETED
+          state = WidgetState.TARGETED
           e.consume
-          handle_select
+          ++select_count
+          if (select_count == 1 or not just_once)
+            handle_select
+          endIf
         else
           release_pointer_focus
         endIf
       elseIf (e.is_move)
         if (contains_e)
-          if (widget_state == WidgetState.IDLE)
-            widget_state = WidgetState.TARGETED
+          if (state == WidgetState.IDLE)
+            state = WidgetState.TARGETED
           endIf
         else
-          if (widget_state == WidgetState.TARGETED or widget_state == WidgetState.PRESSED)
-            widget_state = WidgetState.IDLE
+          if (state == WidgetState.TARGETED or state == WidgetState.PRESSED)
+            state = WidgetState.IDLE
           endIf
         endIf
       endIf
+
+    method on_change_state( new_state:WidgetState )
+      noAction
 
     method on_select
 
     method on_select( on_select_callback )
 
+    method once
+      select_count = 0
+      just_once = true
+
     method release_pointer_focus
       if (has_pointer_focus)
-        if (widget_state != WidgetState.DISABLED) widget_state = WidgetState.IDLE
+        if (state != WidgetState.DISABLED) state = WidgetState.IDLE
         request_redraw
       endIf
       prior.release_pointer_focus
 
     method set_disabled( setting:Logical )
       if (setting == is_disabled) return
-      widget_state = which{ setting:WidgetState.DISABLED || WidgetState.IDLE }
+      state = which{ setting:WidgetState.DISABLED || WidgetState.IDLE }
 
     method set_is_visible( setting:Logical )
       if (setting == visible) return
       if (not setting) release_pointer_focus
       prior.set_is_visible( setting )
-      if (not is_disabled) widget_state = WidgetState.IDLE
+      if (not is_disabled) state = WidgetState.IDLE
 
     method set_on_select( on_select_callback )
+
+    method set_state( new_state:WidgetState )
+      if (state == new_state) return
+      @state = new_state
+      on_change_state( new_state )
 
 endClass
