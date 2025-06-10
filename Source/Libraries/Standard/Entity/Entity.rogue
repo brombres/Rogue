@@ -63,6 +63,9 @@ class Entity : Node<<Entity>>
     method h_flip->Logical
       return attributes.h_flip
 
+    method hide
+      attributes.hidden = true
+
     method on_begin_draw
       noAction
 
@@ -97,6 +100,9 @@ class Entity : Node<<Entity>>
 
     method set_v_flip( setting:Logical )
       attributes.v_flip = setting
+
+    method show
+      attributes.hidden = false
 
     method start
       if (not attributes.started)
