@@ -68,8 +68,17 @@ class Scanner : ScannerCore, Poolable
       return 0
 
     method process_comment->Int
-      local comment = buffer.cloned
-      if (comment.contains("FIXME"))
+      local matching_keyword : String
+
+      contingent
+        forEach (keyword in Program.todos)
+          matching_keyword = keyword
+          sufficient (buffer.contains(keyword) and not buffer.contains('@'+keyword))
+        endForEach
+        escapeContingent
+
+      satisfied
+        local comment = buffer.cloned
         local cur_loc = _scanner.location
         _scanner.location = beginning_of_line
 
@@ -79,11 +88,12 @@ class Scanner : ScannerCore, Poolable
         endWhile
         comment = buffer.cloned
 
-        local matches = comment.split('\n').[ discard( not $.contains("FIXME") ) ]
+        local matches = comment.split('\n').[ discard( not $.contains(matching_keyword) ) ]
         forEach (match in matches)
-          println "[FIXME][$:$] $"(File(_filepath).filename,beginning_of_line.line,match)
+          println "[$][$:$] $"(matching_keyword,File(_filepath).filename,beginning_of_line.line,match)
         endForEach
-      endIf
+      endContingent
+
       return 0
 
     method use_DateTime->Int

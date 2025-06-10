@@ -264,6 +264,7 @@ class RogueC
         option( "--real=", &alias="-r" )
         option( "--split=", &alias="-s", &optional )
         option( "--target=", &alias="-t", &multi )
+        option( "--todo=", &optional, &multi )
         option( "--version", &alias="-v" )
       ].parse( args )
 
@@ -355,6 +356,21 @@ class RogueC
         else
           Program.output_filepath = command//args.first->String.before_suffix( ".rogue" )
         endIf
+      endIf
+
+      if (command//options//todo)
+        forEach (todo in command//options//todo)
+          if (todo == Variant(true))
+            Program.todos["TODO"] = "TODO"
+          else
+            local keyword = todo->String
+            if (keyword.begins_with('@'))
+              Program.todos.remove( keyword.from(1) )
+            else
+              Program.todos[keyword] = keyword
+            endIf
+          endIf
+        endForEach
       endIf
 
       return command
@@ -458,6 +474,13 @@ class RogueC
                |    frameworks, etc. that can be checked during compile time with '$target("C")'
                |    etc. This option can be listed multiple times. If no targets are given, a
                |    default target of "C" is used.
+               |
+               |  --todo, --todo=KEYWORD, --todo=@FIXME
+               |    During compilation, prints any source line containing a comment with the
+               |    word 'TODO' (or specified KEYWORD) as an advisory, just like lines with
+               |    'FIXME' are printed by default. Comments containing keywords preceded with
+               |    '@' ('@TODO'/'@FIXME'/etc.) are not printed. A leading '@' in a '--todo'
+               |    prevents that keyword from printing out globally.
                |
                |  --version, -v
                |    Prints the Rogue version number and release date.

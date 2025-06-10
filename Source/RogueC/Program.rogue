@@ -29,6 +29,8 @@ class Program [singleton]
     api_patterns      = String[]
     api_filepaths     = Set<<String>>()
 
+    todos = {"FIXME":"FIXME"} # Set by '--todo' option; @FIXME is built-in.
+
     # Set with --namespace=<TypePrefix>
     namespace_lc          = ""
     namespace_capitalized = ""
