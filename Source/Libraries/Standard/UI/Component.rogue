@@ -497,6 +497,8 @@ class Component : Entity
         request_redraw
       endIf
 
+    method set_content_opacity( @content_opacity )
+
     method set_fixed_size( layout_size )
       sizing_mode = SizingModeXY( SizingMode.FIXED_SIZE, SizingMode.FIXED_SIZE )
       size = layout_size
@@ -510,6 +512,8 @@ class Component : Entity
       layout_size.x = w
       sizing_mode.x = SizingMode.FIXED_SIZE
       size.x = w
+
+    method set_opacity( @opacity )
 
     method set_proportional_size( layout_size )
       sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL, SizingMode.PROPORTIONAL )
