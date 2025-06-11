@@ -41,7 +41,10 @@ class Node<<$ExtendedNodeType>> : IteratorPreferred
       return NodeIterator<<$ExtendedNodeType>>( first_child )
 
     method clear
-      remove_children
+      while (count) remove_last
+      # We repeatedly remove_last to detach each child from its siblings.
+      # Remove_children would detach the children from the parent but they
+      # would remain connected siblings
 
     method clear_structure_modified
       structure_modified = false
