@@ -37,6 +37,10 @@ class ProgressState<<$ExtendedType,$change_state,$exit_state>> : State<<$Extende
 
     method init( duration )
 
+    method execute
+      # Internal use
+      on_execute
+
     method finish [override]
       if (duration < 0) duration = 0
       t = duration
@@ -47,7 +51,7 @@ class ProgressState<<$ExtendedType,$change_state,$exit_state>> : State<<$Extende
     method on_execute
       # Override to automatically make duration INSTANT
       duration = INDEFINITE  # only happens when not overridden
-      on_start  # start an indefinite state
+      start  # start an indefinite state
 
     method progress->Real
       return which{ duration>0:t/duration || 1.0 }
@@ -62,15 +66,14 @@ class ProgressState<<$ExtendedType,$change_state,$exit_state>> : State<<$Extende
         endIf
       else
         if (not prev_time)
-          local cur_time = System.execution_time
+          prev_time = System.execution_time
           if (duration)
-            on_start
+            start
           else
-            on_execute
-            # Default will change duration to INDEFINITE and call on_start()
+            execute
+            # Default will change duration to INDEFINITE and call on_start() (via start())
             # Override on_execute() to keep INSTANT.
           endIf
-          prev_time = cur_time
         endIf
 
         if (concurrent_state) concurrent_state = concurrent_state.started
@@ -95,10 +98,10 @@ class ProgressState<<$ExtendedType,$change_state,$exit_state>> : State<<$Extende
         if (not prev_time)
           dt = 1.0/60.0
           if (duration)
-            on_start
+            start
           else
-            on_execute
-            # Default will change duration to INDEFINITE and call on_start()
+            execute
+            # Default will change duration to INDEFINITE and call on_start (via start())
             # Override on_execute() to keep INSTANT.
           endIf
         else

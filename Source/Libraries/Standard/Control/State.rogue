@@ -116,6 +116,10 @@ class State<<$ExtendedType,$change_state,$exit_state>>
 
     method on_finish
 
+    method start
+      is_started = true
+      on_start
+
     method started->$ExtendedType
       if (is_exited)
         # Already exited outside of updated()
@@ -123,10 +127,7 @@ class State<<$ExtendedType,$change_state,$exit_state>>
           concurrent_state = concurrent_state.started
         endIf
       else
-        if (not is_started)
-          is_started = true
-          on_start
-        endIf
+        if (not is_started) start
 
         if (concurrent_state) concurrent_state = concurrent_state.started
         if (not is_finished) return this->(as $ExtendedType)
@@ -135,7 +136,6 @@ class State<<$ExtendedType,$change_state,$exit_state>>
       .handle_finish
 
       return .start_next
-
 
     method to->String
       return description
@@ -150,10 +150,7 @@ class State<<$ExtendedType,$change_state,$exit_state>>
           concurrent_state = concurrent_state.updated
         endIf
       else
-        if (not is_started)
-          is_started = true
-          on_start
-        endIf
+        if (not is_started) start
 
         update
 
@@ -209,35 +206,3 @@ class State<<$ExtendedType,$change_state,$exit_state>>
 
 endClass
 
-class StateWait<<$ExtendedType>>( duration ) : $ExtendedType [undocumented];
-
-class StateWaitFor<<$ExtendedType>>( condition:Function->Logical, duration=$ExtendedType.INDEFINITE )
-  : $ExtendedType [undocumented]
-  METHODS
-    method is_finished->Logical
-      return condition()
-endClass
-
-class StateCall<<$ExtendedType>>( fn:Function(), duration=$ExtendedType.INSTANT ) : $ExtendedType [undocumented]
-  METHODS
-    method on_execute
-      fn()
-endClass
-
-class StateCallWithProgress<<$ExtendedType>>( fn:Function(Real), duration ) : $ExtendedType [undocumented]
-  METHODS
-    method on_update
-      fn( progress )
-endClass
-
-class StateYield<<$ExtendedType>> : $ExtendedType
-  PROPERTIES
-    update_count = 0
-
-  METHODS
-    method is_finished->Logical
-      return update_count == 2
-
-    method on_update
-      ++update_count
-endClass
