@@ -60,7 +60,7 @@ class Text : Component
 
       endUse
 
-      on_begin_layout  # set initial size
+      begin_layout  # set initial size
 
     method .add_builder( builder:String )
       if (builder.count)
@@ -110,7 +110,7 @@ class Text : Component
       else                      return parent->(as Component)?.display_position
 
     method find_h_split( max_width:Real )->Real? [override]
-      localize font
+      local font = font
       assert font
       forEach (ch at i in value step -1)
         if (ch == ' ' or ch == '\n' or ch == '\r' or ch == '\t')
@@ -152,6 +152,13 @@ class Text : Component
       endForEach
       return true
 
+    method line_height->Real
+      if local font = font
+        return font.height * font.line_spacing
+      else
+        return 0.0
+      endIf
+
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
       if local font = font
         return font.measure( value )
@@ -160,6 +167,8 @@ class Text : Component
       endIf
 
     method on_begin_layout [override]
+      local font = font
+
       local sz = font?.measure(value || "")
 
       if (sizing_mode.x == SizingMode.FIXED_SIZE)
@@ -176,8 +185,7 @@ class Text : Component
       endIf
 
     method on_draw [override]
-      localize font
-      if (font)
+      if local font = font
         font.draw( this )
       else
         println "ERROR: UI.default_font is undefined."
@@ -228,9 +236,9 @@ class Text : Component
       if (left) components.insert( left, component_i )
 
       # Have the new child components set their size
-      if (left) left.on_begin_layout
-      center.on_begin_layout
-      if (right) right.on_begin_layout
+      left?.begin_layout
+      center.begin_layout
+      right?.begin_layout
 
     method to->String
       return description

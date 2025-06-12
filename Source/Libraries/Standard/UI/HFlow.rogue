@@ -2,10 +2,11 @@ library UI
 
 class HFlow : Component
   PROPERTIES
-    layout_finished : Logical
-    layout_cursor   : XY
-    max_width       : Real
-    line_height     : Real
+    layout_finished  : Logical
+    layout_cursor    : XY
+    max_width        : Real
+    cur_line_height  : Real
+    cur_line_advance : Real
 
   METHODS
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
@@ -23,8 +24,9 @@ class HFlow : Component
       if (layout_finished) return
 
       localize content_position
-      layout_cursor = content_position
-      line_height   = 0
+      layout_cursor    = content_position
+      cur_line_height  = 0
+      cur_line_advance = 0
 
       local available_width = content_size.x
 
@@ -34,7 +36,8 @@ class HFlow : Component
         local i = 0
         while (i < components.count)
           local component = components[i]
-          line_height .= or_larger( component.size.y )
+          cur_line_height  .= or_larger( component.size.y )
+          cur_line_advance .= or_larger( component.line_height )
 
           local w = component.size.x
           local too_wide = (layout_cursor.x + w > available_width)
@@ -50,8 +53,9 @@ class HFlow : Component
             escapeContingent
           satisfied
             layout_cursor.x = content_position.x
-            layout_cursor.y += line_height
-            line_height = 0
+            layout_cursor.y += cur_line_advance
+            cur_line_height  = 0
+            cur_line_advance = 0
             nextIteration
           endContingent
 
@@ -67,7 +71,7 @@ class HFlow : Component
 
       # Leave cursor as min size to enclose content
       layout_cursor.x = max_width
-      layout_cursor.y += line_height
+      layout_cursor.y += cur_line_height
 
       layout_finished = true
 

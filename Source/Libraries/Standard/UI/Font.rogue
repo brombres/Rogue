@@ -2,7 +2,8 @@ library UI
 
 class Font [abstract]
   PROPERTIES
-    name   : String
+    name         : String
+    line_spacing = 1.0
 
   METHODS
     method init( name )
@@ -52,7 +53,7 @@ class Font [abstract]
             max_w .= or_larger( w )
             w = 0
             row_h .= or_larger( measure(ch).y )
-            h += row_h
+            h += row_h * line_spacing
             row_h = 0
           else
             local ch_size = measure(ch)
