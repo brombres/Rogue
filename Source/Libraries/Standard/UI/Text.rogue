@@ -75,15 +75,15 @@ class Text : Component
         builder.clear
       endIf
 
-    method aspect_fit_text
-      aspect_fit_text_width
-      aspect_fit_text_height
+    method aspect_fit_text_to_size
+      aspect_fit_text_to_width
+      aspect_fit_text_to_height
 
-    method aspect_fit_text_height
+    method aspect_fit_text_to_height
       scaling_mode.y = ScalingMode.ASPECT_FIT
       sizing_mode.y = SizingMode.EXPAND_TO_FILL
 
-    method aspect_fit_text_width
+    method aspect_fit_text_to_width
       scaling_mode.x = ScalingMode.ASPECT_FIT
       sizing_mode.x = SizingMode.EXPAND_TO_FILL
 
@@ -206,15 +206,15 @@ class Text : Component
         request_layout
       endIf
 
-    method shrink_to_fit_text
-      shrink_to_fit_text_width
-      shrink_to_fit_text_height
+    method shrink_to_fit_text_to_size
+      shrink_to_fit_text_to_width
+      shrink_to_fit_text_to_height
 
-    method shrink_to_fit_text_height
+    method shrink_to_fit_text_to_height
       scaling_mode.y = ScalingMode.SHRINK_TO_FIT
       sizing_mode.y = SizingMode.EXPAND_TO_FILL
 
-    method shrink_to_fit_text_width
+    method shrink_to_fit_text_to_width
       scaling_mode.x = ScalingMode.SHRINK_TO_FIT
       sizing_mode.x = SizingMode.EXPAND_TO_FILL
 

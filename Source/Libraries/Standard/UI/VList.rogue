@@ -3,6 +3,6 @@ library UI
 class VList : VBox
   METHODS
     method init_object
-      alignment = Anchor.TOP_LEFT
+      content_alignment = Anchor.TOP_LEFT
 
 endClass

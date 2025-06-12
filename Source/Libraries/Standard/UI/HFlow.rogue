@@ -9,6 +9,15 @@ class HFlow : Component
     cur_line_advance : Real
 
   METHODS
+    method init
+      noAction
+
+    method init( component:Component )
+      prior.init( component )
+
+    method init( text:String )
+      add( Text(text) )
+
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
       resolve_child_layout_sizes
 
@@ -81,5 +90,8 @@ class HFlow : Component
         collect_child_display_components( components )
         (forEach in components).resolve_layout_size( available_size )
       endUse
+
+    method set_content( text:String )
+      set_content( Text(text) )
 
 endClass

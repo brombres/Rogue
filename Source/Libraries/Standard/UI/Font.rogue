@@ -26,12 +26,11 @@ class Font [abstract]
 
     method draw( text:String, bounds:Box, anchor=Anchor.CENTER:Anchor  )
       local text_size = measure( text )
-      local position  = Box(text_size).positioned_within(
-        bounds, anchor ).position
+      local position  = Box(text_size).positioned_within( bounds, anchor ).position
       draw( text, position )
 
     method draw( text:String, container:Component )
-      draw( text, container.display_bounds, container.alignment )
+      draw( text, container.display_bounds, container.anchor )
 
     method height->Real                 [abstract]
 

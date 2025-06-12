@@ -6,7 +6,7 @@ class Component : Entity
     size            : XY
 
     anchor          : Anchor?
-    alignment       : Anchor?
+    content_alignment       : Anchor?
     sizing_mode     : SizingModeXY
     layout_size     : XY
     aspect_size     : XY
@@ -18,7 +18,7 @@ class Component : Entity
     text_style      : TextStyle
     size_reference  : Component
 
-    on_begin_layout_callback : Function
+    on_begin_layout_callback : Function(Component)
 
   METHODS # Overrides
     method init
@@ -29,33 +29,6 @@ class Component : Entity
 
     method init( fixed_size:XY )
       this.fixed_size = fixed_size
-
-    method anchor_top_left
-      anchor = Anchor.TOP_LEFT
-
-    method anchor_top
-      anchor = Anchor.TOP
-
-    method anchor_top_right
-      anchor = Anchor.TOP_RIGHT
-
-    method anchor_left
-      anchor = Anchor.LEFT
-
-    method anchor_center
-      anchor = Anchor.CENTER
-
-    method anchor_right
-      anchor = Anchor.RIGHT
-
-    method anchor_bottom_left
-      anchor = Anchor.BOTTOM_LEFT
-
-    method anchor_bottom
-      anchor = Anchor.BOTTOM
-
-    method anchor_bottom_right
-      anchor = Anchor.BOTTOM_RIGHT
 
     method on( e:KeyEvent )
       noAction
@@ -104,30 +77,73 @@ class Component : Entity
       noAction
 
   METHODS # Public API
-    method align( @alignment )
+    method align_content( @content_alignment )
       noAction
 
-    method alignment->Anchor
-      if local result = @alignment
-        return result
-      else
-        if local parent_component = parent->(as Component)
-          return parent_component.alignment
-        else
-          return Anchor.CENTER
-        endIf
-      endIf
+    method align_content_top_left
+      content_alignment = Anchor.TOP_LEFT
+
+    method align_content_top
+      content_alignment = Anchor.TOP
+
+    method align_content_top_right
+      content_alignment = Anchor.TOP_RIGHT
+
+    method align_content_left
+      content_alignment = Anchor.LEFT
+
+    method align_content_center
+      content_alignment = Anchor.CENTER
+
+    method align_content_right
+      content_alignment = Anchor.RIGHT
+
+    method align_content_bottom_left
+      content_alignment = Anchor.BOTTOM_LEFT
+
+    method align_content_bottom
+      content_alignment = Anchor.BOTTOM
+
+    method align_content_bottom_right
+      content_alignment = Anchor.BOTTOM_RIGHT
 
     method anchor->Anchor
       if local result = @anchor
         return result
       else
         if local parent_component = parent->(as Component)
-          return parent_component.alignment
+          return parent_component.content_alignment
         else
           return Anchor.CENTER
         endIf
       endIf
+
+    method anchor_top_left
+      anchor = Anchor.TOP_LEFT
+
+    method anchor_top
+      anchor = Anchor.TOP
+
+    method anchor_top_right
+      anchor = Anchor.TOP_RIGHT
+
+    method anchor_left
+      anchor = Anchor.LEFT
+
+    method anchor_center
+      anchor = Anchor.CENTER
+
+    method anchor_right
+      anchor = Anchor.RIGHT
+
+    method anchor_bottom_left
+      anchor = Anchor.BOTTOM_LEFT
+
+    method anchor_bottom
+      anchor = Anchor.BOTTOM
+
+    method anchor_bottom_right
+      anchor = Anchor.BOTTOM_RIGHT
 
     method aspect_fill( aspect_size )
       sizing_mode = SizingModeXY( SizingMode.ASPECT_FILL, SizingMode.ASPECT_FILL )
@@ -147,6 +163,17 @@ class Component : Entity
     method aspect_fit_width( aspect_size )
       sizing_mode.x = SizingMode.ASPECT_FIT
 
+    method content_alignment->Anchor
+      if local result = @content_alignment
+        return result
+      else
+        if local parent_component = parent->(as Component)
+          return parent_component.content_alignment
+        else
+          return Anchor.CENTER
+        endIf
+      endIf
+
     method font->Font
       if (@font) return @font
       return parent->(as Component)?.font
@@ -157,7 +184,7 @@ class Component : Entity
     method begin_layout( &only_children )
       if (not only_children)
         on_begin_layout
-        if (on_begin_layout_callback) on_begin_layout_callback()
+        if (on_begin_layout_callback) on_begin_layout_callback( this )
       endIf
 
       use components = WorkList<<Component>>

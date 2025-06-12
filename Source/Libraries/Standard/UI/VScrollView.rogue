@@ -23,7 +23,7 @@ class VScrollView : Component
 
   METHODS
     method init_object
-      alignment = Anchor.TOP_LEFT
+      content_alignment = Anchor.TOP_LEFT
 
     method bottom_offset->Real
       # Result will be negative or zero.

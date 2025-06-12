@@ -3,6 +3,6 @@ library UI
 class Label : Text
   METHODS
     method init_object
-      aspect_fit_text_height
-      shrink_to_fit_text_width
+      aspect_fit_text_to_height
+      shrink_to_fit_text_to_width
 endClass
