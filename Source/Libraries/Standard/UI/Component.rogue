@@ -140,8 +140,8 @@ class Component : Entity
     method aspect_fit_width( aspect_size )
       sizing_mode.x = SizingMode.ASPECT_FIT
 
-    method begin_layout
-      on_begin_layout
+    method begin_layout( &only_children )
+      if (not only_children) on_begin_layout
       use components = WorkList<<Component>>
         collect_child_display_components( components )
         (forEach in components).begin_layout
