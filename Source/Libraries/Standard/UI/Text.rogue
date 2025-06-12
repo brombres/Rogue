@@ -2,8 +2,7 @@ library UI
 
 class Text : Component
   PROPERTIES
-    value : String
-    style : TextStyle
+    value        : String
     scaling_mode = ScalingModeXY( ScalingMode.NONE, ScalingMode.NONE )
     sizing_mode  = SizingModeXY( SizingMode.FIXED_SIZE, SizingMode.FIXED_SIZE )
 
@@ -89,10 +88,10 @@ class Text : Component
       sizing_mode.x = SizingMode.EXPAND_TO_FILL
 
     method bg_color->Graphics::Color? [override]
-      return style?.bg_color || prior.bg_color
+      return text_style?.bg_color || prior.bg_color
 
     method color->Graphics::Color? [override]
-      return style?.color || prior.color
+      return text_style?.color || prior.color
 
     method description->String
       local result = ''Text($)''(value?.to_escaped_ascii||"")
@@ -135,8 +134,8 @@ class Text : Component
       sizing_mode.x = SizingMode.FIXED_SIZE
 
     method font->Font
-      if (style and style.font)
-        return style.font.value
+      if (text_style and text_style.font)
+        return text_style.font.value
       else
         return prior.font
       endIf
@@ -185,12 +184,12 @@ class Text : Component
       endIf
 
     method set_bg_color( color:Graphics::Color? )
-      ensure<<style>>
-      style.bg_color = color
+      ensure<<text_style>>
+      text_style.bg_color = color
 
     method set_color( color:Graphics::Color? )
-      ensure<<style>>
-      style.color = color
+      ensure<<text_style>>
+      text_style.color = color
 
     method set_value( new_value:String )
       if (not new_value) new_value = ""

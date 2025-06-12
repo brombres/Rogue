@@ -15,6 +15,7 @@ class Component : Entity
     opacity         = 1.0
     content_opacity = 1.0
     font            : Font
+    text_style      : TextStyle
     size_reference  : Component
 
   METHODS # Overrides
@@ -555,6 +556,10 @@ class Component : Entity
 
     method split_h( split_position:Real, components:Component[], component_i:Int )
       noAction
+
+    method text_style->TextStyle
+      if (@text_style) return @text_style
+      return parent->(as Component)?.text_style
 
     method .dispatch_draw [override]
       if (count)
