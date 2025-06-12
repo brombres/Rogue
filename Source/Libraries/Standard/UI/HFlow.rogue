@@ -16,7 +16,7 @@ class HFlow : Component
 
       return layout_cursor
 
-    method on_begin_layout
+    method on_begin_layout [override]
       layout_finished = false
 
     method perform_layout( position )
@@ -52,6 +52,7 @@ class HFlow : Component
             layout_cursor.x = content_position.x
             layout_cursor.y += line_height
             line_height = 0
+            nextIteration
           endContingent
 
           ++i
