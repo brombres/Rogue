@@ -5,5 +5,5 @@ class Label : Text
     method init_object
       expand_to_fill
       aspect_fit_text_to_height
-      shrink_to_fit_text_to_width
+      shrink_text_to_fit_width
 endClass

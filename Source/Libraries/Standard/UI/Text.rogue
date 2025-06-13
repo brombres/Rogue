@@ -194,14 +194,14 @@ class Text : Component
         request_layout
       endIf
 
-    method shrink_to_fit_text_to_size
-      shrink_to_fit_text_to_width
-      shrink_to_fit_text_to_height
+    method shrink_text_to_fit_size
+      shrink_text_to_fit_width
+      shrink_text_to_fit_height
 
-    method shrink_to_fit_text_to_height
+    method shrink_text_to_fit_height
       scaling_mode.y = ScalingMode.SHRINK_TO_FIT
 
-    method shrink_to_fit_text_to_width
+    method shrink_text_to_fit_width
       scaling_mode.x = ScalingMode.SHRINK_TO_FIT
 
     method split_h( split_position:Real, components:Component[], component_i:Int ) [override]
