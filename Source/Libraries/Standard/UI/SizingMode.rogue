@@ -7,6 +7,7 @@ enum SizingMode
   PROPORTIONAL
   SHRINK_TO_FIT
   FIXED_SIZE
+  NATURAL_SIZE
 endEnum
 
 class SizingModeXY( x:SizingMode, y:SizingMode ) [compound]

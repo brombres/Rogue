@@ -34,7 +34,7 @@ class HBox : Component
           component.perform_layout(
             component.bounds.positioned_within(
               Box(pos,component.size.x,size.y),
-              which{ component.@anchor || anchor }
+              component.anchor
             ).position
           )
           pos.x += component.size.x

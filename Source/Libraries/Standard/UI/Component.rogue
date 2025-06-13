@@ -416,7 +416,7 @@ class Component : Entity
         forEach (component in components)
           local bounds = component.bounds.positioned_within(
             content_bounds,
-            which{ component.@anchor || anchor }
+            component.anchor
           )
           component.perform_layout( bounds.position )
         endForEach
@@ -450,7 +450,13 @@ class Component : Entity
         case SHRINK_TO_FIT
           noAction
         case ASPECT_FIT
-          local available_y = ?:{ sizing_mode.y==SizingMode.FIXED_SIZE:layout_size.y || available_size.y }
+          local available_y : Real
+          which (sizing_mode.y)
+            case FIXED_SIZE, NATURAL_SIZE
+              available_y = layout_size.y
+            others
+              available_y = available_size.y
+          endWhich
           local fit_x = (available_y / (aspect_size.y || 1.0)) * aspect_size.x
           if (snap) fit_x .= floor
           if (sizing_mode.y == SizingMode.ASPECT_FILL or fit_x <= available_size.x)
@@ -469,7 +475,7 @@ class Component : Entity
           if (size_reference) sz.x = size_reference.size.x * layout_size.x
           else                sz.x = available_size.x * layout_size.x
           if (snap) sz.x .= floor
-        case FIXED_SIZE
+        case FIXED_SIZE, NATURAL_SIZE
           sz.x = layout_size.x
       endWhich
 
@@ -479,7 +485,13 @@ class Component : Entity
         case SHRINK_TO_FIT
           noAction
         case ASPECT_FIT
-          local available_x = ?:{ sizing_mode.x==SizingMode.FIXED_SIZE:layout_size.x || available_size.x }
+          local available_x : Real
+          which (sizing_mode.x)
+            case FIXED_SIZE, NATURAL_SIZE
+              available_x = layout_size.x
+            others
+              available_x = available_size.x
+          endWhich
           local fit_y = (available_x / (aspect_size.x || 1.0)) * aspect_size.y
           if (snap) fit_y .= floor
           if (sizing_mode.x == SizingMode.ASPECT_FILL or fit_y <= available_size.y)
@@ -496,7 +508,7 @@ class Component : Entity
         case PROPORTIONAL
           if (size_reference) sz.y = size_reference.size.y * layout_size.y
           else                sz.y = available_size.y * layout_size.y
-        case FIXED_SIZE
+        case FIXED_SIZE, NATURAL_SIZE
           sz.y = layout_size.y
       endWhich
 
@@ -557,6 +569,20 @@ class Component : Entity
       sizing_mode.x = SizingMode.FIXED_SIZE
       size.x = w
 
+    method set_natural_size( layout_size )
+      sizing_mode = SizingModeXY( SizingMode.NATURAL_SIZE, SizingMode.NATURAL_SIZE )
+      size = layout_size
+
+    method set_natural_height( h:Real )
+      layout_size.y = h
+      sizing_mode.y = SizingMode.NATURAL_SIZE
+      size.y = h
+
+    method set_natural_width( w:Real )
+      layout_size.x = w
+      sizing_mode.x = SizingMode.NATURAL_SIZE
+      size.x = w
+
     method set_opacity( @opacity )
 
     method set_proportional_size( layout_size )
@@ -603,6 +629,18 @@ class Component : Entity
     method text_style->TextStyle
       if (@text_style) return @text_style
       return parent->(as Component)?.text_style
+
+    method use_natural_size
+      sizing_mode = SizingModeXY( SizingMode.NATURAL_SIZE, SizingMode.NATURAL_SIZE )
+      size = layout_size
+
+    method use_natural_height
+      sizing_mode.y = SizingMode.NATURAL_SIZE
+      size.y = layout_size.y
+
+    method use_natural_width
+      sizing_mode.x = SizingMode.NATURAL_SIZE
+      size.x = layout_size.x
 
     method .dispatch_draw [override]
       if (count)

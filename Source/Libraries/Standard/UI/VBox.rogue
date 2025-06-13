@@ -35,7 +35,7 @@ class VBox : Component
           component.perform_layout(
             component.bounds.positioned_within(
               Box(pos,size.x,component.size.y),
-              which{ component.@anchor || anchor }
+              component.anchor
             ).position
           )
           pos.y += component.size.y
