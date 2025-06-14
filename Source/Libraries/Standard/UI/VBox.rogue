@@ -16,7 +16,7 @@ class VBox : Component
       endUse
       return XY(w,h)
 
-    method perform_layout( position )
+    method perform_child_layout [override]
       localize anchor
       local total_h = 0.0
       local w = 0.0

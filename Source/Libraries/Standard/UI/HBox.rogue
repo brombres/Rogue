@@ -15,7 +15,7 @@ class HBox : Component
       endUse
       return XY(w,h)
 
-    method perform_layout( position )
+    method perform_child_layout [override]
       localize anchor
       local total_w = 0.0
       local h = 0.0

@@ -276,8 +276,11 @@ class Component : Entity
         return position
       endIf
 
-    method end_layout
-      on_end_layout
+    method end_layout( &only_children )
+      if (not only_children)
+        on_end_layout
+      endIf
+
       use components = WorkList<<Component>>
         collect_child_display_components( components )
         (forEach in components).end_layout
@@ -375,6 +378,9 @@ class Component : Entity
     method line_height->Real
       return size.y
 
+    method manually_update_content_layout( setting=true:Logical )
+      attributes.manually_update_content_layout = setting
+
     method minimum_layout_size( available_size:XY, &limited )->XY
       local sz : XY
       use components = WorkList<<Component>>
@@ -409,6 +415,11 @@ class Component : Entity
       return UIGeneratedStack( this ).[ add(rhs) ]
 
     method perform_layout( position )
+      if (not attributes.manually_update_content_layout)
+        perform_child_layout
+      endIf
+
+    method perform_child_layout
       localize anchor
       localize content_bounds
       use components = WorkList<<Component>>
@@ -515,20 +526,28 @@ class Component : Entity
       if (snap) sz .= floor
       size = sz
 
-      if (sizing_mode.x == SizingMode.SHRINK_TO_FIT or sizing_mode.y == SizingMode.SHRINK_TO_FIT)
-        local min_size = minimum_layout_size( content_size, &=limited )
-        min_size = content_size_to_layout_size( min_size )
-        if (sizing_mode.x == SizingMode.SHRINK_TO_FIT) sz.x = min_size.x
-        if (sizing_mode.y == SizingMode.SHRINK_TO_FIT) sz.y = min_size.y
-        if (snap) sz .= floor
-        size = sz
-      endIf
+      if (not attributes.manually_update_content_layout)
+        if (sizing_mode.x == SizingMode.SHRINK_TO_FIT or sizing_mode.y == SizingMode.SHRINK_TO_FIT)
+          local min_size = minimum_layout_size( content_size, &=limited )
+          min_size = content_size_to_layout_size( min_size )
+          if (sizing_mode.x == SizingMode.SHRINK_TO_FIT) sz.x = min_size.x
+          if (sizing_mode.y == SizingMode.SHRINK_TO_FIT) sz.y = min_size.y
+          if (snap) sz .= floor
+          size = sz
+        endIf
 
-      if (not limited)
-        resolve_child_layout_sizes
+        if (not limited)
+          resolve_child_layout_sizes
+        endIf
       endIf
 
       return sz
+
+    method update_content_layout
+      begin_layout( &only_children )
+      resolve_child_layout_sizes( content_size )
+      perform_child_layout
+      end_layout( &only_children )
 
     method resolve_child_layout_sizes
       on_layout_size( size )

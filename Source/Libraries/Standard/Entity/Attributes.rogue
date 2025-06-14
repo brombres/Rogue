@@ -10,5 +10,6 @@ enum Attributes [bitflags]
     STARTED
     H_FLIP
     V_FLIP
+    MANUALLY_UPDATE_CONTENT_LAYOUT
 endEnum
 
