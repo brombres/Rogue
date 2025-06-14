@@ -47,13 +47,14 @@ class UI : Component [singleton]
     method init_object
       UI = this
 
-    method container( content:Component, &h, &v, on_begin_layout=null:Function(Component) )->Component [preferred]
+    method container( content:Component, on_begin_layout=null:Function(Component), &h, &v )->Component [preferred]
       local container = spacer( &=h, &=v, &=on_begin_layout )
       container.add( content )
       return container
 
     method container( content:Component, w=null:Real?, h=null:Real?, on_begin_layout=null:Function(Component) )->Component
-      local container = spacer( &=w, &=h, &=on_begin_layout )
+      local container = spacer( &=w, &=h )
+      if (on_begin_layout) container.on_begin_layout( on_begin_layout )
       container.add( content )
       return container
 
@@ -159,7 +160,7 @@ class UI : Component [singleton]
     method spacer( fixed_size:XY )->Component
       return Component().[ fixed_size=fixed_size ]
 
-    method spacer( &h, &v, on_begin_layout=null:Function(Component) )->Component [preferred]
+    method spacer( on_begin_layout=null:Function(Component), &h, &v )->Component [preferred]
       local component = Component()
       if (h xor v)
         if (h) component.fixed_height = 0  # horizontal spacer has fixed height 0
