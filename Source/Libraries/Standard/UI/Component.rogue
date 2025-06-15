@@ -526,16 +526,10 @@ class Component : Entity
       if (snap) sz .= floor
       size = sz
 
-      if (not attributes.manually_update_content_layout)
-        if (sizing_mode.x == SizingMode.SHRINK_TO_FIT or sizing_mode.y == SizingMode.SHRINK_TO_FIT)
-          local min_size = minimum_layout_size( content_size, &=limited )
-          min_size = content_size_to_layout_size( min_size )
-          if (sizing_mode.x == SizingMode.SHRINK_TO_FIT) sz.x = min_size.x
-          if (sizing_mode.y == SizingMode.SHRINK_TO_FIT) sz.y = min_size.y
-          if (snap) sz .= floor
-          size = sz
-        endIf
-
+      if (attributes.manually_update_content_layout)
+        on_layout_size( size )
+      else
+        sz = .resolve_shrink_to_fit_layout_size( &=limited )
         if (not limited)
           resolve_child_layout_sizes
         endIf
@@ -543,8 +537,21 @@ class Component : Entity
 
       return sz
 
+    method .resolve_shrink_to_fit_layout_size( &limited )->XY
+      local sz = @size
+      if (sizing_mode.x == SizingMode.SHRINK_TO_FIT or sizing_mode.y == SizingMode.SHRINK_TO_FIT)
+        local min_size = minimum_layout_size( content_size, &=limited )
+        min_size = content_size_to_layout_size( min_size )
+        if (sizing_mode.x == SizingMode.SHRINK_TO_FIT) sz.x = min_size.x
+        if (sizing_mode.y == SizingMode.SHRINK_TO_FIT) sz.y = min_size.y
+        if (UI.snap_to_pixel_coordinates) sz .= floor
+        size = sz
+      endIf
+      return sz
+
     method update_content_layout
       begin_layout( &only_children )
+      .resolve_shrink_to_fit_layout_size
       resolve_child_layout_sizes( content_size )
       perform_child_layout
       end_layout( &only_children )
