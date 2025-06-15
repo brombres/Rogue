@@ -204,7 +204,23 @@ class Text : Component
 
     method set_value( new_value:String )
       if (not new_value) new_value = ""
-      if (new_value != @value) init( new_value )
+      if (new_value != @value)
+        value.clear
+        value.print( new_value )
+        init( value )
+      endIf
+
+    method set_value( new_value:Real, decimal_digits=4:Int )
+      use buffer = StringPool
+        buffer.print( new_value, decimal_digits )
+        set_value( buffer )
+      endUse
+
+    method set_value( new_value:Int )
+      use buffer = StringPool
+        buffer.print( new_value )
+        set_value( buffer )
+      endUse
 
     method shrink_text_to_fit_size
       shrink_text_to_fit_width
