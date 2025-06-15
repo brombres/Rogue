@@ -177,26 +177,26 @@ class UI : Component [singleton]
 
     method update( bounds:Box )
       temporarily UI = this
+        # ensure we've got a layout before the first update()
         update_layout( bounds )
+
         update
+
+        # each update() may change things; call update_layout() a second time.
+        # O(1) if update() did not set needs_layout flag.
+        update_layout( bounds )
       endTemporarily
 
     method update_layout( bounds:Box )
       temporarily UI = this
         position = bounds.position
         if (needs_layout or bounds.size != size)
-          loop 2
-            #if (needs_layout)
-            needs_layout = false
-            needs_redraw = true
-            #endIf
-            begin_layout
-            resolve_layout_size( bounds.size )
-            perform_layout( position )
-            end_layout
-
-            if (not needs_layout) escapeLoop
-          endLoop
+          needs_layout = false
+          needs_redraw = true
+          begin_layout
+          resolve_layout_size( bounds.size )
+          perform_layout( position )
+          end_layout
         endIf
       endTemporarily
 

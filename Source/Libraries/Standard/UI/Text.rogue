@@ -7,70 +7,85 @@ class Text : Component
     sizing_mode  = SizingModeXY( SizingMode.NATURAL_SIZE, SizingMode.NATURAL_SIZE )
 
   METHODS
-    method init( text=String():String )
-      if (text.count <= 1)
-        value = text
-        return
-      endIf
+    method init( text=String():String, &fragment )
+      block
+        clear
 
-      use processed = StringPool
-        local iterator = text.iterator
-        local prev = -1
-        local has_eol = false
-        loop
-          if local ch = iterator.read_another
-            if (ch == '\r') nextIteration
-            if (ch == '\n')     has_eol = true
-            elseIf (ch == '\t') ch = ' '
-            if (ch == ' ')
-              if (prev == ' ') nextIteration
-            endIf
-            processed.print( ch )
-            prev = ch
-          else
-            escapeLoop
-          endIf
-        endLoop
-
-        if (processed.count <= 1)
-          value = processed.cloned
-          return
+        if (not text)
+          @value = String()
+          escapeBlock
         endIf
 
-        local has_edge_spaces = processed[0] == ' ' or processed.last == ' '
-        if (not has_edge_spaces and not has_eol)
-          value = processed.cloned
-          return
+        if (fragment and text.count <= 1)
+          @value = text
+          escapeBlock
         endIf
 
-        use builder = StringPool
-          forEach (ch in processed)
-            if (ch == '\n')
-              .add_builder( builder )
-              add( Text('\n') )
-            elseIf (ch == ' ' and not builder.count)
-              # Leading space becomes its own element
-              add( Text(" ") )
+        use processed = StringPool
+          processed.reserve( text.count )
+
+          local iterator = text.iterator
+          local prev = -1
+          local has_eol = false
+          local is_modified = false
+          loop
+            if local ch = iterator.read_another
+              if (ch == '\r')     is_modified = true; nextIteration
+              if (ch == '\n')     has_eol = true
+              elseIf (ch == '\t') ch = ' '; is_modified = true
+              if (ch == ' ')
+                if (prev == ' ') is_modified = true; nextIteration
+              endIf
+              processed.print( ch )
+              prev = ch
             else
-              builder.print ch
+              escapeLoop
             endIf
-          endForEach
-          .add_builder( builder )
+          endLoop
+
+          local has_edge_spaces = processed[0] == ' ' or processed.last == ' '
+          if (has_eol or has_edge_spaces) is_modified = true
+
+          if (not is_modified)
+            if (value is not text)
+              if (fragment) @value = text
+              else          @value = processed.cloned
+            endIf
+            escapeBlock
+          endIf
+
+          use builder = StringPool
+            forEach (ch in processed)
+              if (ch == '\n')
+                .add_builder( builder )
+                add( Text('\n',&fragment) )
+              elseIf (ch == ' ' and not builder.count)
+                # Leading space becomes its own element
+                add( Text(' ',&fragment) )
+              else
+                builder.print ch
+              endIf
+            endForEach
+            .add_builder( builder )
+          endUse
+
         endUse
+      endBlock
 
-      endUse
-
-      begin_layout  # set initial size
+      if (sizing_mode.x == SizingMode.NATURAL_SIZE or sizing_mode.y == SizingMode.NATURAL_SIZE)
+        begin_layout   # set initial size
+        request_layout
+      endIf
 
     method .add_builder( builder:String )
       if (builder.count)
         if (builder.last == ' ')
           # Make a trailing space its own element
           builder.remove_last
-          add( Text(builder.cloned) )
-          add( Text(" ") )
+          add( Text(builder.cloned,&fragment) )
+          add( Text(" ",&fragment) )
         else
-          add( Text(builder.cloned) )
+          add( Text(builder.cloned,&fragment) )
         endIf
         builder.clear
       endIf
@@ -189,10 +204,7 @@ class Text : Component
 
     method set_value( new_value:String )
       if (not new_value) new_value = ""
-      if (new_value != @value)
-        @value = new_value
-        request_layout
-      endIf
+      if (new_value != @value) init( new_value )
 
     method shrink_text_to_fit_size
       shrink_text_to_fit_width
@@ -208,9 +220,9 @@ class Text : Component
       local left, center, right : Text
 
       local split_i = split_position->Int
-      if (split_i) left = Text( value.substring(0, split_i) )
-      center = Text( value[split_i] )
-      if (split_i + 1 < value.count) right = Text( value.substring(split_i+1) )
+      if (split_i) left = Text( value.substring(0, split_i), &fragment )
+      center = Text( value[split_i], &fragment )
+      if (split_i + 1 < value.count) right = Text( value.substring(split_i+1), &fragment )
 
       if (left) add( left )
       add( center )
