@@ -24,6 +24,14 @@ class Widget : Component
     method init( label:String )
       prior.init( Label(label) )
 
+    method disable
+      if (is_disabled) return
+      state = WidgetState.DISABLED
+
+    method enable
+      if (not is_disabled) return
+      state = WidgetState.IDLE
+
     method handle_select
       on_select
       if (on_select_callback) on_select_callback()
@@ -98,10 +106,6 @@ class Widget : Component
         request_redraw
       endIf
       prior.release_pointer_focus
-
-    method set_disabled( setting:Logical )
-      if (setting == is_disabled) return
-      state = which{ setting:WidgetState.DISABLED || WidgetState.IDLE }
 
     method set_is_visible( setting:Logical )
       if (setting == visible) return
