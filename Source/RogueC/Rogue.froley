@@ -3593,6 +3593,7 @@ parser
     createNull
   endOn
   mustConsume '=>'
+  consume_eols
   single_line_statements
   produce GenericFunctionDefinition(parameters:IDList,with_values:WithValues,statements)
 
