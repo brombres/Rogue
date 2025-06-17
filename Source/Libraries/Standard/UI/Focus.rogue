@@ -1,0 +1,10 @@
+library UI
+
+class Focus
+  # Tracks which components in a UI have pointer and keyboard focus.
+  #
+  # By default each UI shares a common Focus object, UI.shared_focus
+  PROPERTIES
+    pointer  : Component
+    keyboard : Component
+endClass
