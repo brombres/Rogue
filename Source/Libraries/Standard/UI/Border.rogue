@@ -2,9 +2,12 @@ library UI
 
 class Border : Component
   PROPERTIES
-    is_proportional                      : Logical
-    left, top, right, bottom             : Real  # original pixel or proportional values
-    left_px, top_px, right_px, bottom_px : Real  # current pixel values derived from 'left' etc.
+    is_proportional : Logical
+    left_padding    : Real    # original pixel or proportional values (based on 'is_proportional')
+    top_padding     : Real
+    right_padding   : Real
+    bottom_padding  : Real
+    left_px, top_px, right_px, bottom_px : Real  # current pixel values derived from 'left_padding' etc.
 
   METHODS
     method content_size_to_layout_size( content_size:XY )->XY
@@ -24,30 +27,30 @@ class Border : Component
 
     method resolve_layout_size( available_size:XY, &limited )->XY [override]
       if (is_proportional)
-        left_px = left * available_size.x
-        top_px = top * available_size.y
-        right_px = right * available_size.x
-        bottom_px = bottom * available_size.y
+        left_px = left_padding * available_size.x
+        top_px = top_padding * available_size.y
+        right_px = right_padding * available_size.x
+        bottom_px = bottom_padding * available_size.y
       else
-        left_px = left
-        top_px = top
-        right_px = right
-        bottom_px = bottom
+        left_px = left_padding
+        top_px = top_padding
+        right_px = right_padding
+        bottom_px = bottom_padding
       endIf
       return prior.resolve_layout_size( available_size, &=limited )
 
-    method set_horizontal( horizontal_border_thickness:Real )
-      left = horizontal_border_thickness
-      right = horizontal_border_thickness
+    method set_horizontal_padding( padding:Real )
+      left_padding = padding
+      right_padding = padding
 
-    method set_vertical( vertical_border_thickness:Real )
-      top = vertical_border_thickness
-      bottom = vertical_border_thickness
+    method set_vertical_padding( padding:Real )
+      top_padding = padding
+      bottom_padding = padding
 
-    method set_thickness( border_thickness:Real )
-      left   = border_thickness
-      right  = border_thickness
-      top    = border_thickness
-      bottom = border_thickness
+    method set_padding( padding:Real )
+      left_padding   = padding
+      right_padding  = padding
+      top_padding    = padding
+      bottom_padding = padding
 
 endClass
