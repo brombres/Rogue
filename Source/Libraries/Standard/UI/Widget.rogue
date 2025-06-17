@@ -52,7 +52,7 @@ class Widget : Component
       if (is_disabled) return
 
       local contains_e = contains( e )
-      if (contains_e or has_pointer_focus or is_targeted)
+      if (contains_e or has_pointer_focus)
         request_redraw
       endIf
 
@@ -67,7 +67,6 @@ class Widget : Component
         endIf
       elseIf (e.is_release)
         if (contains_e and has_pointer_focus)
-          prior.release_pointer_focus
           state = WidgetState.TARGETED
           e.consume
           ++select_count
@@ -80,12 +79,13 @@ class Widget : Component
       elseIf (e.is_move)
         if (contains_e)
           if (state == WidgetState.IDLE)
-            state = WidgetState.TARGETED
+            if (capture_pointer_focus)
+              state = WidgetState.TARGETED
+            endIf
           endIf
         else
-          if (state == WidgetState.TARGETED or state == WidgetState.PRESSED)
-            state = WidgetState.IDLE
-          endIf
+          release_pointer_focus
+          if (state != WidgetState.DISABLED) state = WidgetState.IDLE
         endIf
       endIf
 
@@ -100,7 +100,7 @@ class Widget : Component
       select_count = 0
       just_once = true
 
-    method release_pointer_focus
+    method release_pointer_focus [override]
       if (has_pointer_focus)
         if (state != WidgetState.DISABLED) state = WidgetState.IDLE
         request_redraw

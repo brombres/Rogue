@@ -199,8 +199,8 @@ class Component : Entity
       return Box( position, size )
 
     method capture_pointer_focus->Logical
-      if (UI.pointer_focus and UI.pointer_focus is not this) return false
-      UI.pointer_focus = this
+      if (UI.focus.pointer and UI.focus.pointer is not this) return false
+      UI.focus.pointer = this
       return true
 
     method collect_child_display_components( list:Component[], &only_visible )
@@ -360,10 +360,10 @@ class Component : Entity
       on_unhandled( e )
 
     method has_keyboard_focus->Logical
-      return UI.keyboard_focus is this
+      return UI.focus.keyboard is this
 
     method has_pointer_focus->Logical
-      return UI.pointer_focus is this
+      return UI.focus.pointer is this
 
     method is_br->Logical
       return false
@@ -374,6 +374,9 @@ class Component : Entity
 
     method is_space->Logical
       return false
+
+    method keyboard_focus->Component
+      return UI.focus.keyboard
 
     method line_height->Real
       return size.y
@@ -433,16 +436,23 @@ class Component : Entity
         endForEach
       endUse
 
+    method pointer_focus->Component
+      return UI.focus.pointer
+
+    method release_focus
+      release_keyboard_focus
+      release_pointer_focus
+
     method release_keyboard_focus
-      if (UI.keyboard_focus is this)
-        UI.keyboard_focus = null
+      if (UI.focus.keyboard is this)
         on_release_keyboard_focus
+        UI.focus.keyboard = null
       endIf
 
     method release_pointer_focus
-      if (UI.pointer_focus is this)
-        UI.pointer_focus = null
+      if (UI.focus.pointer is this)
         on_release_pointer_focus
+        UI.focus.pointer = null
       endIf
 
     method request_layout

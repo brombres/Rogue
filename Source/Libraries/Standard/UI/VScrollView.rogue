@@ -180,11 +180,11 @@ class VScrollView : Component
         first_child_component.dispatch( e_press )
         # This may capture pointer focus
 
-        if (UI.pointer_focus)
-          if (not UI.pointer_focus.attributes.intangible)
-            UI.pointer_focus.handle( e_release )
+        if (UI.focus.pointer)
+          if (not UI.focus.pointer.attributes.intangible)
+            UI.focus.pointer.handle( e_release )
           else
-            UI.pointer_focus.release_pointer_focus
+            UI.focus.pointer.release_pointer_focus
             first_child_component.dispatch( e_release )
           endIf
         else

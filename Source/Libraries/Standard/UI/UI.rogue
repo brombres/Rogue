@@ -10,6 +10,7 @@ $include UI/Border
 $include UI/Component
 $include UI/ComponentSizeInfo
 $include UI/Event
+$include UI/Focus
 $include UI/Font
 $include UI/HBox
 $include UI/HFlow
@@ -28,13 +29,13 @@ $include UI/VScrollView
 $include UI/Widget
 
 class UI : Component [singleton]
+  GLOBAL PROPERTIES
+    shared_focus = Focus()
+
   PROPERTIES
     default_font   : Font
-
     clip           : Box?
-
-    pointer_focus  : Component
-    keyboard_focus : Component
+    focus          = shared_focus : Focus
 
     parameters     : Variant
 
@@ -83,11 +84,11 @@ class UI : Component [singleton]
         on( e )
         if (e.is_consumed) return
 
-        if (keyboard_focus)
-          if (not keyboard_focus.attributes.intangible)
-            keyboard_focus.handle( e )
+        if (focus.keyboard)
+          if (not focus.keyboard.attributes.intangible)
+            focus.keyboard.handle( e )
           else
-            keyboard_focus.release_keyboard_focus
+            focus.keyboard.release_keyboard_focus
             first_child_component?.dispatch( e )
           endIf
         else
@@ -105,11 +106,11 @@ class UI : Component [singleton]
         on( e )
         if (e.is_consumed) return
 
-        if (pointer_focus)
-          if (not pointer_focus.attributes.intangible)
-            pointer_focus.handle( e )
+        if (focus.pointer)
+          if (not focus.pointer.attributes.intangible)
+            focus.pointer.handle( e )
           else
-            pointer_focus.release_pointer_focus
+            focus.pointer.release_pointer_focus
             first_child_component?.dispatch( e )
           endIf
         else
@@ -127,8 +128,8 @@ class UI : Component [singleton]
         on( e )
         if (e.is_consumed) return
 
-        if (pointer_focus)
-          pointer_focus.handle( e )
+        if (focus.pointer)
+          focus.pointer.handle( e )
         else
           first_child_component?.dispatch( e )
         endIf
@@ -144,8 +145,8 @@ class UI : Component [singleton]
         on( e )
         if (e.is_consumed) return
 
-        if (keyboard_focus)
-          keyboard_focus.handle( e )
+        if (focus.keyboard)
+          focus.keyboard.handle( e )
         else
           first_child_component?.dispatch( e )
         endIf
@@ -153,6 +154,26 @@ class UI : Component [singleton]
 
         on_unhandled( e )
       endTemporarily
+
+    method release_keyboard_focus [override]
+      if (focus.keyboard)
+        if (focus.keyboard is this)
+          focus.keyboard = null
+          on_release_keyboard_focus
+        else
+          focus.keyboard.release_keyboard_focus
+        endIf
+      endIf
+
+    method release_pointer_focus [override]
+      if (focus.pointer)
+        if (focus.pointer is this)
+          focus.pointer = null
+          on_release_pointer_focus
+        else
+          focus.pointer.release_pointer_focus
+        endIf
+      endIf
 
     method set_clip( @clip )
       noAction
