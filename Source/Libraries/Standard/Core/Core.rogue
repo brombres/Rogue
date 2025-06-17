@@ -10,6 +10,7 @@ $include Core/Optional
 $include Core/Poolable
 $include Core/Primitives
 $include Core/Range
+$include Core/Shared
 $include Core/Signals
 $include Core/Span
 $include Core/StackTrace

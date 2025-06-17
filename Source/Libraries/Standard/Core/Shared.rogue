@@ -1,0 +1,16 @@
+class Shared<<$DataType>> [singleton]
+  PROPERTIES
+    lookup = [GlobalID:$DataType]
+
+  METHODS
+    method get( id:GlobalID )->$DataType
+      local entry = lookup.find( id )
+      if (entry) return entry.value
+
+      local result = $DataType()
+      lookup[id] = result
+      return result
+
+    method set( id:GlobalID, value:$DataType )
+      lookup[id] = value
+endClass
