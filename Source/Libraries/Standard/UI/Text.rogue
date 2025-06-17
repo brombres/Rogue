@@ -167,7 +167,7 @@ class Text : Component
         return XY.zero
       endIf
 
-    method on_begin_layout [override]
+    method on_begin_layout_internal [override]
       local font = font
 
       local sz = font?.measure(value || "")
@@ -186,6 +186,8 @@ class Text : Component
         natural_height = measured_size.y
         size.y = layout_size.y
       endIf
+
+      prior.on_begin_layout_internal
 
     method on_draw [override]
       if local font = font

@@ -181,16 +181,20 @@ class Component : Entity
     method font<<$AsType>>()->$AsType
       return font->(as $AsType)
 
-    method begin_layout( &only_children )
-      if (not only_children)
-        on_begin_layout
-        if (on_begin_layout_callback) on_begin_layout_callback( this )
-      endIf
-
+    method begin_child_layout
       use components = WorkList<<Component>>
         collect_child_display_components( components )
         (forEach in components).begin_layout
       endUse
+
+    method begin_layout( &only_children )
+      if (not only_children)
+        on_begin_layout_internal
+        on_begin_layout
+        if (on_begin_layout_callback) on_begin_layout_callback( this )
+      endIf
+
+      begin_child_layout
 
     method bg_color->Graphics::Color?
       return parent->(as Component)?.bg_color
@@ -278,6 +282,7 @@ class Component : Entity
 
     method end_layout( &only_children )
       if (not only_children)
+        on_end_layout_internal
         on_end_layout
       endIf
 
@@ -400,6 +405,12 @@ class Component : Entity
         next_component = next_entity->(as Component)
       endWhile
       return next_component
+
+    method on_begin_layout_internal
+      noAction
+
+    method on_end_layout_internal
+      noAction
 
     method opacity->Real
       if local parent_component = parent->(as Component)

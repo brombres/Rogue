@@ -26,8 +26,9 @@ class HFlow : Component
 
       return layout_cursor
 
-    method on_begin_layout [override]
+    method on_begin_layout_internal [override]
       layout_finished = false
+      prior.on_begin_layout_internal
 
     method perform_child_layout [override]
       if (layout_finished) return
