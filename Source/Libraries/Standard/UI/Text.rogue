@@ -174,17 +174,16 @@ class Text : Component
 
       local measured_size = font?.measure( value || "" )
 
+      natural_size = measured_size
+
       if (sizing_mode.x == SizingMode.NATURAL_SIZE)
         if (sizing_mode.y == SizingMode.NATURAL_SIZE)
-          natural_size = measured_size
-          size = layout_size
+          size = natural_size
         else
-          natural_width = measured_size.x
-          size.x = layout_size.x
+          size.x = natural_size.x
         endIf
       elseIf (sizing_mode.y == SizingMode.NATURAL_SIZE)
-        natural_height = measured_size.y
-        size.y = layout_size.y
+        size.y = natural_size.y
       endIf
 
       prior.on_begin_layout_internal

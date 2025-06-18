@@ -2,7 +2,8 @@ library UI
 
 class Label : Text
   METHODS
-    method init_object
+    method on_begin_layout_internal
+      prior.on_begin_layout_internal
       expand_to_fill
       aspect_fit_text_to_height
       shrink_text_to_fit_width
