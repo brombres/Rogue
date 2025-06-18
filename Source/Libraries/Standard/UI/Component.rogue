@@ -466,71 +466,28 @@ class Component : Entity
 
     method resolve_layout_size( available_size:XY, &limited )->XY
       local sz = available_size
-      local snap = UI.snap_to_pixel_coordinates
-
-
       if (sizing_mode.x == SizingMode.ASPECT_FIT)
-        which (sizing_mode.y)
-          case SizingMode.ASPECT_FIT
-            local scale_x = (available_size.x / (aspect_size.x || 1.0))
-            local scale_y = (available_size.y / (aspect_size.y || 1.0))
-            sz = aspect_size * scale_x.or_smaller( scale_y )
-          case SizingMode.FIXED_SIZE
-            local scale = (layout_size.y / (aspect_size.y || 1.0))
-            sz = aspect_size * scale
-          case SizingMode.NATURAL_SIZE
-            local scale = (natural_size.y / (aspect_size.y || 1.0))
-            sz = aspect_size * scale
-          others
-            local scale = (available_size.x / (aspect_size.x || 1.0))
-            sz = aspect_size * scale
-        endWhich
-
+        if (sizing_mode.y == SizingMode.ASPECT_FIT)
+          local scale_x = (available_size.x / (aspect_size.x || 1.0))
+          local scale_y = (available_size.y / (aspect_size.y || 1.0))
+          sz = aspect_size * scale_x.or_smaller( scale_y )
+        elseIf (sizing_mode.y != SizingMode.SHRINK_TO_FIT)
+          sz.y = .resolve_layout_height( available_size )
+          local scale_y = (sz.y / (aspect_size.y || 1.0))
+          sz.x = (aspect_size * scale_y).x
+        endIf
       elseIf (sizing_mode.y == SizingMode.ASPECT_FIT)
-        which (sizing_mode.x)
-          case SizingMode.FIXED_SIZE
-            local scale = (layout_size.x / (aspect_size.x || 1.0))
-            sz = aspect_size * scale
-          case SizingMode.NATURAL_SIZE
-            local scale = (natural_size.x / (aspect_size.x || 1.0))
-            sz = aspect_size * scale
-          others
-            local scale = (available_size.y / (aspect_size.y || 1.0))
-            sz = aspect_size * scale
-        endWhich
-
+        if (sizing_mode.x != SizingMode.SHRINK_TO_FIT)
+          sz.x = .resolve_layout_width( available_size )
+          local scale_x = (sz.x / (aspect_size.x || 1.0))
+          sz.y = (aspect_size * scale_x).y
+        endIf
       else
-        which (sizing_mode.x)
-          case EXPAND_TO_FILL
-            noAction
-          case SHRINK_TO_FIT
-            noAction
-          case PROPORTIONAL
-            if (size_reference) sz.x = size_reference.size.x * layout_size.x
-            else                sz.x = available_size.x * layout_size.x
-            if (snap) sz.x .= floor
-          case FIXED_SIZE
-            sz.x = layout_size.x
-          case  NATURAL_SIZE
-            sz.x = natural_size.x
-        endWhich
-
-        which (sizing_mode.y)
-          case EXPAND_TO_FILL
-            noAction
-          case SHRINK_TO_FIT
-            noAction
-          case PROPORTIONAL
-            if (size_reference) sz.y = size_reference.size.y * layout_size.y
-            else                sz.y = available_size.y * layout_size.y
-          case FIXED_SIZE
-            sz.y = layout_size.y
-          case NATURAL_SIZE
-            sz.y = natural_size.y
-        endWhich
+        sz.x = .resolve_layout_width( available_size )
+        sz.y = .resolve_layout_height( available_size )
       endIf
 
-      if (snap) sz .= floor
+      if (UI.snap_to_pixel_coordinates) sz .= floor
       size = sz
 
       if (attributes.manually_update_content_layout)
@@ -544,22 +501,68 @@ class Component : Entity
 
       return sz
 
+    method .resolve_layout_height( available_size:XY )->Real
+      local h = available_size.y
+      which (sizing_mode.y)
+        case EXPAND_TO_FILL
+          noAction
+        case SHRINK_TO_FIT
+          noAction
+        case PROPORTIONAL
+          if (size_reference) h = size_reference.size.y * layout_size.y
+          else                h = available_size.y * layout_size.y
+        case FIXED_SIZE
+          h = layout_size.y
+        case NATURAL_SIZE
+          h = natural_size.y
+      endWhich
+      return h
+
+    method .resolve_layout_width( available_size:XY )->Real
+      local w = available_size.x
+      which (sizing_mode.x)
+        case EXPAND_TO_FILL
+          noAction
+        case SHRINK_TO_FIT
+          noAction
+        case PROPORTIONAL
+          if (size_reference) w = size_reference.size.x * layout_size.x
+          else                w = available_size.x * layout_size.x
+        case FIXED_SIZE
+          w = layout_size.x
+        case  NATURAL_SIZE
+          w = natural_size.x
+      endWhich
+      return w
+
+
     method .resolve_shrink_to_fit_layout_size( &limited )->XY
       local sz = @size
-
-      if (sizing_mode.x == SizingMode.ASPECT_FIT or sizing_mode.y == SizingMode.ASPECT_FIT)
-        # Either axis being ASPECT fit overrides the other.
-        return sz
-      endIf
 
       if (sizing_mode.x == SizingMode.SHRINK_TO_FIT or sizing_mode.y == SizingMode.SHRINK_TO_FIT)
         local min_size = minimum_layout_size( content_size, &=limited )
         min_size = content_size_to_layout_size( min_size )
-        if (sizing_mode.x == SizingMode.SHRINK_TO_FIT) sz.x = min_size.x
-        if (sizing_mode.y == SizingMode.SHRINK_TO_FIT) sz.y = min_size.y
+
+        if (sizing_mode.x == SizingMode.SHRINK_TO_FIT)
+          sz.x = min_size.x
+          if (sizing_mode.y == SizingMode.ASPECT_FIT)
+            local scale_x = (sz.x / (aspect_size.x || 1.0))
+            sz.y = (aspect_size * scale_x).y
+          endIf
+        endIf
+
+        if (sizing_mode.y == SizingMode.SHRINK_TO_FIT)
+          sz.y = min_size.y
+          if (sizing_mode.x == SizingMode.ASPECT_FIT)
+            local scale_y = (sz.y / (aspect_size.y || 1.0))
+            sz.x = (aspect_size * scale_y).x
+          endIf
+        endIf
+
         if (UI.snap_to_pixel_coordinates) sz .= floor
         size = sz
       endIf
+
       return sz
 
     method update_content_layout

@@ -4,7 +4,7 @@ class Label : Text
   METHODS
     method on_begin_layout_internal
       prior.on_begin_layout_internal
-      expand_to_fill
+      expand_to_fill_height
+      aspect_fit_width( natural_size )
       aspect_fit_text_to_height
-      shrink_text_to_fit_width
 endClass
