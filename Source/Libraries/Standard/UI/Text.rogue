@@ -90,7 +90,7 @@ class Text : Component
         builder.clear
       endIf
 
-    method aspect_fit_text_to_size
+    method aspect_fit_text
       aspect_fit_text_to_width
       aspect_fit_text_to_height
 

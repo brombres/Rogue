@@ -146,15 +146,6 @@ class Component : Entity
     method anchor_bottom_right
       anchor = Anchor.BOTTOM_RIGHT
 
-    method aspect_fill( aspect_size )
-      sizing_mode = SizingModeXY( SizingMode.ASPECT_FILL, SizingMode.ASPECT_FILL )
-
-    method aspect_fill_height( aspect_size )
-      sizing_mode.y = SizingMode.ASPECT_FILL
-
-    method aspect_fill_width( aspect_size )
-      sizing_mode.x = SizingMode.ASPECT_FILL
-
     method aspect_fit( aspect_size )
       sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT, SizingMode.ASPECT_FIT )
 
@@ -477,77 +468,67 @@ class Component : Entity
       local sz = available_size
       local snap = UI.snap_to_pixel_coordinates
 
-      which (sizing_mode.x)
-        case EXPAND_TO_FILL
-          noAction
-        case SHRINK_TO_FIT
-          noAction
-        case ASPECT_FIT
-          local available_y : Real
-          which (sizing_mode.y)
-            case FIXED_SIZE
-              available_y = layout_size.y
-            others
-              available_y = available_size.y
-          endWhich
-          local fit_x = (available_y / (aspect_size.y || 1.0)) * aspect_size.x
-          if (snap) fit_x .= floor
-          if (sizing_mode.y == SizingMode.ASPECT_FILL or fit_x <= available_size.x)
-            sz.x = fit_x
-          else
-            sz.x = available_size.x
-          endIf
-        case ASPECT_FILL
-          if (sizing_mode.y != SizingMode.ASPECT_FIT)
-            local scale_x = (available_size.x / (aspect_size.x || 1.0))
-            local scale_y = (available_size.y / (aspect_size.y || 1.0))
-            sz.x = scale_x.or_larger(scale_y) * aspect_size.x
-            if (snap) sz.x .= floor
-          endIf
-        case PROPORTIONAL
-          if (size_reference) sz.x = size_reference.size.x * layout_size.x
-          else                sz.x = available_size.x * layout_size.x
-          if (snap) sz.x .= floor
-        case FIXED_SIZE
-          sz.x = layout_size.x
-        case  NATURAL_SIZE
-          sz.x = natural_size.x
-      endWhich
 
-      which (sizing_mode.y)
-        case EXPAND_TO_FILL
-          noAction
-        case SHRINK_TO_FIT
-          noAction
-        case ASPECT_FIT
-          local available_x : Real
-          which (sizing_mode.x)
-            case FIXED_SIZE
-              available_x = layout_size.x
-            others
-              available_x = available_size.x
-          endWhich
-          local fit_y = (available_x / (aspect_size.x || 1.0)) * aspect_size.y
-          if (snap) fit_y .= floor
-          if (sizing_mode.x == SizingMode.ASPECT_FILL or fit_y <= available_size.y)
-            sz.y = fit_y
-          else
-            sz.y = available_size.y
-          endIf
-        case ASPECT_FILL
-          if (sizing_mode.x != SizingMode.ASPECT_FIT)
+      if (sizing_mode.x == SizingMode.ASPECT_FIT)
+        which (sizing_mode.y)
+          case SizingMode.ASPECT_FIT
             local scale_x = (available_size.x / (aspect_size.x || 1.0))
             local scale_y = (available_size.y / (aspect_size.y || 1.0))
-            sz.y = scale_x.or_larger(scale_y) * aspect_size.y
-          endIf
-        case PROPORTIONAL
-          if (size_reference) sz.y = size_reference.size.y * layout_size.y
-          else                sz.y = available_size.y * layout_size.y
-        case FIXED_SIZE
-          sz.y = layout_size.y
-        case NATURAL_SIZE
-          sz.y = natural_size.y
-      endWhich
+            sz = aspect_size * scale_x.or_smaller( scale_y )
+          case SizingMode.FIXED_SIZE
+            local scale = (layout_size.y / (aspect_size.y || 1.0))
+            sz = aspect_size * scale
+          case SizingMode.NATURAL_SIZE
+            local scale = (natural_size.y / (aspect_size.y || 1.0))
+            sz = aspect_size * scale
+          others
+            local scale = (available_size.x / (aspect_size.x || 1.0))
+            sz = aspect_size * scale
+        endWhich
+
+      elseIf (sizing_mode.y == SizingMode.ASPECT_FIT)
+        which (sizing_mode.x)
+          case SizingMode.FIXED_SIZE
+            local scale = (layout_size.x / (aspect_size.x || 1.0))
+            sz = aspect_size * scale
+          case SizingMode.NATURAL_SIZE
+            local scale = (natural_size.x / (aspect_size.x || 1.0))
+            sz = aspect_size * scale
+          others
+            local scale = (available_size.y / (aspect_size.y || 1.0))
+            sz = aspect_size * scale
+        endWhich
+
+      else
+        which (sizing_mode.x)
+          case EXPAND_TO_FILL
+            noAction
+          case SHRINK_TO_FIT
+            noAction
+          case PROPORTIONAL
+            if (size_reference) sz.x = size_reference.size.x * layout_size.x
+            else                sz.x = available_size.x * layout_size.x
+            if (snap) sz.x .= floor
+          case FIXED_SIZE
+            sz.x = layout_size.x
+          case  NATURAL_SIZE
+            sz.x = natural_size.x
+        endWhich
+
+        which (sizing_mode.y)
+          case EXPAND_TO_FILL
+            noAction
+          case SHRINK_TO_FIT
+            noAction
+          case PROPORTIONAL
+            if (size_reference) sz.y = size_reference.size.y * layout_size.y
+            else                sz.y = available_size.y * layout_size.y
+          case FIXED_SIZE
+            sz.y = layout_size.y
+          case NATURAL_SIZE
+            sz.y = natural_size.y
+        endWhich
+      endIf
 
       if (snap) sz .= floor
       size = sz
@@ -565,6 +546,12 @@ class Component : Entity
 
     method .resolve_shrink_to_fit_layout_size( &limited )->XY
       local sz = @size
+
+      if (sizing_mode.x == SizingMode.ASPECT_FIT or sizing_mode.y == SizingMode.ASPECT_FIT)
+        # Either axis being ASPECT fit overrides the other.
+        return sz
+      endIf
+
       if (sizing_mode.x == SizingMode.SHRINK_TO_FIT or sizing_mode.y == SizingMode.SHRINK_TO_FIT)
         local min_size = minimum_layout_size( content_size, &=limited )
         min_size = content_size_to_layout_size( min_size )
