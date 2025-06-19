@@ -585,9 +585,13 @@ class Type : Cmd
                 (existing_m.context_signature) )
           endIf
         endIf
-        if (existing_m.return_type and existing_m.return_type is not aspect_m.return_type)
-          throw aspect_m.t.error( "Return type mismatch - aspect method return type $ does not match existing return type $."...
-          (aspect_m.return_type,existing_m.return_type) )
+        if (existing_m.return_type and not aspect_m.attributes.is_replace)
+          if (existing_m.return_type is not aspect_m.return_type)
+            throw aspect_m.t.error(
+              "Return type mismatch - aspect method return type $ does not match existing return type $."...
+              (aspect_m.return_type,existing_m.return_type)
+            )
+          endIf
         endIf
 
         if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace)
@@ -647,12 +651,25 @@ class Type : Cmd
                 (existing_m.context_signature) )
           endIf
         endIf
-        if (existing_m.return_type and existing_m.return_type is not aspect_m.return_type)
-          throw aspect_m.t.error( "Return type mismatch - aspect method return type $ does not match existing return type $."...
-          (aspect_m.return_type,existing_m.return_type) )
+        if (existing_m.return_type)
+          if (is_augment and aspect_m.attributes.is_replace)
+            if (not aspect_m.return_type.instance_of(existing_m.return_type))
+              throw aspect_m.t.error(
+                "Return type mismatch - replacement aspect method return type $ does not extend existing return type $."...
+                (aspect_m.return_type,existing_m.return_type)
+              )
+            endIf
+          else
+            if (existing_m.return_type is not aspect_m.return_type)
+              throw aspect_m.t.error(
+                "Return type mismatch - aspect method return type $ does not match existing return type $."...
+                (aspect_m.return_type,existing_m.return_type)
+              )
+            endIf
+          endIf
         endIf
 
-      if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace)
+        if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace)
           forEach (aspect_p at i in aspect_m.parameters)
             local existing_p = existing_m.parameters[i]
             if (aspect_p.name != existing_p.name)
@@ -683,6 +700,7 @@ class Type : Cmd
         elseIf (aspect_m.attributes.is_replace and existing_m.type_context is this)
           existing_m.body = aspect_m.body
           existing_m.statements = aspect_m.statements
+          existing_m.return_type = aspect_m.return_type
         elseIf (existing_m.type_context is not this)
           methods[ aspect_m.signature ] = aspect_m
           aspect_m.overridden_method = existing_m
@@ -1887,7 +1905,7 @@ class Type : Cmd
             if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace)
               if (not missing_only or not methods.contains(aspect_m.signature))
                 if (this_is_abstract or not aspect_m.attributes.is_abstract)
-                  incorporate( aspect_m )
+                  incorporate( aspect_m, &is_augment=incorporated_aspect.attributes.is_augment )
                 endIf
               endIf
             endIf
