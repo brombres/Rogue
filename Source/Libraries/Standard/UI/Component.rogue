@@ -170,9 +170,6 @@ class Component : Entity
       if (@font) return @font
       return parent->(as Component)?.font
 
-    method font<<$AsType>>()->$AsType
-      return font->(as $AsType)
-
     method begin_child_layout
       use components = WorkList<<Component>>
         collect_child_display_components( components )

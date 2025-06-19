@@ -14,11 +14,11 @@ class ConsoleUIFont : Font [singleton]
 
   METHODS
     method init
-      prior.init( "ConsoleUIFont" )
+      name = "ConsoleUIFont"
 
+      #{
     method cloned->ConsoleUIFont
       return this
-      #{
       return ConsoleUIFont().[
         bold      = is_bold
         inverse   = is_inverse
@@ -28,7 +28,7 @@ class ConsoleUIFont : Font [singleton]
       ]
       }#
 
-    method draw( text:Text ) [override]
+    method draw( text:Text )
       local color = text.color
       local bg_color = text.bg_color
       if (color)    ConsoleUICanvas.style.fg( color.value )
@@ -39,7 +39,7 @@ class ConsoleUIFont : Font [singleton]
       if (color)    ConsoleUICanvas.style.fg_default
       if (bg_color) ConsoleUICanvas.style.bg_default
 
-    method draw( text:String, position:XY ) [override]
+    method draw( text:String, position:XY )
       ConsoleUICanvas.set_cursor( position )
       #if (is_bold)      ConsoleUICanvas.style.bold
       #if (is_inverse)   ConsoleUICanvas.style.inverse

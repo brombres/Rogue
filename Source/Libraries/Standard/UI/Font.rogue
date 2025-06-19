@@ -1,22 +1,21 @@
 library UI
 
-class Font [abstract]
+class Font
   PROPERTIES
     name         : String
     line_spacing = 1.0
 
   METHODS
-    method init( name )
-
-    method init( existing:Font )
+    method init_clone( existing:Font )
       name = existing.name
+      line_spacing = existing.line_spacing
 
-    method cloned->$thisType
-      return $thisType( this )
+    method cloned->$thisType [propagated]
+      return new<<$thisType>>.[ init_clone(this) ]
 
-    method draw( text:Text ) [abstract]
+    #method draw( text:Text ) [abstract]
 
-    method draw( text:String, position:XY )  [abstract]
+    #method draw( text:String, position:XY )  [abstract]
 
     method draw( text:String, position:XY, anchor:Anchor )
       if (anchor != Anchor.TOP_LEFT)
@@ -32,9 +31,9 @@ class Font [abstract]
     method draw( text:String, container:Component )
       draw( text, container.display_bounds, container.anchor )
 
-    method height->Real                 [abstract]
+    #method height->Real                 [abstract]
 
-    method measure( ch:Character )->XY  [abstract]
+    #method measure( ch:Character )->XY  [abstract]
 
     method measure( text:String, i1=null:Int?, count=null:Int? )->XY
       if (not i1)    i1 = 0
