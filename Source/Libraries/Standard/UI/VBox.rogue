@@ -1,6 +1,9 @@
 library UI
 
 class VBox : Component
+  PROPERTIES
+    gap : Real  # In pixels
+
   METHODS
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
       local w = 0.0
@@ -8,9 +11,10 @@ class VBox : Component
       use components = WorkList<<Component>>
         collect_child_display_components( components )
 
-        forEach (component in components)
+        forEach (component at i in components)
           local sz = component.resolve_layout_size( available_size.xv, &=limited )
           w .= or_larger( sz.x )
+          if (i) h += gap
           h += sz.y
         endForEach
       endUse
@@ -23,8 +27,9 @@ class VBox : Component
       use components = WorkList<<Component>>
         collect_child_display_components( components )
 
-        forEach (component in components)
+        forEach (component at i in components)
           local sz = component.size
+          if (i) total_h += gap
           total_h += sz.y
           w .= or_larger( sz.x )
         endForEach
@@ -38,13 +43,16 @@ class VBox : Component
               component.anchor
             ).position
           )
-          pos.y += component.size.y
+          pos.y += component.size.y + gap
         endForEach
       endUse
 
     method resolve_child_layout_sizes( available_size:XY ) [override]
       use components = WorkList<<Component>>
         collect_child_display_components( components )
+        if (components.count > 1)
+          available_size.y = (available_size.y - (components.count - 1) * gap).clamped_low( 0 )
+        endIf
 
         use info_list = WorkList<<ComponentSizeInfo>>
 
@@ -160,6 +168,9 @@ class VBox : Component
           component.resolve_child_layout_sizes
         endForEach
       endUse
+
+    method set_gap( @gap ) [override]
+      noAction
 
 endClass
 

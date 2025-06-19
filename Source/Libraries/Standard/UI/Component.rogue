@@ -611,6 +611,9 @@ class Component : Entity
       sizing_mode.x = SizingMode.FIXED_SIZE
       size.x = w
 
+    method set_gap( gap:Real )
+      noAction
+
     method set_natural_size( @natural_size )
       sizing_mode = SizingModeXY( SizingMode.NATURAL_SIZE, SizingMode.NATURAL_SIZE )
       size = natural_size

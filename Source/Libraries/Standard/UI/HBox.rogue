@@ -1,14 +1,18 @@
 library UI
 
 class HBox : Component
+  PROPERTIES
+    gap : Real  # In pixels
+
   METHODS
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
       local w = 0.0
       local h = 0.0
       use components = WorkList<<Component>>
         collect_child_display_components( components )
-        forEach (component as Component in components)
+        forEach (component at i in components)
           local sz = component.resolve_layout_size( available_size.yv, &=limited )
+          if (i) w += gap
           w += sz.x
           h .= or_larger( sz.y )
         endForEach
@@ -22,8 +26,9 @@ class HBox : Component
       use components = WorkList<<Component>>
         collect_child_display_components( components )
 
-        forEach (component in components)
+        forEach (component at i in components)
           local sz = component.size
+          if (i) total_w += gap
           total_w += sz.x
           h .= or_larger( sz.y )
         endForEach
@@ -37,13 +42,16 @@ class HBox : Component
               component.anchor
             ).position
           )
-          pos.x += component.size.x
+          pos.x += component.size.x + gap
         endForEach
       endUse
 
     method resolve_child_layout_sizes( available_size:XY ) [override]
       use components = WorkList<<Component>>
         collect_child_display_components( components )
+        if (components.count > 1)
+          available_size.x = (available_size.x - (components.count - 1) * gap).clamped_low( 0 )
+        endIf
 
         use info_list = WorkList<<ComponentSizeInfo>>
 
@@ -159,6 +167,9 @@ class HBox : Component
           component.resolve_child_layout_sizes
         endForEach
       endUse
+
+    method set_gap( @gap ) [override]
+      noAction
 
 endClass
 
