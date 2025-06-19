@@ -3481,11 +3481,11 @@ parser
     deprecation_warning = "Syntax ':id' is deprecated - use 'id' as shorthand for '\"id\":id' instead."
     call print_deprecation_warning
     on IDENTIFIER
-      create LiteralString(name=content)
+      create LiteralString(value=content)
       createNull
       create Access(name=content,args)
     elseOn STRING
-      create LiteralString(name=content)
+      create LiteralString(value=content)
       call clone
     elseOnOthers
       syntaxError "Identifier or literal string expected."
@@ -3493,7 +3493,7 @@ parser
   else
     on IDENTIFIER
       # { id:value } -> { "id":value }
-      create LiteralString(name=content)
+      create LiteralString(value=content)
       consume_eols
       if (not nextIs(':'))
         createNull
@@ -3657,8 +3657,16 @@ parser
 - literal_table_entry
   on IDENTIFIER
     create LiteralString(value=content):Literal
+    consume_eols
+    if (not nextIs(':'))
+      createNull
+      create Access(name=content,args)
+      create KeyValuePair(key,value)
+      return
+    endIf
   elseOnOthers
     expression
+    consume_eols
   endOn
 
   mustConsume ':'
