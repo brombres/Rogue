@@ -3670,6 +3670,7 @@ parser
   endOn
 
   mustConsume ':'
+  consume_eols
 
   expression
   produce KeyValuePair(key,value)

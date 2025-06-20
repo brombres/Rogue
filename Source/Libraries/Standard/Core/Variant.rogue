@@ -9,20 +9,24 @@ $include Graphics/Color
 
 class Variant [compound]
   DEFINITIONS
-    TYPE_UNDEFINED =  0
+    TYPE_UNDEFINED              = 0
+    TYPE_UNDEFINED_LIST_ELEMENT = 1
+    TYPE_UNDEFINED_TABLE_ENTRY  = 2
+    TYPE_LAST_UNDEFINED = TYPE_UNDEFINED_TABLE_ENTRY
+    #define %NS%ROGUE_VARIANT_TYPE_UNDEFINED_TABLE_ENTRY  2
 
     # Numbers
-    TYPE_BYTE      =  1
-    TYPE_CHARACTER =  2
-    TYPE_INT32     =  3
-    TYPE_COLOR     =  4
-    TYPE_INT       =  5
-    TYPE_INT64     =  6
-    TYPE_REAL32    =  7
-    TYPE_REAL      =  8
-    TYPE_REAL64    =  9
-    TYPE_DEGREES   = 10
-    TYPE_RADIANS   = 11
+    TYPE_BYTE      =  3
+    TYPE_CHARACTER =  4
+    TYPE_INT32     =  5
+    TYPE_COLOR     =  6
+    TYPE_INT       =  7
+    TYPE_INT64     =  8
+    TYPE_REAL32    =  9
+    TYPE_REAL      = 10
+    TYPE_REAL64    = 11
+    TYPE_DEGREES   = 12
+    TYPE_RADIANS   = 13
     TYPE_FIRST_NUMBER = TYPE_BYTE
     TYPE_LAST_NUMBER  = TYPE_RADIANS
 
@@ -58,18 +62,21 @@ class Variant [compound]
 
   NATIVE
     nativeHeader
-      @|#define %NS%ROGUE_VARIANT_TYPE_UNDEFINED  0
-       |#define %NS%ROGUE_VARIANT_TYPE_BYTE       1
-       |#define %NS%ROGUE_VARIANT_TYPE_CHARACTER  2
-       |#define %NS%ROGUE_VARIANT_TYPE_INT32      3
-       |#define %NS%ROGUE_VARIANT_TYPE_COLOR      4
-       |#define %NS%ROGUE_VARIANT_TYPE_INT        5
-       |#define %NS%ROGUE_VARIANT_TYPE_INT64      6
-       |#define %NS%ROGUE_VARIANT_TYPE_REAL32     7
-       |#define %NS%ROGUE_VARIANT_TYPE_REAL       8
-       |#define %NS%ROGUE_VARIANT_TYPE_REAL64     9
-       |#define %NS%ROGUE_VARIANT_TYPE_DEGREES   10
-       |#define %NS%ROGUE_VARIANT_TYPE_RADIANS   11
+      @|#define %NS%ROGUE_VARIANT_TYPE_UNDEFINED              0
+       |#define %NS%ROGUE_VARIANT_TYPE_UNDEFINED_LIST_ELEMENT 1
+       |#define %NS%ROGUE_VARIANT_TYPE_UNDEFINED_TABLE_ENTRY  2
+       |
+       |#define %NS%ROGUE_VARIANT_TYPE_BYTE       3
+       |#define %NS%ROGUE_VARIANT_TYPE_CHARACTER  4
+       |#define %NS%ROGUE_VARIANT_TYPE_INT32      5
+       |#define %NS%ROGUE_VARIANT_TYPE_COLOR      6
+       |#define %NS%ROGUE_VARIANT_TYPE_INT        7
+       |#define %NS%ROGUE_VARIANT_TYPE_INT64      8
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL32     9
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL      10
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL64    11
+       |#define %NS%ROGUE_VARIANT_TYPE_DEGREES   12
+       |#define %NS%ROGUE_VARIANT_TYPE_RADIANS   13
        |
        |#define %NS%ROGUE_VARIANT_TYPE_ANCHOR    20
        |#define %NS%ROGUE_VARIANT_TYPE_BOX       21
@@ -86,12 +93,12 @@ class Variant [compound]
        |
        |#define %NS%ROGUE_VARIANT_TYPE_NULL      39
        |
-       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT         40
-       |#define %NS%ROGUE_VARIANT_TYPE_STRING         41
-       |#define %NS%ROGUE_VARIANT_TYPE_FILE           42
+       |#define %NS%ROGUE_VARIANT_TYPE_OBJECT    40
+       |#define %NS%ROGUE_VARIANT_TYPE_STRING    41
+       |#define %NS%ROGUE_VARIANT_TYPE_FILE      42
        |
-       |#define %NS%ROGUE_VARIANT_TYPE_LIST           43
-       |#define %NS%ROGUE_VARIANT_TYPE_TABLE          44
+       |#define %NS%ROGUE_VARIANT_TYPE_LIST      43
+       |#define %NS%ROGUE_VARIANT_TYPE_TABLE     44
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -301,8 +308,29 @@ class Variant [compound]
       which (type)
         case TYPE_LIST
           local list = object->(as Variant[])
-          if (index < 0 or index >= list.count) return undefined
+          if (index < 0) return undefined
+          if (index >= list.count)
+            local info = {list:this,index:index} : [String:Variant]
+            return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_LIST_ELEMENT, (%Ns%RogueObject*)$info }" )->Variant
+          endIf
           return list[index]
+
+        case TYPE_UNDEFINED_LIST_ELEMENT
+          local parent_info = object->(as [String:Variant])
+          local parent_list = parent_info//list
+          local parent_index = parent_info//index->Int
+          parent_list.object->(as Variant[]).expand_to_include( parent_index )
+          local list = @[]
+          parent_list[parent_index] = list
+          local info = {list:list,index:index} : [String:Variant]
+          return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_LIST_ELEMENT, (%Ns%RogueObject*)$info }" )->Variant
+
+        case TYPE_UNDEFINED_TABLE_ENTRY
+          local parent_info = object->(as [String:Variant])
+          local list = @[]
+          parent_info//table[parent_info//key] = list
+          local info = {list:list,index:index} : [String:Variant]
+          return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_LIST_ELEMENT, (%Ns%RogueObject*)$info }" )->Variant
 
         case TYPE_STRING, TYPE_FILE
           local st = object->(as String)
@@ -375,7 +403,7 @@ class Variant [compound]
           return object->(as Variant[]).count
         case TYPE_TABLE
           return object->(as [Variant:Variant]).count
-        case TYPE_UNDEFINED
+        case TYPE_UNDEFINED, TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY
           return 0
         others
           return 1
@@ -406,7 +434,7 @@ class Variant [compound]
       return table
 
     method exists->Logical
-      return (type != TYPE_UNDEFINED)
+      return (type > TYPE_LAST_UNDEFINED)
 
     method first->Variant
       which (type)
@@ -445,8 +473,29 @@ class Variant [compound]
         case TYPE_TABLE
           local table = object->(as [Variant:Variant])
           local entry = table.find( key )
-          if (entry) return entry.value
-          else       return undefined
+          if (entry)
+            return entry.value
+          else
+            local info = {table:this,key:key} : [String:Variant]
+            return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_TABLE_ENTRY, (%Ns%RogueObject*)$info }" )->Variant
+          endIf
+
+        case TYPE_UNDEFINED_TABLE_ENTRY
+          local parent_info = object->(as [String:Variant])
+          local table = @{}
+          parent_info//table[parent_info//key] = table
+          local info = {table:table,key:key} : [String:Variant]
+          return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_TABLE_ENTRY, (%Ns%RogueObject*)$info }" )->Variant
+
+        case TYPE_UNDEFINED_LIST_ELEMENT
+          local parent_info = object->(as [String:Variant])
+          local parent_list = parent_info//list
+          local parent_index = parent_info//index->Int
+          parent_list.object->(as Variant[]).expand_to_include( parent_index )
+          local table = @{}
+          parent_list[parent_index] = table
+          local info = {table:table,key:key} : [String:Variant]
+          return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_TABLE_ENTRY, (%Ns%RogueObject*)$info }" )->Variant
 
         others
           if (key.is_integer) return at( key->Int )
@@ -455,7 +504,7 @@ class Variant [compound]
 
     method hashcode->Int
       which (type)
-        case TYPE_UNDEFINED: return 0
+        case TYPE_UNDEFINED, TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY: return 0
         case TYPE_NULL:      return 0
         case TYPE_LOGICAL:   return which{ logical:1 || 0 }
         case TYPE_BYTE:      return byte.hashcode
@@ -582,7 +631,7 @@ class Variant [compound]
       return (type == TYPE_TRIANGLE)
 
     method is_undefined->Logical
-      return (type == TYPE_UNDEFINED)
+      return (type <= TYPE_LAST_UNDEFINED)
 
     method is_xy->Logical
       return (type == TYPE_XY)
@@ -682,14 +731,14 @@ class Variant [compound]
       endWhich
 
     method operator?->Logical
-      if (type == TYPE_NULL or type == TYPE_UNDEFINED) return false
+      if (type == TYPE_NULL or type <= TYPE_LAST_UNDEFINED) return false
       return this->Logical
 
     method operator==(other:Variant)->Int
       return (this <> other) == 0
 
     method operator<>(other:Variant)->Int
-      if (type == TYPE_UNDEFINED) return (other.type != TYPE_UNDEFINED)
+      if (type <= TYPE_LAST_UNDEFINED) return (other.type > TYPE_LAST_UNDEFINED)
 
       if (type <= TYPE_LAST_NUMBER and other.type <= TYPE_LAST_NUMBER)
         # Both are numbers
@@ -974,7 +1023,7 @@ class Variant [compound]
 
     method print_to( buffer:PrintWriter )
       which (type)
-        case TYPE_UNDEFINED: return
+        case TYPE_UNDEFINED, TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY: return
         case TYPE_NULL:      buffer.print( "null" )
         case TYPE_LOGICAL:   buffer.print( which{logical:"true" || "false"} )
         case TYPE_BYTE:      byte.print_to( buffer )
@@ -1054,22 +1103,38 @@ class Variant [compound]
           list[index] = value
         case TYPE_TABLE
           set( Variant(index), value )
+          #case TYPE_UNDEFINED_LIST_ELEMENT
       endWhich
 
     method set( key:Character, value:Variant )
       # Make sure that Characters get mapped to Strings, not Ints
       set( key->String, value )
 
-    method set( key:String, value:Variant ) [preferred]
+    method set( key:String, value:Variant )
       set( Variant(key), value )
 
-    method set( key:Variant, value:Variant )
+    method set( key:Variant, value:Variant ) [preferred]
       which (type)
         case TYPE_LIST
           if (key.is_number) set( key->Int, value )
 
         case TYPE_TABLE
           object->(as [Variant:Variant])[ key ] = value
+
+        case TYPE_UNDEFINED_TABLE_ENTRY
+          local info = object->(as [String:Variant])
+          if (key.is_number)
+            if (key >= 0)
+              local list = @[]
+              list.object->(as Variant[]).expand_to_include( key->Int )
+              list[key] = value
+              info//table[info//key] = list
+            endIf
+          else
+            local table = @{}
+            table[key] = value
+            info//table[info//key] = table
+          endIf
       endWhich
 
     method sort( compare_fn:(Function(Variant,Variant)->Logical) )
@@ -1425,7 +1490,7 @@ class Variant [compound]
         if (st) return $Type(st)
         else    return $Type(0)
       elseIf ($Type instanceOf OptionalType)
-        if (type == TYPE_NULL or type == TYPE_UNDEFINED) return null
+        if (type == TYPE_NULL or type <= TYPE_LAST_UNDEFINED) return null
         if ($exists<<$Type(this)>>)
           return $Type(this)
         elseIf (type == TYPE_OBJECT)
@@ -1447,14 +1512,14 @@ class Variant [compound]
       return result
 
     method to_optional<<$Type>>->$Type?
-      if (type == TYPE_NULL or type == TYPE_UNDEFINED) return null
+      if (type == TYPE_NULL or type <= TYPE_LAST_UNDEFINED) return null
       return to<<$Type>>
 
     method to_compatible_values( other:Variant )->(Variant,Variant)
       if (type == other.type) return (this,other)
       if (type == TYPE_FILE or other.type == TYPE_FILE) return (Variant(this->File),Variant(other->File))
       if (type == TYPE_STRING or other.type == TYPE_STRING) return (Variant(this->String),Variant(other->String))
-      if (type == TYPE_UNDEFINED or other.type == TYPE_UNDEFINED) return (undefined,undefined)
+      if (type <= TYPE_LAST_UNDEFINED or other.type <= TYPE_LAST_UNDEFINED) return (undefined,undefined)
 
       if (type <= TYPE_LAST_NUMBER and other.type <= TYPE_LAST_NUMBER)
         if (type == TYPE_RADIANS or other.type == TYPE_RADIANS)
@@ -1500,7 +1565,7 @@ class Variant [compound]
 
     method write_json( builder:JSON, &formatted, &omit_commas, &ending_newline=true )
       which (type)
-        case TYPE_UNDEFINED
+        case TYPE_UNDEFINED, TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY
           noAction
         case TYPE_BYTE
           builder.print( byte )
