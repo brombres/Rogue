@@ -319,16 +319,28 @@ class Variant [compound]
           local parent_info = object->(as [String:Variant])
           local parent_list = parent_info//list
           local parent_index = parent_info//index->Int
-          parent_list.object->(as Variant[]).expand_to_include( parent_index )
+          local parent_backing_list = parent_list.object->(as Variant[])
+          if (parent_backing_list.count > parent_index)
+            return parent_backing_list[parent_index].at( index )
+          endIf
+
+          parent_backing_list.expand_to_include( parent_index )
           local list = @[]
           parent_list[parent_index] = list
-          local info = {list:list,index:index} : [String:Variant]
+          local info = {list,index} : [String:Variant]
           return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_LIST_ELEMENT, (%Ns%RogueObject*)$info }" )->Variant
 
         case TYPE_UNDEFINED_TABLE_ENTRY
           local parent_info = object->(as [String:Variant])
+          local parent_table = parent_info//table
+          local parent_key = parent_info//key
+          if (parent_table.contains(parent_key))
+            # This undef'd entry is being accessed multiple times; the entry was created after the first time.
+            return parent_table[parent_key].at( index )
+          endIf
+
           local list = @[]
-          parent_info//table[parent_info//key] = list
+          parent_table[parent_key] = list
           local info = {list:list,index:index} : [String:Variant]
           return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_LIST_ELEMENT, (%Ns%RogueObject*)$info }" )->Variant
 
@@ -403,8 +415,12 @@ class Variant [compound]
           return object->(as Variant[]).count
         case TYPE_TABLE
           return object->(as [Variant:Variant]).count
-        case TYPE_UNDEFINED, TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY
+        case TYPE_UNDEFINED
           return 0
+        case TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY
+          local element = .element_if_defined
+          if (element) return element.count
+          else         return 0
         others
           return 1
       endWhich
@@ -500,16 +516,28 @@ class Variant [compound]
 
         case TYPE_UNDEFINED_TABLE_ENTRY
           local parent_info = object->(as [String:Variant])
+          local parent_table = parent_info//table
+          local parent_key = parent_info//key
+          if (parent_table.contains(parent_key))
+            # This undef'd entry is being accessed multiple times; the entry was created after the first time.
+            return parent_table[parent_key].get( key )
+          endIf
+
           local table = @{}
-          parent_info//table[parent_info//key] = table
-          local info = {table:table,key:key} : [String:Variant]
+          parent_table[parent_key] = table
+          local info = {table,key} : [String:Variant]
           return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_TABLE_ENTRY, (%Ns%RogueObject*)$info }" )->Variant
 
         case TYPE_UNDEFINED_LIST_ELEMENT
           local parent_info = object->(as [String:Variant])
           local parent_list = parent_info//list
           local parent_index = parent_info//index->Int
-          parent_list.object->(as Variant[]).expand_to_include( parent_index )
+          local parent_backing_list = parent_list.object->(as Variant[])
+          if (parent_backing_list.count > parent_index)
+            return parent_backing_list[parent_index].get( key )
+          endIf
+
+          parent_backing_list.expand_to_include( parent_index )
           local table = @{}
           parent_list[parent_index] = table
           local info = {table:table,key:key} : [String:Variant]
@@ -522,7 +550,11 @@ class Variant [compound]
 
     method hashcode->Int
       which (type)
-        case TYPE_UNDEFINED, TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY: return 0
+        case TYPE_UNDEFINED: return 0
+        case TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY
+          local element = .element_if_defined
+          if (element) return element.hashcode
+          else         return 0
         case TYPE_NULL:      return 0
         case TYPE_LOGICAL:   return which{ logical:1 || 0 }
         case TYPE_BYTE:      return byte.hashcode
@@ -1063,7 +1095,11 @@ class Variant [compound]
 
     method print_to( buffer:PrintWriter )
       which (type)
-        case TYPE_UNDEFINED, TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY: return
+        case TYPE_UNDEFINED: return
+        case TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY
+          local element = .element_if_defined
+          if (element) element.print_to( buffer )
+          else         return
         case TYPE_NULL:      buffer.print( "null" )
         case TYPE_LOGICAL:   buffer.print( which{logical:"true" || "false"} )
         case TYPE_BYTE:      byte.print_to( buffer )
@@ -1143,7 +1179,36 @@ class Variant [compound]
           list[index] = value
         case TYPE_TABLE
           set( Variant(index), value )
-          #case TYPE_UNDEFINED_LIST_ELEMENT
+        case TYPE_UNDEFINED_LIST_ELEMENT
+          local parent_info = object->(as [String:Variant])
+          local parent_list = parent_info//list
+          local parent_index = parent_info//index->Int
+          local parent_backing_list = parent_list.object->(as Variant[])
+          if (parent_backing_list.count > parent_index)
+            parent_backing_list[parent_index].set( index, value )
+            return
+          endIf
+
+          parent_backing_list.expand_to_include( parent_index )
+          local list = @[]
+          parent_list[parent_index] = list
+          list.as_list.expand_to_include( index )
+          list[index] = value
+
+        case TYPE_UNDEFINED_TABLE_ENTRY
+          local parent_info = object->(as [String:Variant])
+          local parent_table = parent_info//table
+          local parent_key = parent_info//key
+          if (parent_table.contains(parent_key))
+            # This undef'd entry is being accessed multiple times; the entry was created after the first time.
+            parent_table[parent_key].set( index, value )
+            return
+          endIf
+
+          local list = @[]
+          parent_table[parent_key] = list
+          list.as_list.expand_to_include( index )
+          list[index] = value
       endWhich
 
     method set( key:Character, value:Variant )
@@ -1161,7 +1226,16 @@ class Variant [compound]
         case TYPE_TABLE
           object->(as [Variant:Variant])[ key ] = value
 
+        case TYPE_UNDEFINED_LIST_ELEMENT
+          if (key.is_number) set( key->Int, value )
+
         case TYPE_UNDEFINED_TABLE_ENTRY
+          local element = .element_if_defined
+          if (element)
+            element.set( key, value )
+            return
+          endIf
+
           local info = object->(as [String:Variant])
           if (key.is_number)
             if (key >= 0)
@@ -1605,8 +1679,11 @@ class Variant [compound]
 
     method write_json( builder:JSON, &formatted, &omit_commas, &ending_newline=true )
       which (type)
-        case TYPE_UNDEFINED, TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY
+        case TYPE_UNDEFINED
           noAction
+        case TYPE_UNDEFINED_LIST_ELEMENT, TYPE_UNDEFINED_TABLE_ENTRY
+          local element = .element_if_defined
+          if (element) element.write_json( builder, &=formatted, &=omit_commas, &=ending_newline )
         case TYPE_BYTE
           builder.print( byte )
         case TYPE_CHARACTER
@@ -1767,6 +1844,34 @@ class Variant [compound]
             # Store printable Unicode without encoding as \\uXXXX
             builder.print( ch )
           endIf
+      endWhich
+
+    method .element_if_defined->Variant
+      which (type)
+        case TYPE_UNDEFINED_LIST_ELEMENT
+          local parent_info = object->(as [String:Variant])
+          local parent_list = parent_info//list
+          local parent_index = parent_info//index->Int
+          local parent_backing_list = parent_list.object->(as Variant[])
+          if (parent_backing_list.count > parent_index)
+            return parent_backing_list[parent_index]
+          else
+            return undefined
+          endIf
+
+        case TYPE_UNDEFINED_TABLE_ENTRY
+          local parent_info = object->(as [String:Variant])
+          local parent_table = parent_info//table
+          local parent_key = parent_info//key
+          if (parent_table.contains(parent_key))
+            # This UNDEF'D ENTRY is being accessed multiple times; the entry was created after the first time.
+            return parent_table[parent_key]
+          else
+            return undefined
+          endIf
+
+        others
+          return undefined
       endWhich
 
     method .write_json_table_begin( builder:JSON, &formatted )
