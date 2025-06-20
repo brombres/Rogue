@@ -295,9 +295,14 @@ class Table<<$KeyType,$ValueType>> : TableType
     method set( key:$KeyType, value:$ValueType )
       local entry = find( key )
       if (entry)
+        local old_value = entry.value
         entry.value = value
         if (sort_function) _adjust_entry_order( entry )
-        if (entry.on_change) entry.on_change.signal( value )
+        if (entry.on_change)
+          if (value != old_value)
+            entry.on_change.signal( value )
+          endIf
+        endIf
         return
       endIf
 

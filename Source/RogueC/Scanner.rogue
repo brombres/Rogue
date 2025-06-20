@@ -88,7 +88,8 @@ class Scanner : ScannerCore, Poolable
         endWhile
         comment = buffer.cloned
 
-        local matches = comment.split('\n').[ discard( not $.contains(matching_keyword) ) ]
+        local matches = comment.split('\n')
+        matches.discard( not $.contains(matching_keyword) )
         forEach (match in matches)
           println "[$][$:$] $"(matching_keyword,File(_filepath).filename,beginning_of_line.line,match)
         endForEach

@@ -736,6 +736,40 @@ class Variant [compound]
           return undefined
       endWhich
 
+    method disconnect_on_change( key:String )
+      local entry = entry( key )
+      if local table = entry.context.as_table
+        table.disconnect_on_change( entry.key )
+      endIf
+
+    method disconnect_on_change( path:GlobalID )
+      local entry = entry( path )
+      if local table = entry.context.as_table
+        table.disconnect_on_change( entry.key )
+      endIf
+
+    method on_change( key:String, signal:SignalID )
+      local entry = entry( key )
+      local context = entry.context
+      if (not context.contains(entry.key)) context[entry.key] = undefined  # create the entry
+      if local table = entry.context.as_table
+        table.on_change( entry.key, signal )
+      endIf
+
+    method on_change( key:String, global_id:GlobalID )
+      on_change( key, SignalID(global_id) )
+
+    method on_change( path:GlobalID, signal:SignalID )
+      local entry = entry( path )
+      local context = entry.context
+      if (not context.contains(entry.key)) context[entry.key] = undefined  # create the entry
+      if local table = entry.context.as_table
+        table.on_change( entry.key, signal )
+      endIf
+
+    method on_change( path:GlobalID, global_id:GlobalID )
+      on_change( path, SignalID(global_id) )
+
     method operator?->Logical
       if (type == TYPE_NULL or type <= TYPE_LAST_UNDEFINED) return false
       return this->Logical
