@@ -1,9 +1,16 @@
 class VariantEntry( variant:Variant, path:String, key:String ) [compound]
   GLOBAL METHODS
     method create( variant:Variant, key:String )->VariantEntry
-      return VariantEntry( variant, null, key )
+      if (key.begins_with('<'))  # <global.id.path>
+        return .parse_path( variant, key )
+      else
+        return VariantEntry( variant, null, key )
+      endIf
 
     method create( variant:Variant, path:GlobalID )->VariantEntry
+      return .parse_path( variant, path.name )
+
+    method .parse_path( variant:Variant, path:String )->VariantEntry
       local prev = undefined
       local cur = variant
       local last_segment : String
@@ -17,7 +24,7 @@ class VariantEntry( variant:Variant, path:String, key:String ) [compound]
             if (parent_path)
               parent_path.[ print('.'), print(last_segment) ]
             else
-              parent_path = String().[ reserve(path.name.count), print('<'), print(last_segment) ]
+              parent_path = String().[ reserve(path.count), print('<'), print(last_segment) ]
             endIf
           endIf
 
@@ -54,6 +61,9 @@ class VariantEntry( variant:Variant, path:String, key:String ) [compound]
 
     method set( value:Variant )
       context[key] = value
+
+    method operator?()->Logical
+      return key?
 
     method to->Box
       return context[key]->Box

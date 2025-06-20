@@ -409,6 +409,18 @@ class Variant [compound]
           return 1
       endWhich
 
+    method disconnect_on_change( key:String )
+      local entry = entry( key )
+      if local table = entry.context.as_table
+        table.disconnect_on_change( entry.key )
+      endIf
+
+    method disconnect_on_change( path:GlobalID )
+      local entry = entry( path )
+      if local table = entry.context.as_table
+        table.disconnect_on_change( entry.key )
+      endIf
+
     method entries->TableEntriesIterator<<Variant,Variant>>
       if (type != TYPE_TABLE) return TableEntriesIterator<<Variant,Variant>>( null )
       return object->(as [Variant:Variant]).entries
@@ -735,18 +747,6 @@ class Variant [compound]
         others
           return undefined
       endWhich
-
-    method disconnect_on_change( key:String )
-      local entry = entry( key )
-      if local table = entry.context.as_table
-        table.disconnect_on_change( entry.key )
-      endIf
-
-    method disconnect_on_change( path:GlobalID )
-      local entry = entry( path )
-      if local table = entry.context.as_table
-        table.disconnect_on_change( entry.key )
-      endIf
 
     method on_change( key:String, signal:SignalID )
       local entry = entry( key )
