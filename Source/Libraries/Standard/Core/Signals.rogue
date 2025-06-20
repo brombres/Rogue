@@ -78,9 +78,31 @@ endClass
 
 
 class SignalID( value:Int ) [compound]
+  GLOBAL METHODS
+    method create( global_id:GlobalID )->SignalID
+      return SignalIDLookup[global_id]
+
   METHODS
     method hashcode->Int
       return value.hashcode
+
+    method on_signal( context:Object, callback:Function(Variant), &once )->SignalConnection
+      return Signals.on( this, callback, context, &=once )
+
+    method on_signal( context:Object, callback:Function(), &once )->SignalConnection
+      return Signals.on( this, callback, context, &=once )
+
+    method on_signal( callback:Function(Variant), &once )->SignalConnection
+      return Signals.on( this, callback, &=once )
+
+    method on_signal( callback:Function(), &once )->SignalConnection
+      return Signals.on( this, callback, &=once )
+
+    method operator?()->Logical
+      return value?
+
+    method signal( args=undefined:Variant )
+      Signals.dispatch( this, args )
 endClass
 
 class SignalIDLookup [singleton]

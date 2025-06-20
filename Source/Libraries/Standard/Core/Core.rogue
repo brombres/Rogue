@@ -20,6 +20,7 @@ $include Core/StringPool
 $include Core/System
 $include Core/TypeID
 $include Core/Variant
+$include Core/VariantEntry
 $include Core/WeakReference
 $include Core/Windows
 $include Core/WorkList

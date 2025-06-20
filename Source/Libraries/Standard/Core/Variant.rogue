@@ -433,6 +433,12 @@ class Variant [compound]
       this[name] = table
       return table
 
+    method entry( key:String )->VariantEntry
+      return VariantEntry( this, key )
+
+    method entry( path:GlobalID )->VariantEntry
+      return VariantEntry( this, path )
+
     method exists->Logical
       return (type > TYPE_LAST_UNDEFINED)
 

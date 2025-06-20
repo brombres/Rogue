@@ -1,0 +1,83 @@
+class VariantEntry( variant:Variant, path:String, key:String ) [compound]
+  GLOBAL METHODS
+    method create( variant:Variant, key:String )->VariantEntry
+      return VariantEntry( variant, null, key )
+
+    method create( variant:Variant, path:GlobalID )->VariantEntry
+      local prev = undefined
+      local cur = variant
+      local last_segment : String
+      local parent_path : String
+      use temp_segment = StringPool
+        local parser = GlobalIDSegmentParser( path )
+        while (parser.read_another(temp_segment))
+          local entry = cur.as_table?.find( temp_segment )
+
+          if (last_segment)
+            if (parent_path)
+              parent_path.[ print('.'), print(last_segment) ]
+            else
+              parent_path = String().[ reserve(path.name.count), print('<'), print(last_segment) ]
+            endIf
+          endIf
+
+          if (entry) last_segment = entry.key  # use permanent string key from table entry
+          else       last_segment = temp_segment.cloned  # make string permanent
+
+          prev = cur
+          cur = cur[last_segment]
+        endWhile
+
+        if (parent_path) parent_path.print( '>' )
+        return VariantEntry( variant, parent_path, last_segment )
+      endUse
+
+  METHODS
+    method context->Variant
+      if (not path) return variant
+
+      local cur = variant
+      use temp_segment = StringPool
+        local parser = GlobalIDSegmentParser( path )
+        while (parser.read_another(temp_segment))
+          local next = cur[temp_segment]
+          if (next.is_undefined)
+            # Will only be undefined if developer has removed the subtree this entry
+            # was in. Use a permanent clone of the segment string because it will
+            # persist as the key.
+            next = cur[temp_segment.cloned]
+          endIf
+          cur = next
+        endWhile
+        return cur
+      endUse
+
+    method set( value:Variant )
+      context[key] = value
+
+    method to->Box
+      return context[key]->Box
+
+    method to->Character
+      return context[key]->Character
+
+    method to->Int
+      return context[key]->Int
+
+    method to->Logical
+      return context[key]->Logical
+
+    method to->Real
+      return context[key]->Real
+
+    method to->String
+      return context[key]->String
+
+    method to->Variant
+      return context[key]
+
+    method to->XY
+      return context[key]->XY
+
+endClass
+
