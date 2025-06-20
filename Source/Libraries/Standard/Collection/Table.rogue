@@ -70,6 +70,11 @@ class Table<<$KeyType,$ValueType>> : TableType
         remove( forEach in discard_list )
       endUse
 
+    method disconnect_on_change( key:$KeyType )
+      if local entry = find( key )
+        entry.on_change = SignalID(0)
+      endIf
+
     method entries->TableEntriesIterator<<$KeyType,$ValueType>>
       # Returns an iterator compound.
       return TableEntriesIterator<<$KeyType,$ValueType>>( first_entry )
@@ -186,6 +191,11 @@ class Table<<$KeyType,$ValueType>> : TableType
 
       return result
 
+    method on_change( key:$KeyType, signal_id:SignalID )
+      if local entry = find( key )
+        entry.on_change = signal_id
+      endIf
+
     method operator==( other:[$KeyType:$ValueType] )->Logical
       if (count != other.count) return false
 
@@ -287,6 +297,7 @@ class Table<<$KeyType,$ValueType>> : TableType
       if (entry)
         entry.value = value
         if (sort_function) _adjust_entry_order( entry )
+        if (entry.on_change) entry.on_change.signal( value )
         return
       endIf
 
@@ -440,6 +451,7 @@ class TableEntry<<$KeyType,$ValueType>>
     adjacent_entry    : TableEntry<<$KeyType,$ValueType>>  # next entry in bin - same hash code after masking
     next_entry        : TableEntry<<$KeyType,$ValueType>>  # next entry in order - could be totally different hash
     previous_entry    : TableEntry<<$KeyType,$ValueType>>  # previous entry in order
+    on_change         : SignalID
     hash              : Int
 
   METHODS
