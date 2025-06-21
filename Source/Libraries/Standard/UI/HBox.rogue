@@ -2,7 +2,8 @@ library UI
 
 class HBox : Component
   PROPERTIES
-    gap : Real  # In pixels
+    gap              : Real  # In pixels
+    gap_parameter_id : VariantEntryID
 
   METHODS
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
@@ -168,8 +169,17 @@ class HBox : Component
         endForEach
       endUse
 
+    method on_begin_layout_internal
+      prior.on_begin_layout_internal
+      if (gap_parameter_id)
+        @gap = gap_parameter_id->Real
+      endIf
+
     method set_gap( @gap ) [override]
-      noAction
+      @gap_parameter_id = VariantEntryID(0)
+
+    method set_gap( gap_parameter_id )
+      @gap = gap_parameter_id->Real
 
 endClass
 

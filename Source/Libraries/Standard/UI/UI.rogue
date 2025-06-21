@@ -179,7 +179,10 @@ class UI : Component [singleton]
       noAction
 
     method spacer( fixed_size:XY )->Component
-      return Component().[ fixed_size=fixed_size ]
+      return Component( fixed_size )
+
+    method spacer( size_parameter_id:VariantEntryID )->Component
+      return Component( size_parameter_id )
 
     method spacer( on_begin_layout=null:Function(Component), &h, &v )->Component [preferred]
       local component = Component()

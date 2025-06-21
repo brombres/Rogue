@@ -2,22 +2,22 @@ library UI
 
 class Component : Entity
   PROPERTIES
-    position        : XY
-    size            : XY
+    position          : XY
+    size              : XY
 
-    anchor          : Anchor?
-    content_alignment       : Anchor?
-    sizing_mode     : SizingModeXY
-    natural_size    : XY
-    layout_size     : XY
-    aspect_size     : XY
-    content_offset  : XY
-    weight          = XY(1,1)
-    opacity         = 1.0
-    content_opacity = 1.0
-    font            : Font
-    text_style      : TextStyle
-    size_reference  : Component
+    anchor            : Anchor?
+    content_alignment : Anchor?
+    sizing_mode       : SizingModeXY
+    natural_size      : XY
+    layout_size       : XY
+    aspect_size       : XY
+    content_offset    : XY
+    weight            = XY(1,1)
+    opacity           = 1.0
+    content_opacity   = 1.0
+    font              : Font
+    text_style        : TextStyle
+    size_reference    : Component
 
     on_begin_layout_callback : Function(Component)
 
@@ -30,6 +30,9 @@ class Component : Entity
 
     method init( fixed_size:XY )
       this.fixed_size = fixed_size
+
+    method init( size_parameter_id:VariantEntryID )
+      size_parameter = size_parameter_id
 
     method on( e:KeyEvent )
       noAction
@@ -512,6 +515,10 @@ class Component : Entity
           h = layout_size.y
         case NATURAL_SIZE
           h = natural_size.y
+        case PARAMETER_REAL
+          h = layout_size.y->Int->VariantEntryID->Real
+        case PARAMETER_XY
+          h = layout_size.y->Int->VariantEntryID->XY.y
       endWhich
       return h
 
@@ -527,8 +534,12 @@ class Component : Entity
           else                w = available_size.x * layout_size.x
         case FIXED_SIZE
           w = layout_size.x
-        case  NATURAL_SIZE
+        case NATURAL_SIZE
           w = natural_size.x
+        case PARAMETER_REAL
+          w = layout_size.x->Int->VariantEntryID->Real
+        case PARAMETER_XY
+          w = layout_size.x->Int->VariantEntryID->XY.x
       endWhich
       return w
 
@@ -611,6 +622,9 @@ class Component : Entity
     method set_gap( gap:Real )
       noAction
 
+    method set_gap( parameter_id:VariantEntryID )
+      noAction
+
     method set_natural_size( @natural_size )
       sizing_mode = SizingModeXY( SizingMode.NATURAL_SIZE, SizingMode.NATURAL_SIZE )
       size = natural_size
@@ -655,6 +669,21 @@ class Component : Entity
 
     method set_weight( weight:Real )
       @weight = XY( weight, weight )
+
+    method set_size_parameter( parameter_id:VariantEntryID )
+      sizing_mode = SizingModeXY( SizingMode.PARAMETER_XY, SizingMode.PARAMETER_XY )
+      layout_size = XY( parameter_id.value, parameter_id.value )
+      size = parameter_id->XY
+
+    method set_height_parameter( parameter_id:VariantEntryID )
+      sizing_mode.y = SizingMode.PARAMETER_REAL
+      layout_size.y = parameter_id.value
+      size.y = parameter_id->Real
+
+    method set_width_parameter( parameter_id:VariantEntryID )
+      sizing_mode.x = SizingMode.PARAMETER_REAL
+      layout_size.x = parameter_id.value
+      size.x = parameter_id->Real
 
     method shrink_to_fit
       sizing_mode = SizingModeXY( SizingMode.SHRINK_TO_FIT, SizingMode.SHRINK_TO_FIT )
