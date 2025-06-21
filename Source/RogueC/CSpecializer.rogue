@@ -235,7 +235,7 @@ class CSpecializer : Visitor
       control_stack.add( cmd )
 
       local v = add_local( cmd.t, "condition", Program.type_Logical, DummyInitialValue )
-      insert( SetLocal(cmd.t,v,cmd.condition.cloned,&initial_assignment) )
+      insert( SetLocal(cmd.t,v,visit(cmd.condition.cloned),&initial_assignment) )
       cmd.upkeep.add( SetLocal(v,cmd.condition,&initial_assignment) )
       cmd.condition = GetLocal(v)
       cmd.statements = visit( cmd.statements )

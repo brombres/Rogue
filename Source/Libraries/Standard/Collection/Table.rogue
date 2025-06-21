@@ -300,7 +300,10 @@ class Table<<$KeyType,$ValueType>> : TableType
         if (sort_function) _adjust_entry_order( entry )
         if (entry.on_change)
           if (value != old_value)
-            entry.on_change.signal( value )
+            try
+              entry.on_change.signal( value )
+            catch (Exception)
+            endTry
           endIf
         endIf
         return
