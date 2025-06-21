@@ -246,8 +246,12 @@ class Scanner : Reader<<Character>>
 
       local first = true
       while (first or has_another)
-        first = false
-        if (String.exists(separator) and not consume(separator)) escapeWhile
+        if (first)
+          first = false
+        else
+          if (String.exists(separator) and not consume(separator)) escapeWhile
+          consume_whitespace
+        endIf
         local st = scan_string
         if (st)
           args.add( st )
@@ -261,12 +265,30 @@ class Scanner : Reader<<Character>>
 
     method scan_escaped_string( separator="":String )->String
       local result = String()
-      while (has_another and
-          ((String.exists(separator) and not next_is(separator)) or not consume_whitespace))
-        local ch = read
-        if (ch == '\\' and has_another) result.print( read )
-        else                            result.print( ch )
+
+      # @FIXME - In Vimage RogueC generates incorrect code for the following 'while'.
+      #while (has_another and ((String.exists(separator) and not next_is(separator)) or not consume_whitespace))
+      #  local ch = read
+      #  if (ch == '\\' and has_another) result.print( read )
+      #  else                            result.print( ch )
+      #endWhile
+      #
+      # At this CmdLineHandler.rogue line:
+      # local args = Scanner( VimageUI.command ).scan_args
+
+      while (has_another)
+        contingent
+          sufficient (consume_whitespace)
+          sufficient (String.exists(separator) and next_is(separator))
+          local ch = read
+          if (ch == '\\' and has_another) result.print( read )
+          else                            result.print( ch )
+          nextIteration
+        satisfied
+          return result
+        endContingent
       endWhile
+
       return result
 
     method scan_hex_sequence( buffer:String )
