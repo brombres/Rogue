@@ -543,6 +543,68 @@ class Variant [compound]
           local info = {table:table,key:key} : [String:Variant]
           return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_TABLE_ENTRY, (%Ns%RogueObject*)$info }" )->Variant
 
+        case TYPE_BOX
+          which (key)
+            case "position": return box.position->Variant
+            case "size":     return box.size->Variant
+            others:          return undefined
+          endWhich
+
+        case TYPE_CIRCLE
+          which (key)
+            case "position": return circle.position
+            case "radius":   return circle.radius
+            others:          return undefined
+          endWhich
+
+        case TYPE_LINE
+          which (key)
+            case "a": return line.a
+            case "b": return line.b
+            others:   return undefined
+          endWhich
+
+        case TYPE_QUAD32
+          which (key)
+            case "a": return quad32.a
+            case "b": return quad32.b
+            case "c": return quad32.c
+            case "d": return quad32.d
+            others:   return undefined
+          endWhich
+
+        case TYPE_TRIANGLE
+          which (key)
+            case "a": return triangle.a
+            case "b": return triangle.b
+            case "c": return triangle.c
+            others:   return undefined
+          endWhich
+
+        case TYPE_XY
+          which (key)
+            case "x": return xy.x
+            case "y": return xy.y
+            others:   return undefined
+          endWhich
+
+        case TYPE_XYZ
+          which (key)
+            case "x": return xyz.x
+            case "y": return xyz.y
+            case "z": return xyz.z
+            others:   return undefined
+          endWhich
+
+        case TYPE_XYZW
+          which (key)
+            case "x": return xyzw.x
+            case "y": return xyzw.y
+            case "z": return xyzw.z
+            case "w": return xyzw.w
+            others:   return undefined
+          endWhich
+
         others
           if (key.is_integer) return at( key->Int )
           else                return undefined
