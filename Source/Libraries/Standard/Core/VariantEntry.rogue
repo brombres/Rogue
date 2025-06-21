@@ -1,3 +1,44 @@
+$include Collection/IndexedSet
+
+class VariantEntryID( value:Int ) [compound]
+  METHODS
+    method entry->VariantEntry
+      return VariantEntryIDManager[value]
+
+    method operator?->Logical
+      return value?
+
+    method to->Box
+      return entry->Box
+
+    method to->Character
+      return entry->Character
+
+    method to->Int
+      return entry->Int
+
+    method to->Logical
+      return entry->Logical
+
+    method to->Real
+      return entry->Real
+
+    method to->String
+      return entry->String
+
+    method to->Variant
+      return entry->Variant
+
+    method to->VariantEntry
+      return entry
+
+    method to->XY
+      return entry->XY
+endClass
+
+class VariantEntryIDManager : IndexedSet<<VariantEntry>> [singleton]
+endClass
+
 class VariantEntry( variant:Variant, path:String, key:String ) [compound]
   GLOBAL METHODS
     method create( variant:Variant, key:String )->VariantEntry
@@ -59,11 +100,24 @@ class VariantEntry( variant:Variant, path:String, key:String ) [compound]
         return cur
       endUse
 
+    method hashcode->Int
+      local result = variant.hashcode ~ key.hashcode
+      if (path) result ~= path.hashcode
+      return result
+
+    method id->VariantEntryID
+      return VariantEntryID( VariantEntryIDManager.add(this) )
+
     method set( value:Variant )
       context[key] = value
 
     method operator?()->Logical
       return key?
+
+    method operator==( other:VariantEntry )->Logical
+      if (key? xor other.key?) return false
+      if (not key) return true
+      return (variant == other.variant and path == other.path and key == other.key)
 
     method to->Box
       return context[key]->Box
@@ -85,6 +139,9 @@ class VariantEntry( variant:Variant, path:String, key:String ) [compound]
 
     method to->Variant
       return context[key]
+
+    method to->VariantEntryID
+      return id
 
     method to->XY
       return context[key]->XY
