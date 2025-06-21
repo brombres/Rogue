@@ -299,7 +299,7 @@ class CSpecializer : Visitor
         local t = cmd.t
 
         local left = cmd.left
-        left.intermediate_v = cmd.intermediate_v
+        if (decompose_left) left.intermediate_v = cmd.intermediate_v
         cmd.left = visit( left )
         local v = left.intermediate_v
         if (not v)
