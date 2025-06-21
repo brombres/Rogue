@@ -2,32 +2,36 @@ $include Collection/Table
 
 class IndexedSet<<$DataType>> : IteratorPreferred
   PROPERTIES
-    data : [$DataType:Int]
+    data   : [$DataType:Int]
+    lookup : $DataType[]
 
   METHODS
     method init
-      data = [$DataType:Int]
+      data   = [$DataType:Int]
+      lookup = $DataType[]
+      lookup.add( $defaultValue<<$DataType>> )  # ensure mappings start at index 1
 
     method init( existing:IndexedSet<<$DataType>> )
-      data = existing.data.cloned
+      data   = existing.data.cloned
+      lookup = existing.lookup.cloned
 
     method cloned->$thisType
       return IndexedSet<<$DataType>>(this)
 
     method add( value:$DataType )->Int
+      if ($isReference<<$DataType>>)
+        if (not value) return 0
+      endIf
+
       local entry = data.find( value )
       if (entry)
         return entry.value
       else
-        local index = data.count
+        local index = lookup.count
         data[value] = index
+        lookup.add( value )
         return index
       endIf
-
-    method at( index:Int )->Int?
-      local entry = data.entry_at( index )
-      if (entry) return entry.value
-      else       return null
 
     method clear
       data.clear
@@ -38,10 +42,13 @@ class IndexedSet<<$DataType>> : IteratorPreferred
     method difference( other:IndexedSet<<$DataType>> )
       remove( forEach in other.values )
 
-    method get( key:$DataType )->Int?
+    method get( key:$DataType, &locate )->Int?
       local entry = data.find( key )
       if (entry) return entry.value
       else       return null
+
+    method get( index:Int )->$DataType
+      return lookup[index]
 
     method intersection( other:IndexedSet<<$DataType>> )
       remove( forEach in ((this - other) | (other - this)) )
