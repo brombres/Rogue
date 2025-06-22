@@ -45,7 +45,6 @@ class UI : Component [singleton]
     snap_to_pixel_coordinates = true
 
     find_handler   : Function(GlobalID,Variant)->Variant
-    notify_handler : Function(GlobalID,Variant)
 
   METHODS
     method init_object
@@ -163,10 +162,6 @@ class UI : Component [singleton]
 
         on_unhandled( e )
       endTemporarily
-
-    method notify( id:GlobalID, arg=undefined:Variant, &up ) [override]
-      prior.notify( id, arg, &=up )
-      if (up and notify_handler) notify_handler( id, arg )
 
     method release_keyboard_focus [override]
       if (focus.keyboard)

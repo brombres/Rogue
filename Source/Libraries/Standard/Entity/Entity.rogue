@@ -98,15 +98,6 @@ class Entity : Node<<Entity>>
     method is_visible->Logical
       return not attributes.invisible
 
-    method notify( id:GlobalID, arg=undefined:Variant, &up )
-      on_notify( id, arg )
-
-      if (up)
-        if (parent) parent.notify( id, arg, &up )
-      else
-        (forEach in children).notify( id, arg )
-      endIf
-
     method on_begin_draw
       noAction
 
@@ -126,9 +117,6 @@ class Entity : Node<<Entity>>
       noAction
 
     method on_hide
-      noAction
-
-    method on_notify( id:GlobalID, arg:Variant )
       noAction
 
     method on_show
@@ -225,3 +213,10 @@ class Entity : Node<<Entity>>
     method .draw_entity
       noAction
 endClass
+
+augment Rogue::ProgressState
+  GLOBAL METHODS
+    method wait_for( entity:Entity )->$ExtendedType
+      return wait_for( () => entity.actions is null )
+endAugment
+
