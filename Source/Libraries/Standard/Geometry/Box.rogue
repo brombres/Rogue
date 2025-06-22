@@ -382,3 +382,9 @@ augment Box?
       return lhs.value | rhs
 endAugment
 
+augment Rogue::Real
+  METHODS
+    method lerp( a:Box, b:Box )->Box
+      return Box( this.lerp(a.position,b.position), this.lerp(a.size,b.size) )
+endAugment
+
