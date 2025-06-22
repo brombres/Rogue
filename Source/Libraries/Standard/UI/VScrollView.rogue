@@ -27,7 +27,7 @@ class VScrollView : Component
 
     method bottom_offset->Real
       # Result will be negative or zero.
-      if local content = first_child_component
+      if local content = first_content_component
         return (size.y - content.size.y).clamped_high(0)
       else
         return 0
@@ -42,7 +42,7 @@ class VScrollView : Component
 
     method right_offset->Real
       # Result will be negative or zero.
-      if local content = first_child_component
+      if local content = first_content_component
         return (size.x - content.size.x).clamped_high(0)
       else
         return 0
@@ -84,8 +84,8 @@ class VScrollView : Component
           endIf
         else
           # Pass move event to children
-          if local first_child_component = first_child_component
-            first_child_component.dispatch( e )
+          if local first_content_component = first_content_component
+            first_content_component.dispatch( e )
             return
           endIf
         endIf
@@ -177,9 +177,9 @@ class VScrollView : Component
       local subcomponent = find( e_press.position )
       # Any subcomponents that could respond to this event?
 
-      localize first_child_component
-      if (first_child_component and subcomponent)
-        first_child_component.dispatch( e_press )
+      localize first_content_component
+      if (first_content_component and subcomponent)
+        first_content_component.dispatch( e_press )
         # This may capture pointer focus
 
         if (UI.focus.pointer)
@@ -187,10 +187,10 @@ class VScrollView : Component
             UI.focus.pointer.handle( e_release )
           else
             UI.focus.pointer.release_pointer_focus
-            first_child_component.dispatch( e_release )
+            first_content_component.dispatch( e_release )
           endIf
         else
-          first_child_component.dispatch( e_release )
+          first_content_component.dispatch( e_release )
         endIf
 
       else

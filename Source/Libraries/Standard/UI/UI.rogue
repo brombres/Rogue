@@ -44,6 +44,9 @@ class UI : Component [singleton]
 
     snap_to_pixel_coordinates = true
 
+    find_handler   : Function(GlobalID,Variant)->Variant
+    notify_handler : Function(GlobalID,Variant)
+
   METHODS
     method init_object
       UI = this
@@ -75,6 +78,12 @@ class UI : Component [singleton]
       endIf
       return component
 
+    method find( id:GlobalID, arg=undefined:Variant, &up )->Variant [override]
+      local result = prior.find( id, arg, &=up )
+      if (result.exists)       return result
+      if (up and find_handler) return find_handler( id, arg )
+      return undefined
+
     method font->Font
       if (@font) return @font
       return default_font
@@ -89,10 +98,10 @@ class UI : Component [singleton]
             focus.keyboard.handle( e )
           else
             focus.keyboard.release_keyboard_focus
-            first_child_component?.dispatch( e )
+            first_content_component?.dispatch( e )
           endIf
         else
-          first_child_component?.dispatch( e )
+          first_content_component?.dispatch( e )
         endIf
         if (e.is_consumed) return
 
@@ -111,10 +120,10 @@ class UI : Component [singleton]
             focus.pointer.handle( e )
           else
             focus.pointer.release_pointer_focus
-            first_child_component?.dispatch( e )
+            first_content_component?.dispatch( e )
           endIf
         else
-          first_child_component?.dispatch( e )
+          first_content_component?.dispatch( e )
         endIf
         if (e.is_consumed) return
 
@@ -131,7 +140,7 @@ class UI : Component [singleton]
         if (focus.pointer)
           focus.pointer.handle( e )
         else
-          first_child_component?.dispatch( e )
+          first_content_component?.dispatch( e )
         endIf
         if (e.is_consumed) return
 
@@ -148,12 +157,16 @@ class UI : Component [singleton]
         if (focus.keyboard)
           focus.keyboard.handle( e )
         else
-          first_child_component?.dispatch( e )
+          first_content_component?.dispatch( e )
         endIf
         if (e.is_consumed) return
 
         on_unhandled( e )
       endTemporarily
+
+    method notify( id:GlobalID, arg=undefined:Variant, &up ) [override]
+      prior.notify( id, arg, &=up )
+      if (up and notify_handler) notify_handler( id, arg )
 
     method release_keyboard_focus [override]
       if (focus.keyboard)

@@ -21,8 +21,6 @@ class EntityScript : State<<EntityScript,change_script,exit_script>>
     method on_update_layout
       noAction
 
-    method properties->Properties
-      return Properties( entity )
 endClass
 
 class Entity2DScript : EntityScript

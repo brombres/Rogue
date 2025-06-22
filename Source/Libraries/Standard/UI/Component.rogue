@@ -173,20 +173,20 @@ class Component : Entity
       if (@font) return @font
       return parent->(as Component)?.font
 
-    method begin_child_layout
+    method begin_content_layout
       use components = WorkList<<Component>>
         collect_child_display_components( components )
         (forEach in components).begin_layout
       endUse
 
-    method begin_layout( &only_children )
-      if (not only_children)
+    method begin_layout( &only_content )
+      if (not only_content)
         on_begin_layout_internal
         on_begin_layout
         if (on_begin_layout_callback) on_begin_layout_callback( this )
       endIf
 
-      begin_child_layout
+      begin_content_layout
 
     method bg_color->Graphics::Color?
       return parent->(as Component)?.bg_color
@@ -272,8 +272,8 @@ class Component : Entity
         return position
       endIf
 
-    method end_layout( &only_children )
-      if (not only_children)
+    method end_layout( &only_content )
+      if (not only_content)
         on_end_layout_internal
         on_end_layout
       endIf
@@ -306,7 +306,7 @@ class Component : Entity
     method find_h_split( max_width:Real )->Real?
       return null
 
-    method first_child_component->Component
+    method first_content_component->Component
       forEach (child as Component in children)
         return child
       endForEach
@@ -318,7 +318,7 @@ class Component : Entity
       on( e )
       if (e.is_consumed) return
 
-      first_child_component?.dispatch( e )
+      first_content_component?.dispatch( e )
       if (e.is_consumed) return
 
       on_unhandled( e )
@@ -329,7 +329,7 @@ class Component : Entity
       on( e )
       if (e.is_consumed) return
 
-      first_child_component?.dispatch( e )
+      first_content_component?.dispatch( e )
       if (e.is_consumed) return
 
       on_unhandled( e )
@@ -340,7 +340,7 @@ class Component : Entity
       on( e )
       if (e.is_consumed) return
 
-      first_child_component?.dispatch( e )
+      first_content_component?.dispatch( e )
       if (e.is_consumed) return
 
       on_unhandled( e )
@@ -351,7 +351,7 @@ class Component : Entity
       on( e )
       if (e.is_consumed) return
 
-      first_child_component?.dispatch( e )
+      first_content_component?.dispatch( e )
       if (e.is_consumed) return
 
       on_unhandled( e )
@@ -422,10 +422,10 @@ class Component : Entity
 
     method perform_layout( position )
       if (not attributes.manually_update_content_layout)
-        perform_child_layout
+        perform_content_layout
       endIf
 
-    method perform_child_layout
+    method perform_content_layout
       localize anchor
       localize content_bounds
       use components = WorkList<<Component>>
@@ -495,7 +495,7 @@ class Component : Entity
       else
         sz = .resolve_shrink_to_fit_layout_size( &=limited )
         if (not limited)
-          resolve_child_layout_sizes
+          resolve_content_layout_sizes
         endIf
       endIf
 
@@ -574,17 +574,17 @@ class Component : Entity
       return sz
 
     method update_content_layout
-      begin_layout( &only_children )
+      begin_layout( &only_content )
       .resolve_shrink_to_fit_layout_size
-      resolve_child_layout_sizes( content_size )
-      perform_child_layout
-      end_layout( &only_children )
+      resolve_content_layout_sizes( content_size )
+      perform_content_layout
+      end_layout( &only_content )
 
-    method resolve_child_layout_sizes
+    method resolve_content_layout_sizes
       on_layout_size( size )
-      resolve_child_layout_sizes( content_size )
+      resolve_content_layout_sizes( content_size )
 
-    method resolve_child_layout_sizes( available_size:XY )
+    method resolve_content_layout_sizes( available_size:XY )
       use components = WorkList<<Component>>
         collect_child_display_components( components )
         (forEach in components).resolve_layout_size( available_size )

@@ -19,7 +19,7 @@ class HFlow : Component
       add( Text(text) )
 
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
-      resolve_child_layout_sizes
+      resolve_content_layout_sizes
 
       if (sizing_mode.x == SizingMode.SHRINK_TO_FIT) size.x = available_size.x
       perform_layout( XY.zero )
@@ -30,7 +30,7 @@ class HFlow : Component
       layout_finished = false
       prior.on_begin_layout_internal
 
-    method perform_child_layout [override]
+    method perform_content_layout [override]
       if (layout_finished) return
 
       localize content_position
@@ -85,7 +85,7 @@ class HFlow : Component
 
       layout_finished = true
 
-    method resolve_child_layout_sizes( available_size:XY ) [override]
+    method resolve_content_layout_sizes( available_size:XY ) [override]
       if (layout_finished) return
       use components = WorkList<<Component>>
         collect_child_display_components( components )

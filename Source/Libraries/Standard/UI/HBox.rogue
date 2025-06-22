@@ -20,7 +20,7 @@ class HBox : Component
       endUse
       return XY(w,h)
 
-    method perform_child_layout [override]
+    method perform_content_layout [override]
       localize anchor
       local total_w = 0.0
       local h = 0.0
@@ -47,7 +47,7 @@ class HBox : Component
         endForEach
       endUse
 
-    method resolve_child_layout_sizes( available_size:XY ) [override]
+    method resolve_content_layout_sizes( available_size:XY ) [override]
       use components = WorkList<<Component>>
         collect_child_display_components( components )
         if (components.count > 1)
@@ -165,7 +165,7 @@ class HBox : Component
         # All child components have their own size set or assigned; have them recursively
         # determine their child sizes.
         forEach (component in components)
-          component.resolve_child_layout_sizes
+          component.resolve_content_layout_sizes
         endForEach
       endUse
 

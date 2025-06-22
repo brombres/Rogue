@@ -9,40 +9,37 @@ $include Entity/Entity2D
 $include Entity/Entity3D
 $include Entity/Attributes
 $include Entity/EntityScript
-$include Entity/Properties
 
 class Entity : Node<<Entity>>
   GLOBAL PROPERTIES
-    next_id = 1
+    next_internal_id = 1
 
   PROPERTIES
-    name       : String
-    id         : Int
-    attributes : Attributes
-    script     : EntityScript
-    actions    : Action
-    properties : Variant
+    label       : GlobalID
+    internal_id : Int
+    attributes  : Attributes
+    script      : EntityScript
+    actions     : Action
 
   METHODS
     method init
       noAction
 
-    method init( name )
+    method init( label )
       noAction
 
     method init_clone( existing:Entity )
-      name        = existing.name
+      label          = existing.label
       attributes  = existing.attributes
       script      = existing.script
-      @properties = existing.@properties.cloned
       add( (forEach in existing.children).cloned )
 
     method cloned->$thisType [propagated]
       return new<<$thisType>>.[ init_clone(this) ]
 
     method init_object
-      id = next_id
-      ++next_id
+      internal_id = next_internal_id
+      ++next_internal_id
 
     method attach_script( new_script:EntityScript )
       new_script.entity = this
@@ -60,12 +57,26 @@ class Entity : Node<<Entity>>
       .handle_draw( &fg )
       .end_draw
 
-    method find( id:GlobalID, arg=undefined:Variant )->Variant
-      forEach (child in children)
-        local result = child.find( id, arg )
-        if (result) return result
-      endForEach
+    method find( id:GlobalID, arg=undefined:Variant, &up )->Variant
+      local result = get( id, arg )
+      if (result.exists) return result
 
+      if (up)
+        if (parent)
+          local result = parent.find( id, arg, &up )
+          if (result.exists) return result
+        endIf
+      else
+        forEach (child in children)
+          local result = child.find( id, arg )
+          if (result.exists) return result
+        endForEach
+      endIf
+
+      return undefined
+
+    method get( id:GlobalID, arg=undefined:Variant )->Variant
+      if (label == id) return this
       return undefined
 
     method h_flip->Logical
@@ -87,9 +98,14 @@ class Entity : Node<<Entity>>
     method is_visible->Logical
       return not attributes.invisible
 
-    method notify( id:GlobalID, arg=undefined:Variant )
+    method notify( id:GlobalID, arg=undefined:Variant, &up )
       on_notify( id, arg )
-      (forEach in children).notify( id, arg )
+
+      if (up)
+        if (parent) parent.notify( id, arg, &up )
+      else
+        (forEach in children).notify( id, arg )
+      endIf
 
     method on_begin_draw
       noAction
@@ -123,9 +139,6 @@ class Entity : Node<<Entity>>
 
     method on_update
 
-    method properties->Properties
-      return Properties( this )
-
     method set_h_flip( setting:Logical )
       attributes.h_flip = setting
 
@@ -153,7 +166,7 @@ class Entity : Node<<Entity>>
       endIf
 
     method to->String
-      if (@name) return @name
+      if (label) return label.name
       else       return type_name
 
     method update
