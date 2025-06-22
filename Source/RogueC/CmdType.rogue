@@ -58,6 +58,9 @@ augment Cmd
       #endIf
 
   METHODS
+    method actual->Cmd
+      return this
+
     method require_type->Type
       local result = type
       if (result) return result
@@ -67,6 +70,13 @@ augment Cmd
       require_type
       return this
 
+endAugment
+
+# actual
+augment
+  METHODS
+    method DefaultArg.actual->Cmd
+      return operand.actual
 endAugment
 
 # resolve_conversion_to

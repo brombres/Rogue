@@ -2682,7 +2682,7 @@ class Resolver : Poolable, Visitor
               forEach (arg at i in args)
                 necessary (
                   arg_type_is_compatible(
-                    arg, m.parameters[i].type, &=allow_conversions, &=exact_logical, &=limit_conversions
+                    arg.actual, m.parameters[i].type, &=allow_conversions, &=exact_logical, &=limit_conversions
                   )
                 )
               endForEach
