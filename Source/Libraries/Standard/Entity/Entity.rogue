@@ -60,6 +60,14 @@ class Entity : Node<<Entity>>
       .handle_draw( &fg )
       .end_draw
 
+    method find( id:GlobalID, arg=undefined:Variant )->Variant
+      forEach (child in children)
+        local result = child.find( id, arg )
+        if (result) return result
+      endForEach
+
+      return undefined
+
     method h_flip->Logical
       return attributes.h_flip
 
@@ -78,6 +86,10 @@ class Entity : Node<<Entity>>
 
     method is_visible->Logical
       return not attributes.invisible
+
+    method notify( id:GlobalID, arg=undefined:Variant )
+      on_notify( id, arg )
+      (forEach in children).notify( id, arg )
 
     method on_begin_draw
       noAction
@@ -98,6 +110,9 @@ class Entity : Node<<Entity>>
       noAction
 
     method on_hide
+      noAction
+
+    method on_notify( id:GlobalID, arg:Variant )
       noAction
 
     method on_show
