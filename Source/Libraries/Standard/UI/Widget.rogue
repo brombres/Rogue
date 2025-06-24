@@ -27,10 +27,12 @@ class Widget : Component
     method disable
       if (is_disabled) return
       state = WidgetState.DISABLED
+      attributes.intangible = true
 
     method enable
       if (not is_disabled) return
       state = WidgetState.IDLE
+      attributes.intangible = false
 
     method handle_select
       on_select
