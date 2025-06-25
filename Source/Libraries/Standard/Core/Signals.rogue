@@ -13,16 +13,21 @@ augment Rogue::GlobalID
     method disconnect_signal_group
       Signals.disconnect_group( SignalIDLookup[this] )
 
-    method on_signal( callback:Function(Variant), group=<Default>:SignalID, &once )->SignalConnection
+    method on_signal( callback:Function(), &once )->SignalConnection
+      return Signals.on( SignalIDLookup[this], callback, null, &=once )
+
+    method on_signal( callback:Function(Variant), &once )->SignalConnection
+      return Signals.on( SignalIDLookup[this], callback, null, &=once )
+
+    method on_signal( callback:Function(), group:SignalID, &once )->SignalConnection
       return Signals.on( SignalIDLookup[this], callback, group, &=once )
 
-    method on_signal( callback:Function(), group=<Default>:SignalID, &once )->SignalConnection
+    method on_signal( callback:Function(Variant), group:SignalID, &once )->SignalConnection
       return Signals.on( SignalIDLookup[this], callback, group, &=once )
 
     method signal( args=undefined:Variant )
       Signals.dispatch( SignalIDLookup[this], args )
 endAugment
-
 
 class Signals<<$EnumType>> [aspect]
   # Incorporate into enum type, e.g. 'enum MyEnum : Signals<<MyEnum>> ...'.
@@ -47,6 +52,14 @@ class Signals<<$EnumType>> [aspect]
 
       return Signals<<$EnumType>>.lookup
 
+    method disconnect_signal_group [augment]
+      use builder = StringPool
+        builder.print '<'
+        builder.print $typeName<<$EnumType>>
+        builder.print '>'
+        Signals.disconnect_group( SignalIDLookup[builder] )
+      endUse
+
   METHODS
     method disconnect_signal
       Signals.disconnect( Signals<<$EnumType>>.signal_id_lookup[this] )
@@ -57,13 +70,16 @@ class Signals<<$EnumType>> [aspect]
     method disconnect_signal( connection:SignalConnection )
       Signals.disconnect( connection )
 
-    method disconnect_signal_group
-      Signals.disconnect_group( Signals<<$EnumType>>.signal_id_lookup[this] )
+    method on_signal( callback:Function(), &once )->SignalConnection
+      return Signals.on( Signals<<$EnumType>>.signal_id_lookup[this], callback, null, &=once )
 
-    method on_signal( callback:Function(Variant), group=<Default>:SignalID, &once )->SignalConnection
+    method on_signal( callback:Function(Variant), &once )->SignalConnection
+      return Signals.on( Signals<<$EnumType>>.signal_id_lookup[this], callback, null, &=once )
+
+    method on_signal( callback:Function(), group:SignalID, &once )->SignalConnection
       return Signals.on( Signals<<$EnumType>>.signal_id_lookup[this], callback, group, &=once )
 
-    method on_signal( callback:Function(), group=<Default>:SignalID, &once )->SignalConnection
+    method on_signal( callback:Function(Variant), group:SignalID, &once )->SignalConnection
       return Signals.on( Signals<<$EnumType>>.signal_id_lookup[this], callback, group, &=once )
 
     method signal( args=undefined:Variant )
@@ -80,10 +96,16 @@ class SignalID( value:Int ) [compound]
     method hashcode->Int
       return value.hashcode
 
-    method on_signal( callback:Function(Variant), group=<Default>:SignalID, &once )->SignalConnection
+    method on_signal( callback:Function(), &once )->SignalConnection
+      return Signals.on( this, callback, null, &=once )
+
+    method on_signal( callback:Function(Variant), &once )->SignalConnection
+      return Signals.on( this, callback, null, &=once )
+
+    method on_signal( callback:Function(), group:SignalID, &once )->SignalConnection
       return Signals.on( this, callback, group, &=once )
 
-    method on_signal( callback:Function(), group=<Default>:SignalID, &once )->SignalConnection
+    method on_signal( callback:Function(Variant), group:SignalID, &once )->SignalConnection
       return Signals.on( this, callback, group, &=once )
 
     method operator?()->Logical
@@ -91,6 +113,9 @@ class SignalID( value:Int ) [compound]
 
     method signal( args=undefined:Variant )
       Signals.dispatch( this, args )
+
+    method to->String
+      return SignalIDLookup.name_lookup[this]
 endClass
 
 class SignalIDLookup [singleton]
@@ -98,15 +123,24 @@ class SignalIDLookup [singleton]
     next_signal_id    = 1
     global_id_lookup  = [GlobalID:SignalID]
     string_key_lookup = [String:SignalID]
+    name_lookup       = [SignalID:String]
 
   METHODS
     method get( global_id:GlobalID )->SignalID
       if local entry = global_id_lookup.find( global_id )
         return entry.value
       else
+        if local entry = string_key_lookup.find( global_id.name )
+          local result = entry.value
+          global_id_lookup[global_id] = result
+          return result
+        endIf
+
         local result = SignalID( next_signal_id )
         ++next_signal_id
         global_id_lookup[global_id] = result
+        string_key_lookup[global_id.name] = result
+        name_lookup[result] = global_id.name
         return result
       endIf
 
@@ -114,9 +148,11 @@ class SignalIDLookup [singleton]
       if local entry = string_key_lookup.find( string_key )
         return entry.value
       else
+        string_key .= immutable_clone
         local result = SignalID( next_signal_id )
         ++next_signal_id
         string_key_lookup[string_key] = result
+        name_lookup[result] = string_key
         return result
       endIf
 endClass
@@ -196,10 +232,10 @@ class Signals [singleton]
       endIf
       return connection
 
-    method on( signal_id:SignalID, callback:Function(Variant), group=<Default>:SignalID, &once )->SignalConnection
+    method on( signal_id:SignalID, callback:Function(Variant), group=null:SignalID?, &once )->SignalConnection
       return on( SignalConnection(signal_id, group, callback), &=once )
 
-    method on( signal_id:SignalID, callback:Function(), group=<Default>:SignalID, &once )->SignalConnection
+    method on( signal_id:SignalID, callback:Function(), group=null:SignalID?, &once )->SignalConnection
       return on( SignalConnection(signal_id, group, callback), &=once )
 
     method remove_invalid_connections
@@ -216,21 +252,44 @@ class SignalConnection( signal_id:SignalID, group:SignalID,
   # Use the ?=> operator to create weakly referenced callbacks.
 
   GLOBAL METHODS
-    method create( signal_id:SignalID, group:SignalID, callback:Function(Variant) )->SignalConnection
+    method create( signal_id:SignalID, group:SignalID?, callback:Function(Variant) )->SignalConnection
       return SignalConnection(
         signal_id,
-        group,
+        resolve_group(group,signal_id),
         callback,
         null
       )
 
-    method create( signal_id:SignalID, group:SignalID, callback:Function() )->SignalConnection
+    method create( signal_id:SignalID, group:SignalID?, callback:Function() )->SignalConnection
       return SignalConnection(
         signal_id,
-        group,
+        resolve_group(group,signal_id),
         null,
         callback
       )
+
+    method resolve_group( group:SignalID?, id:SignalID )->SignalID
+      if (group) return group.value
+
+      use builder = StringPool
+        local name = SignalIDLookup.name_lookup[id]
+        if (not name.begins_with('<')) builder.print '<'
+        forEach (ch in name)
+          if (ch == '.')
+            builder.print( '>' )
+            escapeForEach
+          else
+            builder.print( ch )
+          endIf
+        endForEach
+
+        if local resolved_group = SignalIDLookup[ builder ]
+          return resolved_group
+        else
+          return SignalID(<Default>)
+        endIf
+
+      endUse
 
   METHODS
     method call( args:Variant )
@@ -240,13 +299,15 @@ class SignalConnection( signal_id:SignalID, group:SignalID,
     method disconnect
       Signals.disconnect( this )
 
-    method operator==( other_object:Object )->Logical
-      local other = other_object->(as SignalConnection)
+    method operator==( other:SignalConnection )->Logical
       if (group != other.group) return false
       return signal_id == other.signal_id and callback_noargs is other.callback_noargs and
              callback_w_args is other.callback_w_args
 
     method operator?()->Logical
       return (callback_noargs?.is_valid or callback_w_args?.is_valid)
+
+    method to->String
+      return "$ [$]"(SignalIDLookup.name_lookup[signal_id],SignalIDLookup.name_lookup[group])
 endClass
 
