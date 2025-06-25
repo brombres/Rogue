@@ -5412,3 +5412,9 @@ class ThisTypeAccess : Cmd
       return "ThisTypeAccess($)" (%args)
 
 endClass
+
+class AttributeAugment : Cmd
+  METHODS
+    method description->String
+      return "AttributeAugment"
+endClass

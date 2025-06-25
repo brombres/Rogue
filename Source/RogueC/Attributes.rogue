@@ -148,14 +148,17 @@ augment
     method AttributeAbstract.attribute_flags->Int64
       return Attribute.ABSTRACT
 
+    method AttributeAPI.attribute_flags->Int64
+      return Attribute.API
+
     method AttributeAppend.attribute_flags->Int64
       return Attribute.APPEND
 
     method AttributeAspect.attribute_flags->Int64
       return Attribute.ASPECT
 
-    method AttributeAPI.attribute_flags->Int64
-      return Attribute.API
+    method AttributeAugment.attribute_flags->Int64
+      return Attribute.AUGMENT
 
     method AttributeBitflags.attribute_flags->Int64
       return Attribute.BITFLAGS

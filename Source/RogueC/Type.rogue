@@ -571,6 +571,10 @@ class Type : Cmd
       return false
 
     method incorporate_global( aspect_m:GlobalMethod, &is_augment )
+      if (aspect_m.attributes.is_augment)
+        is_augment = true
+      endIf
+
       aspect_m .= cloned
       AspectMethodPatcher.patch( this, aspect_m )
 
@@ -1836,8 +1840,9 @@ class Type : Cmd
 
         # Incorporate non-insert, non-append, non-replace methods first
         forEach (incorporated_aspect in aspects)
-          if (incorporated_aspect.attributes.is_augment)
-            forEach (aspect_m in incorporated_aspect.global_methods.values)
+          local type_is_augment = (incorporated_aspect.attributes.is_augment)
+          forEach (aspect_m in incorporated_aspect.global_methods.values)
+            if (type_is_augment or aspect_m.attributes.is_augment)
               if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace))
                 if (not missing_only or not global_methods.contains(aspect_m.signature))
                   if (this_is_abstract or not aspect_m.attributes.is_abstract)
@@ -1845,23 +1850,24 @@ class Type : Cmd
                   endIf
                 endIf
               endIf
-            endForEach
-          endIf
+            endIf
+          endForEach
         endForEach
 
         # Incorporate [insert], [append], and [replace] methods
         forEach (incorporated_aspect in aspects)
-          if (incorporated_aspect.attributes.is_augment)
-            forEach (aspect_m in incorporated_aspect.global_methods.values)
+          local type_is_augment = (incorporated_aspect.attributes.is_augment)
+          forEach (aspect_m in incorporated_aspect.global_methods.values)
+            if (type_is_augment or aspect_m.attributes.is_augment)
               if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append or aspect_m.attributes.is_replace)
                 if (not missing_only or not global_methods.contains(aspect_m.signature))
                   if (this_is_abstract or not aspect_m.attributes.is_abstract)
-                    incorporate_global( aspect_m )
+                    incorporate_global( aspect_m, &is_augment )
                   endIf
                 endIf
               endIf
-            endForEach
-          endIf
+            endIf
+          endForEach
         endForEach
 
         # Create an error if no implementation of an abstract aspect method has been supplied.
