@@ -5413,6 +5413,38 @@ class ThisTypeAccess : Cmd
 
 endClass
 
+class MetaLibraryName : Cmd
+  PROPERTIES
+    operand : Cmd
+
+  METHODS
+    method init( t, operand )
+
+    method init( existing:MetaLibraryName )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "MetaLibraryName($)" (%operand)
+
+endClass
+
+class MetaTypeName : Cmd
+  PROPERTIES
+    operand : Cmd
+
+  METHODS
+    method init( t, operand )
+
+    method init( existing:MetaTypeName )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "MetaTypeName($)" (%operand)
+
+endClass
+
 class AttributeAugment : Cmd
   METHODS
     method description->String

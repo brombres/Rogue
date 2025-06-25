@@ -142,6 +142,7 @@ META_IS_PRIMITIVE     $isPrimitive    [meta]
 META_IS_REFERENCE     $isReference    [meta]
 META_JOIN_IDS         $id             [meta]
 META_JOIN_STRINGS     $string         [meta]
+META_LIBRARY_NAME     $libraryName    [meta]
 META_LOCAL_DEFINE     $localDefine    [meta]
 META_LOCAL_MACRO      $localMacro     [meta]
 META_LOWERCASE        $lowercase      [meta]
@@ -154,6 +155,7 @@ META_TARGET           $target         [meta]
 META_THIS_TYPE        $thisType       [meta]
 META_THIS_LIBRARY     $thisLibrary    [meta]
 META_THIS_MODULE      $thisModule     [meta]
+META_TYPE_NAME        $typeName       [meta]
 META_UPPERCASE        $uppercase      [meta]
 
 SYMBOL_AMPERSAND             &
@@ -3406,6 +3408,8 @@ parser
   on "$isEnum"      "<<" type ">>" -> IsEnum(operand)
   on "$isPrimitive" "<<" type ">>" -> IsPrimitive(operand)
   on "$isReference" "<<" type ">>" -> IsReference(operand)
+  on "$libraryName" "<<" type ">>" -> MetaLibraryName(operand)
+  on "$typeName"    "<<" type ">>" -> MetaTypeName(operand)
 
   on "$fileBytes"
     mustConsume '('
