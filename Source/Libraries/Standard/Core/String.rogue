@@ -180,6 +180,10 @@ class String : Poolable PrintWriter
     method cloned->String
       return String( this )
 
+    method immutable_clone->String
+      if (is_immutable) return this
+      else              return cloned.[ is_immutable=true ]
+
     method after( index:Int )->String
       # Returns the substring of this string that occurs after
       # the given index.
