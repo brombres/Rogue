@@ -241,7 +241,7 @@ class List<<$DataType>> : Poolable ListType
     method from( i1:Int, i2:Int )->ListIterator<<$DataType>>
       return ListIterator<<$DataType>>( this, i1, i2+1 )
 
-    method get( index:Int )->$DataType
+    method get( index:Int )->$DataType [preferred]
       if ($DataType isType Logical)
         return native("$this->as_logicals[$index]")->$DataType
       else
