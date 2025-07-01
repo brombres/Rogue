@@ -645,9 +645,15 @@ parser
 
       savePosition  # collect tokens
       if (nextIs(':')) base_types
-      must_consume_eols
-      class_sections
-      mustConsume "endAugment"
+
+      if (consume(';'))
+        must_consume_eols
+      else
+        must_consume_eols
+        class_sections
+        mustConsume "endAugment"
+      endIf
+
       call on_parsed_augment
       discardPosition
 
