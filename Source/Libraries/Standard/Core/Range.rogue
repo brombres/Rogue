@@ -1,3 +1,66 @@
+class Range<<$DataType>>(
+    type:GlobalID,
+    first:$DataType, limit:$DataType, step_size:$DataType
+  ) [compound]
+  DEFINITIONS
+    TYPE_UP_TO                = <RangeUpTo>
+    TYPE_UP_TO_LESS_THAN      = <RangeUpToLessThan>
+    TYPE_DOWN_TO              = <RangeDownTo>
+    TYPE_DOWN_TO_GREATER_THAN = <RangeDownToGreaterThan>
+
+  METHODS
+    method count->Int
+      local is_integer = ((first+0.5)->$DataType == first)
+
+      if (step_size.abs == 1)
+        if (type == TYPE_UP_TO or type == TYPE_DOWN_TO)
+          if (is_integer) return (limit - first) + 1
+          else            return (limit - first)
+        else
+          return limit->Real.floor - first
+        endIf
+      else
+        if (is_integer)
+          # Integer type
+          if (step_size > 0)
+            return ((limit+(step_size-1)) - first) / step_size
+          else
+            return ((limit+(step_size+1)) - first) / step_size
+          endIf
+        else
+          # Real type
+          return ((limit - first) / step_size)->Real.floor
+        endIf
+      endIf
+
+    method last->$DataType
+      local is_integer = ((first+0.5)->$DataType == first)
+
+      if (step_size.abs == 1)
+        if (type == TYPE_UP_TO or type == TYPE_DOWN_TO)
+          if (is_integer) return limit
+          else            return limit->Real.floor
+        else
+          return limit - step_size
+        endIf
+      else
+        if (is_integer)
+          # Integer type
+          if (step_size > 0)
+            local n = ((limit+(step_size-1)) - first) / step_size
+            return first + step_size * n
+          else
+            local n = ((limit+(step_size+1)) - first) / step_size
+            return first + step_size * n
+          endIf
+        else
+          # Real type
+          local n = ((limit - first) / step_size)->Real.floor
+          return first + step_size * n
+        endIf
+      endIf
+endClass
+
 class RangeUpTo<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
   METHODS
     method iterator->RangeUpToIterator<<$DataType>>
@@ -5,6 +68,9 @@ class RangeUpTo<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType )
 
     method to->$DataType[]
       return iterator.to_list
+
+    method to->Range<<$DataType>>
+      return Range<<$DataType>>( <RangeUpTo>, start, limit, step )
 
     method to_list->$DataType[]
       return iterator.to_list
@@ -39,6 +105,9 @@ class RangeUpToLessThan<<$DataType>>( start:$DataType, limit:$DataType, step:$Da
     method to->$DataType[]
       return iterator.to_list
 
+    method to->Range<<$DataType>>
+      return Range<<$DataType>>( <RangeUpToLessThan>, start, limit, step )
+
     method to_list->$DataType[]
       return iterator.to_list
 endClass
@@ -72,6 +141,9 @@ class RangeDownTo<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType
     method to->$DataType[]
       return iterator.to_list
 
+    method to->Range<<$DataType>>
+      return Range<<$DataType>>( <RangeDownTo>, start, limit, step )
+
     method to_list->$DataType[]
       return iterator.to_list
 endClass
@@ -104,6 +176,9 @@ class RangeDownToGreaterThan<<$DataType>>( start:$DataType, limit:$DataType, ste
 
     method to->$DataType[]
       return iterator.to_list
+
+    method to->Range<<$DataType>>
+      return Range<<$DataType>>( <RangeDownToGreaterThan>, start, limit, step )
 
     method to_list->$DataType[]
       return iterator.to_list
