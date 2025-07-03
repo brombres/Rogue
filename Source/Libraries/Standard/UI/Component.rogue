@@ -215,14 +215,23 @@ class Component : Entity
     method color->Graphics::Color?
       return parent->(as Component)?.color
 
-    method contains( at_position:XY )->Logical
-      return find( at_position )?
-
     method contains( e:PointerEvent )->Logical
       return contains( e.position )
 
+    method contains( at_position:XY )->Logical
+      return display_bounds.contains( at_position )
+
     method content_bounds->Box
       return Box( content_position, content_size )
+
+    method content_contains( e:PointerEvent )->Logical
+      return content_contains( e.position )
+
+    method content_contains( at_position:XY )->Logical
+      forEach (child as Component in children)
+        if (child.contains(at_position)) return true
+      endForEach
+      return false
 
     method content_opacity->Real
       if local parent_component = parent->(as Component)
@@ -295,13 +304,20 @@ class Component : Entity
     method find( at_position:XY )->Entity
       if (not display_bounds.contains(at_position)) return null
 
+      if local content = find_content( at_position )
+        return content
+      endIf
+
+      return this
+
+    method find_content( at_position:XY )->Entity
       forEach (child as Component in children)
         if local result = child.find( at_position )
           return result
         endIf
       endForEach
 
-      return this
+      return null
 
     method find_h_split( max_width:Real )->Real?
       return null
