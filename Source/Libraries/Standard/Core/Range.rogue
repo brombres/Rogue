@@ -63,6 +63,26 @@ endClass
 
 class RangeUpTo<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
   METHODS
+    method count->Int
+      local is_integer = ((start+0.5)->$DataType == start)
+
+      if (step.abs == 1)
+        if (is_integer) return (limit - start) + 1
+        else            return (limit - start)
+      else
+        if (is_integer)
+          # Integer type
+          if (step > 0)
+            return ((limit+(step-1)) - start) / step
+          else
+            return ((limit+(step+1)) - start) / step
+          endIf
+        else
+          # Real type
+          return ((limit - start) / step)->Real.floor
+        endIf
+      endIf
+
     method iterator->RangeUpToIterator<<$DataType>>
       return RangeUpToIterator<<$DataType>>( start, limit, step )
 
@@ -99,6 +119,25 @@ endClass
 
 class RangeUpToLessThan<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
   METHODS
+    method count->Int
+      local is_integer = ((start+0.5)->$DataType == start)
+
+      if (step.abs == 1)
+        return limit->Real.floor - start
+      else
+        if (is_integer)
+          # Integer type
+          if (step > 0)
+            return ((limit+(step-1)) - start) / step
+          else
+            return ((limit+(step+1)) - start) / step
+          endIf
+        else
+          # Real type
+          return ((limit - start) / step)->Real.floor
+        endIf
+      endIf
+
     method iterator->RangeUpToLessThanIterator<<$DataType>>
       return RangeUpToLessThanIterator<<$DataType>>( start, limit, step )
 
@@ -135,6 +174,26 @@ endClass
 
 class RangeDownTo<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
   METHODS
+    method count->Int
+      local is_integer = ((start+0.5)->$DataType == start)
+
+      if (step.abs == 1)
+        if (is_integer) return (limit - start) + 1
+        else            return (limit - start)
+      else
+        if (is_integer)
+          # Integer type
+          if (step > 0)
+            return ((limit+(step-1)) - start) / step
+          else
+            return ((limit+(step+1)) - start) / step
+          endIf
+        else
+          # Real type
+          return ((limit - start) / step)->Real.floor
+        endIf
+      endIf
+
     method iterator->RangeDownToIterator<<$DataType>>
       return RangeDownToIterator<<$DataType>>( start, limit, step )
 
@@ -171,6 +230,25 @@ endClass
 
 class RangeDownToGreaterThan<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
   METHODS
+    method count->Int
+      local is_integer = ((start+0.5)->$DataType == start)
+
+      if (step.abs == 1)
+        return limit->Real.floor - start
+      else
+        if (is_integer)
+          # Integer type
+          if (step > 0)
+            return ((limit+(step-1)) - start) / step
+          else
+            return ((limit+(step+1)) - start) / step
+          endIf
+        else
+          # Real type
+          return ((limit - start) / step)->Real.floor
+        endIf
+      endIf
+
     method iterator->RangeDownToGreaterThanIterator<<$DataType>>
       return RangeDownToGreaterThanIterator<<$DataType>>( start, limit, step )
 
