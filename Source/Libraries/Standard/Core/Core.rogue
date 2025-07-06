@@ -3,7 +3,6 @@ $include Core/Dim
 $include Core/Exception
 $include Core/Global
 $include Core/GlobalID
-$include Core/MacOS
 $include Core/Object
 $include Core/ObjectPool
 $include Core/Optional
@@ -22,5 +21,4 @@ $include Core/TypeID
 $include Core/Variant
 $include Core/VariantEntry
 $include Core/WeakReference
-$include Core/Windows
 $include Core/WorkList

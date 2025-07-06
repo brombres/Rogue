@@ -4,6 +4,7 @@ $include Standard/Collection
 $include Standard/Console
 $include Standard/IO
 $include Standard/Math
+$include Standard/OS
 
 # RogueC auto-includes Variant and JSON if they are referenced during tokenization.
 

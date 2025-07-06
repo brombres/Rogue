@@ -113,6 +113,13 @@ class System [essential]
                  return 0
       native @|#endif
 
+    method is_apple->Logical
+      native @|#if defined(%NS%ROGUE_PLATFORM_IOS) || defined(%NS%ROGUE_PLATFORM_MACOS)
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
+
     method is_cygwin->Logical
       native @|#if defined(%NS%ROGUE_PLATFORM_CYGWIN)
                  return 1

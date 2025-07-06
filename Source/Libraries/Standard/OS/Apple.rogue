@@ -1,0 +1,66 @@
+nativeType<<"NSSearchPathDirectory">> RogueNSSearchPathDirectory
+
+class Apple [singleton]
+  METHODS
+    method application_data_folder->File
+      return find_system_folder(
+        native("(%Ns%RogueNSSearchPathDirectory){NSLibraryDirectory}")->RogueNSSearchPathDirectory
+      )
+
+    method cache_folder->File
+      return find_system_folder(
+        native("(%Ns%RogueNSSearchPathDirectory){NSCachesDirectory}")->RogueNSSearchPathDirectory
+      )
+
+    method find_system_folder( type:RogueNSSearchPathDirectory )->File
+      local filepath : String
+
+      if (System.is_apple)
+        native
+        @|NSString *path = Rogue_find_ns_folder( $type.value );
+         |$filepath = Rogue_ns_string_to_string( path );
+      endIf
+
+      if (filepath) return File( filepath )
+      else          return File( "~" )
+
+    method user_data_folder->File
+      return find_system_folder(
+        native("(%Ns%RogueNSSearchPathDirectory){NSDocumentDirectory}")->RogueNSSearchPathDirectory
+      )
+
+
+  NATIVE
+    nativeHeader
+    @|#if defined(ROGUE_PLATFORM_APPLE)
+     |  #import <Cocoa/Cocoa.h>
+     |  NSString*    Rogue_string_to_ns_string( RogueString* st );
+     |  RogueString* Rogue_ns_string_to_string( NSString* st );
+     |  NSString*    Rogue_find_ns_folder( NSSearchPathDirectory type );
+     |#endif
+
+    nativeCode
+    @|#if defined(ROGUE_PLATFORM_APPLE)
+     |  NSString* Rogue_string_to_ns_string( RogueString* st )
+     |  {
+     |    if ( !st ) return nil;
+     |    return [NSString stringWithUTF8String:(const char*)st->data->as_utf8];
+     |  }
+     |
+     |  RogueString* Rogue_ns_string_to_string( NSString* st )
+     |  {
+     |    if ( !st ) return 0;
+     |
+     |    return RogueString_create( [st UTF8String] );
+     |  }
+     |
+     |  NSString* Rogue_find_ns_folder( NSSearchPathDirectory type )
+     |  {
+     |    return NSSearchPathForDirectoriesInDomains(
+     |      type,
+     |      NSUserDomainMask,
+     |      YES
+     |    ).firstObject;
+     |  }
+     |#endif
+endClass
