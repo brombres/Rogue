@@ -2325,18 +2325,40 @@ class Resolver : Poolable, Visitor
         type_context.collect_methods( "init", Candidates.list )
         Candidates.organize
 
-        if (args.count == 0 and Candidates.count == 0)
-          # No constructors available and no constructor required.
-          if (type_context.is_compound)
-            assert args instanceOf Args
-            return CreateCompound( t, type_context, args->(as Args) )
-          else
-            return CreateObject( t, type_context, null, args )
+        if (Candidates.count == 0)
+          # No constructors available
+          if (args.count == 0)
+            # No constructor required.
+            if (type_context.is_compound)
+              assert args instanceOf Args
+              return CreateCompound( t, type_context, args->(as Args) )
+            else
+              return CreateObject( t, type_context, null, args )
+            endIf
+          elseIf (type_context.attributes.is_native_type)
+            # String arg to a Native Type constructor gets transformed into:
+            #   NativeType('value')
+            #   ->
+            #   native("(%Ns%NativeType){ value }')->NativeType
+            if (args.count == 1 and args.first instanceOf LiteralString)
+              return visit(
+                NativeExpression(
+                  t,
+                  "(%Ns%$){ $ }"(type_context.name,args.first->(as LiteralString).value)
+                  type_context
+                )
+              )
+            else
+              throw t.error(
+              "A native type constructor must have either no arguments or a single literal string argument containing native code."
+              )
+            endIf
           endIf
         endIf
 
         local missing_names = String[]
-        mesg = "No exact match for ambiguous object constructor $("(type_context)
+        local storage_type = which{ type_context.is_compound:"compound" || "object" }
+        mesg = "No exact match for ambiguous $ constructor $("(storage_type,type_context)
         forEach (arg at i in args)
           if (i > 0) mesg += ','
           if local named_arg = arg->(as NamedArg)
