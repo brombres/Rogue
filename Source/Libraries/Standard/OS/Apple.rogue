@@ -3,14 +3,10 @@ nativeType<<"NSSearchPathDirectory">> RogueNSSearchPathDirectory
 class Apple [singleton]
   METHODS
     method application_data_folder->File
-      return find_system_folder(
-        native("(%Ns%RogueNSSearchPathDirectory){NSLibraryDirectory}")->RogueNSSearchPathDirectory
-      )
+      return find_system_folder( RogueNSSearchPathDirectory("NSLibraryDirectory") )
 
     method cache_folder->File
-      return find_system_folder(
-        native("(%Ns%RogueNSSearchPathDirectory){NSCachesDirectory}")->RogueNSSearchPathDirectory
-      )
+      return find_system_folder( RogueNSSearchPathDirectory("NSCachesDirectory") )
 
     method find_system_folder( type:RogueNSSearchPathDirectory )->File
       local filepath : String
@@ -25,10 +21,7 @@ class Apple [singleton]
       else          return File( "~" )
 
     method user_data_folder->File
-      return find_system_folder(
-        native("(%Ns%RogueNSSearchPathDirectory){NSDocumentDirectory}")->RogueNSSearchPathDirectory
-      )
-
+      return find_system_folder( RogueNSSearchPathDirectory("NSDocumentDirectory") )
 
   NATIVE
     nativeHeader
