@@ -1,9 +1,9 @@
 $include Control
 
-class State<<$ExtendedType>> : State<<$ExtendedType,change_state,exit_state>>
+class ActiveState<<$ExtendedType>> : ActiveState<<$ExtendedType,change_state,exit_state>>
 endClass
 
-class State<<$ExtendedType,$change_state,$exit_state>>
+class ActiveState<<$ExtendedType,$change_state,$exit_state>>
   GLOBAL METHODS
     method operator+( a:$ExtendedType, b:$ExtendedType )->$ExtendedType
       if (not a) return b

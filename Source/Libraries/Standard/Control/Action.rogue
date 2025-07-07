@@ -1,4 +1,4 @@
-$include Control/State
+$include Control/ActiveState
 
 class Action : ProgressState<<Action,replace_action,end_action>>
   GLOBAL PROPERTIES
