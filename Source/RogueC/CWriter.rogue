@@ -217,6 +217,7 @@ class CWriter : BufferedPrintWriter
         println ...
           @|
            |typedef struct %Ns%RogueRuntimeType %Ns%RogueRuntimeType;
+           |typedef void (*%Ns%RogueFn)();
            |typedef void (*%Ns%RogueFn_Object)(void*);
            |typedef void (*%Ns%RogueFn_Object_Object_Logical)(void*,void*,%Ns%RogueLogical);
            |

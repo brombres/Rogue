@@ -1281,7 +1281,8 @@ parser
     call class_attribute_essential
     produce AttributeEssential
   endIf
-  syntaxError "Illegal enum attribute. Expected any of [bitflags essential]."
+  on @"singleton"   -> AttributeSingleton
+  syntaxError "Illegal enum attribute. Expected any of [bitflags essential singleton]."
 
 - enum
   constructor_properties

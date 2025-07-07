@@ -974,9 +974,14 @@ class CGenerator : Visitor
       writer.print( cmd.info.c_name )
 
     method on_visit_node( cmd:GetSingleton )
-      writer.print "%NS%ROGUE_SINGLETON("
-      writer.print cmd.type.c_name
-      writer.print ")"
+      if (cmd.type.is_reference)
+        writer.print "%NS%ROGUE_SINGLETON("
+        writer.print cmd.type.c_name
+        writer.print ")"
+      else
+        writer.print cmd.type.c_name
+        writer.print "_singleton"
+      endIf
 
     method on_visit_node( cmd:GetThisProperty )
       writer.print "THISOBJ"
@@ -1412,11 +1417,17 @@ class CGenerator : Visitor
       print_with_cast( cmd.new_value, cmd.info.type )
 
     method on_visit_node( cmd:SetSingleton )
-      writer.print "%NS%ROGUE_SET_SINGLETON("
-      writer.print cmd.of_type.c_name
-      writer.print ','
-      visit( cmd.new_value )
-      writer.print ")"
+      if (cmd.of_type.is_reference)
+        writer.print "%NS%ROGUE_SET_SINGLETON("
+        writer.print cmd.of_type.c_name
+        writer.print ','
+        visit( cmd.new_value )
+        writer.print ")"
+      else
+        writer.print cmd.of_type.c_name
+        writer.print "_singleton = "
+        visit( cmd.new_value )
+      endIf
 
     method on_visit_node( cmd:SetThisProperty )
       writer.print "THISOBJ"
@@ -1759,7 +1770,8 @@ augment
         writer.println
       endIf
 
-      if ((this.is_reference or this.contains_reference or this is Program.type_Object) and not is_aspect)
+      #if ((this.is_reference or this.contains_reference or this is Program.type_Object) and not is_aspect)
+      if (is_object)
         writer.[ print("void "), print(this.c_name), println("_gc_trace( void* THISOBJ );") ]
         writer.println
       endIf
@@ -2384,7 +2396,7 @@ augment
           c_writer.print   ", "
           c_writer.print   "0, "   # type_info
 
-          if (type.attributes.is_singleton)
+          if (type.attributes.is_singleton and type.is_reference)
             c_writer.print "(void*)&"
             c_writer.print type.c_name
             c_writer.print "_singleton,"
@@ -2713,9 +2725,18 @@ augment
       forEach (m in Program.libraries)
         forEach (type in m.types)
           if (type.attributes.is_singleton)
-            c_writer.print   "if ((ref = (%Ns%RogueObject*)"
-            c_writer.print   type.c_name
-            c_writer.println "_singleton) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
+            if (type.is_reference)
+              c_writer.print   "if ((ref = (%Ns%RogueObject*)"
+              c_writer.print   type.c_name
+              c_writer.println "_singleton) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
+            elseIf (type.contains_reference)
+              use path = WorkList<<String>>
+                path.add( "if ((ref=(%Ns%RogueObject*)(" )
+                path.add( type.c_name )
+                path.add( "_singleton" )
+                c_writer.print_gc_checks( path, type )
+              endUse
+            endIf
           endIf
         endForEach
       endForEach
@@ -2871,10 +2892,12 @@ augment
       forEach (lib in libraries)
         forEach (type in lib.types)
           if (type.attributes.is_singleton and type.attributes.is_essential)
-            any_essential_singletons = true
-            c_writer.print "%NS%ROGUE_SINGLETON("
-            c_writer.print type.c_name
-            c_writer.println ");"
+            if (type.is_reference)
+              any_essential_singletons = true
+              c_writer.print "%NS%ROGUE_SINGLETON("
+              c_writer.print type.c_name
+              c_writer.println ");"
+            endIf
           endIf
         endForEach
       endForEach
@@ -2982,7 +3005,8 @@ augment
       endForEach
 
     method Type.generate_c_code( writer:CWriter )
-      if ((is_reference or contains_reference or this is Program.type_Object) and not is_aspect)
+      #if ((is_reference or contains_reference or this is Program.type_Object) and not is_aspect)
+      if (is_object)
         writer.[ print("void "), print(c_name), println("_gc_trace( void* THISOBJ )") ]
         writer.println '{'
         writer.indent += 2
