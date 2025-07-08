@@ -73,9 +73,11 @@ $macro SingletonState<<$Type>>
       method get( name:String )->$Type
         return states[name]
 
-      method on_singleton_change( old_value:$Type, new_value:$Type )
-        if (old_value) old_value.on_finish
-        if (new_value) new_value.on_start
+      method on_singleton_change( old_value:$Type, new_value:$Type, &before )
+        if (not before)
+          if (old_value) old_value.on_finish
+          if (new_value) new_value.on_start
+        endIf
 
     METHODS
       method init
