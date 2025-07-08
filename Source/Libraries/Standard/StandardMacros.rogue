@@ -31,9 +31,6 @@ $define Value Variant
 
 # SingletonState example usage
 #   class SingletonState<<GamePhase>>
-#     METHODS
-#       method on_start
-#       method on_finish
 #   endClass
 #
 #   class SingletonState<<GamePhase,Alpha>>
@@ -60,15 +57,33 @@ $define Value Variant
 #   GamePhase = Alpha
 $macro SingletonState<<$Type>>
   $Type [singleton]
+    GLOBAL PROPERTIES
+      states = [String:GamePhase]
+
     GLOBAL METHODS
+      method create( name:String )->$Type
+        if local existing = states[name]
+          return existing
+        else
+          local result = $Type()
+          states[name] = result
+          return result
+        endIf
+
       method on_singleton_change( old_value:$Type, new_value:$Type )
         if (old_value) old_value.on_finish
         if (new_value) new_value.on_start
 
     METHODS
-      method on_start  [abstract]
+      method init
+        noAction
 
-      method on_finish [abstract]
+      method init_object
+        states[type_name] = this
+
+      method on_start
+
+      method on_finish
 $endMacro
 
 $macro SingletonState<<$Type,$StateName>>
