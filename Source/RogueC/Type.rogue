@@ -277,7 +277,10 @@ class Type : Cmd
     method add( m:GlobalMethod )
       local existing = global_methods[m.signature]
       if (existing and existing.type_context is m.type_context)
-        throw m.t.error( "Global method $ is already defined."(m.dev_signature) )
+        if (not existing.attributes.is_abstract)
+          if (m.attributes.is_abstract) return
+          throw m.t.error( "Global method $ is already defined."(m.dev_signature) )
+        endIf
       endIf
       m.attributes.is_global = true
       global_methods[ m.signature ] = m
@@ -287,7 +290,10 @@ class Type : Cmd
       local existing = methods[m.signature]
       if (existing)
         if (existing.type_context is m.type_context)
-          throw m.t.error( "Method $ is already defined."(m.dev_signature) )
+          if (not existing.attributes.is_abstract)
+            if (m.attributes.is_abstract) return
+            throw m.t.error( "Method $ is already defined."(m.dev_signature) )
+          endIf
         else
           m.overridden_method = existing
           existing.attributes.is_overridden = true
