@@ -1,0 +1,72 @@
+# Use or include this file early so that the macros are in place when
+# the following files are parsed, e.g.:
+#
+#   uses Control/SingletonState
+#     OR
+#   $include Control/SingletonState
+
+# SingletonState example usage
+#   class SingletonState<<GamePhase>>
+#   endClass
+#
+#   class SingletonState<<GamePhase,Alpha>>
+#     METHODS
+#       method on_start
+#         trace
+#
+#       method on_finish
+#         trace
+#   endClass
+#
+#   class SingletonState<<GamePhase,Bravo>>
+#     METHODS
+#       method on_start
+#         trace
+#
+#       method on_finish
+#         trace
+#   endClass
+#
+#   trace GamePhase.states.keys
+#   GamePhase = Alpha
+#   GamePhase = Bravo
+#   GamePhase = Alpha
+$macro SingletonState<<$Type>>
+  $Type [singleton]
+    GLOBAL PROPERTIES
+      states = [String:GamePhase]
+
+    GLOBAL METHODS
+      method create( name:String )->$Type
+        if local existing = states[name]
+          return existing
+        else
+          local result = $Type()
+          states[name] = result
+          return result
+        endIf
+
+      method get( name:String )->$Type
+        return states[name]
+
+      method on_singleton_change( old_value:$Type, new_value:$Type, &before )
+        if (not before)
+          if (old_value) old_value.on_finish
+          if (new_value) new_value.on_start
+        endIf
+
+    METHODS
+      method init
+        noAction
+
+      method init_object
+        states[type_name] = this
+
+      method on_start
+
+      method on_finish
+$endMacro
+
+$macro SingletonState<<$Type,$StateName>>
+  $StateName : $Type [essential singleton]
+$endMacro
