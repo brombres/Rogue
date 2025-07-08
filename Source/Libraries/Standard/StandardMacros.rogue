@@ -28,3 +28,49 @@ $macro NATIVE_POINTER_TYPE<<$Name,$NativeType>>
 $endMacro
 
 $define Value Variant
+
+# SingletonState example usage
+#   class SingletonState<<GamePhase>>
+#     METHODS
+#       method on_start
+#       method on_finish
+#   endClass
+#
+#   class SingletonState<<GamePhase,Alpha>>
+#     METHODS
+#       method on_start
+#         trace
+#
+#       method on_finish
+#         trace
+#   endClass
+#
+#   class SingletonState<<GamePhase,Bravo>>
+#     METHODS
+#       method on_start
+#         trace
+#
+#       method on_finish
+#         trace
+#   endClass
+#
+#   trace GamePhase.states.keys
+#   GamePhase = Alpha
+#   GamePhase = Bravo
+#   GamePhase = Alpha
+$macro SingletonState<<$Type>>
+  $Type [singleton]
+    GLOBAL METHODS
+      method on_singleton_change( old_value:$Type, new_value:$Type )
+        if (old_value) old_value.on_finish
+        if (new_value) new_value.on_start
+
+    METHODS
+      method on_start  [abstract]
+
+      method on_finish [abstract]
+$endMacro
+
+$macro SingletonState<<$Type,$StateName>>
+  $StateName : $Type [essential singleton]
+$endMacro
