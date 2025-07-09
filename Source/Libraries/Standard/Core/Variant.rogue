@@ -1223,6 +1223,14 @@ class Variant [compound]
     method remove_last->Variant
       return remove_at( count - 1 )
 
+    method reserve( additional_elements:Int )
+      which (type)
+        case TYPE_LIST
+          object->(as Variant[]).reserve( additional_elements )
+        case TYPE_STRING
+          object->(as String).reserve( additional_elements )
+      endWhich
+
     method resize( n:Int, default_value=0:Variant )
       # Resizes this list to contain 'n' elements. Any new elements are set to 'default_value.cloned'.
       if (not this.is_list) return
