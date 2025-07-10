@@ -1,0 +1,47 @@
+library Graphics
+
+class RealColor( red:Real, green:Real, blue:Real, alpha=1.0:Real  ) [compound]
+  GLOBAL METHODS
+    method create( color:Color )->RealColor
+      return RealColor( color.red, color.green, color.blue, color.alpha )
+
+  METHODS
+    method operator+( value:Real )->RealColor
+      return RealColor( red+value, green+value, blue+value, alpha )
+
+    method operator+( other:RealColor )->RealColor
+      return RealColor( red+other.red, green+other.green, blue+other.blue, alpha+other.alpha )
+
+    method operator-( value:Real )->RealColor
+      return RealColor( red-value, green-value, blue-value, alpha )
+
+    method operator-( other:RealColor )->RealColor
+      return RealColor( red-other.red, green-other.green, blue-other.blue, alpha-other.alpha )
+
+    method operator*( value:Real )->RealColor
+      return RealColor( red*value, green*value, blue*value, alpha )
+
+    method operator*( other:RealColor )->RealColor
+      return RealColor( red*other.red, green*other.green, blue*other.blue, alpha*other.alpha )
+
+    method operator/( value:Real )->RealColor
+      return RealColor( red/value, green/value, blue/value, alpha )
+
+    method operator/( other:RealColor )->RealColor
+      return RealColor( red/other.red, green/other.green, blue/other.blue, alpha/other.alpha )
+
+    method to->Color
+      return Color(
+        red.clamped( 0, 1 ),
+        green.clamped( 0, 1 ),
+        blue.clamped( 0, 1 ),
+        alpha.clamped( 0, 1 )
+      )
+
+    method to->String
+      local r = which{ red==0:"0" || red==1:"1" || red.format(".2") }
+      local g = which{ green==0:"0" || green==1:"1" || green.format(".2") }
+      local b = which{ blue==0:"0" || blue==1:"1" || blue.format(".2") }
+      local a = which{ alpha==0:"0" || alpha==1:"1" || alpha.format(".2") }
+      return "($,$,$,@$)"(r,g,b,a)
+endClass

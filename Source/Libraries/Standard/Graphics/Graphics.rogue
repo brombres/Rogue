@@ -34,3 +34,4 @@ $include Graphics/Color
 $include Graphics/ColorGradient
 $include Graphics/ColorLerp
 $include Graphics/HSV
+$include Graphics/RealColor
