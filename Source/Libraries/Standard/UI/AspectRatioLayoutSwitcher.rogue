@@ -17,6 +17,7 @@ class AspectRatioLayoutSwitcher : Component
       endForEach
 
       if (count == 0 or first_child is not best.component)
+        (forEach as Component in children).deactivate
         clear
         add( best.component )
         best.component.begin_layout

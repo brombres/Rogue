@@ -19,8 +19,6 @@ class Component : Entity
     text_style        : TextStyle
     size_reference    : Component
 
-    on_begin_layout_callback : Function(Component)
-
   METHODS # Overrides
     method init
       noAction
@@ -48,10 +46,6 @@ class Component : Entity
 
     method on_begin_layout
       # Called at the beginning of layout
-      noAction
-
-    method on_begin_layout( on_begin_layout_callback )
-      # Sets a callback that is called after this component's on_begin_layout()
       noAction
 
     method on_layout_size( layout_size:XY )
@@ -181,9 +175,13 @@ class Component : Entity
 
     method begin_layout( &only_content )
       if (not only_content)
+        if (not attributes.active)
+          attributes.active = true
+          on_activate
+        endIf
+
         on_begin_layout_internal
         on_begin_layout
-        if (on_begin_layout_callback) on_begin_layout_callback( this )
       endIf
 
       begin_content_layout

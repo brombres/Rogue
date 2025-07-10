@@ -50,14 +50,13 @@ class UI : Component [singleton]
     method init_object
       UI = this
 
-    method container( content:Component, on_begin_layout=null:Function(Component), &h, &v )->Component [preferred]
-      local container = spacer( &=h, &=v, &=on_begin_layout )
+    method container( content:Component, &h, &v )->Component [preferred]
+      local container = spacer( &=h, &=v )
       container.add( content )
       return container
 
-    method container( content:Component, w=null:Real?, h=null:Real?, on_begin_layout=null:Function(Component) )->Component
+    method container( content:Component, w=null:Real?, h=null:Real? )->Component
       local container = spacer( &=w, &=h )
-      if (on_begin_layout) container.on_begin_layout( on_begin_layout )
       container.add( content )
       return container
 
@@ -186,19 +185,20 @@ class UI : Component [singleton]
     method set_clip( @clip )
       noAction
 
+    method set_needs_layout( @needs_layout )
+
     method spacer( fixed_size:XY )->Component
       return Component( fixed_size )
 
     method spacer( size_parameter_id:VariantEntryID )->Component
       return Component( size_parameter_id )
 
-    method spacer( on_begin_layout=null:Function(Component), &h, &v )->Component [preferred]
+    method spacer( &h, &v )->Component [preferred]
       local component = Component()
       if (h xor v)
         if (h) component.fixed_height = 0  # horizontal spacer has fixed height 0
         else   component.fixed_width  = 0  # vice-versa
       endIf
-      if (on_begin_layout) component.on_begin_layout( on_begin_layout )
       return component
 
     method spacer( w=null:Real?, h=null:Real? )->Component

@@ -2,6 +2,7 @@ library Entity
 
 enum Attributes [bitflags]
   CATEGORIES
+    ACTIVE
     INVISIBLE
     INTANGIBLE
     INPUT_DISABLED
