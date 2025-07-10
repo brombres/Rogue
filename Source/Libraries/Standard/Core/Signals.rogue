@@ -1,14 +1,14 @@
 augment Rogue::GlobalID
   # Use the ?=> operator to create weakly referenced callbacks.
   METHODS
-    method disconnect_signal
-      Signals.disconnect( SignalIDLookup[this] )
-
-    method disconnect_signal( group:SignalID )
-      Signals.disconnect( SignalIDLookup[this], group )
-
     method disconnect_signal( connection:SignalConnection )
       Signals.disconnect( connection )
+
+    method disconnect_signals
+      Signals.disconnect( SignalIDLookup[this] )
+
+    method disconnect_signals( group:SignalID )
+      Signals.disconnect( SignalIDLookup[this], group )
 
     method disconnect_signal_group
       Signals.disconnect_group( SignalIDLookup[this] )
@@ -61,14 +61,14 @@ class Signals<<$EnumType>> [aspect]
       endUse
 
   METHODS
-    method disconnect_signal
-      Signals.disconnect( Signals<<$EnumType>>.signal_id_lookup[this] )
-
-    method disconnect_signal( group:SignalID )
-      Signals.disconnect( Signals<<$EnumType>>.signal_id_lookup[this], group )
-
     method disconnect_signal( connection:SignalConnection )
       Signals.disconnect( connection )
+
+    method disconnect_signals
+      Signals.disconnect( Signals<<$EnumType>>.signal_id_lookup[this] )
+
+    method disconnect_signals( group:SignalID )
+      Signals.disconnect( Signals<<$EnumType>>.signal_id_lookup[this], group )
 
     method on_signal( callback:Function(), &once )->SignalConnection
       return Signals.on( Signals<<$EnumType>>.signal_id_lookup[this], callback, null, &=once )
