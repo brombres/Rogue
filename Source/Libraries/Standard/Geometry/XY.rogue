@@ -257,6 +257,9 @@ class XY( x:Real, y:Real ) [compound]
     method rotated( angle:Radians )->XY
       return XY( magnitude, radians + angle )
 
+    method round->XY
+      return XY( x.round, y.round )
+
     method scaled_to_fill( other:XY )->XY
       # Linearly scales this XY size so that the smallest dimension matches the
       # smallest dimension of the specified other size.

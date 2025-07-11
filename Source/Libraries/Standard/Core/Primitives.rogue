@@ -249,6 +249,9 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
       if (clamp) return result.clamped( 0, 1 )
       else       return result
 
+    method round->Real64
+      return native("round($this)")->Real64
+
     method sin->Real64
       return native("sin($this)")->Real64
 
@@ -375,6 +378,9 @@ class Real : CommonPrimitiveMethods<<Real>> [primitive]
       local result = (this-a) / (b-a)
       if (clamp) return result.clamped( 0, 1 )
       else       return result
+
+    method round->Real
+      return this->REAL_TYPE.round
 
     method sin->Real
       return this->REAL_TYPE.sin
@@ -508,6 +514,9 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
       local result = (this-a) / (b-a)
       if (clamp) return result.clamped( 0, 1 )
       else       return result
+
+    method round->Real32
+      return native("roundf($this)")->Real32
 
     method sin->Real32
       return native("sinf($this)")->Real32

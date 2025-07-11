@@ -281,6 +281,9 @@ class Box( position:XY, size:XY ) [essential compound]
     method rotated( angle:Radians )->Quad
       return this->Quad.rotated( angle )
 
+    method round->Box
+      return Box( position.round, size.round )
+
     method scaled_to_fill( other:Box )->Box
       return Box( position, size * (other.size/this.size).max )
 
