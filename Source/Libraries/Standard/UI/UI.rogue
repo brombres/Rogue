@@ -209,15 +209,25 @@ class UI : Component [singleton]
 
     method update( bounds:Box )
       temporarily UI = this
-        # ensure we've got a layout before the first update()
+        # Ensure we've got a layout before the first update().
+        # This is a necessary step on first launch and whenever the
+        # display size is adjusted between frames.
         update_layout( bounds )
 
+        # Happens every frame
         update
 
-        # each update() may change things; call update_layout() a second time.
-        # O(1) if update() did not set needs_layout flag.
-        update_layout( bounds )
+        if (needs_layout)
+          # update() has modified the UI, so we need another update_layout()
+          # followed by another update() so make sure those layout changes
+          # are reflected in the current frame.
+          adjust_layout( bounds )
+        endIf
       endTemporarily
+
+    method adjust_layout( bounds:Box )
+      update_layout( bounds )
+      update
 
     method update_layout( bounds:Box )
       temporarily UI = this
