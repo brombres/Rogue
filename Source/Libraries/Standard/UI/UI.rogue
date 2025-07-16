@@ -162,6 +162,10 @@ class UI : Component [singleton]
         on_unhandled( e )
       endTemporarily
 
+    method on_resize
+      # '.size' has changed since the previous update.
+      noAction
+
     method release_keyboard_focus [override]
       if (focus.keyboard)
         if (focus.keyboard is this)
@@ -232,7 +236,13 @@ class UI : Component [singleton]
     method update_layout( bounds:Box )
       temporarily UI = this
         position = bounds.position
-        if (needs_layout or bounds.size != size)
+        if (bounds.size != size)
+          needs_layout = true
+          size = bounds.size
+          on_resize
+        endIf
+
+        if (needs_layout)
           needs_layout = false
           needs_redraw = true
           begin_layout
