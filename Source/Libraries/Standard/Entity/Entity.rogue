@@ -248,7 +248,7 @@ endClass
 
 augment Rogue::ProgressState
   GLOBAL METHODS
-    method wait_for( entity:Entity )->$ExtendedType
+    method wait_for( entity:Entity::Entity )->$ExtendedType
       return wait_for( () => entity.actions is null )
 endAugment
 

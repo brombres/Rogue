@@ -84,7 +84,7 @@ class ConsoleUI : UI
 
     method on_resize
       Console.clear
-      ConsoleUICanvas.resize( placement.size.x, placement.size.y )
+      ConsoleUICanvas.resize( size.x, size.y )
       prior.on_resize
 
     method on_update [override]
