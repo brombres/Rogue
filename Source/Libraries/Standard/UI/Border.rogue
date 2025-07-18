@@ -1,12 +1,38 @@
 library UI
 
+class Padding( value:Real, mode:SizingMode ) [compound]
+  GLOBAL METHODS
+    method create( value:Real, &proportional )->Padding
+      if (proportional) return Padding.proportional( value )
+      else              return fixed( value )
+
+    method create( parameter_id:VariantEntryID )->Padding
+      return Padding( parameter_id.value, SizingMode.PARAMETER_REAL )
+
+    method fixed( value:Real )->Padding
+      return Padding( value, SizingMode.FIXED_SIZE )
+
+    method proportional( value:Real )->Padding
+      return Padding( value, SizingMode.PROPORTIONAL )
+
+  METHODS
+    method resolved_value( available_size:Real )->Real
+      which (mode)
+        case PARAMETER_REAL
+          return value->Int->VariantEntryID->Real
+        case PROPORTIONAL
+          return available_size * value
+        others
+          return value
+      endWhich
+endClass
+
 class Border : Component
   PROPERTIES
-    is_proportional : Logical
-    left_padding    : Real    # original pixel or proportional values (based on 'is_proportional')
-    top_padding     : Real
-    right_padding   : Real
-    bottom_padding  : Real
+    left_padding    : Padding
+    top_padding     : Padding
+    right_padding   : Padding
+    bottom_padding  : Padding
     left_px, top_px, right_px, bottom_px : Real  # current pixel values derived from 'left_padding' etc.
 
   METHODS
@@ -19,35 +45,22 @@ class Border : Component
     method content_size->XY
       return (size - XY(left_px+right_px,top_px+bottom_px)).clamped_low(XY(0,0))
 
-    method fixed
-      is_proportional = false
-
-    method proportional
-      is_proportional = true
-
     method resolve_layout_size( available_size:XY, &limited )->XY [override]
-      if (is_proportional)
-        left_px = left_padding * available_size.x
-        top_px = top_padding * available_size.y
-        right_px = right_padding * available_size.x
-        bottom_px = bottom_padding * available_size.y
-      else
-        left_px = left_padding
-        top_px = top_padding
-        right_px = right_padding
-        bottom_px = bottom_padding
-      endIf
+      left_px = left_padding.resolved_value( available_size.x )
+      top_px = top_padding.resolved_value( available_size.y )
+      right_px = right_padding.resolved_value( available_size.x )
+      bottom_px = bottom_padding.resolved_value( available_size.y )
       return prior.resolve_layout_size( available_size, &=limited )
 
-    method set_horizontal_padding( padding:Real )
+    method set_horizontal_padding( padding:Padding )
       left_padding = padding
       right_padding = padding
 
-    method set_vertical_padding( padding:Real )
+    method set_vertical_padding( padding:Padding )
       top_padding = padding
       bottom_padding = padding
 
-    method set_padding( padding:Real )
+    method set_padding( padding:Padding )
       left_padding   = padding
       right_padding  = padding
       top_padding    = padding

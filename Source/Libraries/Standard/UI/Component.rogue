@@ -30,7 +30,7 @@ class Component : Entity
       this.fixed_size = fixed_size
 
     method init( size_parameter_id:VariantEntryID )
-      size_parameter = size_parameter_id
+      size = size_parameter_id
 
     method on( e:KeyEvent )
       noAction
@@ -680,21 +680,25 @@ class Component : Entity
       if (setting) request_layout
 
     method set_weight( @weight )
+      noAction
 
     method set_weight( weight:Real )
       @weight = XY( weight, weight )
 
-    method set_size_parameter( parameter_id:VariantEntryID )
+    method set_size( @size )
+      noAction
+
+    method set_size( parameter_id:VariantEntryID )
       sizing_mode = SizingModeXY( SizingMode.PARAMETER_XY, SizingMode.PARAMETER_XY )
       layout_size = XY( parameter_id.value, parameter_id.value )
       size = parameter_id->XY
 
-    method set_height_parameter( parameter_id:VariantEntryID )
+    method set_height( parameter_id:VariantEntryID )
       sizing_mode.y = SizingMode.PARAMETER_REAL
       layout_size.y = parameter_id.value
       size.y = parameter_id->Real
 
-    method set_width_parameter( parameter_id:VariantEntryID )
+    method set_width( parameter_id:VariantEntryID )
       sizing_mode.x = SizingMode.PARAMETER_REAL
       layout_size.x = parameter_id.value
       size.x = parameter_id->Real
