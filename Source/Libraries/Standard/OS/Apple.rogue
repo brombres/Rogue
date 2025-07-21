@@ -26,7 +26,11 @@ class Apple [singleton]
   NATIVE
     nativeHeader
     @|#if defined(ROGUE_PLATFORM_APPLE)
-     |  #import <Cocoa/Cocoa.h>
+     |  #if __has_include(<Cocoa/Cocoa.h>)
+     |    #import <Cocoa/Cocoa.h>
+     |  #else
+     |    #import <Foundation/Foundation.h>
+     |  #endif
      |  NSString*    Rogue_string_to_ns_string( RogueString* st );
      |  RogueString* Rogue_ns_string_to_string( NSString* st );
      |  NSString*    Rogue_find_ns_folder( NSSearchPathDirectory type );
