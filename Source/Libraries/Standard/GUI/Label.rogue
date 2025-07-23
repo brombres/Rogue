@@ -1,4 +1,4 @@
-library UI
+library GUI
 
 class Label : Text
   METHODS

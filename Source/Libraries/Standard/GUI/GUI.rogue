@@ -1,0 +1,31 @@
+library GUI
+
+uses Collection/Node
+uses Control
+uses Entity
+uses Geometry
+
+$include GUI/AspectRatioLayoutSwitcher
+$include GUI/Border
+$include GUI/Component
+$include GUI/ComponentSizeInfo
+$include GUI/Event
+$include GUI/Focus
+$include GUI/Font
+$include GUI/HBox
+$include GUI/HFlow
+$include GUI/Label
+$include GUI/LimitedSize
+$include GUI/MetaComponent
+$include GUI/Overlay
+$include GUI/ScalingMode
+$include GUI/SizingMode
+$include GUI/Text
+$include GUI/TextBox
+$include GUI/TextStyle
+$include GUI/UI
+$include GUI/VBox
+$include GUI/VList
+$include GUI/VScrollView
+$include GUI/Widget
+

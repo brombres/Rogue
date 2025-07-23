@@ -1,4 +1,4 @@
-library UI
+library GUI
 
 class VScrollView : Component
   PROPERTIES

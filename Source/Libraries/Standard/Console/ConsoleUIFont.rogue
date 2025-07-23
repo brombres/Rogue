@@ -1,4 +1,4 @@
-library UI
+library GUI
 
 uses Graphics
 uses Console/ANSIColor

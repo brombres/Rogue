@@ -1,4 +1,4 @@
-library UI
+library GUI
 
 enum SizingMode
   EXPAND_TO_FILL
