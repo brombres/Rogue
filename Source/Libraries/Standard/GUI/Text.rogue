@@ -73,7 +73,7 @@ class Text : Component
       endBlock
 
       if (sizing_mode.x == SizingMode.NATURAL_SIZE or sizing_mode.y == SizingMode.NATURAL_SIZE)
-        begin_layout   # set initial size
+        .update_size
         request_layout
       endIf
 
@@ -168,6 +168,10 @@ class Text : Component
       endIf
 
     method on_begin_layout_internal [override]
+      .update_size
+      prior.on_begin_layout_internal
+
+    method .update_size
       local font = font
 
       local sz = font?.measure(value || "")
@@ -185,8 +189,6 @@ class Text : Component
       elseIf (sizing_mode.y == SizingMode.NATURAL_SIZE)
         size.y = natural_size.y
       endIf
-
-      prior.on_begin_layout_internal
 
     method on_draw [override]
       if local font = font

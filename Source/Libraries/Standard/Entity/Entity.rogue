@@ -244,6 +244,7 @@ class Entity : Node<<Entity>>
 
     method .draw_entity
       noAction
+
 endClass
 
 augment Rogue::ProgressState
