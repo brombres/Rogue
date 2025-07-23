@@ -52,17 +52,18 @@ class CWriter : BufferedPrintWriter
          |  // are now only defined if the platform is active.
          |
          |  #if defined(__APPLE__)
+         |    #include <TargetConditionals.h>
          |    #define %NS%ROGUE_PLATFORM_APPLE 1
          |
-         |    #if defined(TARGET_IPHONE_SIMULATOR)
-         |      #if TARGET_IPHONE_SIMULATOR
+         |    #if defined(TARGET_OS_SIMULATOR)
+         |      #if TARGET_OS_SIMULATOR
          |        #define %NS%ROGUE_PLATFORM_IOS 1
          |      #endif
          |    #endif
          |
          |    #if !defined(%NS%ROGUE_PLATFORM_IOS)
-         |      #if defined(TARGET_OS_IPHONE)
-         |        #if TARGET_OS_IPHONE
+         |      #if defined(TARGET_OS_IOS)
+         |        #if TARGET_OS_IOS
          |          #define %NS%ROGUE_PLATFORM_IOS 1
          |        #endif
          |      #endif
