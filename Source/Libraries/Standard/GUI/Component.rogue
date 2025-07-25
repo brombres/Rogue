@@ -143,11 +143,20 @@ class Component : Entity
     method anchor_bottom_right
       anchor = Anchor.BOTTOM_RIGHT
 
+    method aspect_fit
+      sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT_NATURAL_SIZE, SizingMode.ASPECT_FIT_NATURAL_SIZE )
+
     method aspect_fit( aspect_size )
       sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT, SizingMode.ASPECT_FIT )
 
+    method aspect_fit_height
+      sizing_mode.y = SizingMode.ASPECT_FIT_NATURAL_SIZE
+
     method aspect_fit_height( aspect_size )
       sizing_mode.y = SizingMode.ASPECT_FIT
+
+    method aspect_fit_width_NATURAL_SIZE
+      sizing_mode.x = SizingMode.ASPECT_FIT
 
     method aspect_fit_width( aspect_size )
       sizing_mode.x = SizingMode.ASPECT_FIT
@@ -488,13 +497,29 @@ class Component : Entity
         elseIf (sizing_mode.y != SizingMode.SHRINK_TO_FIT)
           sz.y = .resolve_layout_height( available_size )
           local scale_y = (sz.y / (aspect_size.y || 1.0))
-          sz.x = (aspect_size * scale_y).x
+          sz.x = (aspect_size.x * scale_y).or_smaller( available_size.x )
+        endIf
+      elseIf (sizing_mode.x == SizingMode.ASPECT_FIT_NATURAL_SIZE)
+        if (sizing_mode.y == SizingMode.ASPECT_FIT_NATURAL_SIZE)
+          local scale_x = (available_size.x / (natural_size.x || 1.0))
+          local scale_y = (available_size.y / (natural_size.y || 1.0))
+          sz = natural_size * scale_x.or_smaller( scale_y )
+        elseIf (sizing_mode.y != SizingMode.SHRINK_TO_FIT)
+          sz.y = .resolve_layout_height( available_size )
+          local scale_y = (sz.y / (natural_size.y || 1.0))
+          sz.x = (natural_size.x * scale_y).or_smaller( available_size.x )
         endIf
       elseIf (sizing_mode.y == SizingMode.ASPECT_FIT)
         if (sizing_mode.x != SizingMode.SHRINK_TO_FIT)
           sz.x = .resolve_layout_width( available_size )
           local scale_x = (sz.x / (aspect_size.x || 1.0))
-          sz.y = (aspect_size * scale_x).y
+          sz.y = (aspect_size.y * scale_x).or_smaller( available_size.y )
+        endIf
+      elseIf (sizing_mode.y == SizingMode.ASPECT_FIT_NATURAL_SIZE)
+        if (sizing_mode.x != SizingMode.SHRINK_TO_FIT)
+          sz.x = .resolve_layout_width( available_size )
+          local scale_x = (sz.x / (natural_size.x || 1.0))
+          sz.y = (natural_size.y * scale_x).or_smaller( available_size.y )
         endIf
       else
         sz.x = .resolve_layout_width( available_size )

@@ -72,10 +72,7 @@ class Text : Component
         endUse
       endBlock
 
-      if (sizing_mode.x == SizingMode.NATURAL_SIZE or sizing_mode.y == SizingMode.NATURAL_SIZE)
-        .update_size
-        request_layout
-      endIf
+      .update_size
 
     method .add_builder( builder:String )
       if (builder.count)
@@ -178,7 +175,7 @@ class Text : Component
 
       local measured_size = font?.measure( value || "" )
 
-      natural_size = measured_size
+      @natural_size = measured_size
 
       if (sizing_mode.x == SizingMode.NATURAL_SIZE)
         if (sizing_mode.y == SizingMode.NATURAL_SIZE)
@@ -211,7 +208,13 @@ class Text : Component
         if (not value) @value = String()
         value.clear
         value.print( new_value )
+        local old_natural_size = natural_size
         init( value )
+        if (natural_size != old_natural_size)
+          if (sizing_mode.x == SizingMode.NATURAL_SIZE or sizing_mode.y == SizingMode.NATURAL_SIZE)
+            request_layout
+          endIf
+        endIf
       endIf
 
     method set_value( new_value:Real, decimal_digits=4:Int )
