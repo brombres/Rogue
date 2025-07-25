@@ -2,7 +2,7 @@ library Entity
 
 class Entity2D : Entity
   PROPERTIES
-    nominal_size = XY(1,1)
+    natural_size = XY(1,1)
     scale        = XY(1,1)
     position     : XY
     z            : Real
@@ -17,13 +17,13 @@ class Entity2D : Entity
       init
       attach_script( script )
 
-    method init( nominal_size, script=null:EntityScript )
+    method init( natural_size, script=null:EntityScript )
       if (script) attach_script( script )
 
     method init_clone( existing:Entity2D )
       prior.init_clone( existing )
       @scale        = existing.scale
-      @nominal_size = existing.nominal_size
+      @natural_size = existing.natural_size
       @position     = existing.position
       @z            = existing.z
       @rotation     = existing.rotation
@@ -56,7 +56,7 @@ class Entity2D : Entity
     method anchor_bottom_right
       anchor = Anchor.BOTTOM_RIGHT
 
-    method reset_size( nominal_size, scale=XY(1.0) )
+    method reset_size( natural_size, scale=XY(1.0) )
 
     method rotation_x->Radians
       return rotation->RadiansXYZ.value.x
@@ -68,22 +68,22 @@ class Entity2D : Entity
       return rotation->RadiansXYZ.value.z
 
     method scale_to_fill( bounds:Box )
-      scale = (bounds.size / nominal_size).max
+      scale = (bounds.size / natural_size).max
 
     method scale_to_fill( size:XY )
-      scale = (size / nominal_size).max
+      scale = (size / natural_size).max
 
     method scale_to_fit( bounds:Box )
-      scale = (bounds.size / nominal_size).min
+      scale = (bounds.size / natural_size).min
 
     method scale_to_fit( size:XY )
-      scale = (size / nominal_size).min
+      scale = (size / natural_size).min
 
     method scale_to_height( height:Real )
-      scale = height / nominal_size.y
+      scale = height / natural_size.y
 
     method scale_to_width( width:Real )
-      scale = width / nominal_size.x
+      scale = width / natural_size.x
 
     method set_rotation( @rotation )
 
@@ -126,11 +126,11 @@ class Entity2D : Entity
       scale_z = scale.z
 
     method set_size( size:XY )
-      scale = size / nominal_size
+      scale = size / natural_size
 
-    method set_size( nominal_size, scale )
+    method set_size( natural_size, scale )
 
     method size->XY
-      return nominal_size * scale
+      return natural_size * scale
 
 endClass
