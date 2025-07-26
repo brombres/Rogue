@@ -157,6 +157,14 @@ class System [essential]
                  return 0
       native @|#endif
 
+    method is_tablet->Logical
+      if ($target("iOS"))
+        return (native("UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad")->Logical)
+      else
+        # TODO for Android
+        return false
+      endIf
+
     method is_web->Logical
       native @|#if defined(%NS%ROGUE_PLATFORM_WEB)
                  return 1

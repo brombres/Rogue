@@ -1,66 +1,77 @@
 library GUI
 
+class PointerPosition( id:Int, position:XY ) [compound];
+
 class Pointer [singleton]
   PROPERTIES
-    position  : XY?   # of most recently active press (may be still active)
-    positions = XY[]  # of active presses
+    position      : XY?   # of first touch in current single touch or multitouch event
+    presses       = PointerPosition[]
+    is_multitouch : Logical
 
   METHODS
-    method on( e:PointerEvent )
+    method average_position->XY?
+      if (presses.is_empty) return null
+      local sum : XY
+      sum += (forEach in presses).position
+      return sum / presses.count
+
+    method find( by_id:Int )->PointerPosition?
+      forEach (press in presses)
+        if (press.id == by_id) return press
+      endForEach
+      return null
+
+    method locate( by_id:Int )->Int?
+      forEach (press at i in presses)
+        if (press.id == by_id) return i
+      endForEach
+      return null
+
+    method record( e:PointerEvent )
       if (e.is_press)
-        positions.add( e.position )
-        if (positions.count == 1) position = e.position
+        presses.add( PointerPosition(e.pointer_id, e.position) )
+        if (presses.count == 1) position = e.position
+        else                           is_multitouch = true
+        e.is_multitouch = is_multitouch
 
       elseIf (e.is_move)
-        which (positions.count)
+        local new_position = PointerPosition( e.pointer_id, e.position )
+        which (presses.count)
           case 0
+            # Shouldn't happen
             position = e.position
           case 1
             position = e.position
-            positions[0] = position.value
+            presses[0] = new_position
           others
-            local index = closest_pointer_index( e.position ).value
-            positions[ index ] = e.position
-            if (index == 0) position = e.position
+            if local i = locate( e.pointer_id )
+              presses[i] = new_position
+              if (i == 0) position = e.position
+            endIf
         endWhich
+        e.is_multitouch = is_multitouch
 
       elseIf (e.is_release)
-        which (positions.count)
+        which (presses.count)
           case 0
+            # shouldn't happen
             position = e.position
           case 1
             position = e.position
-            positions.remove_last
+            presses.remove_last
           others
-            local index = closest_pointer_index(e.position).value
-            positions.remove_at( index )
-            if (index == 0) position = e.position
+            if local i = locate( e.pointer_id )
+              presses.remove_at( i )
+            endIf
         endWhich
+        e.is_multitouch = is_multitouch
+        if (presses.is_empty) is_multitouch = false
 
       elseIf (e.is_leave)
         position = null
+        presses.clear
+        e.is_multitouch = false
 
       endIf
 
-    method closest_pointer_index( pos:XY )->Int?
-      which (positions.count)
-        case 0
-          return null
-        case 1
-          return 0
-        others
-          local shortest_index    : Int?
-          local shortest_distance : Int
-          forEach (xy at index in positions)
-            local d = (pos - xy).magnitude_squared
-            if (not shortest_index.exists or d < shortest_distance)
-              shortest_index = index
-              shortest_distance = d
-            endIf
-          endForEach
-          return shortest_index.value
-      endWhich
-
-    method press_count->Int
-      return positions.count
 endClass

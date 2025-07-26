@@ -35,6 +35,9 @@ class Component : Entity
     method on( e:KeyEvent )
       noAction
 
+    method on( e:MultitouchEvent )
+      noAction
+
     method on( e:PointerEvent )
       noAction
 
@@ -54,6 +57,9 @@ class Component : Entity
       noAction
 
     method on_unhandled( e:KeyEvent )
+      noAction
+
+    method on_unhandled( e:MultitouchEvent )
       noAction
 
     method on_unhandled( e:PointerEvent )
@@ -266,6 +272,9 @@ class Component : Entity
     method dispatch( e:KeyEvent )
       DISPATCH_EVENT
 
+    method dispatch( e:MultitouchEvent )
+      DISPATCH_EVENT
+
     method dispatch( e:PointerEvent )
       DISPATCH_EVENT
 
@@ -336,6 +345,17 @@ class Component : Entity
       return null
 
     method handle( e:KeyEvent )
+      if (attributes.intangible) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      first_content_component?.dispatch( e )
+      if (e.is_consumed) return
+
+      on_unhandled( e )
+
+    method handle( e:MultitouchEvent )
       if (attributes.intangible) return
 
       on( e )

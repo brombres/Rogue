@@ -1,4 +1,4 @@
-uses UI [export]
+uses GUI [export]
 
 $include Console/ConsoleUIFont
 $include Console/ConsoleUICanvas
@@ -72,8 +72,8 @@ class ConsoleUI : UI
       # Only called when e is a pointer or scroll event
       local pos = XY( e.x, e.y )
       Pointer.position = pos
-      Pointer.positions.[clear].add( pos )
-      handle( PointerEvent(type,pos,XY(0,0),index) )
+      Pointer.presses.[clear].add( PointerPosition(0, pos) )
+      handle( PointerEvent(type, pos, XY(0,0), index) )
 
     method keep_active( seconds:Real )
       keep_active_timer.init( seconds.or_larger(keep_active_timer.duration) )

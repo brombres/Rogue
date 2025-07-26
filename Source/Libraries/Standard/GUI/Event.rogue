@@ -172,13 +172,17 @@ class PointerEvent : Event
     MIDDLE   = 2
 
   PROPERTIES
-    type      : GlobalID
-    position  : XY
-    delta     : XY
-    index     : Int
-    cancelled : Logical
+    type         : GlobalID
+    position     : XY
+    delta        : XY
+    index        : Int   # button index for mouse press
+    is_cancelled : Logical
     # When a touch event in progress is interrupted, a <RELEASE> event is sent
-    # with .cancelled==true.
+    # with .is_cancelled==true.
+
+    pointer_id    : Int     # used to distinguish touches
+    is_touch      : Logical # this pointer event is from a touch rather than the mouse
+    is_multitouch : Logical # this is one of at least two touches that are currently active
 
   METHODS
     method init
@@ -187,7 +191,7 @@ class PointerEvent : Event
     method init( type )
       prior.init
 
-    method init( type, position, delta, index, cancelled=false )
+    method init( type, position, delta, index, is_cancelled=false, is_touch=false )
       prior.init
 
     method init( existing:PointerEvent )
@@ -196,7 +200,7 @@ class PointerEvent : Event
       position  = existing.position
       delta     = existing.delta
       index     = existing.index
-      cancelled = existing.cancelled
+      is_cancelled = existing.is_cancelled
 
     method is_drag_move->Logical
       return (this.type == <DRAG_MOVE>)
@@ -247,7 +251,7 @@ class PointerEvent : Event
       return is_release( 2 )
 
     method operator+( offset:XY )->PointerEvent
-      return PointerEvent( type, position+offset, delta, index, cancelled )
+      return PointerEvent( type, position+offset, delta, index, &=is_cancelled, &=is_touch )
 
     method operator-( offset:XY )->PointerEvent
       return this + (-offset)
@@ -266,7 +270,8 @@ class PointerEvent : Event
         case <LEAVE>:      buffer.print( "leave" )
       endWhich
       if (not (is_enter or is_leave)) buffer.[ print(" at "), print(position) ]
-      if (is_consumed) buffer.print( " (consumed)" )
+      if (is_multitouch) buffer.print( " [multitouch]" )
+      if (is_consumed)   buffer.print( " (consumed)" )
 
       return buffer
 endClass
@@ -377,3 +382,25 @@ class ScrollRate
       $acceleration = ($acceleration * 1.25).clamped_high( base_scale*2 )
       return result
 endClass
+
+class MultitouchEvent : Event
+  PROPERTIES
+    delta : XYZ
+
+  METHODS
+    method init
+      prior.init
+
+    method init( delta )
+      prior.init
+
+    method init( existing:MultitouchEvent )
+      prior.init( existing )
+      delta = existing.delta
+
+    method to->String
+      local buffer = String().[ print("MultitouchScroll "), print( delta ) ]
+      if (is_consumed) buffer.print( " (consumed)" )
+      return buffer
+endClass
+
