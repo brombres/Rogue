@@ -1,7 +1,7 @@
 class System [essential]
   NATIVE
     nativeHeader
-      @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
        |  #include <time.h>
        |  #include <sys/timeb.h>
        |#else
@@ -47,7 +47,7 @@ class System [essential]
     method executable_filepath->String
       if (@executable_filepath) return @executable_filepath
 
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
                  use buffer = RecyclePool<<UTF16String>>
                    buffer.data.reserve( 4096 )
                    local n = native( "GetLibraryFileNameW( NULL, $buffer->data->as_wchars, 2048 )" )->Int32
@@ -107,51 +107,51 @@ class System [essential]
       return INT_BITS
 
     method is_android->Logical
-      native @|#if defined(%NS%ROGUE_PLATFORM_ANDROID)
+      native @|#if defined(%NS%ROGUE_TARGET_ANDROID)
                  return 1
       native @|#else
                  return 0
       native @|#endif
 
     method is_apple->Logical
-      native @|#if defined(%NS%ROGUE_PLATFORM_IOS) || defined(%NS%ROGUE_PLATFORM_MACOS)
+      native @|#if defined(%NS%ROGUE_TARGET_IOS) || defined(%NS%ROGUE_TARGET_MACOS)
                  return 1
       native @|#else
                  return 0
       native @|#endif
 
     method is_cygwin->Logical
-      native @|#if defined(%NS%ROGUE_PLATFORM_CYGWIN)
+      native @|#if defined(%NS%ROGUE_TARGET_CYGWIN)
                  return 1
       native @|#else
                  return 0
       native @|#endif
 
     method is_ios->Logical
-      native @|#if defined(%NS%ROGUE_PLATFORM_IOS)
+      native @|#if defined(%NS%ROGUE_TARGET_IOS)
                  return 1
       native @|#else
                  return 0
       native @|#endif
 
     method is_linux->Logical
-      native @|#if defined(%NS%ROGUE_PLATFORM_LINUX)
+      native @|#if defined(%NS%ROGUE_TARGET_LINUX)
                  return 1
       native @|#else
                  return 0
       native @|#endif
 
     method is_macos->Logical
-      native @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
+      native @|#if defined(%NS%ROGUE_TARGET_MACOS)
                  return 1
       native @|#else
                  return 0
       native @|#endif
 
     method is_mobile->Logical
-      native @|#if defined(%NS%ROGUE_PLATFORM_IOS)
+      native @|#if defined(%NS%ROGUE_TARGET_IOS)
                  return 1
-      native @|#elif defined(%NS%ROGUE_PLATFORM_ANDROID)
+      native @|#elif defined(%NS%ROGUE_TARGET_ANDROID)
                  return 1
       native @|#else
                  return 0
@@ -166,14 +166,14 @@ class System [essential]
       endIf
 
     method is_web->Logical
-      native @|#if defined(%NS%ROGUE_PLATFORM_WEB)
+      native @|#if defined(%NS%ROGUE_TARGET_WEB)
                  return 1
       native @|#else
                  return 0
       native @|#endif
 
     method is_windows->Logical
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
                  return 1
       native @|#else
                  return 0
@@ -205,15 +205,15 @@ class System [essential]
       #   Web
       #   Linux (includes Unix and Posix)
       local result : String
-      native @|#if defined(%NS%ROGUE_PLATFORM_ANDROID)
+      native @|#if defined(%NS%ROGUE_TARGET_ANDROID)
       result = "Android"
-      native @|#elif defined(%NS%ROGUE_PLATFORM_IOS)
+      native @|#elif defined(%NS%ROGUE_TARGET_IOS)
       result = "iOS"
-      native @|#elif defined(%NS%ROGUE_PLATFORM_MACOS)
+      native @|#elif defined(%NS%ROGUE_TARGET_MACOS)
       result = "macOS"
-      native @|#elif defined(%NS%ROGUE_PLATFORM_WEB)
+      native @|#elif defined(%NS%ROGUE_TARGET_WEB)
       result = "Web"
-      native @|#elif defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#elif defined(%NS%ROGUE_TARGET_WINDOWS)
       result = "Windows"
       native @|#else
       result = "Linux"
@@ -230,7 +230,7 @@ class System [essential]
       local return_val = 0
       native @|$return_val = system( (char*)$command->data->as_utf8 );
       if (return_val == -1) return -1
-      native @|#if !defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if !defined(%NS%ROGUE_TARGET_WINDOWS)
               |$return_val = (%Ns%RogueInt32) WEXITSTATUS($return_val);
               |#endif
       return return_val
@@ -240,7 +240,7 @@ class System [essential]
       sleep_ms( (seconds * 1000)->Int32 )
 
     method sleep_ms( ms:Int32 )
-      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_TARGET_WINDOWS
               |  //local do_exit = seconds > 0.5 # Or should it be lower? Used for multithreaded synchronization.
               |  //if (do_exit) %NS%ROGUE_EXIT;
               |  Sleep( $ms );
@@ -268,7 +268,7 @@ class System [essential]
     method time_ms->Int64
       local time_seconds_x1000 : Int64
 
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
               |  struct __timeb64 time_struct;
               |  _ftime64_s( &time_struct );
               |  $time_seconds_x1000 = ((%Ns%RogueInt64) time_struct.time) * 1000;

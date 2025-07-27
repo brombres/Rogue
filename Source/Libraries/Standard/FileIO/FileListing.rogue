@@ -10,7 +10,7 @@ endEnum
 
 class FileListing
   NATIVE
-    nativeHeader @|#if !defined(%NS%ROGUE_PLATFORM_WINDOWS) && !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
+    nativeHeader @|#if !defined(%NS%ROGUE_TARGET_WINDOWS) && !defined(%NS%ROGUE_TARGET_EMBEDDED)
                   |  #include <dirent.h>
                   |#endif
 
@@ -195,7 +195,7 @@ class FileListing
 
   GLOBAL METHODS
     method _listing( folder:File, collector:Function(String) )
-      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_TARGET_WINDOWS
               |{
               |  WIN32_FIND_DATAW entry;
               |  HANDLE dir;

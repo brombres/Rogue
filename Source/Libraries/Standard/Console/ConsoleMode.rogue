@@ -21,7 +21,7 @@ class ConsoleMode [abstract]
 
   NATIVE
     nativeHeader...
-      @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
        |  #ifndef CONSOLE_READ_NOREMOVE
        |    #define CONSOLE_READ_NOREMOVE 0x0001
        |  #endif
@@ -39,7 +39,7 @@ class StandardConsoleMode : ConsoleMode
   METHODS
     method init
       local console = Console
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
               |  HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
               |  DWORD mode;
               |  GetConsoleMode( h_stdin, &mode );
@@ -158,12 +158,12 @@ class ImmediateConsoleMode : ConsoleMode
     method init
       # Turn off blocking and line buffering
       windows_button_state = 0
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
               |  HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
               |  DWORD mode;
               |  GetConsoleMode( h_stdin, &mode );
               |  SetConsoleMode( h_stdin, (mode & ~(ENABLE_QUICK_EDIT_MODE)) | ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT );
-              |#elif !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
+              |#elif !defined(%NS%ROGUE_TARGET_EMBEDDED)
               |  struct termios settings;
               |  tcgetattr( STDIN_FILENO, &settings );
               |  settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
@@ -231,7 +231,7 @@ class ImmediateConsoleMode : ConsoleMode
     method _fill_event_queue_windows
       # Used only for Windows and only in immediate mode
       native...
-        @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+        @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
 
       local force_input_blocking = Console.force_input_blocking
 
@@ -266,10 +266,10 @@ class ImmediateConsoleMode : ConsoleMode
             endWhile
       native...
         @|}
-         |#endif // %NS%ROGUE_PLATFORM_WINDOWS
+         |#endif // %NS%ROGUE_TARGET_WINDOWS
 
     method _fill_event_queue_windows_process_next
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
 
       # If Windows is in immediate mode use Peek/ReadConsoleInput.
       local record : WindowsInputRecord
@@ -280,10 +280,10 @@ class ImmediateConsoleMode : ConsoleMode
 
                _fill_event_queue_windows_process_next( record )
 
-      native @|#endif // %NS%ROGUE_PLATFORM_WINDOWS
+      native @|#endif // %NS%ROGUE_TARGET_WINDOWS
 
     method _fill_event_queue_windows_process_next( record:WindowsInputRecord )
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
 
       # If Windows is in immediate mode use Peek/ReadConsoleInput.
       local unicode, event_flags, new_button_state, x, y : Int
@@ -351,7 +351,7 @@ class ImmediateConsoleMode : ConsoleMode
                  events.add ConsoleEvent( ConsoleEventType.CHARACTER, unicode, 0 )
       native @|}
               |
-              |#endif // %NS%ROGUE_PLATFORM_WINDOWS
+              |#endif // %NS%ROGUE_TARGET_WINDOWS
 
     method _fill_event_queue_unix
       _fill_event_queue_unix_process_next
@@ -460,7 +460,7 @@ endClass
 
 class WindowsInputRecord [compound]
   PROPERTIES
-    native "#if defined(%NS%ROGUE_PLATFORM_WINDOWS)"
+    native "#if defined(%NS%ROGUE_TARGET_WINDOWS)"
     native "INPUT_RECORD value;"
     native "#else"
     native "int dummy;"

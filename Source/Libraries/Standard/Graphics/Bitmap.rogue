@@ -1485,7 +1485,7 @@ augment Rogue::MacOS
       local result : Graphics::Bitmap
 
       native
-      @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
+      @|#if defined(%NS%ROGUE_TARGET_MACOS)
        |{
        |  NSData *data = [NSData dataWithBytes:$encoded_bytes->as_bytes length:$encoded_bytes->count];
        |  CGImageRef image = [[[NSImage alloc] initWithData:data] CGImageForProposedRect:NULL context:NULL hints:NULL];
@@ -1529,7 +1529,7 @@ augment Rogue::MacOS
       #   https://stackoverflow.com/a/30958731/135791
       #   https://stackoverflow.com/a/17510651/135791
       native...
-        @|#if defined(%NS%ROGUE_PLATFORM_MACOS) || defined(%NS%ROGUE_PLATFORM_IOS)
+        @|#if defined(%NS%ROGUE_TARGET_MACOS) || defined(%NS%ROGUE_TARGET_IOS)
          |CGDataProviderRef provider = CGDataProviderCreateWithData( 0, $bitmap->pixels->data, $w*$h*4, 0 );
          |
          |CGImageRef cg_image = CGImageCreate(
@@ -1544,7 +1544,7 @@ augment Rogue::MacOS
          |  0,
          |  kCGRenderingIntentDefault
          |);
-         |#if defined(%NS%ROGUE_PLATFORM_MACOS)
+         |#if defined(%NS%ROGUE_TARGET_MACOS)
          |  NSBitmapImageRep *image_rep = [[NSBitmapImageRep alloc] initWithCGImage:cg_image];
          |  NSBitmapImageFileType encoding_type = NSBitmapImageFileTypeTIFF;
          |  switch ($type.value)
@@ -1592,7 +1592,7 @@ augment Rogue::MacOS
 
   NATIVE
     nativeHeader
-      @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
+      @|#if defined(%NS%ROGUE_TARGET_MACOS)
        |  #import <Cocoa/Cocoa.h>
        |  #import <Foundation/Foundation.h>
        |#endif

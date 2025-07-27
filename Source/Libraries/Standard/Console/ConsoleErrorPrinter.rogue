@@ -5,7 +5,7 @@ class ConsoleErrorPrinter : BufferedPrintWriter<<output_buffer>>
       buffer.clear
 
     method write( value:String )
-      native @|#if defined(%NS%ROGUE_PLATFORM_ANDROID)
+      native @|#if defined(%NS%ROGUE_TARGET_ANDROID)
               |  __android_log_print( ANDROID_LOG_ERROR, "%Ns%Rogue", "%s", $value->data->as_utf8 );
               |#else
               |  %Ns%Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDERR_FILENO );

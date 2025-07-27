@@ -341,7 +341,7 @@ class String : Recyclable PrintWriter
                 |if (limit == other_count)
                 |{
                 |  // Strings are same length
-                |  #ifdef %NS%ROGUE_PLATFORM_WINDOWS
+                |  #ifdef %NS%ROGUE_TARGET_WINDOWS
                 |    result = strnicmp( $this->data->as_utf8, $other->data->as_utf8, limit );
                 |  #else
                 |    result = strncasecmp( $this->data->as_utf8, $other->data->as_utf8, limit );
@@ -352,7 +352,7 @@ class String : Recyclable PrintWriter
                 |{
                 |  // Strings differ in length.  Compare the part that matches first.
                 |  if (limit > other_count) limit = other_count;
-                |  #ifdef %NS%ROGUE_PLATFORM_WINDOWS
+                |  #ifdef %NS%ROGUE_TARGET_WINDOWS
                 |    result = strnicmp( $this->data->as_utf8, $other->data->as_utf8, limit );
                 |  #else
                 |    result = strncasecmp( $this->data->as_utf8, $other->data->as_utf8, limit );

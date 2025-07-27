@@ -27,7 +27,7 @@ class List<<$DataType>> : Recyclable ListType
             |  %Ns%RogueByte*      as_bytes;
             |  char*               as_utf8; // only valid for String data; includes null terminator
             |  %Ns%RogueByte*      as_logicals;
-            |  #if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+            |  #if defined(%NS%ROGUE_TARGET_WINDOWS)
             |    wchar_t*          as_wchars;
             |  #endif
             |};

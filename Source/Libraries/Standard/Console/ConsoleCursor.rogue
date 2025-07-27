@@ -28,7 +28,7 @@ class ConsoleCursor [compound]
       local x, y : Int
       native
       @|
-       |#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+       |#if defined(%NS%ROGUE_TARGET_WINDOWS)
        |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
        |  CONSOLE_SCREEN_BUFFER_INFO info;
        |  GetConsoleScreenBufferInfo( h_stdout, &info );

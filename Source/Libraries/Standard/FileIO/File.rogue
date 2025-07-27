@@ -3,7 +3,7 @@ class File( filepath:String ) [compound]
     nativeHeader @|#include <stdio.h>
                   |#include <sys/stat.h>
                   |
-                  |#if !defined(%NS%ROGUE_PLATFORM_WINDOWS) && !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
+                  |#if !defined(%NS%ROGUE_TARGET_WINDOWS) && !defined(%NS%ROGUE_TARGET_EMBEDDED)
                   |  #include <dirent.h>
                   |#endif
 
@@ -31,7 +31,7 @@ class File( filepath:String ) [compound]
       local filepath = resolved.filepath
       local return_value : String
 
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
               |{
                  use filepath_utf16=RecyclePool<<UTF16String>>, abs_filepath_utf16=RecyclePool<<UTF16String>>
                    filepath_utf16.init( filepath )
@@ -286,7 +286,7 @@ class File( filepath:String ) [compound]
 
       # Note: 0777 is a permission mask rather than the actual permission setting.
       local status : Logical
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
               |  $status = (0 == mkdir((char*)$file.filepath->data->as_utf8));
               |#else
               |  $status = (0 == mkdir((char*)$file.filepath->data->as_utf8, 0777));
@@ -442,7 +442,7 @@ class File( filepath:String ) [compound]
 
       local filepath = resolved.filepath
 
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
               |  struct stat s;
                  if (native("stat((char*)$filepath->data->as_utf8, &s) != 0")->Logical) return false
                  return native("((s.st_mode & S_IFMT) == S_IFDIR)")->Logical
@@ -707,7 +707,7 @@ class File( filepath:String ) [compound]
 
     method separator->Character
       local result = '/'
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
               |  $result = '\\';
               |#endif
       return result
@@ -754,7 +754,7 @@ class File( filepath:String ) [compound]
       local ms : Int64
       local filepath = resolved.filepath
 
-      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
                use filepath_utf16 = RecyclePool<<UTF16String>>
                  filepath_utf16.init( filepath )
       native @|  HANDLE handle = CreateFile( $filepath_utf16->data->as_wchars, 0, 0, NULL, OPEN_EXISTING,
@@ -775,7 +775,7 @@ class File( filepath:String ) [compound]
               |    CloseHandle(handle);
               |  }
                endUse
-      native @|#elif defined(%NS%ROGUE_PLATFORM_UNIX_COMPATIBLE)
+      native @|#elif defined(%NS%ROGUE_TARGET_UNIX_COMPATIBLE)
               |  int file_id = open( (const char*)$filepath->data->as_utf8, O_RDONLY );
               |  if (file_id >= 0)
               |  {

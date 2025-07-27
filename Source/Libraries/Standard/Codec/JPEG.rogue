@@ -101,7 +101,7 @@ class JPEGDecoder
 
   NATIVE
     nativeHeader...
-     @|#if !defined(%NS%ROGUE_PLATFORM_LINUX)
+     @|#if !defined(%NS%ROGUE_TARGET_LINUX)
       |  #include <setjmp.h>
       |#endif
     nativeHeader @|#include "jpeglib.h"
@@ -163,7 +163,7 @@ endClass
 class JPEGEncoder
   NATIVE
     nativeHeader...
-     @|#if !defined(%NS%ROGUE_PLATFORM_LINUX)
+     @|#if !defined(%NS%ROGUE_TARGET_LINUX)
       |  #include <setjmp.h>
       |#endif
     nativeHeader @|#include "jpeglib.h"

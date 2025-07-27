@@ -1,8 +1,8 @@
 class Timestamp( value=System.time:Real ) [compound]
   NATIVE
-    nativeHeader @|#if defined(%NS%ROGUE_PLATFORM_LINUX)
+    nativeHeader @|#if defined(%NS%ROGUE_TARGET_LINUX)
                   |  #include <time.h>
-                  |#elif defined(%NS%ROGUE_PLATFORM_WINDOWS)
+                  |#elif defined(%NS%ROGUE_TARGET_WINDOWS)
                   |  #include <time.h>
                   |  #include <sys/timeb.h>
                   |#endif

@@ -1,7 +1,7 @@
 class PNGDecoder
   NATIVE
     nativeHeader...
-     @|#if !defined(%NS%ROGUE_PLATFORM_LINUX)
+     @|#if !defined(%NS%ROGUE_TARGET_LINUX)
       |  #include <setjmp.h>
       |#endif
       |
@@ -148,7 +148,7 @@ endClass
 class PNGEncoder
   NATIVE
     nativeHeader...
-     @|#if !defined(%NS%ROGUE_PLATFORM_LINUX)
+     @|#if !defined(%NS%ROGUE_TARGET_LINUX)
       |  #include <setjmp.h>
       |#endif
       |
@@ -286,7 +286,7 @@ class PNGEncoder
 
   NATIVE
     nativeHeader
-      @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
+      @|#if defined(%NS%ROGUE_TARGET_MACOS)
        |  #import <Cocoa/Cocoa.h>
        |  #import <Foundation/Foundation.h>
        |#endif

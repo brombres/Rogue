@@ -37,14 +37,14 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     # Set to true to force input blocking in Immediate Mode (can set to false after input).
     # In Standard Mode input blocking is always used.
 
-    native @|#if !defined(%NS%ROGUE_PLATFORM_WINDOWS) && !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
+    native @|#if !defined(%NS%ROGUE_TARGET_WINDOWS) && !defined(%NS%ROGUE_TARGET_EMBEDDED)
             |  struct termios original_terminal_settings;
             |  int            original_stdin_flags;
             |#endif
 
   METHODS
     method init
-      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_TARGET_WINDOWS
               |  // Enable ANSI colors and styles on Windows
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  DWORD mode;
@@ -56,7 +56,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |  GetConsoleMode( h_stdin, &mode );
                  windows_in_quick_edit_mode = native("!!(mode & ENABLE_QUICK_EDIT_MODE)")->Logical
 
-      native @|#elif !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
+      native @|#elif !defined(%NS%ROGUE_TARGET_EMBEDDED)
               |  tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
               |  $this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
               |
@@ -88,7 +88,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
     method height->Int
       local result : Int
-      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_TARGET_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  CONSOLE_SCREEN_BUFFER_INFO info;
               |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) $result = (info.srWindow.Bottom - info.srWindow.Top) + 1;
@@ -174,7 +174,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
     method width->Int
       local result : Int
-      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_TARGET_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  CONSOLE_SCREEN_BUFFER_INFO info;
               |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) $result = info.dwSize.X;
@@ -188,7 +188,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       return result
 
     method write( value:String )
-      native @|#ifdef %NS%ROGUE_PLATFORM_ANDROID
+      native @|#ifdef %NS%ROGUE_TARGET_ANDROID
               |  __android_log_print( ANDROID_LOG_INFO, "%Ns%Rogue", "%s", $value->data->as_utf8 );
               |#else
               |  %Ns%Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDOUT_FILENO );
@@ -202,7 +202,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       if (force_input_blocking and @immediate_mode)
         needs_unblock = true
         native...
-          @|#if !defined(%NS%ROGUE_PLATFORM_WINDOWS) && !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
+          @|#if !defined(%NS%ROGUE_TARGET_WINDOWS) && !defined(%NS%ROGUE_TARGET_EMBEDDED)
            |  fcntl( STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO,F_GETFL) & ~O_NONBLOCK );
            |
            |  struct termios settings;
@@ -220,7 +220,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
         if (needs_unblock)
           native...
-            @|#if !defined(%NS%ROGUE_PLATFORM_WINDOWS) && !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
+            @|#if !defined(%NS%ROGUE_TARGET_WINDOWS) && !defined(%NS%ROGUE_TARGET_EMBEDDED)
              |  fcntl( STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO,F_GETFL)|O_NONBLOCK );
              |
              |  struct termios settings;
@@ -249,10 +249,10 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
   NATIVE
     nativeHeader
-     @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+     @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
       |  #include <io.h>
       |  #define %NS%ROGUE_READ_CALL _read
-      |#elif !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
+      |#elif !defined(%NS%ROGUE_TARGET_EMBEDDED)
       |  #include <fcntl.h>
       |  #include <termios.h>
       |  #include <unistd.h>
@@ -271,7 +271,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     nativeCode
       @|void %Ns%Rogue_fwrite( const char* utf8, %Ns%RogueInt byte_count, int out )
        |{
-       |  #if !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
+       |  #if !defined(%NS%ROGUE_TARGET_EMBEDDED)
        |  while (byte_count)
        |  {
        |    %Ns%RogueInt n = (%Ns%RogueInt) write( out, utf8, byte_count );

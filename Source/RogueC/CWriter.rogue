@@ -41,58 +41,58 @@ class CWriter : BufferedPrintWriter
         println ...
         @|// Set up C conditional compilation defines
          |#if defined(__EMSCRIPTEN__)
-         |  #define %NS%ROGUE_PLATFORM_WEB 1
-         |  #define %NS%ROGUE_PLATFORM_DETERMINED 1
-         |#elif defined(%NS%ROGUE_PLATFORM_PLAYDATE)
-         |  #define %NS%ROGUE_PLATFORM_DETERMINED 1
+         |  #define %NS%ROGUE_TARGET_WEB 1
+         |  #define %NS%ROGUE_TARGET_DETERMINED 1
+         |#elif defined(%NS%ROGUE_TARGET_PLAYDATE)
+         |  #define %NS%ROGUE_TARGET_DETERMINED 1
          |#endif
          |
-         |#if !defined(%NS%ROGUE_PLATFORM_DETERMINED)
+         |#if !defined(%NS%ROGUE_TARGET_DETERMINED)
          |  // Handle Apple's wonky defines which used to ALWAYS be defined as 0 or 1 and
          |  // are now only defined if the platform is active.
          |
          |  #if defined(__APPLE__)
          |    #include <TargetConditionals.h>
-         |    #define %NS%ROGUE_PLATFORM_APPLE 1
+         |    #define %NS%ROGUE_TARGET_APPLE 1
          |
          |    #if defined(TARGET_OS_SIMULATOR)
          |      #if TARGET_OS_SIMULATOR
-         |        #define %NS%ROGUE_PLATFORM_IOS 1
+         |        #define %NS%ROGUE_TARGET_IOS 1
          |      #endif
          |    #endif
          |
-         |    #if !defined(%NS%ROGUE_PLATFORM_IOS)
+         |    #if !defined(%NS%ROGUE_TARGET_IOS)
          |      #if defined(TARGET_OS_IOS)
          |        #if TARGET_OS_IOS
-         |          #define %NS%ROGUE_PLATFORM_IOS 1
+         |          #define %NS%ROGUE_TARGET_IOS 1
          |        #endif
          |      #endif
          |    #endif
          |
-         |    #if !defined(%NS%ROGUE_PLATFORM_IOS)
-         |      #define %NS%ROGUE_PLATFORM_MACOS 1
+         |    #if !defined(%NS%ROGUE_TARGET_IOS)
+         |      #define %NS%ROGUE_TARGET_MACOS 1
          |    #endif
          |
-         |    #define %NS%ROGUE_PLATFORM_DETERMINED 1
+         |    #define %NS%ROGUE_TARGET_DETERMINED 1
          |  #endif
          |#endif
          |
-         |#if !defined(%NS%ROGUE_PLATFORM_DETERMINED)
+         |#if !defined(%NS%ROGUE_TARGET_DETERMINED)
          |  #if defined(_WIN32)
-         |  #  define %NS%ROGUE_PLATFORM_WINDOWS 1
+         |  #  define %NS%ROGUE_TARGET_WINDOWS 1
          |  #elif defined(__ANDROID__)
-         |  #  define %NS%ROGUE_PLATFORM_ANDROID 1
+         |  #  define %NS%ROGUE_TARGET_ANDROID 1
          |  #elif defined(__linux__)
-         |  #  define %NS%ROGUE_PLATFORM_LINUX 1
+         |  #  define %NS%ROGUE_TARGET_LINUX 1
          |  #elif defined(__CYGWIN__)
-         |  #  define %NS%ROGUE_PLATFORM_LINUX  1
-         |  #  define %NS%ROGUE_PLATFORM_CYGWIN 1
+         |  #  define %NS%ROGUE_TARGET_LINUX  1
+         |  #  define %NS%ROGUE_TARGET_CYGWIN 1
          |  #else
-         |  #  define %NS%ROGUE_PLATFORM_GENERIC 1
+         |  #  define %NS%ROGUE_TARGET_GENERIC 1
          |  #endif
          |#endif
          |
-         |#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+         |#if defined(%NS%ROGUE_TARGET_WINDOWS)
          |  #pragma warning(disable: 4297) /* unexpected throw warnings */
          |  #if !defined(UNICODE)
          |    #define UNICODE
@@ -100,7 +100,7 @@ class CWriter : BufferedPrintWriter
          |  #include <windows.h>
          |  #include <signal.h>
          |#else
-         |  #define %NS%ROGUE_PLATFORM_UNIX_COMPATIBLE 1
+         |  #define %NS%ROGUE_TARGET_UNIX_COMPATIBLE 1
          |  #include <limits.h>
          |  #include <stdint.h>
          |#endif
@@ -124,7 +124,7 @@ class CWriter : BufferedPrintWriter
          |//------------------------------------------------------------------------------
          |// Primitive Types
          |//------------------------------------------------------------------------------
-         |#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+         |#if defined(%NS%ROGUE_TARGET_WINDOWS)
          |  typedef double           %Ns%RogueReal64;
          |  typedef float            %Ns%RogueReal32;
          |  typedef __int64          %Ns%RogueInt64;

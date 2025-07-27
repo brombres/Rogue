@@ -25,7 +25,7 @@ class Apple [singleton]
 
   NATIVE
     nativeHeader
-    @|#if defined(ROGUE_PLATFORM_APPLE)
+    @|#if defined(ROGUE_TARGET_APPLE)
      |  #if __has_include(<Cocoa/Cocoa.h>)
      |    #import <Cocoa/Cocoa.h>
      |  #else
@@ -37,7 +37,7 @@ class Apple [singleton]
      |#endif
 
     nativeCode
-    @|#if defined(ROGUE_PLATFORM_APPLE)
+    @|#if defined(ROGUE_TARGET_APPLE)
      |  NSString* Rogue_string_to_ns_string( RogueString* st )
      |  {
      |    if ( !st ) return nil;
