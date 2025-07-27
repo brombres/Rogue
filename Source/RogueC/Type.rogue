@@ -702,12 +702,21 @@ class Type : Cmd
         if (is_augment) existing_m.attributes.augmented = true
 
         if (aspect_m.attributes.is_insert and existing_m.type_context is this)
+          if (.should_inject_tokens(existing_m,aspect_m))
+            existing_m.source_tokens.tokens.insert( aspect_m.source_tokens.tokens )
+          endIf
           aspect_m.statements.add( existing_m.body )
           existing_m.body = aspect_m.body
           existing_m.statements = aspect_m.statements
         elseIf (aspect_m.attributes.is_append and existing_m.type_context is this)
+          if (.should_inject_tokens(existing_m,aspect_m))
+            existing_m.source_tokens.tokens.add( aspect_m.source_tokens.tokens )
+          endIf
           existing_m.statements.add( aspect_m.body )
         elseIf (aspect_m.attributes.is_replace and existing_m.type_context is this)
+          if (.should_inject_tokens(existing_m,aspect_m))
+            existing_m.source_tokens.tokens.[clear].add( aspect_m.source_tokens.tokens )
+          endIf
           existing_m.body = aspect_m.body
           existing_m.statements = aspect_m.statements
           existing_m.return_type = aspect_m.return_type
@@ -723,6 +732,14 @@ class Type : Cmd
         methods[ aspect_m.signature ] = aspect_m
 
       endIf
+
+    method .should_inject_tokens( existing_m:Method, aspect_m:Method )->Logical
+      if (existing_m.source_tokens and aspect_m.source_tokens)      return true
+      if (not (existing_m.source_tokens or aspect_m.source_tokens)) return false
+      if (existing_m.attributes.is_propagated xor aspect_m.attributes.is_propagated)
+        throw aspect_m.t.error( "Cannot incorporate a [propagated] method into a non-propated method or vice versa." )
+      endIf
+      return false
 
     method instance_of( ancestor_type:Type )->Logical
       if (ancestor_type is Program.type_Object and this.is_reference) return true
