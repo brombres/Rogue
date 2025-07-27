@@ -757,6 +757,9 @@ augment
     method GlobalPropertyDeclarations.type->Type
       return @type
 
+    method HasMethod.type->Type
+      return Program.type_Logical
+
     method InlineAssignment.type->Type
       return info.type
 

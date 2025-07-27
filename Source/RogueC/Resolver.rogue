@@ -777,6 +777,15 @@ class Resolver : Poolable, Visitor
         on_visit_node( cmd->(as Procedure) )
       endTemporarily
 
+    method on_visit( cmd:HasMethod )->Cmd
+      local type = visit( cmd.type_expression ).require_type
+      forEach (m in type.methods)
+        if (m.name == cmd.method_name)
+          return LiteralLogical( cmd.t, true )
+        endIf
+      endForEach
+      return LiteralLogical( cmd.t, false )
+
     method on_visit( cmd:IndexedAccess )->Cmd
       local context = visit( cmd.context )
       local context_type = context.require_type

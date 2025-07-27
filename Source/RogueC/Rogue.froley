@@ -132,6 +132,7 @@ META_END_MACRO        $endMacro       [meta structural]
 META_EXISTS           $exists         [meta]
 META_FILE_BYTES       $fileBytes      [meta]
 META_FILE_STRING      $fileString     [meta]
+META_HAS_METHOD       $hasMethod      [meta]
 META_IF               $if             [meta]
 META_INCLUDE          $include        [meta]
 META_INCLUDE_FOLDER   $includeFolder  [meta]
@@ -3411,6 +3412,7 @@ parser
 
   on "new" "<<" expression ">>" optional_args -> New(type_expression,args:Args)
 
+  on "$hasMethod"   "<<" expression ',' identifier ">>" -> HasMethod(type_expression,method_name:String)
   on "$isCompound"  "<<" type ">>" -> IsCompound(operand)
   on "$isEnum"      "<<" type ">>" -> IsEnum(operand)
   on "$isPrimitive" "<<" type ">>" -> IsPrimitive(operand)

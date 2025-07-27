@@ -5450,3 +5450,21 @@ class AttributeAugment : Cmd
     method description->String
       return "AttributeAugment"
 endClass
+
+class HasMethod : Cmd
+  PROPERTIES
+    type_expression : Cmd
+    method_name     : String
+
+  METHODS
+    method init( t, type_expression, method_name )
+
+    method init( existing:HasMethod )
+      prior.init( existing )
+      if (existing.type_expression) type_expression = existing.type_expression.cloned
+      method_name = existing.method_name
+
+    method description->String
+      return "HasMethod($,$)" (%type_expression,%method_name)
+
+endClass

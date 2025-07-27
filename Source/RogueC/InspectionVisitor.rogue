@@ -1186,4 +1186,9 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.operand)
       return result
 
+    method on_visit_children( cmd:HasMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type_expression)
+      return result
+
 endClass
