@@ -22,58 +22,58 @@
 
 // Set up C conditional compilation defines
 #if defined(__EMSCRIPTEN__)
-  #define ROGUE_PLATFORM_WEB 1
-  #define ROGUE_PLATFORM_DETERMINED 1
-#elif defined(ROGUE_PLATFORM_PLAYDATE)
-  #define ROGUE_PLATFORM_DETERMINED 1
+  #define ROGUE_TARGET_WEB 1
+  #define ROGUE_TARGET_DETERMINED 1
+#elif defined(ROGUE_TARGET_PLAYDATE)
+  #define ROGUE_TARGET_DETERMINED 1
 #endif
 
-#if !defined(ROGUE_PLATFORM_DETERMINED)
+#if !defined(ROGUE_TARGET_DETERMINED)
   // Handle Apple's wonky defines which used to ALWAYS be defined as 0 or 1 and
   // are now only defined if the platform is active.
 
   #if defined(__APPLE__)
     #include <TargetConditionals.h>
-    #define ROGUE_PLATFORM_APPLE 1
+    #define ROGUE_TARGET_APPLE 1
 
     #if defined(TARGET_OS_SIMULATOR)
       #if TARGET_OS_SIMULATOR
-        #define ROGUE_PLATFORM_IOS 1
+        #define ROGUE_TARGET_IOS 1
       #endif
     #endif
 
-    #if !defined(ROGUE_PLATFORM_IOS)
+    #if !defined(ROGUE_TARGET_IOS)
       #if defined(TARGET_OS_IOS)
         #if TARGET_OS_IOS
-          #define ROGUE_PLATFORM_IOS 1
+          #define ROGUE_TARGET_IOS 1
         #endif
       #endif
     #endif
 
-    #if !defined(ROGUE_PLATFORM_IOS)
-      #define ROGUE_PLATFORM_MACOS 1
+    #if !defined(ROGUE_TARGET_IOS)
+      #define ROGUE_TARGET_MACOS 1
     #endif
 
-    #define ROGUE_PLATFORM_DETERMINED 1
+    #define ROGUE_TARGET_DETERMINED 1
   #endif
 #endif
 
-#if !defined(ROGUE_PLATFORM_DETERMINED)
+#if !defined(ROGUE_TARGET_DETERMINED)
   #if defined(_WIN32)
-  #  define ROGUE_PLATFORM_WINDOWS 1
+  #  define ROGUE_TARGET_WINDOWS 1
   #elif defined(__ANDROID__)
-  #  define ROGUE_PLATFORM_ANDROID 1
+  #  define ROGUE_TARGET_ANDROID 1
   #elif defined(__linux__)
-  #  define ROGUE_PLATFORM_LINUX 1
+  #  define ROGUE_TARGET_LINUX 1
   #elif defined(__CYGWIN__)
-  #  define ROGUE_PLATFORM_LINUX  1
-  #  define ROGUE_PLATFORM_CYGWIN 1
+  #  define ROGUE_TARGET_LINUX  1
+  #  define ROGUE_TARGET_CYGWIN 1
   #else
-  #  define ROGUE_PLATFORM_GENERIC 1
+  #  define ROGUE_TARGET_GENERIC 1
   #endif
 #endif
 
-#if defined(ROGUE_PLATFORM_WINDOWS)
+#if defined(ROGUE_TARGET_WINDOWS)
   #pragma warning(disable: 4297) /* unexpected throw warnings */
   #if !defined(UNICODE)
     #define UNICODE
@@ -81,7 +81,7 @@
   #include <windows.h>
   #include <signal.h>
 #else
-  #define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
+  #define ROGUE_TARGET_UNIX_COMPATIBLE 1
   #include <limits.h>
   #include <stdint.h>
 #endif
@@ -105,7 +105,7 @@
 //------------------------------------------------------------------------------
 // Primitive Types
 //------------------------------------------------------------------------------
-#if defined(ROGUE_PLATFORM_WINDOWS)
+#if defined(ROGUE_TARGET_WINDOWS)
   typedef double           RogueReal64;
   typedef float            RogueReal32;
   typedef __int64          RogueInt64;
@@ -2397,20 +2397,17 @@ extern RogueRuntimeType TypeRogueFunction_3339;
 typedef struct RogueFunction_3340 RogueFunction_3340;
 extern RogueRuntimeType TypeRogueFunction_3340;
 
-typedef struct RogueFunction_3341 RogueFunction_3341;
-extern RogueRuntimeType TypeRogueFunction_3341;
-
 typedef struct RogueBitReader RogueBitReader;
 extern RogueRuntimeType TypeRogueBitReader;
 
 typedef struct RogueOPARENFunctionOPARENRogueInt_RogueInt_RogueVariantCPARENCPAREN RogueOPARENFunctionOPARENRogueInt_RogueInt_RogueVariantCPARENCPAREN;
 extern RogueRuntimeType TypeRogueOPARENFunctionOPARENRogueInt_RogueInt_RogueVariantCPARENCPAREN;
 
+typedef struct RogueFunction_3345 RogueFunction_3345;
+extern RogueRuntimeType TypeRogueFunction_3345;
+
 typedef struct RogueFunction_3346 RogueFunction_3346;
 extern RogueRuntimeType TypeRogueFunction_3346;
-
-typedef struct RogueFunction_3347 RogueFunction_3347;
-extern RogueRuntimeType TypeRogueFunction_3347;
 
 typedef struct RogueWorkListxRogueCLocalx RogueWorkListxRogueCLocalx;
 extern RogueRuntimeType TypeRogueWorkListxRogueCLocalx;
@@ -4798,7 +4795,7 @@ extern RogueRuntimeType TypeGeometryAugment_2_Geometry_XYZW;
 #include <stdio.h>
 #include <sys/stat.h>
 
-#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
+#if !defined(ROGUE_TARGET_WINDOWS) && !defined(ROGUE_TARGET_EMBEDDED)
   #include <dirent.h>
 #endif
 #define ROGUE_STRING_COPY           0
@@ -4817,10 +4814,10 @@ const char*      RogueString_to_c_string( RogueString* st );
 RogueInt     RogueString_utf8_character_count( const char* cstring, RogueInt byte_count );
 
 extern RogueInt Rogue_string_table_count;
-#if defined(ROGUE_PLATFORM_LINUX)
+#if defined(ROGUE_TARGET_LINUX)
   #include <signal.h>
 #endif
-#if defined(ROGUE_PLATFORM_WINDOWS)
+#if defined(ROGUE_TARGET_WINDOWS)
   #include <time.h>
   #include <sys/timeb.h>
 #else
@@ -4839,7 +4836,7 @@ extern char **environ;
 #if defined(__APPLE__)
   ROGUE_EXTERN_C int _NSGetExecutablePath(char* buf, uint32_t* bufsize);
 #endif
-#if defined(ROGUE_PLATFORM_WINDOWS)
+#if defined(ROGUE_TARGET_WINDOWS)
   #ifndef CONSOLE_READ_NOREMOVE
     #define CONSOLE_READ_NOREMOVE 0x0001
   #endif
@@ -4848,10 +4845,10 @@ extern char **environ;
     #define CONSOLE_READ_NOWAIT   0x0002
   #endif
 #endif
-#if defined(ROGUE_PLATFORM_WINDOWS)
+#if defined(ROGUE_TARGET_WINDOWS)
   #include <io.h>
   #define ROGUE_READ_CALL _read
-#elif !defined(ROGUE_PLATFORM_EMBEDDED)
+#elif !defined(ROGUE_TARGET_EMBEDDED)
   #include <fcntl.h>
   #include <termios.h>
   #include <unistd.h>
@@ -4866,7 +4863,7 @@ extern char **environ;
 #endif
 
 void Rogue_fwrite( const char* utf8, RogueInt byte_count, int out );
-#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
+#if !defined(ROGUE_TARGET_WINDOWS) && !defined(ROGUE_TARGET_EMBEDDED)
   #include <dirent.h>
 #endif
 struct RogueStackTraceFrame
@@ -5657,7 +5654,7 @@ struct RogueOptionalTableEntryxRogueInt_RogueIntx
 
 struct RogueWindowsInputRecord
 {
-  #if defined(ROGUE_PLATFORM_WINDOWS)
+  #if defined(ROGUE_TARGET_WINDOWS)
   INPUT_RECORD value;
   #else
   int dummy;
@@ -5792,7 +5789,7 @@ struct RogueByteList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -5858,7 +5855,7 @@ struct RogueOPARENFunctionOPARENCPARENCPARENList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -5926,7 +5923,7 @@ struct RogueStackTraceFrameList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -6047,7 +6044,7 @@ struct RogueCharacterList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -6082,7 +6079,7 @@ struct RogueStringList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -6195,7 +6192,7 @@ struct RogueVariantList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -6245,7 +6242,7 @@ struct RogueTableEntryxRogueVariant_RogueVariantxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -6397,7 +6394,7 @@ struct RogueTableEntryxRogueString_RogueGlobalIDxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -6590,7 +6587,7 @@ struct RogueGlobalIDList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -6656,7 +6653,7 @@ struct RogueTableEntryxRogueGlobalID_RogueSignalIDxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -6730,7 +6727,7 @@ struct RogueTableEntryxRogueString_RogueSignalIDxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -6804,7 +6801,7 @@ struct RogueTableEntryxRogueSignalID_RogueStringxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -6890,7 +6887,7 @@ struct RogueTableEntryxRogueString_RogueVariantxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -7076,7 +7073,7 @@ struct RogueIntList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -7140,7 +7137,7 @@ struct RogueConsole
   RogueOptionalInt next_input_character;
   RogueByteList* _input_bytes;
   RogueLogical force_input_blocking;
-  #if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
+  #if !defined(ROGUE_TARGET_WINDOWS) && !defined(ROGUE_TARGET_EMBEDDED)
     struct termios original_terminal_settings;
     int            original_stdin_flags;
   #endif
@@ -7183,7 +7180,7 @@ struct RogueStringEncodingList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -7306,7 +7303,7 @@ struct RogueFileListingOptionList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -7361,7 +7358,7 @@ struct RogueConsoleEventTypeList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -7413,7 +7410,7 @@ struct RogueScanPatternList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -7563,7 +7560,7 @@ struct RogueTableEntryxRogueString_OPARENFunctionOPARENRogueCommandLineParserCPA
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -7690,7 +7687,7 @@ struct RogueSignalConnectionList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -7740,7 +7737,7 @@ struct RogueTableEntryxRogueSignalID_RogueSignalConnectionListxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -7833,7 +7830,7 @@ struct RogueInt32List
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -7960,7 +7957,7 @@ struct RogueTableEntryxRogueString_RogueLogicalxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8034,7 +8031,7 @@ struct RogueTableEntryxRogueString_RogueCIncludedFilexList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8093,7 +8090,7 @@ struct RogueCTokenList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8143,7 +8140,7 @@ struct RogueTableEntryxRogueString_RogueCTokenListxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8211,7 +8208,7 @@ struct RogueCCmdList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8268,7 +8265,7 @@ struct RogueCMacroList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8318,7 +8315,7 @@ struct RogueTableEntryxRogueString_RogueCMacroListxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8392,7 +8389,7 @@ struct RogueTableEntryxRogueString_RogueStringxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8451,7 +8448,7 @@ struct RogueCUsedLibraryList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8512,7 +8509,7 @@ struct RogueTableEntryxRogueString_RogueCCmdxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8604,7 +8601,7 @@ struct RogueTableEntryxRogueString_RogueCPropertyxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8700,7 +8697,7 @@ struct RogueCLocalList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8871,7 +8868,7 @@ struct RogueTableEntryxRogueString_RogueCGlobalMethodxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -8987,7 +8984,7 @@ struct RogueTableEntryxRogueString_RogueCMethodxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9057,7 +9054,7 @@ struct RogueCNativeHeaderList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9103,7 +9100,7 @@ struct RogueCNativeCodeList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9159,7 +9156,7 @@ struct RogueCStateDefList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9208,7 +9205,7 @@ struct RogueCCategoryList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9271,7 +9268,7 @@ struct RogueCGlobalMethodTemplateList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9321,7 +9318,7 @@ struct RogueTableEntryxRogueString_RogueCGlobalMethodTemplateListxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9396,7 +9393,7 @@ struct RogueCMethodTemplateList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9446,7 +9443,7 @@ struct RogueTableEntryxRogueString_RogueCMethodTemplateListxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9561,7 +9558,7 @@ struct RogueCTypeList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9621,7 +9618,7 @@ struct RogueTableEntryxRogueString_RogueCTemplatexList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9695,7 +9692,7 @@ struct RogueTableEntryxRogueString_RogueStringListxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9769,7 +9766,7 @@ struct RogueTableEntryxRogueString_RogueCTypexList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9867,7 +9864,7 @@ struct RogueTableEntryxRogueString_RogueCLibraryxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -9941,7 +9938,7 @@ struct RogueTableEntryxRogueString_RogueIntxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -10000,7 +9997,7 @@ struct RogueCMethodList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -10060,7 +10057,7 @@ struct RogueTableEntryxRogueString_RogueCDynamicMethodGroupxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -10119,7 +10116,7 @@ struct RogueCProcedureList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -10169,7 +10166,7 @@ struct RogueTableEntryxRogueString_RogueCProcedureListxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -10228,7 +10225,7 @@ struct RogueLogicalList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -10288,7 +10285,7 @@ struct RogueTableEntryxRogueCCmdGlobalID_RogueCCmdGlobalIDxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -10808,7 +10805,7 @@ struct RogueUTF16StringList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -10949,7 +10946,7 @@ struct RogueSpanList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -11079,7 +11076,7 @@ struct RogueCPropertyList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -11156,7 +11153,7 @@ struct RogueCCatchList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -11203,7 +11200,7 @@ struct RogueCMethodOrganizerList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -11332,7 +11329,7 @@ struct RogueCScannerList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -11401,7 +11398,7 @@ struct RogueCControlStructureList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -11453,7 +11450,7 @@ struct RogueCResolverList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -11513,7 +11510,7 @@ struct RogueCStateMethodList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -11635,7 +11632,7 @@ struct RogueTableEntryxRogueInt_RogueIntxList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -11830,7 +11827,7 @@ struct RogueConsoleEventList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -11902,7 +11899,7 @@ struct RogueUnixConsoleMouseEventTypeList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -12921,7 +12918,7 @@ struct RogueOPARENRogueCType_RogueCTypeCPARENList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -12995,7 +12992,7 @@ struct RogueIntQList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -13057,14 +13054,6 @@ struct RogueFunction_3340
 
 void RogueFunction_3340_gc_trace( void* THISOBJ );
 
-struct RogueFunction_3341
-{
-  RogueRuntimeType* __type;
-  RogueInt32 __refcount;
-};
-
-void RogueFunction_3341_gc_trace( void* THISOBJ );
-
 struct RogueBitReader
 {
   RogueRuntimeType* __type;
@@ -13085,6 +13074,14 @@ struct RogueOPARENFunctionOPARENRogueInt_RogueInt_RogueVariantCPARENCPAREN
 
 void RogueOPARENFunctionOPARENRogueInt_RogueInt_RogueVariantCPARENCPAREN_gc_trace( void* THISOBJ );
 
+struct RogueFunction_3345
+{
+  RogueRuntimeType* __type;
+  RogueInt32 __refcount;
+};
+
+void RogueFunction_3345_gc_trace( void* THISOBJ );
+
 struct RogueFunction_3346
 {
   RogueRuntimeType* __type;
@@ -13092,14 +13089,6 @@ struct RogueFunction_3346
 };
 
 void RogueFunction_3346_gc_trace( void* THISOBJ );
-
-struct RogueFunction_3347
-{
-  RogueRuntimeType* __type;
-  RogueInt32 __refcount;
-};
-
-void RogueFunction_3347_gc_trace( void* THISOBJ );
 
 struct RogueWorkListxRogueCLocalx
 {
@@ -13943,7 +13932,7 @@ struct RogueCCmdGlobalIDList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -13978,7 +13967,7 @@ struct RogueCTokenTypeList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -14126,7 +14115,7 @@ struct RogueCControlTypeList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -14533,7 +14522,7 @@ struct RogueCParserPositionList
     RogueByte*      as_bytes;
     char*               as_utf8; // only valid for String data; includes null terminator
     RogueByte*      as_logicals;
-    #if defined(ROGUE_PLATFORM_WINDOWS)
+    #if defined(ROGUE_TARGET_WINDOWS)
       wchar_t*          as_wchars;
     #endif
   };
@@ -21716,6 +21705,7 @@ extern RogueStringList* RogueSystem__g_command_line_arguments;
 extern RogueString* RogueSystem__g_executable_filepath;
 extern RogueInt64 RogueSystem__g_execution_start_ms;
 RogueReal RogueSystem__execution_time(void);
+RogueInt64 RogueSystem__execution_time_ms(void);
 RogueString* RogueSystem__executable_filepath(void);
 void RogueSystem__exit__RogueInt32(RogueInt32 result_code_0);
 RogueLogical RogueSystem__is_windows(void);
@@ -27693,19 +27683,14 @@ void RogueFunction_3338__init_object( RogueFunction_3338* THISOBJ );
 RogueString* RogueFunction_3338__type_name( RogueFunction_3338* THISOBJ );
 extern RogueFunction_3339* RogueFunction_3339_singleton;
 
-RogueString* RogueFunction_3339__call__RogueString( RogueFunction_3339* THISOBJ, RogueString* element_0 );
+RogueVariant RogueFunction_3339__call__RogueTupleOPARENRogueCType_RogueCTypeCPAREN( RogueFunction_3339* THISOBJ, RogueTupleOPARENRogueCType_RogueCTypeCPAREN element_0 );
 void RogueFunction_3339__init_object( RogueFunction_3339* THISOBJ );
 RogueString* RogueFunction_3339__type_name( RogueFunction_3339* THISOBJ );
 extern RogueFunction_3340* RogueFunction_3340_singleton;
 
-RogueVariant RogueFunction_3340__call__RogueTupleOPARENRogueCType_RogueCTypeCPAREN( RogueFunction_3340* THISOBJ, RogueTupleOPARENRogueCType_RogueCTypeCPAREN element_0 );
+RogueVariant RogueFunction_3340__call__RogueOptionalInt( RogueFunction_3340* THISOBJ, RogueOptionalInt element_0 );
 void RogueFunction_3340__init_object( RogueFunction_3340* THISOBJ );
 RogueString* RogueFunction_3340__type_name( RogueFunction_3340* THISOBJ );
-extern RogueFunction_3341* RogueFunction_3341_singleton;
-
-RogueVariant RogueFunction_3341__call__RogueOptionalInt( RogueFunction_3341* THISOBJ, RogueOptionalInt element_0 );
-void RogueFunction_3341__init_object( RogueFunction_3341* THISOBJ );
-RogueString* RogueFunction_3341__type_name( RogueFunction_3341* THISOBJ );
 RogueLogical RogueBitReader__has_another( RogueBitReader* THISOBJ );
 RogueLogical RogueBitReader__has_another__RogueInt( RogueBitReader* THISOBJ, RogueInt nbits_0 );
 RogueByte RogueBitReader__read( RogueBitReader* THISOBJ );
@@ -27714,16 +27699,16 @@ void RogueBitReader__init_object( RogueBitReader* THISOBJ );
 RogueString* RogueBitReader__type_name( RogueBitReader* THISOBJ );
 void RogueOPARENFunctionOPARENRogueInt_RogueInt_RogueVariantCPARENCPAREN__init_object( RogueOPARENFunctionOPARENRogueInt_RogueInt_RogueVariantCPARENCPAREN* THISOBJ );
 RogueString* RogueOPARENFunctionOPARENRogueInt_RogueInt_RogueVariantCPARENCPAREN__type_name( RogueOPARENFunctionOPARENRogueInt_RogueInt_RogueVariantCPARENCPAREN* THISOBJ );
+extern RogueFunction_3345* RogueFunction_3345_singleton;
+
+void RogueFunction_3345__call__RogueInt_RogueInt_RogueVariant( RogueFunction_3345* THISOBJ, RogueInt key_0, RogueInt value_1, RogueVariant table_2 );
+void RogueFunction_3345__init_object( RogueFunction_3345* THISOBJ );
+RogueString* RogueFunction_3345__type_name( RogueFunction_3345* THISOBJ );
 extern RogueFunction_3346* RogueFunction_3346_singleton;
 
-void RogueFunction_3346__call__RogueInt_RogueInt_RogueVariant( RogueFunction_3346* THISOBJ, RogueInt key_0, RogueInt value_1, RogueVariant table_2 );
+RogueVariant RogueFunction_3346__call__RogueTableEntryxRogueInt_RogueIntx( RogueFunction_3346* THISOBJ, RogueTableEntryxRogueInt_RogueIntx* element_0 );
 void RogueFunction_3346__init_object( RogueFunction_3346* THISOBJ );
 RogueString* RogueFunction_3346__type_name( RogueFunction_3346* THISOBJ );
-extern RogueFunction_3347* RogueFunction_3347_singleton;
-
-RogueVariant RogueFunction_3347__call__RogueTableEntryxRogueInt_RogueIntx( RogueFunction_3347* THISOBJ, RogueTableEntryxRogueInt_RogueIntx* element_0 );
-void RogueFunction_3347__init_object( RogueFunction_3347* THISOBJ );
-RogueString* RogueFunction_3347__type_name( RogueFunction_3347* THISOBJ );
 extern RogueWorkListxRogueCLocalx* RogueWorkListxRogueCLocalx_singleton;
 
 void RogueWorkListxRogueCLocalx__init_object( RogueWorkListxRogueCLocalx* THISOBJ );
@@ -66974,8 +66959,8 @@ RogueCToken Rogue_dispatch__peek___RogueCToken( void* THISOBJ );
 RogueCToken Rogue_dispatch__read___RogueCToken( void* THISOBJ );
 
 extern RogueInt Rogue_type_count;
-extern RogueRuntimeType* Rogue_types[1495];
-extern RogueInt Rogue_base_types[2172];
+extern RogueRuntimeType* Rogue_types[1494];
+extern RogueInt Rogue_base_types[2170];
 extern RogueString* Rogue_string_table[2142];
 extern RogueString* str_true;
 extern RogueString* str_false;
