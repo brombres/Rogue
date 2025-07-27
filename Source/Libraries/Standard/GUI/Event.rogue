@@ -12,7 +12,6 @@ class Event
   METHODS
     method init( timestamp=System.execution_time_ms )
       is_consumed = false
-      refcount    = 0
 
     method init( existing:Event )
       is_consumed = existing.is_consumed
@@ -24,9 +23,14 @@ class Event
     method consume
       is_consumed = true
 
+    method dispatch [propagated]
+      # Application-specific
+      is_consumed = false
+
     method release [propagated]
       --refcount
-      if (refcount == 0)
+      if (refcount <= 0)
+        refcount = 0
         ObjectPool<<$thisType>>.on_end_use( this )
       endIf
 
@@ -172,15 +176,18 @@ class PointerEvent : Event
     MIDDLE   = 2
 
   PROPERTIES
-    type         : GlobalID
-    position     : XY
-    delta        : XY
-    index        : Int   # button index for mouse press
-    is_cancelled : Logical
+    type          : GlobalID
+    position      : XY
+    delta         : XY
+    index         : Int     # button index for mouse press
+    pointer_id    : Int     # used to distinguish touches, only valid if is_touch
+    is_cancelled  : Logical
     # When a touch event in progress is interrupted, a <RELEASE> event is sent
     # with .is_cancelled==true.
 
-    pointer_id    : Int     # used to distinguish touches
+    is_click      : Logical # Can be true for <RELEASE> events
+    is_long_press : Logical # When true, is part a re-dispatched <PRESS> event
+    is_drag       : Logical # this <MOVE> or <RELEASE> event is part of a press and drag movement
     is_touch      : Logical # this pointer event is from a touch rather than the mouse
     is_multitouch : Logical # this is one of at least two touches that are currently active
 
@@ -193,6 +200,11 @@ class PointerEvent : Event
 
     method init( type, position, delta, index, is_cancelled=false, is_touch=false )
       prior.init
+      pointer_id    = 0
+      is_click      = false
+      is_long_press = false
+      is_drag       = false
+      is_multitouch = false
 
     method init( existing:PointerEvent )
       prior.init( existing )
@@ -200,7 +212,13 @@ class PointerEvent : Event
       position  = existing.position
       delta     = existing.delta
       index     = existing.index
-      is_cancelled = existing.is_cancelled
+      is_cancelled  = existing.is_cancelled
+      pointer_id    = existing.pointer_id
+      is_click      = existing.is_click
+      is_long_press = existing.is_long_press
+      is_drag       = existing.is_drag
+      is_touch      = existing.is_touch
+      is_multitouch = existing.is_multitouch
 
     method is_drag_move->Logical
       return (this.type == <DRAG_MOVE>)
@@ -270,7 +288,13 @@ class PointerEvent : Event
         case <LEAVE>:      buffer.print( "leave" )
       endWhich
       if (not (is_enter or is_leave)) buffer.[ print(" at "), print(position) ]
-      if (is_multitouch) buffer.print( " [multitouch]" )
+      local attributes = String[]
+      if (is_click)      attributes.add( "click" )
+      if (is_long_press) attributes.add( "long_press" )
+      if (is_drag)       attributes.add( "drag" )
+      if (is_touch)      attributes.add( "touch" )
+      if (is_multitouch) attributes.add( "multitouch" )
+      if (attributes.count) buffer.print( " [$]"(attributes.join(',')) )
       if (is_consumed)   buffer.print( " (consumed)" )
 
       return buffer

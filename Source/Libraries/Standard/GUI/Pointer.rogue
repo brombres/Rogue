@@ -1,12 +1,17 @@
 library GUI
 
-class PointerPosition( id:Int, position:XY ) [compound];
-
 class Pointer [singleton]
   PROPERTIES
-    position      : XY?   # of first touch in current single touch or multitouch event
-    presses       = PointerPosition[]
-    is_multitouch : Logical
+    click_time_threshold = 0.300
+    drag_threshold_px    = 10
+
+    position         : XY?   # of first touch in current single touch or multitouch event
+    presses          = PointerEvent[]
+    is_multitouch    : Logical
+    is_dragging      : Logical
+    is_long_press    : Logical
+    press_start_time : Real
+    press_position   : XY
 
   METHODS
     method average_position->XY?
@@ -15,37 +20,51 @@ class Pointer [singleton]
       sum += (forEach in presses).position
       return sum / presses.count
 
-    method find( by_id:Int )->PointerPosition?
+    method find( by_id:Int )->PointerEvent?
       forEach (press in presses)
-        if (press.id == by_id) return press
+        if (press.pointer_id == by_id) return press
       endForEach
       return null
 
     method locate( by_id:Int )->Int?
       forEach (press at i in presses)
-        if (press.id == by_id) return i
+        if (press.pointer_id == by_id) return i
       endForEach
       return null
 
     method record( e:PointerEvent )
       if (e.is_press)
-        presses.add( PointerPosition(e.pointer_id, e.position) )
-        if (presses.count == 1) position = e.position
-        else                           is_multitouch = true
+        e.retain
+        presses.add( e )
+        if (presses.count == 1)
+          position = e.position
+          press_start_time = System.execution_time
+          press_position   = e.position
+          is_dragging = false
+          is_long_press = false
+        else
+          is_multitouch = true
+          is_dragging = false
+        endIf
         e.is_multitouch = is_multitouch
 
       elseIf (e.is_move)
-        local new_position = PointerPosition( e.pointer_id, e.position )
         which (presses.count)
           case 0
-            # Shouldn't happen
+            # Mouse is moving but isn't pressed
             position = e.position
           case 1
             position = e.position
-            presses[0] = new_position
+            presses[0].position = e.position
+            if (not is_multitouch and not is_dragging)
+              if ((e.position - press_position).magnitude > drag_threshold_px * Display.density)
+                is_dragging = true
+              endIf
+            endIf
+            e.is_drag = is_dragging
           others
             if local i = locate( e.pointer_id )
-              presses[i] = new_position
+              presses[i].position = e.position
               if (i == 0) position = e.position
             endIf
         endWhich
@@ -58,20 +77,41 @@ class Pointer [singleton]
             position = e.position
           case 1
             position = e.position
-            presses.remove_last
+            presses.remove_last.release
+            e.is_drag = is_dragging
+            if (not is_multitouch and not is_dragging)
+              local dt = System.execution_time - press_start_time
+              if (dt <= click_time_threshold) e.is_click = true
+            endIf
           others
             if local i = locate( e.pointer_id )
-              presses.remove_at( i )
+              presses.remove_at( i ).release
             endIf
         endWhich
         e.is_multitouch = is_multitouch
-        if (presses.is_empty) is_multitouch = false
+        if (presses.is_empty)
+          is_multitouch = false
+          is_dragging = false
+          is_long_press = false
+        endIf
 
       elseIf (e.is_leave)
         position = null
+        (forEach in presses).release
         presses.clear
         e.is_multitouch = false
+        is_dragging = false
 
+      endIf
+
+    method update
+      if (not is_multitouch and presses.count == 1 and not is_long_press)
+        if ((System.execution_time - press_start_time) > click_time_threshold)
+          is_long_press = true
+          local e = presses[0]
+          e.[ is_long_press=true, timestamp=System.time ]
+          e.dispatch
+        endIf
       endIf
 
 endClass
