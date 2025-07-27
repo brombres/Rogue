@@ -31,7 +31,7 @@ class Event
       --refcount
       if (refcount <= 0)
         refcount = 0
-        ObjectPool<<$thisType>>.on_end_use( this )
+        RecyclePool<<$thisType>>.recycle( this )
       endIf
 
     method retain
@@ -176,7 +176,7 @@ class PointerEvent : Event
     MIDDLE   = 2
 
   PROPERTIES
-    type          : GlobalID
+    type          : GlobalID  # <PRESS>, <MOVE>, <RELEASE>, <LEAVE>
     position      : XY
     delta         : XY
     index         : Int     # button index for mouse press
@@ -186,7 +186,7 @@ class PointerEvent : Event
     # with .is_cancelled==true.
 
     is_click      : Logical # Can be true for <RELEASE> events
-    is_long_press : Logical # When true, is part a re-dispatched <PRESS> event
+    is_long_press : Logical # Can be true for any event type, including redispatched <PRESS>
     is_drag       : Logical # this <MOVE> or <RELEASE> event is part of a press and drag movement
     is_touch      : Logical # this pointer event is from a touch rather than the mouse
     is_multitouch : Logical # this is one of at least two touches that are currently active
@@ -219,15 +219,6 @@ class PointerEvent : Event
       is_drag       = existing.is_drag
       is_touch      = existing.is_touch
       is_multitouch = existing.is_multitouch
-
-    method is_drag_move->Logical
-      return (this.type == <DRAG_MOVE>)
-
-    method is_drag_start->Logical
-      return (this.type == <DRAG_START>)
-
-    method is_drag_stop->Logical
-      return (this.type == <DRAG_STOP>)
 
     method is_enter->Logical
       return (this.type == <ENTER>)
@@ -296,6 +287,7 @@ class PointerEvent : Event
       if (is_multitouch) attributes.add( "multitouch" )
       if (attributes.count) buffer.print( " [$]"(attributes.join(',')) )
       if (is_consumed)   buffer.print( " (consumed)" )
+      buffer.print( " #$"(pointer_id) )
 
       return buffer
 endClass
@@ -423,7 +415,7 @@ class MultitouchEvent : Event
       delta = existing.delta
 
     method to->String
-      local buffer = String().[ print("MultitouchScroll "), print( delta ) ]
+      local buffer = String().[ print("MultitouchEvent "), print( delta ) ]
       if (is_consumed) buffer.print( " (consumed)" )
       return buffer
 endClass

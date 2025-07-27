@@ -1,2 +1,2 @@
-class StringPool : ObjectPool<<String>> [singleton]
+class StringPool : RecyclePool<<String>> [singleton]
 endClass

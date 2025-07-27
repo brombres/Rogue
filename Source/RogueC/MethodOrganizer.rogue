@@ -1,6 +1,6 @@
 library RogueC
 
-class MethodOrganizer : Visitor, Poolable
+class MethodOrganizer : Visitor, Recyclable
   PROPERTIES
     catches = Catch[]
 
@@ -8,7 +8,7 @@ class MethodOrganizer : Visitor, Poolable
     method reset
       catches.clear
 
-    method on_return_to_pool
+    method on_recycle
       reset
 
     method visit( this_type, class_def:Cmd )

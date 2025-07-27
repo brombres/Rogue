@@ -1,0 +1,4 @@
+class Recyclable [aspect]
+  METHODS
+    method on_recycle
+endClass

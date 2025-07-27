@@ -1,4 +1,4 @@
-class String : Poolable PrintWriter
+class String : Recyclable PrintWriter
   PROPERTIES
     count           : Int  # in whole characters
     cursor_offset   : Int  # in bytes
@@ -873,7 +873,7 @@ class String : Poolable PrintWriter
       if (not span) return false
       return span.value.index == 0 and span.value.count == count
 
-    method on_return_to_pool
+    method on_recycle
       clear
 
     method pluralized( quantity:Int )->String

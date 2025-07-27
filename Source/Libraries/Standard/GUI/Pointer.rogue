@@ -82,6 +82,7 @@ class Pointer [singleton]
             if (not is_multitouch and not is_dragging)
               local dt = System.execution_time - press_start_time
               if (dt <= click_time_threshold) e.is_click = true
+              else                            e.is_long_press = true
             endIf
           others
             if local i = locate( e.pointer_id )
@@ -101,15 +102,16 @@ class Pointer [singleton]
         presses.clear
         e.is_multitouch = false
         is_dragging = false
+        is_long_press = false
 
       endIf
 
     method update
-      if (not is_multitouch and presses.count == 1 and not is_long_press)
+      if (not is_multitouch and presses.count == 1 and not is_long_press and not is_dragging)
         if ((System.execution_time - press_start_time) > click_time_threshold)
           is_long_press = true
           local e = presses[0]
-          e.[ is_long_press=true, timestamp=System.time ]
+          e.[ is_long_press=true, timestamp=System.execution_time_ms ]
           e.dispatch
         endIf
       endIf

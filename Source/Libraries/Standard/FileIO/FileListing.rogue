@@ -201,7 +201,7 @@ class FileListing
               |  HANDLE dir;
               |
                  local search_folder = folder/"*"
-                 use filepath_utf16 = ObjectPool<<UTF16String>>
+                 use filepath_utf16 = RecyclePool<<UTF16String>>
                    filepath_utf16.init( search_folder.filepath )
 
       native @|    dir = FindFirstFileW( $filepath_utf16->data->as_wchars, &entry );

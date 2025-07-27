@@ -1,7 +1,7 @@
 class ListType [aspect]
 endClass
 
-class List<<$DataType>> : Poolable ListType
+class List<<$DataType>> : Recyclable ListType
   PROPERTIES
     count        : Int
     capacity     : Int
@@ -88,6 +88,11 @@ class List<<$DataType>> : Poolable ListType
 
     method contains( other:$DataType[] )->Logical
       return this.locate( other )?
+
+    method convert<<$ToType>>->$ToType[]
+      local result = $ToType[]( capacity )
+      forEach (element in this) result.add( element->$ToType )
+      return result
 
     method copy( dest:$DataType[], dest_i1=0:Int )
       copy( 0, count, dest, dest_i1 )
@@ -456,15 +461,8 @@ class List<<$DataType>> : Poolable ListType
 
       return result
 
-    method map<<$ToType>>( map_fn=null:(Function($DataType)->$ToType) )->$ToType[]
-      if (not map_fn)
-        map_fn = function( element:$DataType )->$ToType
-          return element->$ToType
-        endFunction
-      endIf
-
+    method map<<$ToType>>( map_fn:(Function($DataType)->$ToType) )->$ToType[]
       local result = $ToType[]( capacity )
-
       forEach (element in this) result.add( map_fn(element) )
       return result
 
@@ -474,7 +472,7 @@ class List<<$DataType>> : Poolable ListType
     method modified( fn:(Function($DataType)->$DataType) )->$DataType[]
       return cloned.[ modify(fn) ]
 
-    method on_return_to_pool
+    method on_recycle
       clear
 
     method operator==( other:$DataType[] )->Logical

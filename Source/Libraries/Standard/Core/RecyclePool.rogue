@@ -1,0 +1,25 @@
+class RecyclePool<<$DataType>> [singleton]
+  PROPERTIES
+    available = $DataType[]
+
+  METHODS
+    method acquire->$DataType
+      local result : $DataType
+      if (available.count) result = available.remove_last
+      else                 result = $DataType()
+      if ($hasMethod<<result,retain>>) result.retain
+      return result
+
+    method on_use->$DataType
+      return acquire
+
+    method on_end_use( object:$DataType )
+      # override with desired object cleanup
+      if ($hasMethod<<object,release>>) object.release  # should call recycle on its own
+      else                              recycle( object )
+
+    method recycle( object:$DataType )
+      if ($hasMethod<<object,on_recycle>>) object.on_recycle
+      available.add( object )
+
+endClass

@@ -157,7 +157,7 @@ class DataReader : Reader<<Byte>>
 
 endClass
 
-class DataWriter : Writer<<Byte>>, Poolable
+class DataWriter : Writer<<Byte>>, Recyclable
   PROPERTIES
     output       : Writer<<Byte>>
     output_bytes : Byte[]  # Only non-null when used with certain constructors
@@ -186,7 +186,7 @@ class DataWriter : Writer<<Byte>>, Poolable
     method flush
       output.flush
 
-    method on_return_to_pool
+    method on_recycle
       clear
 
     method output_bytes->Byte[]
@@ -327,7 +327,7 @@ class DataWriter : Writer<<Byte>>, Poolable
     method write_int64x( value:Int64, align:Int )
       # Pass e.g. align=4 to have the output position aligned on a 4-byte
       # boundary AFTER this Int64X is written.
-      use temp_writer = ObjectPool<<DataWriter>>
+      use temp_writer = RecyclePool<<DataWriter>>
         temp_writer.write_int64x( value )
         local count_bytes = temp_writer.position
 

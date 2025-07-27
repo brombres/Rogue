@@ -1,6 +1,6 @@
 uses IO/DataIO
 
-class UTF16String : Poolable
+class UTF16String : Recyclable
   PROPERTIES
     data = Byte[]
 
@@ -51,7 +51,7 @@ class UTF16String : Poolable
       data.expand_to_count( count*2 )
       native @|memcpy( $data->as_bytes, $wchar_data.value, $count*2 );
 
-    method on_return_to_pool
+    method on_recycle
       data.clear
 
     method to->String

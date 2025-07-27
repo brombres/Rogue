@@ -547,7 +547,7 @@ class Program [singleton]
           endIf
 
           if (type.categories)
-            use resolver = ObjectPool<<Resolver>>
+            use resolver = RecyclePool<<Resolver>>
               resolver.resolve_definitions( type )
             endUse
 

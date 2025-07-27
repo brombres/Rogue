@@ -63,7 +63,7 @@ class ResolveUsedElements : InspectionVisitor
               cmd_call_global_cases = WhichCases(t)
               local cmd_which = Which( t, GetLocal(t,m_call_global.parameters[0]), cmd_call_global_cases,
                 Statements(t,Return(t,LiteralUndefined(t))) ) : Cmd
-              use resolver = ObjectPool<<Resolver>>
+              use resolver = RecyclePool<<Resolver>>
                 resolver.this_library    = m_call_global.library_context
                 resolver.this_type      = m_call_global.type_context
                 resolver.this_procedure = m_call_global
@@ -79,7 +79,7 @@ class ResolveUsedElements : InspectionVisitor
               cmd_call_object_cases = WhichCases(t)
               cmd_which = Which( t, GetLocal(t,m_call_object.parameters[0]), cmd_call_object_cases,
                   Statements(t,Return(t,LiteralUndefined(t))) )
-              use resolver = ObjectPool<<Resolver>>
+              use resolver = RecyclePool<<Resolver>>
                 resolver.this_library    = m_call_object.library_context
                 resolver.this_type      = m_call_object.type_context
                 resolver.this_procedure = m_call_object
@@ -95,7 +95,7 @@ class ResolveUsedElements : InspectionVisitor
               cmd_get_global_property_cases = WhichCases(t)
               cmd_which = Which( t, GetLocal(t,m_get_global_property.parameters[0]), cmd_get_global_property_cases,
                                  Statements(t) )
-              use resolver = ObjectPool<<Resolver>>
+              use resolver = RecyclePool<<Resolver>>
                 resolver.this_library    = m_get_global_property.library_context
                 resolver.this_type      = m_get_global_property.type_context
                 resolver.this_procedure = m_get_global_property
@@ -112,7 +112,7 @@ class ResolveUsedElements : InspectionVisitor
               cmd_get_property_cases = WhichCases(t)
               cmd_which = Which( t, GetLocal(t,m_get_property.parameters[0]), cmd_get_property_cases,
                                  Statements(t) )
-              use resolver = ObjectPool<<Resolver>>
+              use resolver = RecyclePool<<Resolver>>
                 resolver.this_library    = m_get_property.library_context
                 resolver.this_type      = m_get_property.type_context
                 resolver.this_procedure = m_get_property
@@ -129,7 +129,7 @@ class ResolveUsedElements : InspectionVisitor
               cmd_set_global_property_cases = WhichCases(t)
               cmd_which = Which( t, GetLocal(t,m_set_global_property.parameters[0]), cmd_set_global_property_cases,
                                  Statements(t) )
-              use resolver = ObjectPool<<Resolver>>
+              use resolver = RecyclePool<<Resolver>>
                 resolver.this_library    = m_set_global_property.library_context
                 resolver.this_type      = m_set_global_property.type_context
                 resolver.this_procedure = m_set_global_property
@@ -145,7 +145,7 @@ class ResolveUsedElements : InspectionVisitor
               cmd_set_property_cases = WhichCases(t)
               cmd_which = Which( t, GetLocal(t,m_set_property.parameters[0]), cmd_set_property_cases,
                                  Statements(t) )
-              use resolver = ObjectPool<<Resolver>>
+              use resolver = RecyclePool<<Resolver>>
                 resolver.this_library    = m_set_property.library_context
                 resolver.this_type      = m_set_property.type_context
                 resolver.this_procedure = m_set_property
@@ -369,7 +369,7 @@ class ResolveUsedElements : InspectionVisitor
 
           cmd_access = Statements( t, cmd_access )
           local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
-          use resolver = ObjectPool<<Resolver>>
+          use resolver = RecyclePool<<Resolver>>
             resolver.this_library    = m_get_global_property.library_context
             resolver.this_type      = m_get_global_property.type_context
             resolver.this_procedure = m_get_global_property
@@ -389,7 +389,7 @@ class ResolveUsedElements : InspectionVisitor
           cmd_access = Statements( t, cmd_access )
           local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
 
-          use resolver = ObjectPool<<Resolver>>
+          use resolver = RecyclePool<<Resolver>>
             resolver.this_library    = m_set_global_property.library_context
             resolver.this_type      = m_set_global_property.type_context
             resolver.this_procedure = m_set_global_property
@@ -417,7 +417,7 @@ class ResolveUsedElements : InspectionVisitor
 
           cmd_access = Statements( t, cmd_access )
           local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
-          use resolver = ObjectPool<<Resolver>>
+          use resolver = RecyclePool<<Resolver>>
             resolver.this_library    = m_get_property.library_context
             resolver.this_type      = m_get_property.type_context
             resolver.this_procedure = m_get_property
@@ -441,7 +441,7 @@ class ResolveUsedElements : InspectionVisitor
           cmd_access  = Statements( t, cmd_access )
           local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
 
-          use resolver = ObjectPool<<Resolver>>
+          use resolver = RecyclePool<<Resolver>>
             resolver.this_library    = m_set_property.library_context
             resolver.this_type      = m_set_property.type_context
             resolver.this_procedure = m_set_property
@@ -503,7 +503,7 @@ class ResolveUsedElements : InspectionVisitor
       endIf
 
       local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,m.call_index)), cmd_call ) : Cmd
-      use resolver = ObjectPool<<Resolver>>
+      use resolver = RecyclePool<<Resolver>>
         resolver.this_library    = m_call_object.library_context
         resolver.this_type      = m_call_object.type_context
         resolver.this_procedure = which{ m.is_global:m_call_global || m_call_object }

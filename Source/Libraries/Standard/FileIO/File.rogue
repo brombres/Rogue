@@ -33,7 +33,7 @@ class File( filepath:String ) [compound]
 
       native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
               |{
-                 use filepath_utf16=ObjectPool<<UTF16String>>, abs_filepath_utf16=ObjectPool<<UTF16String>>
+                 use filepath_utf16=RecyclePool<<UTF16String>>, abs_filepath_utf16=RecyclePool<<UTF16String>>
                    filepath_utf16.init( filepath )
 
                    local utf16_count = native( "GetFullPathNameW($filepath_utf16->data->as_wchars, 0, 0, 0)" )->Int
@@ -755,7 +755,7 @@ class File( filepath:String ) [compound]
       local filepath = resolved.filepath
 
       native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
-               use filepath_utf16 = ObjectPool<<UTF16String>>
+               use filepath_utf16 = RecyclePool<<UTF16String>>
                  filepath_utf16.init( filepath )
       native @|  HANDLE handle = CreateFile( $filepath_utf16->data->as_wchars, 0, 0, NULL, OPEN_EXISTING,
               |      FILE_ATTRIBUTE_NORMAL, NULL );

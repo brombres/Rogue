@@ -7,7 +7,7 @@ $localMacro FOLD_CONSTANTS<<$m,$Type,$op>>
     return $m<<$op>>( cmd )
 $endLocalMacro
 
-class Resolver : Poolable, Visitor
+class Resolver : Recyclable, Visitor
   GLOBAL PROPERTIES
     index_getters = String[][
       "at(Rogue::Int)", "get(Rogue::Int)",
@@ -34,7 +34,7 @@ class Resolver : Poolable, Visitor
       current_statement  = null
       autoname_index = 0
 
-    method on_return_to_pool
+    method on_recycle
       reset
 
     method visit( m:Library, proc:Procedure )

@@ -1,4 +1,4 @@
-class VariantListPool : ObjectPool<<Variant>> [singleton]
+class VariantListPool : RecyclePool<<Variant>> [singleton]
   # USAGE
   #   # High GC impact if called frequently
   #   obj.call( @[1,2] )

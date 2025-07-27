@@ -4,9 +4,9 @@ $include Core/Exception
 $include Core/Global
 $include Core/GlobalID
 $include Core/Object
-$include Core/ObjectPool
+$include Core/RecyclePool
 $include Core/Optional
-$include Core/Poolable
+$include Core/Recyclable
 $include Core/Primitives
 $include Core/Range
 $include Core/Shared

@@ -38,7 +38,7 @@ class System [essential]
   GLOBAL METHODS
     method execution_time->Real
       # Execution time in seconds.
-      return (System.time_ms - execution_start_ms)->Int64 / 1000.0
+      return execution_time_ms / 1000.0
 
     method execution_time_ms->Int64
       # Execution time in milliseconds.
@@ -48,7 +48,7 @@ class System [essential]
       if (@executable_filepath) return @executable_filepath
 
       native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
-                 use buffer = ObjectPool<<UTF16String>>
+                 use buffer = RecyclePool<<UTF16String>>
                    buffer.data.reserve( 4096 )
                    local n = native( "GetLibraryFileNameW( NULL, $buffer->data->as_wchars, 2048 )" )->Int32
                    if (n)

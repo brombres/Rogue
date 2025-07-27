@@ -813,7 +813,7 @@ class Type : Cmd
 
       localize scoped_name
 
-      use scanner = ObjectPool<<Scanner>>
+      use scanner = RecyclePool<<Scanner>>
         scanner.init( scoped_name, scoped_name )
         @name_tokens = scanner.tokenize
         @name_tokens.remove_last  # EOL
@@ -1063,7 +1063,7 @@ class Type : Cmd
 
       collect_gc_info
 
-      use organizer = ObjectPool<<MethodOrganizer>>
+      use organizer = RecyclePool<<MethodOrganizer>>
         temporarily organizer.this_library = library_context
           organizer.visit( this, class_def )
         endTemporarily
@@ -2086,7 +2086,7 @@ class Type : Cmd
     method resolve
       if (is_resolved) return
 
-      use resolver = ObjectPool<<Resolver>>
+      use resolver = RecyclePool<<Resolver>>
         temporarily resolver.this_library=library_context, resolver.this_procedure=null
           resolver.visit_type( this )
         endTemporarily
