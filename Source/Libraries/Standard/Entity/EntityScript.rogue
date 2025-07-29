@@ -1,6 +1,6 @@
 library Entity
 
-class EntityScript : ActiveState<<EntityScript,change_script,exit_script>>
+class EntityScript : ActiveState<<EntityScript,change_script>>
   PROPERTIES
     entity : Entity
 

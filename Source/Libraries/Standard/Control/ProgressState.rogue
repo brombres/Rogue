@@ -1,7 +1,7 @@
-class ProgressState<<$ExtendedType>> : ProgressState<<$ExtendedType,change_state,exit_state>>
+class ProgressState<<$ExtendedType>> : ProgressState<<$ExtendedType,change_state>>
 endClass
 
-class ProgressState<<$ExtendedType,$change_state,$exit_state>> : ActiveState<<$ExtendedType,$change_state,$exit_state>>
+class ProgressState<<$ExtendedType,$change_state>> : ActiveState<<$ExtendedType,$change_state>>
   DEFINITIONS
     # Duration values
     INSTANT    =  0  # one and done
