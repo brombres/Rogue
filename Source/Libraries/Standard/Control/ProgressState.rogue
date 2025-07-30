@@ -80,7 +80,7 @@ class ProgressState<<$ExtendedType,$change_state>> : ActiveState<<$ExtendedType,
         if (not is_finished) return this->(as $ExtendedType)
       endIf
 
-      .handle_finish
+      handle_finish
 
       return .start_next
 
@@ -122,7 +122,7 @@ class ProgressState<<$ExtendedType,$change_state>> : ActiveState<<$ExtendedType,
         if (not is_finished) return this->(as $ExtendedType)
       endIf
 
-      .handle_finish
+      handle_finish
 
       return .update_next
 

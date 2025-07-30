@@ -98,6 +98,9 @@ class ActiveState<<$ExtendedType,$change_state>>
     method finish
       is_exited = true
 
+    method handle_finish
+      on_finish
+
     method insert_next( state:$ExtendedType )
       if (state) next_state = state.and_then( next_state )
 
@@ -133,7 +136,7 @@ class ActiveState<<$ExtendedType,$change_state>>
         if (not is_finished) return this->(as $ExtendedType)
       endIf
 
-      .handle_finish
+      handle_finish
 
       return .start_next
 
@@ -161,12 +164,9 @@ class ActiveState<<$ExtendedType,$change_state>>
         if (not is_finished) return this->(as $ExtendedType)
       endIf
 
-      .handle_finish
+      handle_finish
 
       return .update_next
-
-    method .handle_finish
-      on_finish
 
     method .start_next->$ExtendedType
       # Finds the successor to this state, adjusts links if necessary, and
