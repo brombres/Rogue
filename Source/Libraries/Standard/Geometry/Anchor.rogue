@@ -67,7 +67,7 @@ class Anchor( position:XY ) [compound]
         case BOTTOM_LEFT.position:  return "BOTTOM_LEFT"
         case BOTTOM.position:       return "BOTTOM"
         case BOTTOM_RIGHT.position: return "BOTTOM_RIGHT"
-        others:                     return "CUSTOM"
+        others:                     return position->String
       endWhich
 
     method print_to( buffer:PrintWriter )

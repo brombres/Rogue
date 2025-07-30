@@ -75,9 +75,8 @@ class Widget : Component
           if (select_count == 1 or not just_once)
             handle_select
           endIf
-        else
-          release_pointer_focus
         endIf
+        release_pointer_focus
       elseIf (e.is_move)
         if (contains_e)
           if (state == WidgetState.IDLE)
