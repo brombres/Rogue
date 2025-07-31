@@ -191,6 +191,8 @@ class PointerEvent : Event
     is_touch      : Logical # this pointer event is from a touch rather than the mouse
     is_multitouch : Logical # this is one of at least two touches that are currently active
 
+    tick_delay    : Int # used on iOS as time for touch events to be recognized as OS gestures
+
   METHODS
     method init
       prior.init
@@ -205,6 +207,7 @@ class PointerEvent : Event
       is_long_press = false
       is_drag       = false
       is_multitouch = false
+      tick_delay    = 0
 
     method init( existing:PointerEvent )
       prior.init( existing )
