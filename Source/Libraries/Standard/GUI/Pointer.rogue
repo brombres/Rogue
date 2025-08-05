@@ -20,6 +20,13 @@ class Pointer [singleton]
       sum += (forEach in presses).position
       return sum / presses.count
 
+    method clear
+      position = null
+      presses.clear
+      is_multitouch = false
+      is_dragging = false
+      is_long_press = false
+
     method find( by_id:Int )->PointerEvent?
       forEach (press in presses)
         if (press.pointer_id == by_id) return press
@@ -73,7 +80,6 @@ class Pointer [singleton]
       elseIf (e.is_release)
         which (presses.count)
           case 0
-            # shouldn't happen
             position = e.position
           case 1
             position = e.position
