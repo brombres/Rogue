@@ -117,21 +117,21 @@ class CWriter : BufferedPrintWriter
          |  #define %NS%ROGUE_LOG(...)       __android_log_print( ANDROID_LOG_INFO,  "%Ns%Rogue", __VA_ARGS__ )
          |  #define %NS%ROGUE_LOG_ERROR(...) __android_log_print( ANDROID_LOG_ERROR, "%Ns%Rogue", __VA_ARGS__ )
          |#elif defined(__APPLE__)
-         |  #include <os/log.h>
-         |  #define %NS%ROGUE_LOG(...)                                \
-         |    do {                                                    \
-         |      char buffer[1024];                                    \
-         |      snprintf( buffer, sizeof(buffer), __VA_ARGS__ );      \
-         |      os_log_info( OS_LOG_DEFAULT, "%{public}s", buffer );  \
-         |      printf( __VA_ARGS__ );                                \
-         |    } while(0);
-         |  #define %NS%ROGUE_LOG_ERROR(...)                          \
-         |    do {                                                    \
-         |      char buffer[1024];                                    \
-         |      snprintf( buffer, sizeof(buffer), __VA_ARGS__ );      \
-         |      os_log_info( OS_LOG_DEFAULT, "%{public}s", buffer );  \
-         |      printf( __VA_ARGS__ );                                \
-         |    } while(0);
+         |  #include <syslog.h>
+         |  #define %NS%ROGUE_LOG(format,...)                              \
+         |    do {                                                         \
+         |      char buffer[1024];                                         \
+         |      snprintf( buffer, sizeof(buffer), format, ##__VA_ARGS__ ); \
+         |      syslog( LOG_INFO, "%s", buffer );                          \
+         |      printf( "%s", buffer );                                    \
+         |    } while(0)
+         |  #define %NS%ROGUE_LOG_ERROR(format,...)                        \
+         |    do {                                                         \
+         |      char buffer[1024];                                         \
+         |      snprintf( buffer, sizeof(buffer), format, ##__VA_ARGS__ ); \
+         |      syslog( LOG_ERR, "%s", buffer );                           \
+         |      fprintf( stderr, buffer );                                 \
+         |    } while(0)
          |#else
          |  #define %NS%ROGUE_LOG(...)       printf( __VA_ARGS__ )
          |  #define %NS%ROGUE_LOG_ERROR(...) printf( __VA_ARGS__ )

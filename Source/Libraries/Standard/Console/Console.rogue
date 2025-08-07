@@ -5,6 +5,12 @@ $include Console/ConsoleMode
 $include Console/ConsoleStyle
 
 class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singleton]
+  NATIVE
+  nativeHeader
+  @|#if defined(__APPLE__)
+   |  #include <os/log.h>
+   |#endif
+
   DEFINITIONS
     UP_ARROW    = 17
     DOWN_ARROW  = 18
@@ -188,10 +194,14 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       return result
 
     method write( value:String )
-      native @|#ifdef %NS%ROGUE_TARGET_ANDROID
+      native @|#if defined(%NS%ROGUE_TARGET_ANDROID)
               |  __android_log_print( ANDROID_LOG_INFO, "%Ns%Rogue", "%s", $value->data->as_utf8 );
               |#else
-              |  %Ns%Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDOUT_FILENO );
+              |  #if defined(%NS%ROGUE_TARGET_IOS)
+              |    os_log( OS_LOG_DEFAULT, "%{public}s", $value->data->as_utf8 );
+              |  #else
+              |    %Ns%Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDOUT_FILENO );
+              |  #endif
               |#endif
 
     method _fill_input_buffer( minimum=1:Int )->Logical

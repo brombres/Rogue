@@ -8,7 +8,11 @@ class ConsoleErrorPrinter : BufferedPrintWriter<<output_buffer>>
       native @|#if defined(%NS%ROGUE_TARGET_ANDROID)
               |  __android_log_print( ANDROID_LOG_ERROR, "%Ns%Rogue", "%s", $value->data->as_utf8 );
               |#else
-              |  %Ns%Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDERR_FILENO );
+              |  #if defined(%NS%ROGUE_TARGET_IOS)
+              |    os_log_error( OS_LOG_DEFAULT, "%{public}s", $value->data->as_utf8 );
+              |  #else
+              |    %Ns%Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDERR_FILENO );
+              |  #endif
               |#endif
 
 endClass
