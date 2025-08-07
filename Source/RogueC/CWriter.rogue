@@ -116,6 +116,22 @@ class CWriter : BufferedPrintWriter
          |  #include <android/log.h>
          |  #define %NS%ROGUE_LOG(...)       __android_log_print( ANDROID_LOG_INFO,  "%Ns%Rogue", __VA_ARGS__ )
          |  #define %NS%ROGUE_LOG_ERROR(...) __android_log_print( ANDROID_LOG_ERROR, "%Ns%Rogue", __VA_ARGS__ )
+         |#elif defined(__APPLE__)
+         |  #include <os/log.h>
+         |  #define %NS%ROGUE_LOG(...)                                \
+         |    do {                                                    \
+         |      char buffer[1024];                                    \
+         |      snprintf( buffer, sizeof(buffer), __VA_ARGS__ );      \
+         |      os_log_info( OS_LOG_DEFAULT, "%{public}s", buffer );  \
+         |      printf( __VA_ARGS__ );                                \
+         |    } while(0);
+         |  #define %NS%ROGUE_LOG_ERROR(...)                          \
+         |    do {                                                    \
+         |      char buffer[1024];                                    \
+         |      snprintf( buffer, sizeof(buffer), __VA_ARGS__ );      \
+         |      os_log_info( OS_LOG_DEFAULT, "%{public}s", buffer );  \
+         |      printf( __VA_ARGS__ );                                \
+         |    } while(0);
          |#else
          |  #define %NS%ROGUE_LOG(...)       printf( __VA_ARGS__ )
          |  #define %NS%ROGUE_LOG_ERROR(...) printf( __VA_ARGS__ )
