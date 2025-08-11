@@ -688,58 +688,60 @@ class Bitmap
       else
         top_h = 0
       endIf
-
       if (top_h == h_limit) return null
 
       local bottom_h = 1
       if (bottom)
         block y2 = h_limit - 1
-          loop
+          while (bottom_h < h_limit)
             if (not all_pixels_are_transparent(Box(0,y2,w_limit,1)))
               --bottom_h
-              escapeLoop
+              escapeWhile
             endIf
             --y2
             ++bottom_h
-          endLoop
+          endWhile
         endBlock
       else
         bottom_h = 0
       endIf
+      if (bottom_h == h_limit) return null
 
       local result_h = h_limit - (top_h + bottom_h)
 
       local left_w = 1
       if (left)
         block x1 = 0
-          loop
+          while (left_w < w_limit)
             if (not all_pixels_are_transparent(Box(x1,top_h,1,result_h)))
               --left_w
-              escapeLoop
+              escapeWhile
             endIf
             ++left_w
             ++x1
-          endLoop
+          endWhile
         endBlock
       else
         left_w = 0
       endIf
+      if (left_w == w_limit) return null
 
       local right_w = 1
       if (right)
         block x2 = w_limit - 1
-          loop
+          while (right_w < w_limit)
             if (not all_pixels_are_transparent(Box(x2,top_h,1,result_h)))
               --right_w
-              escapeLoop
+              escapeWhile
             endIf
             --x2
             ++right_w
-          endLoop
+          endWhile
         endBlock
       else
         right_w = 0
       endIf
+      if (right_w == w_limit) return null
 
       local result_w = w_limit - (left_w + right_w)
 
