@@ -3,23 +3,38 @@ class iOS : Apple [singleton]
     method induce_memory_warning
       native
       @|#if defined(%NS%ROGUE_TARGET_IOS)
-       |  NSMutableArray<void *> *blocks = [NSMutableArray array];
-       |  const size_t chunk = 16 * 1024 * 1024; // 16MB
+       |  NSMutableArray<NSValue *> *blocks = [NSMutableArray array];
+       |  const size_t kChunk = 128 * 1024 * 1024; // 128 MB
+       |  const size_t kMinHeadroom = 60 * 1024 * 1024; // leave ~60 MB
+       |
        |  for (;;)
        |  {
        |      size_t avail = os_proc_available_memory(); // iOS 13+
-       |      os_log( OS_LOG_DEFAULT, "avail=%zu bytes", avail );
-       |      if (avail < 60 * 1024 * 1024) break; // leave ~60MB margin
+       |      os_log( OS_LOG_DEFAULT, "mem: %zu bytes available", avail );
+       |      if (avail < kMinHeadroom)
+       |      {
+       |        os_log( OS_LOG_DEFAULT, "[induce_memory_warning] minimum headroom reached" );
+       |        break;
+       |      }
        |
-       |      void *p = malloc( chunk );
-       |      if (!p) break;
-       |      memset(p, 0, 4096); // Touch a page so it backs with real memory
-       |      [blocks addObject:p];
+       |      void *p = malloc( kChunk );
+       |      if (!p)
+       |      {
+       |        os_log( OS_LOG_DEFAULT, "[induce_memory_warning] malloc failed" );
+       |        break;
+       |      }
+       |
+       |      // Touch a page so it's backed
+       |      memset(p, 0, 4096);
+       |      [blocks addObject:[NSValue valueWithPointer:p]];
        |  }
        |
-       |  // Free everything right away
-       |  for (void *p in blocks) free(p);
-       |  os_log( OS_LOG_DEFAULT, "released pressure allocations" );
+       |  for (NSValue *val in blocks)
+       |  {
+       |      void *p = [val pointerValue];
+       |      free(p);
+       |  }
+       |  os_log( OS_LOG_DEFAULT, "[induce_memory_warning] pressure allocations released" );
        |#endif
 
   NATIVE
