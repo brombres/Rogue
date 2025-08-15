@@ -1,0 +1,33 @@
+class iOS : Apple [singleton]
+  METHODS
+    method induce_memory_warning
+      native
+      @|#if defined(%NS%ROGUE_TARGET_IOS)
+       |  NSMutableArray<void *> *blocks = [NSMutableArray array];
+       |  const size_t chunk = 16 * 1024 * 1024; // 16MB
+       |  for (;;)
+       |  {
+       |      size_t avail = os_proc_available_memory(); // iOS 13+
+       |      os_log( OS_LOG_DEFAULT, "avail=%zu bytes", avail );
+       |      if (avail < 60 * 1024 * 1024) break; // leave ~60MB margin
+       |
+       |      void *p = malloc( chunk );
+       |      if (!p) break;
+       |      memset(p, 0, 4096); // Touch a page so it backs with real memory
+       |      [blocks addObject:p];
+       |  }
+       |
+       |  // Free everything right away
+       |  for (void *p in blocks) free(p);
+       |  os_log( OS_LOG_DEFAULT, "released pressure allocations" );
+       |#endif
+
+  NATIVE
+    nativeHeader
+    @|#if defined(%NS%ROGUE_TARGET_IOS)
+     |  #import <UIKit/UIKit.h>
+     |  #import <os/log.h>
+     |  #import <os/proc.h> // os_proc_available_memory()
+     |#endif
+
+endClass
