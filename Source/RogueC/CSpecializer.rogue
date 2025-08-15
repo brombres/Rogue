@@ -655,7 +655,7 @@ endAugment
 
 augment Type
   PROPERTIES
-    c_name     : String   # e.g. RogueString (RogueObject for aspects)
+    c_name     : String   # e.g. RogueString or RogueGeometryXY (RogueObject for aspects)
     c_ref_name : String   # e.g. RogueString* (RogueObject* for aspects)
     c_sig_name : String   # e.g. RogueString
 
@@ -677,7 +677,13 @@ augment Type
       elseIf (attributes.is_native_type)
         @c_name = name
       else
-        @c_name = Program.unique_c_name( library_context.c_name + Program.to_c_name(name) )
+        local library_context_name : String
+        if (library_context is Program.default_library)
+          library_context_name = library_context.c_name
+        else
+          library_context_name = "Rogue" + library_context.c_name
+        endIf
+        @c_name = Program.unique_c_name( library_context_name + Program.to_c_name(name) )
       endIf
 
       @c_name = Program.namespace_capitalized + @c_name

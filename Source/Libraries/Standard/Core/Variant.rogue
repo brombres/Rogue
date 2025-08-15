@@ -130,27 +130,27 @@ class Variant [compound]
 
     native @|union
             |{
-            |  %Ns%GeometryBox      box;
-            |  %Ns%RogueByte        byte;
-            |  %Ns%RogueCharacter   character;
-            |  %Ns%GeometryCircle   circle;
-            |  %Ns%GraphicsColor    color;
-            |  %Ns%RogueDegrees     degrees;
-            |  %Ns%RogueGlobalID    global_id;
-            |  %Ns%RogueInt32       int32;
-            |  %Ns%RogueInt         integer;
-            |  %Ns%RogueInt64       int64;
-            |  %Ns%RogueLogical     logical;
-            |  %Ns%GeometryLine     line;
-            |  %Ns%GeometryQuad32   quad32;
-            |  %Ns%RogueRadians     radians;
-            |  %Ns%RogueReal32      real32;
-            |  %Ns%RogueReal        real;
-            |  %Ns%RogueReal64      real64;
-            |  %Ns%GeometryTriangle triangle;
-            |  %Ns%GeometryXY       xy;
-            |  %Ns%GeometryXYZ      xyz;
-            |  %Ns%GeometryXYZW     xyzw;
+            |  %Ns%RogueGeometryBox      box;
+            |  %Ns%RogueByte             byte;
+            |  %Ns%RogueCharacter        character;
+            |  %Ns%RogueGeometryCircle   circle;
+            |  %Ns%RogueGraphicsColor    color;
+            |  %Ns%RogueDegrees          degrees;
+            |  %Ns%RogueGlobalID         global_id;
+            |  %Ns%RogueInt32            int32;
+            |  %Ns%RogueInt              integer;
+            |  %Ns%RogueInt64            int64;
+            |  %Ns%RogueLogical          logical;
+            |  %Ns%RogueGeometryLine     line;
+            |  %Ns%RogueGeometryQuad32   quad32;
+            |  %Ns%RogueRadians          radians;
+            |  %Ns%RogueReal32           real32;
+            |  %Ns%RogueReal             real;
+            |  %Ns%RogueReal64           real64;
+            |  %Ns%RogueGeometryTriangle triangle;
+            |  %Ns%RogueGeometryXY       xy;
+            |  %Ns%RogueGeometryXYZ      xyz;
+            |  %Ns%RogueGeometryXYZW     xyzw;
             |};
 
   GLOBAL METHODS
