@@ -198,7 +198,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |  __android_log_print( ANDROID_LOG_INFO, "%Ns%Rogue", "%s", $value->data->as_utf8 );
               |#else
               |  #if defined(%NS%ROGUE_TARGET_IOS)
-              |    os_log( OS_LOG_DEFAULT, "%{public}s", $value->data->as_utf8 );
+              |    os_log( OS_LOG_DEFAULT, "%s", $value->data->as_utf8 );
               |  #else
               |    %Ns%Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDOUT_FILENO );
               |  #endif
