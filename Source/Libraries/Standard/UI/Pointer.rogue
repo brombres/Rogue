@@ -3,7 +3,8 @@ library UI
 class Pointer [singleton]
   PROPERTIES
     click_time_threshold = 0.300
-    drag_threshold_px    = 10
+    drag_threshold_px    = 10  # single-density pixels, auto-multiplied by display_density
+    display_density_fn   = () => 1.0 : Function->Real
 
     position         : XY?   # of first touch in current single touch or multitouch event
     presses          = PointerEvent[]
@@ -26,6 +27,9 @@ class Pointer [singleton]
       is_multitouch = false
       is_dragging = false
       is_long_press = false
+
+    method display_density->Real
+      return display_density_fn()
 
     method find( by_id:Int )->PointerEvent?
       forEach (press in presses)
@@ -111,6 +115,8 @@ class Pointer [singleton]
         is_long_press = false
 
       endIf
+
+    method set_display_density( display_density_fn )
 
     method update
       if (not is_multitouch and presses.count == 1 and not is_long_press and not is_dragging)
