@@ -1,4 +1,4 @@
-library GUI
+library UI
 
 class Keyboard [singleton]
   PROPERTIES

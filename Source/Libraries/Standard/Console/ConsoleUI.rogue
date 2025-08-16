@@ -1,4 +1,4 @@
-uses GUI [export]
+uses UI [export]
 
 $include Console/ConsoleUIFont
 $include Console/ConsoleUICanvas

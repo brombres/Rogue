@@ -1,4 +1,4 @@
-library GUI
+library UI
 
 class Padding( value:Real, mode:SizingMode ) [compound]
   GLOBAL METHODS

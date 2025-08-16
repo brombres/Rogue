@@ -1,7 +1,7 @@
-library GUI
+library UI
 
-$include GUI/Keyboard
-$include GUI/Pointer
+$include UI/Keyboard
+$include UI/Pointer
 
 class Event
   PROPERTIES

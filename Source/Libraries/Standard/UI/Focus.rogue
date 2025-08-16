@@ -1,4 +1,4 @@
-library GUI
+library UI
 
 class Focus
   # Tracks which components in a UI have pointer and keyboard focus.

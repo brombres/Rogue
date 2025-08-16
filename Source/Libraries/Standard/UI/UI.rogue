@@ -1,4 +1,32 @@
-library GUI
+library UI
+
+uses Collection/Node
+uses Control
+uses Entity
+uses Geometry
+
+$include UI/AspectRatioLayoutSwitcher
+$include UI/Border
+$include UI/Component
+$include UI/ComponentSizeInfo
+$include UI/Event
+$include UI/Focus
+$include UI/Font
+$include UI/HBox
+$include UI/HFlow
+$include UI/Label
+$include UI/LimitedSize
+$include UI/MetaComponent
+$include UI/Overlay
+$include UI/ScalingMode
+$include UI/SizingMode
+$include UI/Text
+$include UI/TextBox
+$include UI/TextStyle
+$include UI/VBox
+$include UI/VList
+$include UI/VScrollView
+$include UI/Widget
 
 class UI : Component [singleton]
   GLOBAL PROPERTIES

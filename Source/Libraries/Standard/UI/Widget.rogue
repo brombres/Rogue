@@ -1,4 +1,4 @@
-library GUI
+library UI
 
 enum WidgetState
   IDLE, TARGETED, PRESSED, DISABLED
