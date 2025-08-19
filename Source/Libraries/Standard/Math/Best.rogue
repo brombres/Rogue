@@ -40,6 +40,46 @@ class Best<<$DataType,$ScoreType>>( better_fn:Function($ScoreType,$ScoreType)->L
       return exists
 endClass
 
+class Best( better_fn:Function(Real,Real)->Logical ) [compound]
+  # Tracks the best value among all considered values.
+  #
+  # EXAMPLE
+  #   # Find the smallest real number in a list.
+  #   uses Math/Best
+  #
+  #   local numbers = [3.1, 0.2, 5.8, -1.0, 4.0]
+  #
+  #   local best = Best<<Real>>( (a,b) => a < b )
+  #
+  #   forEach (value in numbers)
+  #     best.consider( value )
+  #   endForEach
+  #
+  #   println "Lowest: $" (best.value)
+  #   # Lowest: numbers[3] = -1.0
+  PROPERTIES
+    value  : Real
+    exists : Logical
+
+  METHODS
+    method clear [mutating]
+      exists = false
+
+    method consider( candidate_value:Real )->Logical [mutating]
+      # Returns 'true' if a new best value is stored.
+      if (not exists or better_fn(candidate_value,value))
+        exists = true
+        value = candidate_value
+        return true
+      else
+        return false
+      endIf
+
+    method to->Logical
+      return exists
+endClass
+
+
 class Best<<$DataType>>( better_fn:Function($DataType,$DataType)->Logical ) [compound]
   # Tracks the best value among all considered values.
   #
