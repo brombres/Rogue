@@ -788,9 +788,9 @@ class Bitmap
        |    int r = (argb >> 16) & 255;
        |    int g = (argb >> 8)  & 255;
        |    int b = argb & 255;
-       |    r = (r * a) / 255;
-       |    g = (g * a) / 255;
-       |    b = (b * a) / 255;
+       |    r = (r * a + 127) / 255;
+       |    g = (g * a + 127) / 255;
+       |    b = (b * a + 127) / 255;
        |    *data = (a<<24) | (r<<16) | (g<<8) | b;
        |  }
        |  else
@@ -1518,60 +1518,63 @@ augment Rogue::MacOS
       return result
 
     method encode_bitmap( bitmap:Graphics::Bitmap, type:Graphics::BitmapEncodingType )->Byte[]
-      bitmap.swap_red_and_blue
-      bitmap.premultiply_alpha
+      use original_pixels = bitmap.pixels.working_copy
+        bitmap.swap_red_and_blue
+        bitmap.premultiply_alpha
 
-      local w = bitmap.width
-      local h = bitmap.height
-      local png_data_count : Int
-      local encoded_bytes = Byte[]
+        local w = bitmap.width
+        local h = bitmap.height
+        local png_data_count : Int
+        local encoded_bytes = Byte[]
 
-      # Adapted from:
-      #   https://stackoverflow.com/a/12257793/135791
-      #   https://stackoverflow.com/a/30958731/135791
-      #   https://stackoverflow.com/a/17510651/135791
-      native...
-        @|#if defined(%NS%ROGUE_TARGET_MACOS) || defined(%NS%ROGUE_TARGET_IOS)
-         |CGDataProviderRef provider = CGDataProviderCreateWithData( 0, $bitmap->pixels->data, $w*$h*4, 0 );
-         |
-         |CGImageRef cg_image = CGImageCreate(
-         |  $w, $h,
-         |  8,
-         |  32,
-         |  $w*4,
-         |  CGColorSpaceCreateDeviceRGB(),
-         |  kCGBitmapByteOrderDefault | kCGImageAlphaPremultipliedLast,
-         |  provider,
-         |  0,
-         |  0,
-         |  kCGRenderingIntentDefault
-         |);
-         |#if defined(%NS%ROGUE_TARGET_MACOS)
-         |  NSBitmapImageRep *image_rep = [[NSBitmapImageRep alloc] initWithCGImage:cg_image];
-         |  NSBitmapImageFileType encoding_type = NSBitmapImageFileTypeTIFF;
-         |  switch ($type.value)
-         |  {
-         |    case 0: encoding_type = NSBitmapImageFileTypeTIFF; break;
-         |    case 1: encoding_type = NSBitmapImageFileTypeBMP; break;
-         |    case 2: encoding_type = NSBitmapImageFileTypeGIF; break;
-         |    case 3: encoding_type = NSBitmapImageFileTypeJPEG; break;
-         |    case 4: encoding_type = NSBitmapImageFileTypePNG; break;
-         |    case 5: encoding_type = NSBitmapImageFileTypeJPEG2000; break;
-         |  }
-         |  NSData *png_data = [image_rep representationUsingType:encoding_type properties:[NSDictionary dictionary]];
-         |#else
-         |  NSImage*   image = [[NSImage alloc] initWithCGImage:cg_image size:NSZeroSize];
-         |  NSData* png_data = NSImagePNGRepresentation( image );
-         |#endif
-         |$png_data_count = png_data.length;
-          encoded_bytes.dim( png_data_count )
-      native ...
-        @|[png_data getBytes:$encoded_bytes->as_bytes length:$png_data_count];
-         |
-         |#endif
-      bitmap.swap_red_and_blue
-      bitmap.unmultiply_alpha
-      return encoded_bytes
+        # Adapted from:
+        #   https://stackoverflow.com/a/12257793/135791
+        #   https://stackoverflow.com/a/30958731/135791
+        #   https://stackoverflow.com/a/17510651/135791
+        native...
+          @|#if defined(%NS%ROGUE_TARGET_MACOS) || defined(%NS%ROGUE_TARGET_IOS)
+           |CGDataProviderRef provider = CGDataProviderCreateWithData( 0, $bitmap->pixels->data, $w*$h*4, 0 );
+           |
+           |CGImageRef cg_image = CGImageCreate(
+           |  $w, $h,
+           |  8,
+           |  32,
+           |  $w*4,
+           |  CGColorSpaceCreateDeviceRGB(),
+           |  kCGBitmapByteOrderDefault | kCGImageAlphaPremultipliedLast,
+           |  provider,
+           |  0,
+           |  0,
+           |  kCGRenderingIntentDefault
+           |);
+           |#if defined(%NS%ROGUE_TARGET_MACOS)
+           |  NSBitmapImageRep *image_rep = [[NSBitmapImageRep alloc] initWithCGImage:cg_image];
+           |  NSBitmapImageFileType encoding_type = NSBitmapImageFileTypeTIFF;
+           |  switch ($type.value)
+           |  {
+           |    case 0: encoding_type = NSBitmapImageFileTypeTIFF; break;
+           |    case 1: encoding_type = NSBitmapImageFileTypeBMP; break;
+           |    case 2: encoding_type = NSBitmapImageFileTypeGIF; break;
+           |    case 3: encoding_type = NSBitmapImageFileTypeJPEG; break;
+           |    case 4: encoding_type = NSBitmapImageFileTypePNG; break;
+           |    case 5: encoding_type = NSBitmapImageFileTypeJPEG2000; break;
+           |  }
+           |  NSData *png_data = [image_rep representationUsingType:encoding_type properties:[NSDictionary dictionary]];
+           |#else
+           |  NSImage*   image = [[NSImage alloc] initWithCGImage:cg_image size:NSZeroSize];
+           |  NSData* png_data = NSImagePNGRepresentation( image );
+           |#endif
+           |$png_data_count = png_data.length;
+            encoded_bytes.dim( png_data_count )
+        native ...
+          @|[png_data getBytes:$encoded_bytes->as_bytes length:$png_data_count];
+           |
+           |#endif
+
+        bitmap.pixels.[ clear, add(original_pixels) ]
+        bitmap.is_premultiplied_alpha = false
+        return encoded_bytes
+      endUse
 
     method to_bmp_bytes( bitmap:Graphics::Bitmap )->Byte[]
       return encode_bitmap( bitmap, Graphics::BitmapEncodingType.TYPE_BMP )
