@@ -31,6 +31,9 @@ class Pointer [singleton]
     method display_density->Real
       return display_density_fn()
 
+    method drag_threshold->Real
+      return drag_threshold_px * display_density
+
     method find( by_id:Int )->PointerEvent?
       forEach (press in presses)
         if (press.pointer_id == by_id) return press
@@ -68,7 +71,7 @@ class Pointer [singleton]
             position = e.position
             presses[0].position = e.position
             if (not is_multitouch and not is_dragging)
-              if ((e.position - press_position).magnitude > drag_threshold_px * Display.density)
+              if ((e.position - press_position).magnitude > drag_threshold_px * display_density)
                 is_dragging = true
               endIf
             endIf
