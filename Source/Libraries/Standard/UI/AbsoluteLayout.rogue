@@ -1,0 +1,27 @@
+library UI
+
+class AbsoluteLayout : Component
+  METHODS
+    method minimum_layout_size( available_size:XY, &limited )->XY [override]
+      return XY(0,0)
+
+    method perform_content_layout [override]
+      update_layout
+
+      use components = display_components
+        forEach (component in components)
+          component.perform_layout( component.position )
+        endForEach
+      endUse
+
+    method resolve_content_layout_sizes( available_size:XY ) [override]
+      use components = display_components
+        forEach (component in components)
+          component.resolve_layout_size( component.size )
+        endForEach
+      endUse
+
+    method update_layout
+      noAction
+
+endClass
