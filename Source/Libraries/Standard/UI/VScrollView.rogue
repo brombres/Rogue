@@ -75,7 +75,7 @@ class VScrollView : Component
           return
         elseIf (is_pressed)
           actions = null
-          if (e.position.distance_to(drag_pos) >= UI.drag_threshold)
+          if (e.position.distance_to(drag_pos) >= Pointer.drag_threshold)
             is_dragging = true
             drag_deltas.clear
             drag_pos = e.position
@@ -108,7 +108,7 @@ class VScrollView : Component
               endIf
             endForEach
             local avg = sum / n
-            if (avg.y.abs >= UI.drag_threshold)
+            if (avg.y.abs >= Pointer.drag_threshold)
               decay = 0.96
               velocity -= avg.yv
             endIf
