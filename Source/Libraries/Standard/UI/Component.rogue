@@ -246,6 +246,9 @@ class Component : Entity
       endForEach
       return false
 
+    method content_display_bounds->Box
+      return content_bounds + display_position
+
     method content_opacity->Real
       if local parent_component = parent->(as Component)
         return parent_component.content_opacity * @content_opacity
@@ -287,8 +290,8 @@ class Component : Entity
     method display_bounds->Box
       return Box( display_position, size )
 
-    method content_display_bounds->Box
-      return content_bounds + display_position
+    method display_components( &only_visible )->DisplayComponents
+      return DisplayComponents( this, &=only_visible )
 
     method display_position->XY
       if local parent_component = parent->(as Component)
@@ -462,6 +465,10 @@ class Component : Entity
 
     method operator|( rhs:Component )->Component
       return UIGeneratedStack( this ).[ add(rhs) ]
+
+    method operator&( rhs:Component )->Component
+      add_next( rhs )
+      return this
 
     method perform_layout( position )
       if (not attributes.manually_update_content_layout)
