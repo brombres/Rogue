@@ -33,14 +33,12 @@ class ConsoleUI : UI
     #  prior.init( bounds )
 
     method init_object
+      Pointer.drag_threshold_px = 1
       #if (not bold_font)
       #  bold_font = default_font.cloned.[ bold=true ]
       #  inverse_font = default_font.cloned.[ inverse=true ]
       #  underline_font = default_font.cloned.[ underline=true ]
       #endIf
-
-    method drag_threshold->Real [override]
-      return 1
 
     method draw
       prior.draw
