@@ -216,10 +216,12 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
         local whole = value.floor
         value -= whole
         while (whole >= 10)
-          builder.print( ('0' + ((whole%10)->Int))->Character )
+          # Extra '% 10' after ->Int because the algorithm's double math degenerates
+          # w/large numbers such as 2.0^60.0.
+          builder.print( ('0' + ((whole%10)->Int % 10))->Character )
           whole /= 10
         endWhile
-        builder.print( ('0' + ((whole%10)->Int))->Character )
+        builder.print( ('0' + ((whole%10)->Int % 10))->Character )
 
         if (is_negative) builder.print( '-' )
         builder.reverse
