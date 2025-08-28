@@ -3,6 +3,7 @@ $include Math/Radians
 $include Math/Random
 
 class Math
+  # General math functions are primitive methods, e.g. 'Real.sqrt'.
   DEFINITIONS
     E = 2.718281828459045
 endClass

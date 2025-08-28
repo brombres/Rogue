@@ -179,6 +179,18 @@ class XY( x:Real, y:Real ) [compound]
     method is_zero->Logical
       return x == 0 and y == 0
 
+    method log( n:Real )->XY
+      return XY( x.log(n), y.log(n) )
+
+    method log( xy:XY )->XY
+      return XY( x.log(xy.x), y.log(xy.y) )
+
+    method log2->XY
+      return XY( x.log2, y.log2 )
+
+    method log10->XY
+      return XY( x.log10, y.log10 )
+
     method magnitude->Real
       return (x*x + y*y).sqrt
 
