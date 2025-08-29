@@ -259,7 +259,7 @@ class Timsort<<$DataType>>
         compare_fn:(Function($DataType,$DataType)->Logical) )
       assert len1 > 0 and len2 > 0 and base1 + len1 == base2
 
-      use tmp = WorkList<<$DataType>>
+      use tmp = WorkList<<$DataType,TimSort>>
         tmp.reserve( len2 )
 
         list.copy( base2, len2, tmp, 0 )
@@ -378,7 +378,7 @@ class Timsort<<$DataType>>
         compare_fn:(Function($DataType,$DataType)->Logical) )
       assert len1 > 0 and len2 > 0 and base1 + len1 == base2
 
-      use tmp = WorkList<<$DataType>>
+      use tmp = WorkList<<$DataType,TimSort>>
         tmp.reserve( len1 )
 
         list.copy( base1, len1, tmp, 0 )
