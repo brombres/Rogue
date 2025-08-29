@@ -57,10 +57,10 @@ class Timsort<<$DataType>>
       local run_limit = low + 1
       if (run_limit == limit) return 1
 
-      if (not compare_fn(list[low], list[run_limit]))
+      if (compare_fn(list[run_limit], list[low]))
         # Run is in reverse order
         ++run_limit
-        while (run_limit < limit and not compare_fn(list[run_limit-1],list[run_limit]))
+        while (run_limit < limit and compare_fn(list[run_limit],list[run_limit-1]))
           ++run_limit
         endWhile
         _reverse_range( list, low, run_limit )
@@ -90,7 +90,7 @@ class Timsort<<$DataType>>
 
         while (left < right)
           local mid = (left + right) :>>: 1
-          if (not compare_fn(list[mid],pivot))
+          if (compare_fn(pivot,list[mid]))
             right = mid
           else
             left = mid + 1
@@ -119,9 +119,9 @@ class Timsort<<$DataType>>
 
       local last_ofs = 0
       local ofs = 1
-      if (not compare_fn(key,list[base+hint]))
+      if (compare_fn(list[base+hint],key))
         local max_ofs = len - hint
-        while (ofs < max_ofs and not compare_fn(key,list[base + hint + ofs]))
+        while (ofs < max_ofs and compare_fn(list[base + hint + ofs],key))
           last_ofs = ofs
           ofs = (ofs * 2) + 1
           if (ofs <= 0) ofs = max_ofs
@@ -134,7 +134,7 @@ class Timsort<<$DataType>>
 
       else
         local max_ofs = hint + 1
-        while (ofs < max_ofs and compare_fn(key, list[base + hint - ofs]))
+        while (ofs < max_ofs and not compare_fn(list[base + hint - ofs],key))
           last_ofs = ofs
           ofs = (ofs * 2) + 1
           if (ofs <= 0) ofs = max_ofs
@@ -152,7 +152,7 @@ class Timsort<<$DataType>>
       ++last_ofs
       while (last_ofs < ofs)
         local m = last_ofs + ((ofs - last_ofs) :>>: 1)
-        if (not compare_fn(key,list[base + m])) last_ofs = m + 1
+        if (not compare_fn(list[base + m],key)) last_ofs = m + 1
         else                                    ofs = m
       endWhile
 
@@ -165,9 +165,9 @@ class Timsort<<$DataType>>
 
       local ofs = 1
       local last_ofs = 0
-      if (not compare_fn(list[base + hint],key))
+      if (compare_fn(key,list[base + hint]))
         local max_ofs = hint + 1
-        while (ofs < max_ofs and not compare_fn(list[base+hint-ofs],key))
+        while (ofs < max_ofs and compare_fn(key,list[base+hint-ofs]))
           last_ofs = ofs
           ofs = (ofs * 2) + 1
           if (ofs <= 0) ofs = max_ofs
@@ -180,7 +180,7 @@ class Timsort<<$DataType>>
         ofs = hint - tmp
       else
         local max_ofs = len - hint
-        while (ofs < max_ofs and compare_fn(list[base+hint+ofs],key))
+        while (ofs < max_ofs and not compare_fn(list[base+hint+ofs],key))
           last_ofs = ofs
           ofs = (ofs * 2) + 1
           if (ofs <= 0) ofs = max_ofs
@@ -196,8 +196,8 @@ class Timsort<<$DataType>>
       ++last_ofs
       while (last_ofs < ofs)
         local m = last_ofs + ((ofs - last_ofs) :>>: 1)
-        if (not compare_fn(list[base + m],key)) ofs = m
-        else                                    last_ofs = m + 1
+        if (compare_fn(key,list[base + m])) ofs = m
+        else                                last_ofs = m + 1
       endWhile
 
       assert last_ofs == ofs
@@ -259,7 +259,7 @@ class Timsort<<$DataType>>
         compare_fn:(Function($DataType,$DataType)->Logical) )
       assert len1 > 0 and len2 > 0 and base1 + len1 == base2
 
-      use tmp = WorkList<<$DataType,TimSort>>
+      use tmp = WorkList<<$DataType,Timsort>>
         tmp.reserve( len2 )
 
         list.copy( base2, len2, tmp, 0 )
@@ -295,7 +295,7 @@ class Timsort<<$DataType>>
 
             assert len1 > 0 and len2 > 1
 
-            if (not compare_fn(list[cursor1],tmp[cursor2]))
+            if (compare_fn(tmp[cursor2],list[cursor1]))
               list[dest] = list[cursor1]
               --dest
               --cursor1
@@ -378,7 +378,7 @@ class Timsort<<$DataType>>
         compare_fn:(Function($DataType,$DataType)->Logical) )
       assert len1 > 0 and len2 > 0 and base1 + len1 == base2
 
-      use tmp = WorkList<<$DataType,TimSort>>
+      use tmp = WorkList<<$DataType,Timsort>>
         tmp.reserve( len1 )
 
         list.copy( base1, len1, tmp, 0 )
@@ -412,7 +412,7 @@ class Timsort<<$DataType>>
             first = false
 
             assert len1 > 1 and len2 > 0
-            if (not compare_fn(tmp[cursor1],list[cursor2]))
+            if (compare_fn(list[cursor2],tmp[cursor1]))
               list[dest] = list[cursor2]
               ++dest
               ++cursor2
