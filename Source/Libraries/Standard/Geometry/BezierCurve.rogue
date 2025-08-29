@@ -5,12 +5,14 @@ class BezierCurve
     control_points = XY[](5)
     work_points    = XY[](5)
     curve_points   = XY[]
+    precision      = 1.0    # use 1.0 for pixel coordinates or e.g. 0.001 for normalized coordinates
     is_modified    = false
 
   METHODS
     method cloned->BezierCurve
       local result = BezierCurve()
       result.control_points.[clear].add( control_points )
+      result.precision = precision
       result.is_modified = true
       return result
 
@@ -37,6 +39,9 @@ class BezierCurve
     method count->Int
       return control_points.count
 
+    method description->String
+      return control_points->String
+
     method first->XY
       return control_points.first
 
@@ -50,8 +55,8 @@ class BezierCurve
       if (control_points[index] != new_value) is_modified = true
       control_points[ index ] = new_value
 
-    method description->String
-      return control_points->String
+    method set_precision( @precision )
+      is_modified = true
 
     method to->XY[]
       return update_curve
@@ -63,7 +68,8 @@ class BezierCurve
       curve_points.clear
 
       curve_points.add( control_points.first )
-      local t_step = 1.0 / (control_points.last - control_points.first).abs.max.ceiling
+      local n_steps = ((control_points.last - control_points.first) / precision).abs.max.ceiling
+      local t_step = 1.0 / n_steps
       forEach (t in t_step ..< 1.0 step t_step)
         curve_points.add( at(t) )
       endForEach
