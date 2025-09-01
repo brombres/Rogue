@@ -5,7 +5,7 @@ class BezierCurve
     control_points = XY[](5)
     work_points    = XY[](5)
     curve_points   = XY[]
-    precision      = 1.0    # use 1.0 for pixel coordinates or e.g. 0.001 for normalized coordinates
+    precision      : Real?  # use 1.0 for pixel coordinates or e.g. 0.001 for normalized coordinates
     is_modified    = false
 
   METHODS
@@ -52,6 +52,7 @@ class BezierCurve
       return control_points.last
 
     method set( index:Int, new_value:XY )
+      control_points.expand_to_include( index )
       if (control_points[index] != new_value) is_modified = true
       control_points[ index ] = new_value
 
@@ -66,9 +67,24 @@ class BezierCurve
       is_modified = false
 
       curve_points.clear
+      if (control_points.is_empty) return curve_points
+
+      if (not precision)
+        # auto-select precision
+        local min = control_points.first
+        local max = min
+        forEach (pt in control_points)
+          max .= max( pt )
+          min .= min( pt )
+        endForEach
+
+        if ((max.max - min.min).abs > 2) precision = 1.0
+        else                             precision = 0.001
+      endIf
 
       curve_points.add( control_points.first )
-      local n_steps = ((control_points.last - control_points.first) / precision).abs.max.ceiling
+      local n_steps = ((control_points.last - control_points.first) / precision.value).abs.max.ceiling
+      n_steps .= clamped_high( 2000 )
       local t_step = 1.0 / n_steps
       forEach (t in t_step ..< 1.0 step t_step)
         curve_points.add( at(t) )
