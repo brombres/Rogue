@@ -1457,6 +1457,7 @@ class Variant [compound]
         case TYPE_INT32:     return int32->Int32
         case TYPE_INT:       return integer->Int32
         case TYPE_INT64:     return int64->Int32
+        case TYPE_LOGICAL:   return logical->Int32
         case TYPE_REAL32:    return real32->Int32
         case TYPE_REAL:      return real->Int32
         case TYPE_REAL64:    return real64->Int32
@@ -1477,6 +1478,7 @@ class Variant [compound]
         case TYPE_INT32:     return int32->Int
         case TYPE_INT:       return integer->Int
         case TYPE_INT64:     return int64->Int
+        case TYPE_LOGICAL:   return logical->Logical
         case TYPE_REAL32:    return real32->Int
         case TYPE_REAL:      return real->Int
         case TYPE_REAL64:    return real64->Int
@@ -1497,6 +1499,7 @@ class Variant [compound]
         case TYPE_INT32:     return int32->Int64
         case TYPE_INT:       return integer->Int64
         case TYPE_INT64:     return int64->Int64
+        case TYPE_LOGICAL:   return logical->Int64
         case TYPE_REAL32:    return real32->Int64
         case TYPE_REAL:      return real->Int64
         case TYPE_REAL64:    return real64->Int64
@@ -1564,6 +1567,7 @@ class Variant [compound]
         case TYPE_INT32:     return int32->Real32
         case TYPE_INT:       return integer->Real32
         case TYPE_INT64:     return int64->Real32
+        case TYPE_LOGICAL:   return logical->Real32
         case TYPE_REAL32:    return real32->Real32
         case TYPE_REAL:      return real->Real32
         case TYPE_REAL64:    return real64->Real32
@@ -1583,6 +1587,7 @@ class Variant [compound]
         case TYPE_INT32:     return int32->Real
         case TYPE_INT:       return integer->Real
         case TYPE_INT64:     return int64->Real
+        case TYPE_LOGICAL:   return logical->Real
         case TYPE_REAL32:    return real32->Real
         case TYPE_REAL:      return real->Real
         case TYPE_REAL64:    return real64->Real
@@ -1602,6 +1607,7 @@ class Variant [compound]
         case TYPE_INT32:     return int32->Real64
         case TYPE_INT:       return integer->Real64
         case TYPE_INT64:     return int64->Real64
+        case TYPE_LOGICAL:   return logical->Real64
         case TYPE_REAL32:    return real32->Real64
         case TYPE_REAL:      return real->Real64
         case TYPE_REAL64:    return real64->Real64
