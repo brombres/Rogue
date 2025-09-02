@@ -1,6 +1,10 @@
 library Geometry
 
 class Circle( position:XY, radius:Real ) [compound]
+  GLOBAL METHODS
+    method create( radius:Real )->Circle
+      return Circle( XY(0,0), radius )
+
   METHODS
     method at( angle:Radians )->XY
       # Returns the point along the edge of the circle at the given angle.
@@ -15,6 +19,11 @@ class Circle( position:XY, radius:Real ) [compound]
       # Example:
       #   one_oclock = circle.at( Degrees(360.0/12.0) )
       return position + XY( radius, angle )
+
+    method at_random( random=Random:Random )->XY
+      # Returns a random point inside the circle. Results of repeated calls
+      # will be evenly distributed across the area of the circle.
+      return position + XY( random.real.sqrt * radius, random.radians )
 
     method bounding_box->Box
       return Box( position-radius, radius*2 )
