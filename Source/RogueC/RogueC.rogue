@@ -35,6 +35,7 @@ $include ExceptionAnalyzer
 $include ExceptionType
 $include ExceptionTypes
 $include Finalizer
+$include ImplicitContext
 $include ImplicitFunctionGenerator
 $include ImplicitWithVarCollector
 $include InspectionVisitor

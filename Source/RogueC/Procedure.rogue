@@ -41,6 +41,10 @@ class Procedure : Cmd
 
     doc               : String
 
+    implicit_context  : Type[]
+    # Dynamically adjusted during code resolution, e.g. which(enum_value) adds EnumType to
+    # implicit_context[] for 'case' evaluation.
+
   METHODS
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
         attributes=null:Attributes, doc=null:String, body=null:LocalScope )

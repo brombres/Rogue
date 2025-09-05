@@ -1463,7 +1463,7 @@ class Type : Cmd
           global_methods[ m.signature ] = m
         endBlock
 
-        # create(String) constructor
+        # create(Rogue::String) constructor
         block
           local m = GlobalMethod( t, this, "create" )
           m.parameters.add( Local(t,"name",Program.type_String) )

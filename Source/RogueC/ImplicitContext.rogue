@@ -1,0 +1,26 @@
+library RogueC
+
+class ImplicitContext( this_library:Library, work_list:Type[] ) [compound]
+  GLOBAL METHODS
+    method create( this_library:Library, this_procedure:Procedure )->ImplicitContext
+      # Procedures only occasionally have a work list. Only set up a new work list
+      # when they do; otherwise pass through the library's implicit_context[].
+      local work_list : Type[]
+      if local procedure_context = this_procedure.implicit_context
+        if (procedure_context.count)
+          work_list = WorkList<<Type,ImplicitContext>>.on_use
+          work_list.add( this_library.implicit_context )
+          work_list.add( procedure_context )
+        endIf
+      endIf
+      return ImplicitContext( this_library, work_list )
+
+  METHODS
+    method on_use->Type[]
+      if (work_list) return work_list
+      else           return this_library.implicit_context
+
+    method on_end_use( list:Type[] )
+      if (work_list) WorkList<<Type,ImplicitContext>>.on_end_use( work_list )
+endClass
+

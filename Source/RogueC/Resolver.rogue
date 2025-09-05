@@ -1942,15 +1942,15 @@ class Resolver : Recyclable, Visitor
       local condition_type = cmd.condition.require_type
 
       local is_enum = condition_type.is_enum
-      if (is_enum) this_library.implicit_context.add( condition_type )
+      if (is_enum) ensure<<this_procedure.implicit_context>>.add( condition_type )
 
       cmd.cases = visit(cmd.cases)->(as WhichCases)
       cmd.statements = visit(cmd.statements)
 
       if (is_enum)
-        # Convert enum cases to integer cases so we can use switch
-        this_library.implicit_context.remove_last
+        this_procedure.implicit_context.remove_last
 
+        # Convert enum cases to integer cases so we can use switch
         cmd.condition = visit( ContextAccess(cmd.t,cmd.condition,"value") )
         forEach (cmd_case in cmd.cases)
           forEach (arg at i in cmd_case.args)
@@ -2116,18 +2116,20 @@ class Resolver : Recyclable, Visitor
           if (not is_fallback)
             # Check for a matching method in implicit context types (Global, Routine, ...)
             assert this_library
-            forEach (implicit_type in this_library.implicit_context)
-              local implicit_match = find_procedure( t, implicit_type, null, name, args, &suppress_error )
-              if (implicit_match) return resolve_call( t, GetSingleton(t,implicit_type), implicit_match, args )
+            use implicit_context = ImplicitContext( this_library, this_procedure )
+              forEach (implicit_type in implicit_context)
+                local implicit_match = find_procedure( t, implicit_type, null, name, args, &suppress_error )
+                if (implicit_match) return resolve_call( t, GetSingleton(t,implicit_type), implicit_match, args )
 
-              if (implicit_type is not this_type)
-                if (implicit_type.properties.contains(name) or implicit_type.global_properties.contains(name) or
-                    implicit_type.definitions.contains(name))
-                  local result = resolve_access( t, TypeContext(t,implicit_type), name, args, &suppress_error )
-                  if (result) return result
+                if (implicit_type is not this_type)
+                  if (implicit_type.properties.contains(name) or implicit_type.global_properties.contains(name) or
+                      implicit_type.definitions.contains(name))
+                    local result = resolve_access( t, TypeContext(t,implicit_type), name, args, &suppress_error )
+                    if (result) return result
+                  endIf
                 endIf
-              endIf
-            endForEach
+              endForEach
+            endUse
 
           endIf
         endIf
@@ -2151,10 +2153,12 @@ class Resolver : Recyclable, Visitor
         if (not context)
           block
             assert this_library
-            forEach (implicit_type in this_library.implicit_context)
-              local result = resolve_global_access( t, implicit_type, name, args, &=suppress_error )
-              if (result) return result
-            endForEach
+            use implicit_context = ImplicitContext( this_library, this_procedure )
+              forEach (implicit_type in implicit_context)
+                local result = resolve_global_access( t, implicit_type, name, args, &=suppress_error )
+                if (result) return result
+              endForEach
+            endUse
           endBlock
 
           # Global singleton property
