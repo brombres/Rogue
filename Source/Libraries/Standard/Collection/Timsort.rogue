@@ -67,7 +67,7 @@ class Timsort<<$DataType>>
       else
         # Run is in-order
         ++run_limit
-        while (run_limit < limit and compare_fn(list[run_limit-1],list[run_limit]))
+        while (run_limit < limit and not compare_fn(list[run_limit],list[run_limit-1]))
           ++run_limit
         endWhile
       endIf
@@ -152,8 +152,8 @@ class Timsort<<$DataType>>
       ++last_ofs
       while (last_ofs < ofs)
         local m = last_ofs + ((ofs - last_ofs) :>>: 1)
-        if (not compare_fn(list[base + m],key)) last_ofs = m + 1
-        else                                    ofs = m
+        if (compare_fn(list[base + m],key)) last_ofs = m + 1
+        else                                ofs = m
       endWhile
 
       assert last_ofs == ofs
@@ -180,7 +180,7 @@ class Timsort<<$DataType>>
         ofs = hint - tmp
       else
         local max_ofs = len - hint
-        while (ofs < max_ofs and not compare_fn(list[base+hint+ofs],key))
+        while (ofs < max_ofs and not compare_fn(key,list[base+hint+ofs]))
           last_ofs = ofs
           ofs = (ofs * 2) + 1
           if (ofs <= 0) ofs = max_ofs
@@ -367,6 +367,8 @@ class Timsort<<$DataType>>
           cursor1 -= len1
           list.copy( cursor1+1, len1, list, dest+1 )
           list[dest] = tmp[cursor2]
+        elseIf (len2 == 0)
+          throw Error( "[Timsort._merge_high] Comparison function violates its implicit contract - fn(a,b) is not symmetrical with fn(b,a)." )
         else
           assert len1 == 0
           assert len2 > 0
@@ -485,6 +487,8 @@ class Timsort<<$DataType>>
           assert len2 > 0
           list.copy( cursor2, len2, list, dest )
           list[dest + len2] = tmp[cursor1]
+        elseIf (len1 == 0)
+          throw Error( "[Timsort._merge_low] Comparison function violates its implicit contract - fn(a,b) is not symmetrical with fn(b,a)." )
         else
           assert len2 == 0
           assert len1 > 1
