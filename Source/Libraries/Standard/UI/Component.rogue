@@ -557,7 +557,7 @@ class Component : Entity
       size = sz
 
       if (attributes.manually_update_content_layout)
-        on_layout_size( size )
+        if (not limited) on_layout_size( size )
       else
         sz = .resolve_shrink_to_fit_layout_size( &=limited )
         if (not limited)
