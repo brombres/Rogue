@@ -32,7 +32,7 @@ endClass
 
 class Error : Exception;
 
-class AssertionError : Exception;
+class AssertionError : Error;
 
 class IOError : Error;
 
