@@ -160,8 +160,11 @@ class HBox : Component
         endUse
 
         # All child components have their own size set or assigned; have them recursively
-        # determine their child sizes.
+        # determine their child sizes. Before now each component's resolve_layout_size()
+        # has only been called in a &limited fashion; call it once more, non-&limited,
+        # to ensure that on_layout_size() fires.
         forEach (component in components)
+          component.resolve_layout_size( component.size )
           component.resolve_content_layout_sizes
         endForEach
       endUse
