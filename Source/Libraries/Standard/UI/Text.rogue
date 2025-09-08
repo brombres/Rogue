@@ -86,6 +86,11 @@ class Text : Component
       endForEach
       return true
 
+    method is_dynamic->Logical
+      # If true, Text can be internally split for word-wrapping purposes.
+      # By default only true for base type Text.
+      return this isType Text
+
     method line_height->Real
       if local font = font
         return font.height * font.line_spacing
@@ -222,7 +227,19 @@ class Text : Component
         clear
 
         if (not text)
-          @value = String()
+          if (not value) @value = String()
+          escapeBlock
+        endIf
+
+        if (not is_dynamic)
+          if (value)
+            if (value is not text)
+              value.clear
+              value.print( text )
+            endIf
+          else
+            @value = text.cloned
+          endIf
           escapeBlock
         endIf
 
