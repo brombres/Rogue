@@ -60,6 +60,7 @@ class EasedValue<<$DataType>> : TargetValue<<$DataType>>
 
   METHODS
     method init( initial_value, target_value:Real, duration:Real, progress_fn=ProgressFn.QUADRATIC, duration_fn=null )
+      init( initial_value, duration, progress_fn, duration_fn )
       set_target_value( target_value )
 
     method init( initial_value, duration=0.5, progress_fn=ProgressFn.QUADRATIC, duration_fn=null )
