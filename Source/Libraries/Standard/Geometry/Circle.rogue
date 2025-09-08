@@ -84,6 +84,10 @@ class Circle( position:XY, radius:Real ) [compound]
       buffer.print radius
       buffer.print ')'
 
+    method to->Box
+      # Returns a Box that encloses this Circle.
+      return Box( position-radius, radius*2 )
+
     method to->String
       return "(@$, r:$)" (position,radius)
 endClass
