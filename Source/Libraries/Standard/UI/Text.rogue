@@ -8,71 +8,7 @@ class Text : Component
 
   METHODS
     method init( text=String():String, &fragment )
-      block
-        clear
-
-        if (not text)
-          @value = String()
-          escapeBlock
-        endIf
-
-        if (fragment and text.count <= 1)
-          @value = text
-          escapeBlock
-        endIf
-
-        use processed = StringPool
-          processed.reserve( text.count )
-
-          local iterator = text.iterator
-          local prev = -1
-          local has_eol = false
-          local is_modified = false
-          loop
-            if local ch = iterator.read_another
-              if (ch == '\r')     is_modified = true; nextIteration
-              if (ch == '\n')     has_eol = true
-              elseIf (ch == '\t') ch = ' '; is_modified = true
-              if (ch == ' ')
-                if (prev == ' ') is_modified = true; nextIteration
-              endIf
-              processed.print( ch )
-              prev = ch
-            else
-              escapeLoop
-            endIf
-          endLoop
-
-          local has_edge_spaces = processed[0] == ' ' or processed.last == ' '
-          if (has_eol or has_edge_spaces) is_modified = true
-
-          if (not is_modified)
-            if (value is not text)
-              if (fragment) @value = text
-              else          @value = processed.cloned
-            endIf
-            escapeBlock
-          endIf
-
-          use builder = StringPool
-            forEach (ch in processed)
-              if (ch == '\n')
-                .add_builder( builder )
-                add( Text('\n',&fragment) )
-              elseIf (ch == ' ' and not builder.count)
-                # Leading space becomes its own element
-                add( Text(' ',&fragment) )
-              else
-                builder.print ch
-              endIf
-            endForEach
-            .add_builder( builder )
-          endUse
-
-        endUse
-      endBlock
-
-      .update_size
+      .process_and_store( text, &=fragment )
 
     method .add_builder( builder:String )
       if (builder.count)
@@ -209,11 +145,17 @@ class Text : Component
         value.clear
         value.print( new_value )
         local old_natural_size = natural_size
-        init( value )
+        .process_and_store( value )
         if (natural_size != old_natural_size)
-          if (sizing_mode.x == SizingMode.NATURAL_SIZE or sizing_mode.y == SizingMode.NATURAL_SIZE)
+          contingent
+            sufficient (sizing_mode.x == SizingMode.NATURAL_SIZE)
+            sufficient (sizing_mode.y == SizingMode.NATURAL_SIZE)
+            sufficient (sizing_mode.x == SizingMode.SHRINK_TO_FIT)
+            sufficient (sizing_mode.y == SizingMode.SHRINK_TO_FIT)
+            escapeContingent
+          satisfied
             request_layout
-          endIf
+          endContingent
         endIf
       endIf
 
@@ -274,5 +216,72 @@ class Text : Component
     method use_unscaled_text_width
       scaling_mode.x = ScalingMode.NONE
       sizing_mode.x = SizingMode.FIXED_SIZE
+
+    method .process_and_store( text:String, &fragment )
+      block
+        clear
+
+        if (not text)
+          @value = String()
+          escapeBlock
+        endIf
+
+        if (fragment and text.count <= 1)
+          @value = text
+          escapeBlock
+        endIf
+
+        use processed = StringPool
+          processed.reserve( text.count )
+
+          local iterator = text.iterator
+          local prev = -1
+          local has_eol = false
+          local is_modified = false
+          loop
+            if local ch = iterator.read_another
+              if (ch == '\r')     is_modified = true; nextIteration
+              if (ch == '\n')     has_eol = true
+              elseIf (ch == '\t') ch = ' '; is_modified = true
+              if (ch == ' ')
+                if (prev == ' ') is_modified = true; nextIteration
+              endIf
+              processed.print( ch )
+              prev = ch
+            else
+              escapeLoop
+            endIf
+          endLoop
+
+          local has_edge_spaces = processed[0] == ' ' or processed.last == ' '
+          if (has_eol or has_edge_spaces) is_modified = true
+
+          if (not is_modified)
+            if (value is not text)
+              if (fragment) @value = text
+              else          @value = processed.cloned
+            endIf
+            escapeBlock
+          endIf
+
+          use builder = StringPool
+            forEach (ch in processed)
+              if (ch == '\n')
+                .add_builder( builder )
+                add( Text('\n',&fragment) )
+              elseIf (ch == ' ' and not builder.count)
+                # Leading space becomes its own element
+                add( Text(' ',&fragment) )
+              else
+                builder.print ch
+              endIf
+            endForEach
+            .add_builder( builder )
+          endUse
+
+        endUse
+      endBlock
+
+      .update_size
 
 endClass
