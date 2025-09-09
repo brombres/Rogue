@@ -396,6 +396,10 @@ class Resolver : Recyclable, Visitor
         endIf
       endIf
 
+      if (this_procedure.signature == prior_m.signature)
+        this_procedure.attributes.calls_prior = true
+      endIf
+
       args.list.discard( $ instanceOf DefaultArg )
       visit( args )
       convert_args_to_parameter_types( args, prior_m )
@@ -420,6 +424,8 @@ class Resolver : Recyclable, Visitor
       local prior_m = m
       if (prior_m.type_context is this_type) prior_m = prior_m.overridden_method
       if (not prior_m) throw cmd.t.error( "Invalid 'prior' call - $ has no prior definition."(m) )
+
+      this_procedure.attributes.calls_prior = true
 
       args.list.discard( $ instanceOf DefaultArg )
       visit( args )
@@ -1517,6 +1523,14 @@ class Resolver : Recyclable, Visitor
       visit_children( cmd )
 
       visible_locals.discard_from( visible_locals_fp.remove_last )
+
+      if (cmd.overridden_method and cmd.overridden_method.attributes.is_critical)
+        if (not cmd.attributes.calls_prior)
+          throw cmd.t.error(
+            "$() overrides a [critical] method and must either make a call to prior.$() or include the attribute [handlesCritical]."(cmd.name,cmd.name)
+          )
+        endIf
+      endIf
 
     method on_visit_children( cmd:Property )
       # skip initial_value since it will be out of context

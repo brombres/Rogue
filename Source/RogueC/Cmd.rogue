@@ -5468,3 +5468,15 @@ class HasMethod : Cmd
       return "HasMethod($,$)" (%type_expression,%method_name)
 
 endClass
+
+class AttributeCritical : Cmd
+  METHODS
+    method description->String
+      return "AttributeCritical"
+endClass
+
+class AttributeHandlesCritical : Cmd
+  METHODS
+    method description->String
+      return "AttributeHandlesCritical"
+endClass

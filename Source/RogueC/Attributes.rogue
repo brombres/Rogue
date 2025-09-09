@@ -53,6 +53,8 @@ class Attribute
     DELETED            = (Int64(1):<<:48)
     UNDOCUMENTED       = (Int64(1):<<:49)
     DEPRECATED         = (Int64(1):<<:50)
+    CRITICAL           = (Int64(1):<<:51)
+    CALLS_PRIOR        = (Int64(1):<<:52)
 endClass
 
 class Attributes : CmdList
@@ -107,6 +109,8 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE<< deleted,              Attribute.DELETED >>
   ROGUE_ATTRIBUTE<< undocumented,         Attribute.UNDOCUMENTED >>
   ROGUE_ATTRIBUTE<< is_deprecated,        Attribute.DEPRECATED >>
+  ROGUE_ATTRIBUTE<< is_critical,          Attribute.CRITICAL >>
+  ROGUE_ATTRIBUTE<< calls_prior,          Attribute.CALLS_PRIOR >>
 
   PROPERTIES
     flags : Int64
@@ -169,6 +173,9 @@ augment
     method AttributeDeprecated.attribute_flags->Int64
       return Attribute.DEPRECATED
 
+    method AttributeCritical.attribute_flags->Int64
+      return Attribute.CRITICAL
+
     method AttributeEssential.attribute_flags->Int64
       return Attribute.ESSENTIAL
 
@@ -181,8 +188,8 @@ augment
     method AttributeFaux.attribute_flags->Int64
       return Attribute.FAUX
 
-    method AttributeUndocumented.attribute_flags->Int64
-      return Attribute.UNDOCUMENTED
+    method AttributeHandlesCritical.attribute_flags->Int64
+      return Attribute.CALLS_PRIOR
 
     method AttributeInsert.attribute_flags->Int64
       return Attribute.INSERT
@@ -213,5 +220,9 @@ augment
 
     method AttributeSingleton.attribute_flags->Int64
       return Attribute.SINGLETON
+
+    method AttributeUndocumented.attribute_flags->Int64
+      return Attribute.UNDOCUMENTED
+
 endAugment
 

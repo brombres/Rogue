@@ -1831,6 +1831,7 @@ class Type : Cmd
             endIf
 
             m.overridden_method = base_m
+            if (base_m.attributes.is_critical) m.attributes.is_critical = true
           else
             if (base_m.attributes.is_propagated)
               add( base_m.propagated_to(this).[overridden_method=m] )
