@@ -1527,7 +1527,7 @@ class Resolver : Recyclable, Visitor
       if (cmd.overridden_method and cmd.overridden_method.attributes.is_critical)
         if (not cmd.attributes.calls_prior)
           throw cmd.t.error(
-            "$() overrides a [critical] method and must either make a call to prior.$() or include the attribute [handlesCritical]."(cmd.name,cmd.name)
+            "$() overrides a [critical] method and must either make a call to prior.$() or include the attribute [criticalOverride]."(cmd.name,cmd.name)
           )
         endIf
       endIf
