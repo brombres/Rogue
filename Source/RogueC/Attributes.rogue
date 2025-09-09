@@ -188,8 +188,8 @@ augment
     method AttributeFaux.attribute_flags->Int64
       return Attribute.FAUX
 
-    method AttributeHandlesCritical.attribute_flags->Int64
-      return Attribute.CALLS_PRIOR
+    method AttributeCriticalOverride.attribute_flags->Int64
+      return Attribute.CALLS_PRIOR | Attribute.CRITICAL | Attribute.OVERRIDE
 
     method AttributeInsert.attribute_flags->Int64
       return Attribute.INSERT

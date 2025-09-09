@@ -5475,8 +5475,8 @@ class AttributeCritical : Cmd
       return "AttributeCritical"
 endClass
 
-class AttributeHandlesCritical : Cmd
+class AttributeCriticalOverride : Cmd
   METHODS
     method description->String
-      return "AttributeHandlesCritical"
+      return "AttributeCriticalOverride"
 endClass

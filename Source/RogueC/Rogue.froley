@@ -785,9 +785,9 @@ parser
   on  'augment'    -> AttributeAugment
   on @"deprecated" -> AttributeDeprecated
   on @"critical"   -> AttributeCritical
+  on @"criticalOverride" -> AttributeCriticalOverride
   on @"essential"  -> AttributeEssential
   on @"fallback"   -> AttributeFallback
-  on @"criticalOverride" -> AttributeHandlesCritical
   on @"insert"     -> AttributeInsert
   on @"mutating"   -> AttributeMutating
   on @"override"   -> AttributeOverride
