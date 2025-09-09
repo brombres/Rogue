@@ -105,9 +105,9 @@ class Text : Component
         return XY.zero
       endIf
 
-    method on_begin_layout_internal [override]
+    method on_begin_layout
       .update_size
-      prior.on_begin_layout_internal
+      prior.on_begin_layout
 
     method .update_size
       local font = font

@@ -157,17 +157,17 @@ class VScrollView : Component
         allow_momentum_scroll = true
       endIf
 
-    method on_begin_layout_internal [override]
+    method on_begin_layout
       if (not tracks_bottom and bottom_offset)
         tracks_bottom = (content_offset.y <= bottom_offset)
       endIf
-      prior.on_begin_layout_internal
+      prior.on_begin_layout
 
-    method on_end_layout_internal [override]
+    method on_end_layout
       if (tracks_bottom)
         content_offset = XY( 0, bottom_offset )
       endIf
-      prior.on_end_layout_internal
+      prior.on_end_layout
 
     method on_select( e_press:PointerEvent, e_release:PointerEvent )
       # UIScrollView consumes any original press event in preparation for dragging.

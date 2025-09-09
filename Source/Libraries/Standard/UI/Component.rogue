@@ -47,8 +47,11 @@ class Component : Entity
     method on( e:TextEvent )
       noAction
 
-    method on_begin_layout
+    method on_begin_layout [critical]
       # Called at the beginning of layout
+      noAction
+
+    method on_end_layout [critical]
       noAction
 
     method on_layout_size( layout_size:XY )
@@ -69,9 +72,6 @@ class Component : Entity
       noAction
 
     method on_unhandled( e:TextEvent )
-      noAction
-
-    method on_end_layout
       noAction
 
     method on_release_keyboard_focus
@@ -195,7 +195,6 @@ class Component : Entity
           on_activate
         endIf
 
-        on_begin_layout_internal
         on_begin_layout
       endIf
 
@@ -302,7 +301,6 @@ class Component : Entity
 
     method end_layout( &only_content )
       if (not only_content)
-        on_end_layout_internal
         on_end_layout
       endIf
 
@@ -443,12 +441,6 @@ class Component : Entity
         next_component = next_entity->(as Component)
       endWhile
       return next_component
-
-    method on_begin_layout_internal
-      noAction
-
-    method on_end_layout_internal
-      noAction
 
     method opacity->Real
       if local parent_component = parent->(as Component)

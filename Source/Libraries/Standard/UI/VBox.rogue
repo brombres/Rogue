@@ -173,8 +173,8 @@ class VBox : Component
         endForEach
       endUse
 
-    method on_begin_layout_internal
-      prior.on_begin_layout_internal
+    method on_begin_layout
+      prior.on_begin_layout
       if (gap_parameter_id)
         @gap = gap_parameter_id->Real
       endIf
