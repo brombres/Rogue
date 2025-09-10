@@ -771,6 +771,28 @@ class Bitmap
       bottom.blit( result, 0, top.height )
       return result
 
+    method operator==( other:Bitmap )->Logical
+      if (this is other) return true
+      if (this.width != other.width or this.height != other.height) return false
+
+      local result = true
+
+      native
+      @|RogueInt32* a = $pixels->as_int32s - 1;
+       |RogueInt32* b = $other->pixels->as_int32s - 1;
+       |int count = $width * $height;
+       |while (--count >= 0)
+       |{
+       |  if (*(++a) != *(++b))
+       |  {
+       |    $result = 0;
+       |    break;
+       |  }
+       |}
+
+      return result
+
+
     method premultiply_alpha
       # Multiplies the R,G,B components of each color by their current
       # alpha value - so Color(255,192,0,127) becomes Color(127,95,0,127).
