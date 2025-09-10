@@ -25,10 +25,10 @@ class List<<$DataType>> : Recyclable ListType
             |  %Ns%RogueCharacter* as_characters;
             |  %Ns%RogueWord*      as_words;
             |  %Ns%RogueByte*      as_bytes;
-            |  char*               as_utf8; // only valid for String data; includes null terminator
+            |  char*           as_utf8; // only valid for String data; includes null terminator
             |  %Ns%RogueByte*      as_logicals;
             |  #if defined(%NS%ROGUE_TARGET_WINDOWS)
-            |    wchar_t*          as_wchars;
+            |    wchar_t*      as_wchars;
             |  #endif
             |};
 
@@ -772,6 +772,27 @@ class List<<$DataType>> : Recyclable ListType
 
     method to->Variant
       return map<<Variant>>
+
+    method to_unsafe_bytes->Byte[]
+      # Returns a Byte[] interpretation of this lists's data that is intended
+      # for immediate use only and should not be stored.
+      #
+      # Additions or removals to the original list will not be reflected in the
+      # Byte[] list, thereby corrupting the Byte[] list. If the original list
+      # is unreferenced and garbage-collected, the Byte[] list will be using
+      # invalid memory that may lead to a segmentation fault.
+      #
+      # Also note that the resulting byte ordering can vary across platforms,
+      # with, for example, integers expressed as low-high on some platforms and
+      # high-low on others.
+      #
+      # The resulting Byte[] list may be .cloned() to create an ordinary, safe
+      # Byte[] list.
+      local result = Byte[]
+      result.@count = count * element_size
+      result.is_borrowed = true
+      native @|$result->as_bytes = $this->as_bytes;
+      return result
 
     method working_copy->WorkingCopy<<$DataType>>
       return WorkingCopy<<$DataType>>( this )
