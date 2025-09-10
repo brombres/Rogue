@@ -21,6 +21,16 @@ class CRC32( hash=0:Int32 ) [compound]
       endForEach
       return CRC32( !hash )
 
+    method create( data:Int32[] )->CRC32
+      local hash = Int32(-1)
+      forEach (value in data)
+        hash = crc32_table[ (hash ~ ((data:>>>:24)&0xFF)) & 0xFF ] ~ (hash :>>: 8)
+        hash = crc32_table[ (hash ~ ((data:>>>:16)&0xFF)) & 0xFF ] ~ (hash :>>: 8)
+        hash = crc32_table[ (hash ~ ((data:>>>:8)&0xFF)) & 0xFF ] ~ (hash :>>: 8)
+        hash = crc32_table[ (hash ~ (data&0xFF)) & 0xFF ] ~ (hash :>>: 8)
+      endForEach
+      return CRC32( !hash )
+
   METHODS
     method add( byte:Int32 ) [mutating]
       hash = !crc32_table[ (!hash ~ byte) & 0xFF ] ~ (!hash :>>: 8)
