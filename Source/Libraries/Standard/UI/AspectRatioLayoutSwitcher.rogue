@@ -5,12 +5,15 @@ class AspectRatioLayoutSwitcher : Component
     alternates = AlternateAspectLayout[]
 
   METHODS
-    method add_alternate( component:Component, min_aspect_ratio=0:Real )
+    method add_alternate( component:Component, min_aspect_ratio:Real )
       alternates.add( AlternateAspectLayout(component,min_aspect_ratio) )
       alternates.sort( $1.min_aspect_ratio < $2.min_aspect_ratio )
 
+    method add_default( component:Component )
+      add_alternate( component, 0.0 )
+
     method resolve_layout_size( available_size:XY, &limited )->XY
-      local ar = available_size.x / available_size.y
+      local ar = UI.size.x / UI.size.y
       local best = alternates.first
       forEach (alt in alternates from 1)
         if (ar >= alt.min_aspect_ratio) best = alt
