@@ -2420,14 +2420,11 @@ parser
 
 - localize_declaration
   savePosition
-  identifier
+  expression
   createTokenListPreservingStack
   pop initial_value_tokens
 
-  call clone
-  createNull
-  create Access(name:String,args)
-  subclass
+  call create_localize
 
   push initial_value_tokens
 

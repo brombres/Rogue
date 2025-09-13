@@ -76,6 +76,29 @@ class Parser : ParserCore, Recyclable
     method on_recycle
       reset
 
+    method create_localize->Int
+      if (disable_output or _cmd_stack.is_empty) return 0
+      local expr = _cmd_stack.remove_last
+      local t = expr.t
+
+      if local access = expr->(as Access)
+        _cmd_stack.add( Identifier(t, access.name) )
+        _cmd_stack.add( access )
+      elseIf local context_access = expr->(as ContextAccess)
+        _cmd_stack.add( Identifier(t, context_access.name) )
+        _cmd_stack.add( context_access )
+      elseIf local direct_access = expr->(as DirectAccess)
+        _cmd_stack.add( Identifier(t, direct_access.name) )
+        _cmd_stack.add( direct_access )
+      elseIf local context_direct_access = expr->(as ContextAccess)
+        _cmd_stack.add( Identifier(t, context_direct_access.name) )
+        _cmd_stack.add( context_direct_access )
+      else
+        throw t.error( "Expected 'identifier' or 'context.identifier'." )
+      endIf
+
+      return 0
+
     method create_rogue_version_string->Int
       processed_tokens.add( _cur_t.cloned(TokenType.STRING,VERSION.after_any('v')) )
       return 0

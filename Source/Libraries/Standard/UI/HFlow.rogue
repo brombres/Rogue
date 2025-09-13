@@ -38,11 +38,11 @@ class HFlow : Component
       cur_line_height  = 0
       cur_line_advance = 0
 
+      localize content_size
       local available_width = content_size.x
 
-      use components = WorkList<<Component>>
-        collect_child_display_components( components )
-
+      use components = display_components
+        # Perform layout with top-left origin.
         local i = 0
         while (i < components.count)
           local component = components[i]
@@ -77,11 +77,22 @@ class HFlow : Component
           endIf
         endWhile
 
-      endUse
+        # Leave cursor as min size to enclose content
+        layout_cursor.x = max_width
+        layout_cursor.y += cur_line_height
 
-      # Leave cursor as min size to enclose content
-      layout_cursor.x = max_width
-      layout_cursor.y += cur_line_height
+        # If the content alignment is not TOP_LEFT, adjust content positions to match.
+        local snap = UI.snap_to_pixel_coordinates
+        localize content_alignment
+        if (content_alignment.position.y > 0)
+          # Apply same vertical adjustment to all components.
+          local delta = (content_size.y - layout_cursor.y) * content_alignment.position.y
+          if (snap) delta .= floor
+          forEach (component in components)
+            component.position += XY( 0, delta )
+          endForEach
+        endIf
+      endUse
 
       layout_finished = true
 
