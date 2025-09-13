@@ -79,6 +79,9 @@ class Color( argb:Int32 ) [compound]
       local b = blue * inverse_a  + other.blue * a
       return Color( r, g, b, alpha*inverse_a+a )
 
+    method operator*( value:Real )->Color
+      return Color( red*value, green*value, blue*value, alpha )
+
     method operator&( n:Int )->Color
       return Color( argb & n )
 
