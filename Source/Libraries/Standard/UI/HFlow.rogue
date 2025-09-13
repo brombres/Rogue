@@ -26,22 +26,68 @@ class HFlow : Component
 
       return layout_cursor
 
-    method on_begin_layout
+    method on_begin_layout [override]
       layout_finished = false
       prior.on_begin_layout
+
+    method on_end_layout [override]
+      localize content_alignment
+      if (content_alignment == Anchor.TOP_LEFT) return
+
+      use components = display_components
+        # If the content alignment is not TOP_LEFT, adjust content positions to match.
+        local snap = UI.snap_to_pixel_coordinates
+        localize content_size
+
+        if (content_alignment.position.y > 0)
+          # Apply same vertical adjustment to all components.
+          local delta = XY( 0, (content_size.y - layout_cursor.y) * content_alignment.position.y )
+          if (snap) delta .= floor
+          forEach (component in components)
+            component.position += delta
+          endForEach
+        endIf
+
+        if (content_alignment.position.x > 0)
+          # Horizontal adjustment needs to go row by row.
+          use row = WorkList<<Component,Row>>
+            local component_i = 0
+            while (component_i < components.count)
+              row.clear
+              local row_w = 0.0
+              local row_y = components[component_i].position.y
+              while (component_i < components.count and components[component_i].position.y == row_y)
+                local component = components[component_i]
+                row_w += component.size.x
+                row.add( component )
+                ++component_i
+              endWhile
+
+              # Align the row.
+              local delta = XY( (content_size.x - row_w) * content_alignment.position.x, 0 )
+              if (snap) delta .= floor
+              forEach (component in row)
+                component.position += delta
+              endForEach
+            endWhile
+          endUse
+        endIf
+
+      endUse
+
+      prior.on_end_layout
 
     method perform_content_layout [override]
       if (layout_finished) return
 
-      localize content_position
-      layout_cursor    = content_position
-      cur_line_height  = 0
-      cur_line_advance = 0
-
-      localize content_size
-      local available_width = content_size.x
-
       use components = display_components
+        localize content_position
+        layout_cursor    = content_position
+        cur_line_height  = 0
+        cur_line_advance = 0
+
+        local available_width = content_size.x
+
         # Perform layout with top-left origin.
         local i = 0
         while (i < components.count)
@@ -81,20 +127,8 @@ class HFlow : Component
         layout_cursor.x = max_width
         layout_cursor.y += cur_line_height
 
-        # If the content alignment is not TOP_LEFT, adjust content positions to match.
-        local snap = UI.snap_to_pixel_coordinates
-        localize content_alignment
-        if (content_alignment.position.y > 0)
-          # Apply same vertical adjustment to all components.
-          local delta = (content_size.y - layout_cursor.y) * content_alignment.position.y
-          if (snap) delta .= floor
-          forEach (component in components)
-            component.position += XY( 0, delta )
-          endForEach
-        endIf
+        layout_finished = true
       endUse
-
-      layout_finished = true
 
     method resolve_content_layout_sizes( available_size:XY ) [override]
       if (layout_finished) return
