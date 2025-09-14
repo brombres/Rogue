@@ -885,6 +885,8 @@ class Variant [compound]
       if (type >= TYPE_FIRST_STRINGLIKE and type <= TYPE_LAST_STRINGLIKE and
           other.type >= TYPE_FIRST_STRINGLIKE and other.type <= TYPE_LAST_STRINGLIKE)
         return object->(as String) <> other.object->(as String)
+      elseIf (type == TYPE_GLOBAL_ID xor other.type == TYPE_GLOBAL_ID)
+        return this->String <> other->String
       endIf
 
       if (type != other.type) return type <> other.type
