@@ -178,6 +178,7 @@ class ActiveState<<$ExtendedType,$change_state>>
           next_state = next_state.also( concurrent_state )
           concurrent_state = null
         endIf
+        if (.get_top_level_state is this) .set_top_level_state( next_state )
         return next_state.started
       elseIf (concurrent_state)
         # .start_next() is called after updated(), which has already started 'concurrent_state'.
@@ -196,6 +197,7 @@ class ActiveState<<$ExtendedType,$change_state>>
           next_state = next_state.also( concurrent_state )
           concurrent_state = null
         endIf
+        if (.get_top_level_state is this) .set_top_level_state( next_state )
         return next_state.updated
       elseIf (concurrent_state)
         # .update_next() is called after updated(), which has already updated 'concurrent_state'.
@@ -203,6 +205,16 @@ class ActiveState<<$ExtendedType,$change_state>>
       else
         return null
       endIf
+
+    method .get_top_level_state->$ExtendedType
+      # Override in subclasses that need to maintain a singleton or other external reference
+      # to the state being updated.
+      return null
+
+    method .set_top_level_state( state:$ExtendedType )
+      # Override in subclasses that need to maintain a singleton or other external reference
+      # to the state being updated.
+      noAction
 
 endClass
 
