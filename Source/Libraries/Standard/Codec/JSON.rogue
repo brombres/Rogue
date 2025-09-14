@@ -104,21 +104,26 @@ class JSONParser
 
         consume_whitespace_and_eols
 
-        if (next_is_identifier)
-          local key = parse_identifier
+        contingent
+          local key : Variant
+          if (next_is_identifier)
+            key = parse_identifier
+          elseIf (next_is_number)
+            key = parse_number
+          else
+            escapeContingent
+          endIf
           consume_whitespace_and_eols
 
-          if (key.count)
-            if (reader.consume(':'))
-              consume_whitespace_and_eols
-              local value = parse_value
-              table.set( key, value )
-            else
-              table.set( key, true )
-            endIf
+          if (reader.consume(':'))
             consume_whitespace_and_eols
+            local value = parse_value
+            table.set( key, value )
+          else
+            table.set( key, true )
           endIf
-        endIf
+          consume_whitespace_and_eols
+        endContingent
       endWhile
 
       if (not reader.consume(close_ch)) throw JSONParseError( "'$' expected."(close_ch) )
@@ -219,6 +224,10 @@ class JSONParser
       local ch = reader.peek
       if (ch.is_identifier_start("$")) return true
       return (ch == '"' or ch == '\'')
+
+    method next_is_number->Logical
+      local ch = reader.peek
+      return (ch == '-' or (ch >= '0' and ch <= '9'))
 
     method parse_number->Variant
       consume_whitespace_and_eols
