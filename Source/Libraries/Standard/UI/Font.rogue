@@ -4,14 +4,43 @@ class Font
   PROPERTIES
     name         : String
     line_spacing = 1.0
+    anchor       = Anchor.CENTER : Anchor
 
   METHODS
     method init_clone( existing:Font )
       name = existing.name
       line_spacing = existing.line_spacing
+      anchor       = existing.anchor
 
     method cloned->$thisType [propagated]
       return new<<$thisType>>.[ init_clone(this) ]
+
+    method anchor_top_left
+      anchor = Anchor.TOP_LEFT
+
+    method anchor_top
+      anchor = Anchor.TOP
+
+    method anchor_top_right
+      anchor = Anchor.TOP_RIGHT
+
+    method anchor_left
+      anchor = Anchor.LEFT
+
+    method anchor_center
+      anchor = Anchor.CENTER
+
+    method anchor_right
+      anchor = Anchor.RIGHT
+
+    method anchor_bottom_left
+      anchor = Anchor.BOTTOM_LEFT
+
+    method anchor_bottom
+      anchor = Anchor.BOTTOM
+
+    method anchor_bottom_right
+      anchor = Anchor.BOTTOM_RIGHT
 
     #method draw( text:Text ) [abstract]
 
@@ -25,7 +54,7 @@ class Font
 
     method draw( text:String, bounds:Box, anchor=Anchor.CENTER:Anchor  )
       local text_size = measure( text )
-      local position  = Box(text_size).positioned_within( bounds, anchor ).position
+      local position  = Box(text_size).positioned_within( bounds, anchor ).at( this.anchor.position )
       draw( text, position )
 
     method draw( text:String, container:Component )
@@ -66,5 +95,60 @@ class Font
         return XY( max_w, h )
       endBlock
 
+    method word_wrap( st:String, pixel_width:Real, buffer=String():String )->String
+      # Prints a word-wrapped version of the given string into the specified
+      # StringBuilder. Existing newline characters will cause a new line to
+      # begin immediately. Spaces immediately following existing newline
+      # characters are preserved.
+      local i1, i2 : Int
+      local len = st.count
+      local w = 0.0
+
+      if (st == "" or pixel_width <= 0) return buffer
+
+      local needs_newline = false
+      local starting_i2 = i2
+      while (i2 < len)
+        starting_i2 = i2
+
+        # find last space or first \n
+        while (w <= pixel_width and i2 < len and st[i2] != '\n')
+          local char_w = measure( st, i2, i2 ).x
+          w += char_w
+          i2++
+        endWhile
+
+        local initial_i2 = i2
+
+        if (w > pixel_width)
+          --i2
+          while (st[i2]!=' ' and st[i2]!='\n' and i2>i1) i2--
+          if (i2 == i1) i2 = initial_i2 - 1
+        endIf
+
+        if (needs_newline) buffer.println
+        forEach (i in i1..<i2) buffer.print( st[i] )
+        needs_newline = true
+        w = 0
+
+        if (i2 == len)
+          return buffer
+        else
+          which (st[i2])
+            case ' ':
+              while (i2<len and st[i2]==' ') i2++
+              if (i2<len and st[i2]=='\n') i2++
+
+            case '\n':
+              i2++
+          endWhich
+          i1 = i2
+        endIf
+
+        if (starting_i2 == i2) return buffer  # Kludge/error
+
+      endWhile
+
+      return buffer
 endClass
 
