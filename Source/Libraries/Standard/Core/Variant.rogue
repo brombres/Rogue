@@ -310,13 +310,15 @@ class Variant [compound]
           local list = object->(as Variant[])
           if (index < 0) return undefined
           if (index >= list.count)
-            local info = {list:this,index:index} : [String:Variant]
+            local info  = [Variant:Variant]
+            info//list  = this
+            info//index = index
             return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_LIST_ELEMENT, (%Ns%RogueObject*)$info }" )->Variant
           endIf
           return list[index]
 
         case TYPE_UNDEFINED_LIST_ELEMENT
-          local parent_info = object->(as [String:Variant])
+          local parent_info = object->(as [Variant:Variant])
           local parent_list = parent_info//list
           local parent_index = parent_info//index->Int
           local parent_backing_list = parent_list.object->(as Variant[])
@@ -327,11 +329,13 @@ class Variant [compound]
           parent_backing_list.expand_to_include( parent_index )
           local list = @[]
           parent_list[parent_index] = list
-          local info = {list,index} : [String:Variant]
+          local info  = [Variant:Variant]
+          info//list  = list
+          info//index = index
           return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_LIST_ELEMENT, (%Ns%RogueObject*)$info }" )->Variant
 
         case TYPE_UNDEFINED_TABLE_ENTRY
-          local parent_info = object->(as [String:Variant])
+          local parent_info = object->(as [Variant:Variant])
           local parent_table = parent_info//table
           local parent_key = parent_info//key
           if (parent_table.contains(parent_key))
@@ -341,7 +345,9 @@ class Variant [compound]
 
           local list = @[]
           parent_table[parent_key] = list
-          local info = {list:list,index:index} : [String:Variant]
+          local info  = [Variant:Variant]
+          info//list  = list
+          info//index = index
           return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_LIST_ELEMENT, (%Ns%RogueObject*)$info }" )->Variant
 
         case TYPE_STRING, TYPE_FILE
@@ -402,7 +408,7 @@ class Variant [compound]
         case TYPE_LIST
           return object->(as Variant[]).contains( value )
         case TYPE_TABLE
-          return object->(as [Variant:Variant]).contains( value->String )
+          return object->(as [Variant:Variant]).contains( value )
         others
           return false
       endWhich
@@ -510,12 +516,14 @@ class Variant [compound]
           if (entry)
             return entry.value
           else
-            local info = {table:this,key:key} : [String:Variant]
+            local info = [Variant:Variant]
+            info//table = this
+            info//key = key
             return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_TABLE_ENTRY, (%Ns%RogueObject*)$info }" )->Variant
           endIf
 
         case TYPE_UNDEFINED_TABLE_ENTRY
-          local parent_info = object->(as [String:Variant])
+          local parent_info = object->(as [Variant:Variant])
           local parent_table = parent_info//table
           local parent_key = parent_info//key
           if (parent_table.contains(parent_key))
@@ -525,11 +533,13 @@ class Variant [compound]
 
           local table = @{}
           parent_table[parent_key] = table
-          local info = {table,key} : [String:Variant]
+          local info = [Variant:Variant]
+          info//table = table
+          info//key = key
           return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_TABLE_ENTRY, (%Ns%RogueObject*)$info }" )->Variant
 
         case TYPE_UNDEFINED_LIST_ELEMENT
-          local parent_info = object->(as [String:Variant])
+          local parent_info = object->(as [Variant:Variant])
           local parent_list = parent_info//list
           local parent_index = parent_info//index->Int
           local parent_backing_list = parent_list.object->(as Variant[])
@@ -540,7 +550,9 @@ class Variant [compound]
           parent_backing_list.expand_to_include( parent_index )
           local table = @{}
           parent_list[parent_index] = table
-          local info = {table:table,key:key} : [String:Variant]
+          local info = [Variant:Variant]
+          info//table = table
+          info//key = key
           return native( "(%Ns%RogueVariant){ %NS%ROGUE_VARIANT_TYPE_UNDEFINED_TABLE_ENTRY, (%Ns%RogueObject*)$info }" )->Variant
 
         case TYPE_BOX
@@ -874,12 +886,21 @@ class Variant [compound]
     method operator<>(other:Variant)->Int
       if (type <= TYPE_LAST_UNDEFINED) return (other.type > TYPE_LAST_UNDEFINED)
 
-      if (type <= TYPE_LAST_NUMBER and other.type <= TYPE_LAST_NUMBER)
-        # Both are numbers
-        if (type >= TYPE_REAL64 or other.type >= TYPE_REAL64) return (real64 <> other.real64).sign
-        if (type == TYPE_REAL   or other.type == TYPE_REAL)   return (real   <> other.real  ).sign
-        if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (real32 <> other.real32).sign
-        return (int64 <> other.int64).sign
+      if (type <= TYPE_LAST_NUMBER or other.type <= TYPE_LAST_NUMBER)
+        if (type <= TYPE_LAST_NUMBER and other.type <= TYPE_LAST_NUMBER)
+          # Both are numbers
+          if (type >= TYPE_REAL64 or other.type >= TYPE_REAL64) return (this->Real64 <> other->Real64).sign
+          if (type == TYPE_REAL   or other.type == TYPE_REAL)   return (this->Real   <> other->Real  ).sign
+          if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (this->Real32 <> other->Real32).sign
+          return (int64 <> other.int64).sign
+        else
+          # One is a number. Covert the other to->String->(PrimitiveType) and compare.
+          local a = this
+          local b = other
+          if (b.type <= TYPE_LAST_NUMBER) swapValues( a, b )  # make 'a' the number
+          if (a.type <= TYPE_INT64) return (a->Int64  <> b->String->Int64).sign
+          else                      return (a->Real64 <> b->String->Real64).sign
+        endIf
       endIf
 
       if (type >= TYPE_FIRST_STRINGLIKE and type <= TYPE_LAST_STRINGLIKE and
@@ -1252,7 +1273,7 @@ class Variant [compound]
         case TYPE_TABLE
           set( Variant(index), value )
         case TYPE_UNDEFINED_LIST_ELEMENT
-          local parent_info = object->(as [String:Variant])
+          local parent_info = object->(as [Variant:Variant])
           local parent_list = parent_info//list
           local parent_index = parent_info//index->Int
           local parent_backing_list = parent_list.object->(as Variant[])
@@ -1268,7 +1289,7 @@ class Variant [compound]
           list[index] = value
 
         case TYPE_UNDEFINED_TABLE_ENTRY
-          local parent_info = object->(as [String:Variant])
+          local parent_info = object->(as [Variant:Variant])
           local parent_table = parent_info//table
           local parent_key = parent_info//key
           if (parent_table.contains(parent_key))
@@ -1308,7 +1329,7 @@ class Variant [compound]
             return
           endIf
 
-          local info = object->(as [String:Variant])
+          local info = object->(as [Variant:Variant])
           if (key.is_number)
             if (key >= 0)
               local list = @[]
@@ -1850,7 +1871,7 @@ class Variant [compound]
                 else             builder.print ','
                 if (formatted) builder.println
               endIf
-              write_json_string( entry.key, builder )
+              entry.key.write_json( builder, &=formatted, &=omit_commas, &=ending_newline )
               builder.print ':'
               entry.value.write_json( builder, &=formatted, &=omit_commas, &!ending_newline )
             endForEach
@@ -1927,7 +1948,7 @@ class Variant [compound]
     method .element_if_defined->Variant
       which (type)
         case TYPE_UNDEFINED_LIST_ELEMENT
-          local parent_info = object->(as [String:Variant])
+          local parent_info = object->(as [Variant:Variant])
           local parent_list = parent_info//list
           local parent_index = parent_info//index->Int
           local parent_backing_list = parent_list.object->(as Variant[])
@@ -1938,7 +1959,7 @@ class Variant [compound]
           endIf
 
         case TYPE_UNDEFINED_TABLE_ENTRY
-          local parent_info = object->(as [String:Variant])
+          local parent_info = object->(as [Variant:Variant])
           local parent_table = parent_info//table
           local parent_key = parent_info//key
           if (parent_table.contains(parent_key))
