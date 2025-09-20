@@ -227,8 +227,18 @@ class Format
 
   GLOBAL METHODS
     method create( value:Variant )->Format
-      if (value->String.begins_with('$')) return MONEY
-      return GENERAL
+      local st = value->String
+      contingent
+        necessary (st.begins_with('$'))
+        forEach (ch at index in st from 1)
+          if (not (ch == '-' and index == 1))
+            necessary (ch.is_number or ch == '.' or ch == ',')
+          endIf
+        endForEach
+        return MONEY
+      unsatisfied
+        return GENERAL
+      endContingent
 
   METHODS
     method parse( value:Variant )->Variant
