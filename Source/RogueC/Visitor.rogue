@@ -770,5 +770,11 @@ class Visitor
     method on_visit_children( cmd:HasMethod )
       cmd.type_expression = visit(cmd.type_expression)
 
+    method on_visit_children( cmd:ImplicitlyScopedUse )
+      cmd.resources = visit(cmd.resources)->(as UsedResources)
+
+    method on_visit_children( cmd:ImplicitlyScopedTemporarily )
+      cmd.assignments = visit(cmd.assignments)->(as TemporaryAssignments)
+
 endClass
 

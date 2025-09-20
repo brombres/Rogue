@@ -45,9 +45,9 @@ KEYWORD_END_IF            endIf          [structural]
 KEYWORD_END_LOOP          endLoop        [structural]
 KEYWORD_END_ROUTINE       endRoutine     [structural]
 KEYWORD_END_SUBCLASS      endSubclass    [structural]
-KEYWORD_END_TEMPORARILY   endTemporarily [structural]
+KEYWORD_END_TEMPORARILY   endTemporarily
 KEYWORD_END_TRY           endTry         [structural]
-KEYWORD_END_USE           endUse         [structural]
+KEYWORD_END_USE           endUse
 KEYWORD_END_WHICH         endWhich       [structural]
 KEYWORD_END_WHILE         endWhile       [structural]
 KEYWORD_ENUM              enum           [structural]
@@ -2094,9 +2094,9 @@ parser
   onPeek "loop"        loop:               return
   onPeek "which"       which_conditional:  return
   onPeek "while"       while_loop:         return
-  onPeek "temporarily" temporarily:        return
+  #onPeek "temporarily" temporarily:        return
   onPeek "try"         try_catch:          return
-  onPeek "use"         use:                return
+  #onPeek "use"         use:                return
   statement
 
 - optional_args
@@ -2279,6 +2279,16 @@ parser
     produce Assert(expression,token_list:TokenList)
   endOn
 
+  on 'use'
+    used_resources
+    produce ImplicitlyScopedUse(resources:UsedResources):ControlStructure
+  elseOn 'temporarily'
+    temporary_assignments
+    produce ImplicitlyScopedTemporarily(assignments:TemporaryAssignments):ControlStructure
+  endOn
+
+  on "endTemporarily":               -> EndTemporarily
+  on "endUse":                       -> EndUse
   on "escapeBlock"                   -> EscapeBlock:Escape
   on "escapeContingent"              -> EscapeContingent:Escape
   on "escapeForEach"                 -> EscapeForEach:Escape
@@ -2604,19 +2614,22 @@ parser
 
 - temporarily
   on "temporarily"
-    consume_eols
-    beginList
-      temporary_assignment
-      while (consume(','))
-        consume_eols
-        temporary_assignment
-      endWhile
-    createList TemporaryAssignments
+    temporary_assignments
     must_consume_eols
     multi_line_statements
     mustConsume "endTemporarily"
     produce Temporarily(assignments:TemporaryAssignments,statements):ControlStructure
   endOn
+
+- temporary_assignments
+  consume_eols
+  beginList
+    temporary_assignment
+    while (consume(','))
+      consume_eols
+      temporary_assignment
+    endWhile
+  createList TemporaryAssignments
 
 - temporary_assignment
   expression
@@ -2630,6 +2643,15 @@ parser
 
 - use
   on "use"
+    used_resources
+    must_consume_eols
+    multi_line_statements
+    mustConsume "endUse"
+    produce Use(resources:UsedResources,statements):ControlStructure
+  endOn
+
+- used_resources
+    consume_eols
     beginList
       used_resource
       while (consume(','))
@@ -2637,11 +2659,6 @@ parser
         used_resource
       endWhile
     createList UsedResources
-    must_consume_eols
-    multi_line_statements
-    mustConsume "endUse"
-    produce Use(resources:UsedResources,statements):ControlStructure
-  endOn
 
 - used_resource
   savePosition

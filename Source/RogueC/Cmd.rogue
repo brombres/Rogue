@@ -5480,3 +5480,47 @@ class AttributeCriticalOverride : Cmd
     method description->String
       return "AttributeCriticalOverride"
 endClass
+
+class ImplicitlyScopedUse : ControlStructure
+  PROPERTIES
+    resources : UsedResources
+
+  METHODS
+    method init( t, resources )
+
+    method init( existing:ImplicitlyScopedUse )
+      prior.init( existing )
+      if (existing.resources) resources = existing.resources.cloned
+
+    method description->String
+      return "ImplicitlyScopedUse($)" (%resources)
+
+endClass
+
+class ImplicitlyScopedTemporarily : ControlStructure
+  PROPERTIES
+    assignments : TemporaryAssignments
+
+  METHODS
+    method init( t, assignments )
+
+    method init( existing:ImplicitlyScopedTemporarily )
+      prior.init( existing )
+      if (existing.assignments) assignments = existing.assignments.cloned
+
+    method description->String
+      return "ImplicitlyScopedTemporarily($)" (%assignments)
+
+endClass
+
+class EndTemporarily : Cmd
+  METHODS
+    method description->String
+      return "EndTemporarily"
+endClass
+
+class EndUse : Cmd
+  METHODS
+    method description->String
+      return "EndUse"
+endClass

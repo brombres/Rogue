@@ -892,6 +892,34 @@ class Resolver : Recyclable, Visitor
         return visit( cmd_block )
       endIf
 
+    method on_visit( cmd:ImplicitlyScopedTemporarily )->Cmd
+      local statements = Statements( cmd.t )
+      local nesting_level = 1
+      forEach (statement in current_statements)
+        if (statement instanceOf ImplicitlyScopedTemporarily)
+          ++nesting_level
+        elseIf (statement instanceOf EndTemporarily)
+          --nesting_level
+          if (nesting_level == 0) escapeForEach
+        endIf
+        statements.add( statement )
+      endForEach
+      return visit( Temporarily(cmd.t, cmd.assignments, statements) )
+
+    method on_visit( cmd:ImplicitlyScopedUse )->Cmd
+      local statements = Statements( cmd.t )
+      local nesting_level = 1
+      forEach (statement in current_statements)
+        if (statement instanceOf ImplicitlyScopedUse)
+          ++nesting_level
+        elseIf (statement instanceOf EndUse)
+          --nesting_level
+          if (nesting_level == 0) escapeForEach
+        endIf
+        statements.add( statement )
+      endForEach
+      return visit( Use(cmd.t, cmd.resources, statements) )
+
     method on_visit( cmd:InlineWhich )->Cmd
       visit_children( cmd )
 

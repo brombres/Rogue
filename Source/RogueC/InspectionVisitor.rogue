@@ -1191,4 +1191,14 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.type_expression)
       return result
 
+    method on_visit_children( cmd:ImplicitlyScopedUse )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.resources)
+      return result
+
+    method on_visit_children( cmd:ImplicitlyScopedTemporarily )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.assignments)
+      return result
+
 endClass
