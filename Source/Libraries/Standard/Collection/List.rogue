@@ -794,8 +794,8 @@ class List<<$DataType>> : Recyclable ListType
       native @|$result->as_bytes = $this->as_bytes;
       return result
 
-    method working_copy->WorkingCopy<<$DataType>>
-      return WorkingCopy<<$DataType>>( this )
+    method working_copy->ListWorkingCopy<<$DataType>>
+      return ListWorkingCopy<<$DataType>>( this )
 
     method writer->ListWriter<<$DataType>>
       return ListWriter<<$DataType>>( this )
@@ -910,7 +910,7 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
       ++position
 endClass
 
-class WorkingCopy<<$ElementType>>( list:$ElementType[] ) [compound]
+class ListWorkingCopy<<$ElementType>>( list:$ElementType[] ) [compound]
   METHODS
     method on_use->$ElementType[]
       local result = WorkList<<$ElementType>>.on_use

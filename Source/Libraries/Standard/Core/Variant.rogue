@@ -1871,7 +1871,7 @@ class Variant [compound]
                 else             builder.print ','
                 if (formatted) builder.println
               endIf
-              entry.key.write_json( builder, &=formatted, &=omit_commas, &=ending_newline )
+              write_json_string( entry.key, builder )
               builder.print ':'
               entry.value.write_json( builder, &=formatted, &=omit_commas, &!ending_newline )
             endForEach
@@ -2037,11 +2037,45 @@ augment Variant[]
       return Variant( this )
 endAugment
 
-augment [Variant:Variant]
+augment [Rogue::Variant:Rogue::Variant]
+  PROPERTIES
+    force_string_keys : Logical
+
   METHODS
+    method init( other:[Variant:Variant] ) [insert]
+      force_string_keys = other.force_string_keys
+
+    method find( key:Variant )->TableEntry<<Variant,Variant>> [insert]
+      use key = .validate_key( key )
+
+    method set( key:Variant, value:Variant ) [insert]
+      if (force_string_keys and not key.is_string) key = key->String
+
     method to->Variant [override]
       return Variant( this )
+
+    method .validate_key( key:Variant )->UsableValidatedVariantTableKey
+      return UsableValidatedVariantTableKey( key, &=force_string_keys )
 endAugment
+
+class UsableValidatedVariantTableKey( value:Variant, string:String ) [compound]
+  GLOBAL METHODS
+    method create( value:Variant, &force_string_keys )->UsableValidatedVariantTableKey
+      local string : String
+      if (force_string_keys and not value.is_string)
+        string = StringPool.on_use
+        value.print_to( string )
+        value = string
+      endIf
+      return UsableValidatedVariantTableKey( value, string )
+
+  METHODS
+    method on_use->Variant
+      return value
+
+    method on_end_use( key:Variant )
+      if (string) StringPool.on_end_use( string )
+endClass
 
 augment List
   METHODS
@@ -2052,3 +2086,4 @@ endAugment
 augment CommonCompoundMethods
   METHODS
 endAugment
+

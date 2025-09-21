@@ -94,11 +94,13 @@ class JSONParser
       consume_whitespace_and_eols
 
       local table = @{}
+      table.as_table.force_string_keys = true
       if (reader.consume(close_ch)) return table
 
       local prev_pos = reader.position
       local first = true
-      while (first or reader.consume(',') or (reader.has_another and reader.peek!=close_ch and reader.position>prev_pos))
+      while (first or reader.consume(',') or
+          (reader.has_another and reader.peek!=close_ch and reader.position>prev_pos))
         first = false
         prev_pos = reader.position
 
@@ -109,7 +111,7 @@ class JSONParser
           if (next_is_identifier)
             key = parse_identifier
           elseIf (next_is_number)
-            key = parse_number
+            key = parse_number->String
           else
             escapeContingent
           endIf
