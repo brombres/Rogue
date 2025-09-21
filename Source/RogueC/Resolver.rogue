@@ -1900,7 +1900,8 @@ class Resolver : Recyclable, Visitor
       cmd_block.statements.add( SetLocal(v_resource, resource, &initial_assignment) )
 
       local cmd_call = resolve_call( resource.t, resource.require_type, GetLocal(v_resource), "on_use", null )
-      local v = add_local( Local(res.t, res.name, cmd_call.require_type) )
+      local v = find_local( res.name )
+      if (not v) v = add_local( Local(res.t, res.name, cmd_call.require_type) )
       cmd_block.statements.add( SetLocal(v, cmd_call, &initial_assignment) )
 
       cmd_call = resolve_call( resource.t, resource_type, GetLocal(v_resource), "on_end_use", Args(v.t,GetLocal(v)) )
