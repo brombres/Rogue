@@ -81,10 +81,7 @@ class Text : Component
       return value == " "
 
     method is_display_component->Logical [override]
-      forEach (child as Component in children)
-        if (child.is_display_component) return false
-      endForEach
-      return true
+      return count == 0
 
     method is_dynamic->Logical
       # If true, Text can be internally split for word-wrapping purposes.
