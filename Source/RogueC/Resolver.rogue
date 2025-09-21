@@ -643,6 +643,12 @@ class Resolver : Recyclable, Visitor
     method on_visit( cmd:EmptyVariantTable )->Cmd
       return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Variant), "create_table" ) )
 
+    method on_visit( cmd:EndTemporarily )->Cmd
+      throw cmd.t.error( "Unexpected 'endTemporarily' without preceding 'temporarily' in current scope." )
+
+    method on_visit( cmd:EndUse )->Cmd
+      throw cmd.t.error( "Unexpected 'endUse' without preceding 'use' in current scope." )
+
     method on_visit( cmd:Ensure )->Cmd
       local t = cmd.expression.t
       insert(
