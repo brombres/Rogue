@@ -98,8 +98,15 @@ class ActiveState<<$ExtendedType,$change_state>>
     method finish
       is_exited = true
 
+    method handle_activate
+      on_activate
+
+    method handle_deactivate
+      on_deactivate
+
     method handle_finish
       on_finish
+      handle_deactivate
 
     method insert_next( state:$ExtendedType )
       if (state) next_state = state.and_then( next_state )
@@ -113,11 +120,23 @@ class ActiveState<<$ExtendedType,$change_state>>
       while (cur.next_state ) cur = cur.next_state
       return cur
 
+    method on_activate
+      # In an ActivateState, on_activate() and on_start() are both always called.
+      # In a ProgressState or Action, on_activate() is always called but on_start()
+      # is not called if the action is an instant action defining on_execute().
+      noAction
+
+    method on_deactivate
+      noAction
+
     method on_start
+      noAction
 
     method on_update
+      noAction
 
     method on_finish
+      noAction
 
     method start
       is_started = true
@@ -130,7 +149,10 @@ class ActiveState<<$ExtendedType,$change_state>>
           concurrent_state = concurrent_state.started
         endIf
       else
-        if (not is_started) start
+        if (not is_started)
+          handle_activate
+          start
+        endIf
 
         if (concurrent_state) concurrent_state = concurrent_state.started
         if (not is_finished) return this->(as $ExtendedType)
@@ -153,7 +175,10 @@ class ActiveState<<$ExtendedType,$change_state>>
           concurrent_state = concurrent_state.updated
         endIf
       else
-        if (not is_started) start
+        if (not is_started)
+          handle_activate
+          start
+        endIf
 
         update
 

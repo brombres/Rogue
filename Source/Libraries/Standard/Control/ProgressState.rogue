@@ -66,6 +66,7 @@ class ProgressState<<$ExtendedType,$change_state>> : ActiveState<<$ExtendedType,
         endIf
       else
         if (not prev_time)
+          handle_activate
           prev_time = System.execution_time
           if (duration)
             start
@@ -97,6 +98,7 @@ class ProgressState<<$ExtendedType,$change_state>> : ActiveState<<$ExtendedType,
         local cur_time = System.execution_time
         if (not prev_time)
           dt = 1.0/60.0
+          handle_activate
           if (duration)
             start
           else
