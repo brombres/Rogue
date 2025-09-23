@@ -192,6 +192,12 @@ class UI : Component [singleton]
         endIf
       endIf
 
+    method request_layout [override]
+      needs_layout = true
+
+    method request_redraw [override]
+      needs_redraw = true
+
     method set_clip( @clip )
       noAction
 

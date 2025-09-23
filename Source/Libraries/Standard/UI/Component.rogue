@@ -24,6 +24,7 @@ class Component : Entity
       noAction
 
     method init( child:Component )
+      clear
       add( child )
 
     method init( fixed_size:XY )

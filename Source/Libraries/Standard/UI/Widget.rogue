@@ -8,6 +8,8 @@ class Widget : Component
   PROPERTIES
     state              : WidgetState
     on_select_callback : Function
+    on_select_signal   : GlobalID?
+    on_select_arg      : Variant
     select_count       : Int
     just_once          : Logical
 
@@ -36,6 +38,9 @@ class Widget : Component
 
     method handle_select
       on_select
+      if local signal_id = on_select_signal
+        signal_id.signal( on_select_arg )
+      endIf
       if (on_select_callback) on_select_callback()
 
     method is_disabled->Logical
@@ -96,6 +101,8 @@ class Widget : Component
     method on_select
 
     method on_select( on_select_callback )
+
+    method on_select( on_select_signal, on_select_arg=undefined )
 
     method once
       select_count = 0
