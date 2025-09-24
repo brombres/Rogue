@@ -70,6 +70,22 @@ class Entity : Node<<Entity>>
       endIf
       (forEach in children).deactivate
 
+    method description->String
+      local result = String()
+      if (label) result.print( label )
+      else       result.print( type_name )
+
+      if (count)
+        result.print( '(' )
+        forEach (child at i in children)
+          if (i) result.print ','
+          result.print( %child )
+        endForEach
+        result.print( ')' )
+      endIf
+
+      return result
+
     method draw
       if (attributes.invisible) return
       .begin_draw
