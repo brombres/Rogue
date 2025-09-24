@@ -1178,6 +1178,10 @@ class Variant [compound]
         return undefined
       endIf
 
+    method or_default( default_value:Variant )->Variant
+      if (type <= TYPE_LAST_UNDEFINED) return default_value
+      else                             return this
+
     method print_to( buffer:PrintWriter )
       which (type)
         case TYPE_UNDEFINED: return
