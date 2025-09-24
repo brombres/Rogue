@@ -36,6 +36,11 @@ class System [essential]
     execution_start_ms     = System.time_ms - 1 : Int64  # Minus 1 so that initial time is not 0
 
   GLOBAL METHODS
+    method current_language_code->String
+      # Returns e.g. "en" or "es", not "es-MX".
+      if (is_apple) return Apple.current_language_code
+      return "en"  # default
+
     method execution_time->Real
       # Execution time in seconds.
       return execution_time_ms / 1000.0

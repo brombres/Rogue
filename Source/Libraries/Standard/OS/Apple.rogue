@@ -8,6 +8,13 @@ class Apple [singleton]
     method cache_folder->File
       return find_system_folder( RogueNSSearchPathDirectory("NSCachesDirectory") )
 
+    method current_language_code->String
+      # E.g. "en" or "es" (not "es-MX" etc.).
+      local result : String
+      native @|NSString *code = [[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode];
+              |$result = %Ns%Rogue_ns_string_to_string( code );
+      return result
+
     method find_system_folder( type:RogueNSSearchPathDirectory )->File
       local filepath : String
 
@@ -31,27 +38,27 @@ class Apple [singleton]
      |  #else
      |    #import <Foundation/Foundation.h>
      |  #endif
-     |  NSString*    Rogue_string_to_ns_string( RogueString* st );
-     |  RogueString* Rogue_ns_string_to_string( NSString* st );
-     |  NSString*    Rogue_find_ns_folder( NSSearchPathDirectory type );
+     |  NSString*    %Ns%Rogue_string_to_ns_string( RogueString* st );
+     |  RogueString* %Ns%Rogue_ns_string_to_string( NSString* st );
+     |  NSString*    %Ns%Rogue_find_ns_folder( NSSearchPathDirectory type );
      |#endif
 
     nativeCode
     @|#if defined(%NS%ROGUE_TARGET_APPLE)
-     |  NSString* Rogue_string_to_ns_string( RogueString* st )
+     |  NSString* %Ns%Rogue_string_to_ns_string( RogueString* st )
      |  {
      |    if ( !st ) return nil;
      |    return [NSString stringWithUTF8String:(const char*)st->data->as_utf8];
      |  }
      |
-     |  RogueString* Rogue_ns_string_to_string( NSString* st )
+     |  RogueString* %Ns%Rogue_ns_string_to_string( NSString* st )
      |  {
      |    if ( !st ) return 0;
      |
-     |    return RogueString_create( [st UTF8String] );
+     |    return %Ns%RogueString_create( [st UTF8String] );
      |  }
      |
-     |  NSString* Rogue_find_ns_folder( NSSearchPathDirectory type )
+     |  NSString* %Ns%Rogue_find_ns_folder( NSSearchPathDirectory type )
      |  {
      |    return NSSearchPathForDirectoriesInDomains(
      |      type,
