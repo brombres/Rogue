@@ -4075,6 +4075,7 @@ parser
       elseOn '/':         call collect_token_string
       elseOn ':':         call collect_token_string
       elseOn '.':         call collect_token_string
+      elseOn '-':         call collect_token_string
       elseOn '\\':        call collect_token_string
       elseOnOthers:       syntaxError "Unsupported filepath character. Put the filepath in quotes."
     endWhile
