@@ -261,6 +261,19 @@ class Parser : ParserCore, Recyclable
       processed_tokens.add( t )
       return 0
 
+    method begin_rot13->Int
+      begin_join_strings
+      return 0
+
+    method end_rot13->Int
+      end_join_strings
+      if (processed_tokens.count)
+        local t = processed_tokens.remove_last
+        t.content .= rot13
+        processed_tokens.add( t )
+      endIf
+      return 0
+
     method define_macro->Int
       assert _cmd_stack.count >= 3
       local tokens = _cmd_stack.remove_last->(as TokenList).tokens

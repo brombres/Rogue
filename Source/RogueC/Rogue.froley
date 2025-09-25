@@ -150,6 +150,7 @@ META_LOWERCASE        $lowercase      [meta]
 META_MACRO            $macro          [meta]
 META_REQUIRE_ROGUE    $requireRogue   [meta]
 META_ROGUE_VERSION    $rogueVersion   [meta]
+META_ROT13            $rot13          [meta]
 META_SOURCE_FILEPATH  $sourceFilepath [meta]
 META_SOURCE_LINE      $sourceLine     [meta]
 META_TARGET           $target         [meta]
@@ -3924,6 +3925,17 @@ parser
     call print_deprecation_warning
 
     call write_this_library_id
+    return
+
+  elseOn "$rot13"
+    call begin_rot13
+      mustConsume '('
+      process_another
+      while (consume(',') or not nextIs(')'))
+        process_another
+      endWhile
+      mustConsume ')'
+    call end_rot13
     return
 
   elseOn "$string"
