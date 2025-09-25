@@ -1311,6 +1311,22 @@ class String : Recyclable PrintWriter
       endForEach
       return max
 
+    method rot13( buffer=String():String )->String
+      # Lightweight obfuscation. Rotates letters by 13 characters and numerical digits by 5.
+      # Apply it once to obfuscate a string; apply it a second time to return to the original.
+      buffer.reserve( count )
+      forEach (ch in this)
+        if (ch >= 'A' and ch <= 'Z')
+          ch = (((ch - 'A') + 13) % 26 + 'A')
+        elseIf (ch >= 'a' and ch <= 'z')
+          ch = (((ch - 'a') + 13) % 26 + 'a')
+        elseIf (ch >= '0' and ch <= '9')
+          ch = (((ch - '0') + 5) % 10 + '0')
+        endIf
+        buffer.print( ch )
+      endForEach
+      return buffer
+
     method set_cursor( character_index:Int )->Int
       # Sets this string's cursor_offset (in bytes) and cursor_index (in characters)
       if (is_ascii)
