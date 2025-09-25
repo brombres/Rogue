@@ -27,6 +27,17 @@ class Object
     method print_to( buffer:PrintWriter )
       buffer.print( this->String )
 
+    method release_object
+      # Increments an internal reference count. When the reference count reaches zero
+      # and this object is no longer visible to Rogue, it will be garbage-collected
+      # at some future point. This call does not itself trigger a garbage collection.
+      native @|ROGUE_RELEASE( $this );
+
+    method retain_object
+      # Increments an internal reference count that prevents this object from being
+      # garbage-collected when no longer visible to Rogue.
+      native @|ROGUE_RETAIN( $this );
+
     method to->String
       return type_name
 
