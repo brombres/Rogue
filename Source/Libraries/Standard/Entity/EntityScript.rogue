@@ -1,6 +1,6 @@
 library Entity
 
-class EntityScript : ActiveState<<EntityScript,change_script>>
+class EntityScript : ActiveState<<EntityScript>>
   PROPERTIES
     entity : Entity
 
@@ -8,6 +8,9 @@ class EntityScript : ActiveState<<EntityScript,change_script>>
     method init
 
     method init( entity )
+
+    method change_script( new_script:EntityScript )
+      change( new_script )
 
     method entity->Entity
       return @entity

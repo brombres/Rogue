@@ -1,9 +1,6 @@
 $include Control
 
-class ActiveState<<$ExtendedType>> : ActiveState<<$ExtendedType,change_state>>
-endClass
-
-class ActiveState<<$ExtendedType,$change_state>>
+class ActiveState<<$ExtendedType>>
   GLOBAL METHODS
     method operator+( a:$ExtendedType, b:$ExtendedType )->$ExtendedType
       if (not a) return b
@@ -62,7 +59,7 @@ class ActiveState<<$ExtendedType,$change_state>>
         cur .= concurrent_state
       endWhile
 
-    method $change_state( new_state:$ExtendedType )
+    method change( new_state:$ExtendedType )
       next_state = new_state
       exit
 
