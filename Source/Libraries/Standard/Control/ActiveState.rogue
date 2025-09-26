@@ -135,6 +135,15 @@ class ActiveState<<$ExtendedType>>
     method on_finish
       noAction
 
+    method removing( state:$ExtendedType )->$ExtendedType
+      if (this is state)
+        return next_state | concurrent_state
+      else
+        if (next_state)       next_state .= removing( state )
+        if (concurrent_state) concurrent_state .= removing( state )
+        return this
+      endIf
+
     method start
       is_started = true
       on_start
