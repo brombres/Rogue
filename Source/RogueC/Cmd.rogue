@@ -5541,3 +5541,9 @@ class EndUse : Cmd
     method description->String
       return "EndUse"
 endClass
+
+class AttributeNovel : Cmd
+  METHODS
+    method description->String
+      return "AttributeNovel"
+endClass

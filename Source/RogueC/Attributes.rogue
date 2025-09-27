@@ -55,6 +55,7 @@ class Attribute
     DEPRECATED         = (Int64(1):<<:50)
     CRITICAL           = (Int64(1):<<:51)
     CALLS_PRIOR        = (Int64(1):<<:52)
+    NOVEL              = (Int64(1):<<:53)
 endClass
 
 class Attributes : CmdList
@@ -111,6 +112,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE<< is_deprecated,        Attribute.DEPRECATED >>
   ROGUE_ATTRIBUTE<< is_critical,          Attribute.CRITICAL >>
   ROGUE_ATTRIBUTE<< calls_prior,          Attribute.CALLS_PRIOR >>
+  ROGUE_ATTRIBUTE<< is_novel,             Attribute.NOVEL >>
 
   PROPERTIES
     flags : Int64
@@ -196,6 +198,9 @@ augment
 
     method AttributeMutating.attribute_flags->Int64
       return Attribute.MUTATING
+
+    method AttributeNovel.attribute_flags->Int64
+      return Attribute.NOVEL
 
     method AttributeOptional.attribute_flags->Int64
       return Attribute.OPTIONAL

@@ -1974,11 +1974,15 @@ class Type : Cmd
       endIf
 
       if (not this.is_aspect)
-        # Verify that every [override] method is indeed overriding a prior method.
+        # Verify that every [override] method is indeed overriding a prior method and every [novel] is not.
         forEach (m in methods.values)
           if (m.attributes.is_override)
             if (not m.overridden_method)
               throw m.t.error( "Method $.$ does not override any prior definition. Check for signature type errors or remove the [override] attribute."(m.type_context,m) )
+            endIf
+          elseIf (m.attributes.is_novel)
+            if (m.overridden_method)
+              throw m.t.error( "Method $.$ overrides a prior definition. Either change the signature or remove the [novel] attribute."(m.type_context,m) )
             endIf
           endIf
         endForEach
