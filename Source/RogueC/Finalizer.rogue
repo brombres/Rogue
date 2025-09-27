@@ -1,6 +1,10 @@
 library RogueC
 
 class Finalizer : Visitor
+  PROPERTIES
+    is_visiting_GlobalID_to_String : Logical
+    cull_GlobalID_name : Logical
+
   METHODS
     method apply
       # Remove special aspects that implement augments
@@ -170,10 +174,34 @@ class Finalizer : Visitor
           if (base_m) base_m.attributes.is_overridden = true
         endIf
       endIf
-      visit_children( m )
+
+      temporarily is_visiting_GlobalID_to_String =
+          this_type is Program.type_GlobalID and
+          (m.signature == "to<<Rogue::String>>()")
+        visit_children( m )
+      endTemporarily
+
+    method on_visit_node( cmd:LiteralString )
+      if (is_visiting_GlobalID_to_String)
+        if local def = Program.labels[cmd.value]
+          if (def.is_unconfirmed and cmd.value != "<Undefined>")
+            cull_GlobalID_name = true
+          endIf
+        endIf
+      endIf
 
     method on_visit_node( p:Property )
       p.initial_value = null
+
+    method on_visit( cmd:WhichCase )->Cmd
+      visit_children( cmd.args )
+      visit_children( cmd.statements )
+      if (cull_GlobalID_name)
+        cull_GlobalID_name = false
+        return null
+      else
+        return cmd
+      endIf
 
     method on_visit_node( cmd:TypeContext )
       throw cmd.t.error( "Unused type context." )

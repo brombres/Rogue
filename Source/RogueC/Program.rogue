@@ -107,7 +107,7 @@ class Program [singleton]
     prior_warning : String
     prior_warnings = Set<<String>>()
 
-    labels = Set<<CmdGlobalID>>()
+    labels = [String:CmdGlobalID]
 
   METHODS
     method init

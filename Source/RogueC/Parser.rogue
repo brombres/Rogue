@@ -429,6 +429,12 @@ class Parser : ParserCore, Recyclable
       token_buffer = Token[]
       return 0
 
+    method create_unconfirmed_global_id->Int
+      local label = _cur_t->String
+      if (label.begins_with('<')) label = label.after_first('<').before_last('>')
+      CmdGlobalID( _cur_t, label, &unconfirmed )
+      return 0
+
     method create_local_definition->Int
       ensure<<local_definitions>>
       local def_name = buffer.cloned

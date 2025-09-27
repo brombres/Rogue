@@ -55,8 +55,7 @@ class PropertyOrganizer : Visitor
 
         if (this_type.library_context is Program.default_library and this_type.name == "GlobalID")
           ordinal = 1
-          local labels = Program.labels.to_list
-          forEach (label in labels)
+          forEach (label in Program.labels)
             this_type.categories.add(
               Category(
                 label.t,

@@ -3078,6 +3078,8 @@ class Resolver : Recyclable, Visitor
       local arg_type = arg.require_type
       if (arg_type is param_type) return true
 
+      if (arg_type instanceOf LiteralString and param_type is Program.type_GlobalID) return true
+
       if (arg_type is Program.type_GenericFn)
         if (param_type not instanceOf FunctionType) return false
         local def = arg->(as GenericFunctionDefinition)

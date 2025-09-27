@@ -2988,6 +2988,7 @@ parser
   elseOn "//"
     consume_eols
     on IDENTIFIER
+      call create_unconfirmed_global_id
       create LiteralString(value=content):Literal
     elseOnOthers
       identifier # throws an error
@@ -2999,6 +3000,7 @@ parser
     duplicate
     consume_eols
     on IDENTIFIER
+      call create_unconfirmed_global_id
       create LiteralString(value=content):Literal
     elseOnOthers
       identifier # throws an error

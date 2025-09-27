@@ -257,6 +257,17 @@ augment
       else
         return resolve_via_conversion_methods( this, Program.type_null, target_type, resolver, &=suppress_error )
       endIf
+
+    method LiteralString.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions, &coerce )->Cmd
+      if (target_type is Program.type_GlobalID)
+        require_type.organize
+        localize value
+        if (value.begins_with('<')) value = value.after_first('<').before_last('>')
+        return CmdGlobalID( t, value )
+      else
+        return prior.resolve_conversion_to( target_type, resolver, &=suppress_error, &=limit_conversions, &=coerce )
+      endIf
+
 endAugment
 
 # can_trigger_gc
