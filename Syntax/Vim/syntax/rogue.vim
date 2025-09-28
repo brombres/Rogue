@@ -17,7 +17,7 @@ if !exists("main_syntax")
 endif
 
 " keyword definitions
-syn keyword rogueClassDecl   module
+syn keyword rogueClassDecl   library
 syn keyword rogueClassDecl   class endClass routine endRoutine aspect enum endEnum
 syn keyword rogueClassDecl   function endFunction
 syn keyword rogueClassDecl   with
@@ -70,8 +70,8 @@ syn match   rogueDirective    "\$localMacro\>"
 syn match   rogueDirective    "\$requireRogue\>"
 syn match   rogueDirective    "\$sourceFilepath\>"
 syn match   rogueDirective    "\$sourceLine\>"
-syn match   rogueDirective    "\$thisModule\>"
-syn keyword rogueDirective    module
+syn match   rogueDirective    "\$thisLibrary\>"
+syn keyword rogueDirective    library
 syn keyword rogueDirective    uses
 syn match   rogueNumber       "\<\(\d\|_\)\+\.\(\d\|_\)\+\(f\|F\|r\|R\)\?\>"
 syn match   rogueNumber       "\<\(\d\|_\)\+\(f\|F\|r\|R\|i\|I\|L\|l\)\?\>"
