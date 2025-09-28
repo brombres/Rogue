@@ -140,7 +140,9 @@ class ActiveState<<$ExtendedType>>
         return next_state | concurrent_state
       else
         if (next_state)       next_state .= removing( state )
-        if (concurrent_state) concurrent_state .= removing( state )
+        if (concurrent_state)
+          concurrent_state .= removing( state )
+        endIf
         return this
       endIf
 

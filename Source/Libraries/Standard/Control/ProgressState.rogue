@@ -74,7 +74,9 @@ class ProgressState<<$ExtendedType>> : ActiveState<<$ExtendedType>>
           endIf
         endIf
 
-        if (concurrent_state) concurrent_state = concurrent_state.started
+        if (concurrent_state)
+          concurrent_state = concurrent_state.started
+        endIf
         if (not is_finished) return this->(as $ExtendedType)
       endIf
 

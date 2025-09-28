@@ -36,6 +36,12 @@ class System [essential]
     execution_start_ms     = System.time_ms - 1 : Int64  # Minus 1 so that initial time is not 0
 
   GLOBAL METHODS
+    method breakpoint
+      native
+      @|#if __APPLE__
+       |  __builtin_debugtrap();
+       |#endif
+
     method current_language_code->String
       # Returns e.g. "en" or "es", not "es-MX".
       if (is_apple) return Apple.current_language_code
