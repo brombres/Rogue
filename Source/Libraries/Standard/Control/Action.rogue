@@ -16,7 +16,7 @@ class Action : ProgressState<<Action>>
       noAction
 
     method replace_action( new_action:Action )
-      change( new_action )
+      change_state( new_action )
 
     method timescale->Real [override]
       return global_timescale * @timescale
