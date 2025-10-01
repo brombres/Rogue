@@ -186,6 +186,9 @@ class List<<$DataType>> : Recyclable ListType
       reserve( additional_count )
       count += additional_count
 
+    method expand_to_capacity
+      count = capacity
+
     method expand_to_count( minimum_count:Int )
       # Expands the list if necessary to have at least 'minimum_count' elements.
       if (count < minimum_count)
