@@ -2584,7 +2584,7 @@ class Resolver : Recyclable, Visitor
       #     3. Check one more time while allowing errors to be thrown.
 
       if (Candidates.count)
-        local result = refine_candidates( type_context, args, &=exact_arg_types, &=limit_conversions )
+        local result = refine_candidates( t, type_context, args, &=exact_arg_types, &=limit_conversions )
         if (result)
           return result.[resolve]
         elseIf (suppress_error)
@@ -2683,7 +2683,7 @@ class Resolver : Recyclable, Visitor
       local error_message = mesg.replacing( "Routine.", "" )
       throw t.error( error_message )
 
-    method refine_candidates( type_context:Type, args:Cmd, &exact_arg_types, &limit_conversions )->Procedure
+    method refine_candidates( t:Token, type_context:Type, args:Cmd, &exact_arg_types, &limit_conversions )->Procedure
       local arg_count = which{ args:args.count || 0 }
 
       local has_named_arg = false
@@ -2797,6 +2797,36 @@ class Resolver : Recyclable, Visitor
           allow_conversions = true
         endIf
       endLoop
+
+      # If any of the methods are global, filter out base class global methods with
+      # matching signatures.
+      contingent
+        sufficient ((forEach in Candidates.list).attributes.is_global)
+        escapeContingent
+
+      satisfied
+        forEach (m1 in Candidates)
+
+          contingent
+            sufficient (not m1.attributes.is_global)
+
+            forEach (m2 in Candidates)
+              if (m2 is not m1 and m2.attributes.is_global)
+                # No other methods with matching signatures can be extended types of this type
+                necessary (not m2.type_context.instance_of(m1.type_context))
+              endIf
+            endForEach
+
+          satisfied
+            Candidates.keep m1
+          endContingent
+
+        endForEach
+
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+
+      endContingent
 
       # If an init() method exists...
       if local m_init = Candidates.list.find( $.name == "init" )
@@ -4499,7 +4529,9 @@ augment
         throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
 
       else
-        local op_method_name = "operator" + cmd.symbol
+        use op_method_name = StringPool
+        op_method_name.print "operator"
+        op_method_name.print cmd.symbol
         local args_left_right = Args( t, cmd.left, cmd.right )
 
         left_type.organize
