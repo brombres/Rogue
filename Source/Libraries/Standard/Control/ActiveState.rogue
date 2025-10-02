@@ -59,7 +59,7 @@ class ActiveState<<$ExtendedType>>
         cur .= concurrent_state
       endWhile
 
-    method change_state( new_state:$ExtendedType )
+    method change( new_state:$ExtendedType )
       next_state = new_state
       exit
 
