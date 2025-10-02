@@ -292,6 +292,10 @@ class Table<<$KeyType,$ValueType>> : TableType
 
       return cur.value
 
+    method reverse_entries->TableReverseEntriesIterator<<$KeyType,$ValueType>>
+      # Returns an iterator compound.
+      return TableReverseEntriesIterator<<$KeyType,$ValueType>>( last_entry )
+
     method set( key:$KeyType, value:$ValueType )
       local entry = find( key )
       if (entry)
@@ -505,6 +509,46 @@ class TableEntriesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Val
       if (not cur) return null
       local result = cur
       cur = cur.next_entry
+      return result
+
+    method to->String
+      return to_list->String
+
+    method to->TableEntry<<$KeyType,$ValueType>>[]( result=null:TableEntry<<$KeyType,$ValueType>>[] )
+      return to_list( result )
+
+    method to_list( result=null:TableEntry<<$KeyType,$ValueType>>[] )->TableEntry<<$KeyType,$ValueType>>[]
+      ensure<<result>>
+      result.add( forEach in this )
+      return result
+endClass
+
+class TableReverseEntriesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$ValueType>> ) [compound]
+  METHODS
+    method has_another->Logical
+      return cur?
+
+    method peek->TableEntry<<$KeyType,$ValueType>>
+      return cur
+
+    method peek( lookahead:Int )->TableEntry<<$KeyType,$ValueType>>
+      block cur
+        loop (lookahead)
+          if (not cur) return null
+          cur = cur.previous_entry
+        endLoop
+        return cur
+      endBlock
+
+    method read->TableEntry<<$KeyType,$ValueType>> [mutating]
+      local result = cur
+      cur = cur.previous_entry
+      return result
+
+    method read_another->TableEntry<<$KeyType,$ValueType>>? [mutating]
+      if (not cur) return null
+      local result = cur
+      cur = cur.previous_entry
       return result
 
     method to->String
