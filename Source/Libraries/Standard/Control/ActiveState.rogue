@@ -156,6 +156,8 @@ class ActiveState<<$ExtendedType>>
         if (concurrent_state)
           concurrent_state = concurrent_state.started
         endIf
+
+        return this->(as $ExtendedType)
       else
         if (not is_started)
           handle_activate
@@ -164,11 +166,10 @@ class ActiveState<<$ExtendedType>>
 
         if (concurrent_state) concurrent_state = concurrent_state.started
         if (not is_finished) return this->(as $ExtendedType)
+        handle_finish
+
+        return .start_next
       endIf
-
-      handle_finish
-
-      return .start_next
 
     method to->String
       return description

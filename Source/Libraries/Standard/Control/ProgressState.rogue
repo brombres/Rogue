@@ -61,6 +61,8 @@ class ProgressState<<$ExtendedType>> : ActiveState<<$ExtendedType>>
         if (concurrent_state)
           concurrent_state = concurrent_state.started
         endIf
+        return this->(as $ExtendedType)
+
       else
         if (not prev_time)
           handle_activate
@@ -78,11 +80,9 @@ class ProgressState<<$ExtendedType>> : ActiveState<<$ExtendedType>>
           concurrent_state = concurrent_state.started
         endIf
         if (not is_finished) return this->(as $ExtendedType)
+        handle_finish
+        return .start_next
       endIf
-
-      handle_finish
-
-      return .start_next
 
     method timescale->Real
       return 1.0
