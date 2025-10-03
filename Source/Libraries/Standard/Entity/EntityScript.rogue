@@ -18,7 +18,7 @@ class EntityScript : ActiveState<<EntityScript>>
     method on_draw
       noAction
 
-    method on_draw_fg
+    method on_draw_over
       noAction
 
     method on_update_layout

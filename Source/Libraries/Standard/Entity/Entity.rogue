@@ -90,7 +90,7 @@ class Entity : Node<<Entity>>
       if (attributes.invisible) return
       .begin_draw
       .handle_draw
-      .handle_draw( &fg )
+      .handle_draw( &over )
       .end_draw
 
     method find( id:GlobalID, arg=undefined:Variant, &up )->Variant
@@ -149,7 +149,7 @@ class Entity : Node<<Entity>>
     method on_draw
       noAction
 
-    method on_draw_fg
+    method on_draw_over
       noAction
 
     method on_end_draw
@@ -237,16 +237,16 @@ class Entity : Node<<Entity>>
     method .end_update
       on_end_update
 
-    method .handle_draw( &fg )
+    method .handle_draw( &over )
       if (attributes.invisible) return
 
-      if (fg)
+      if (over)
         if (attributes.foreground) .draw_entity
 
-        on_draw_fg
+        on_draw_over
 
-        script?.call<<on_draw_fg>>
-        actions?.call<<on_draw_fg>>
+        script?.call<<on_draw_over>>
+        actions?.call<<on_draw_over>>
       else
         on_draw
 
