@@ -68,6 +68,9 @@ class Timer
       start_time = System.execution_time
       stop_time = null
 
+    method restart( duration:Real )
+      init( duration )
+
     method start
       # Starts if currently stopped; otherwise no effect.
       if (stop_time.exists)
