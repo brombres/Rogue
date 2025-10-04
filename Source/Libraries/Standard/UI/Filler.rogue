@@ -1,0 +1,15 @@
+library UI
+
+class Filler : Component
+  GLOBAL METHODS
+    method h->Filler
+      return Filler().[ fixed_height=0 ]
+
+    method v->Filler
+      return Filler().[ fixed_width=0 ]
+
+  METHODS
+    method init
+      weight = 0.0
+
+endClass
