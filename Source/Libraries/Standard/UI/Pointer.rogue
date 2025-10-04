@@ -2,7 +2,7 @@ library UI
 
 class Pointer [singleton]
   PROPERTIES
-    click_time_threshold = 0.300
+    click_time_threshold = 0.250
     drag_threshold_px    = 10  # single-density pixels, auto-multiplied by display_density
 
     position         : XY?   # of first touch in current single touch or multitouch event
