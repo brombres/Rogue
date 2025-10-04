@@ -201,9 +201,6 @@ class Component : Entity
 
       begin_content_layout
 
-    method bg_color->Graphics::Color?
-      return parent->(as Component)?.bg_color
-
     method bounds->Box
       return Box( position, size )
 
@@ -224,9 +221,6 @@ class Component : Entity
           collect_child_display_components( list, &=only_visible )
         endIf
       endIf
-
-    method color->Graphics::Color?
-      return parent->(as Component)?.color
 
     method contains( e:PointerEvent )->Logical
       return contains( e.position )

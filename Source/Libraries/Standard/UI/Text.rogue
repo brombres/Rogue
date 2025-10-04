@@ -33,12 +33,6 @@ class Text : Component
     method aspect_fit_text_to_width
       scaling_mode.x = ScalingMode.ASPECT_FIT
 
-    method bg_color->Graphics::Color? [override]
-      return text_style?.bg_color || prior.bg_color
-
-    method color->Graphics::Color? [override]
-      return text_style?.color || prior.color
-
     method description->String
       local result = ''Text($)''(value?.to_escaped_ascii||"")
       if (count)
@@ -129,14 +123,6 @@ class Text : Component
       else
         println "ERROR: UI.default_font is undefined."
       endIf
-
-    method set_bg_color( color:Graphics::Color? )
-      ensure<<text_style>>
-      text_style.bg_color = color
-
-    method set_color( color:Graphics::Color? )
-      ensure<<text_style>>
-      text_style.color = color
 
     method set_value( new_value:String )
       if (not new_value) new_value = ""

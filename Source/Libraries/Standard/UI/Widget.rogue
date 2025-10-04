@@ -116,7 +116,7 @@ class Widget : Component
       prior.release_pointer_focus
 
     method set_is_visible( setting:Logical )
-      if (setting == visible) return
+      if (setting == is_visible) return
       if (not setting) release_pointer_focus
       prior.set_is_visible( setting )
       if (not is_disabled) state = WidgetState.IDLE
