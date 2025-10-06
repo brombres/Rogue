@@ -40,3 +40,5 @@ DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
+
+/TODO.txt

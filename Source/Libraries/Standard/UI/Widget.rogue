@@ -95,7 +95,7 @@ class Widget : Component
         endIf
       endIf
 
-    method on_change_state( new_state:WidgetState )
+    method on_change_state
       noAction
 
     method on_select
@@ -126,6 +126,6 @@ class Widget : Component
     method set_state( new_state:WidgetState )
       if (state == new_state) return
       @state = new_state
-      on_change_state( new_state )
+      on_change_state
 
 endClass
