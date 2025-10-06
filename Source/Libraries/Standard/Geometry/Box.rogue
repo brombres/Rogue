@@ -147,6 +147,9 @@ class Box( position:XY, size:XY ) [essential compound]
     method cropped( left:Real, top:Real, right:Real, bottom:Real )->Box
       return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)).or_larger(XY.zero) )
 
+    method cropped( size:XY )->Box
+      return cropped( size.x, size.y, size.x, size.y )
+
     method expanded( delta:Real )->Box
       return cropped( -delta )
 
