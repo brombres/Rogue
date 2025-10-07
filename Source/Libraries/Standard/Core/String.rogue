@@ -1327,6 +1327,18 @@ class String : Recyclable PrintWriter
       endForEach
       return buffer
 
+    method rot47( buffer=String():String )->String
+      # Lightweight obfuscation. Rotates ASCII characters 32..125 (excludes '~') by 47 characters.
+      # Apply it once to obfuscate a string; apply it a second time to return to the original.
+      buffer.reserve( count )
+      forEach (ch in this)
+        if (ch >= 32 and ch <= 125)
+          ch = (((ch - 32) + 47) % 94 + 32)
+        endIf
+        buffer.print( ch )
+      endForEach
+      return buffer
+
     method set_cursor( character_index:Int )->Int
       # Sets this string's cursor_offset (in bytes) and cursor_index (in characters)
       if (is_ascii)

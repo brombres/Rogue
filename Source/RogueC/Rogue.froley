@@ -151,6 +151,7 @@ META_MACRO            $macro          [meta]
 META_REQUIRE_ROGUE    $requireRogue   [meta]
 META_ROGUE_VERSION    $rogueVersion   [meta]
 META_ROT13            $rot13          [meta]
+META_ROT47            $rot47          [meta]
 META_SOURCE_FILEPATH  $sourceFilepath [meta]
 META_SOURCE_LINE      $sourceLine     [meta]
 META_TARGET           $target         [meta]
@@ -3939,6 +3940,17 @@ parser
       endWhile
       mustConsume ')'
     call end_rot13
+    return
+
+  elseOn "$rot47"
+    call begin_rot47
+      mustConsume '('
+      process_another
+      while (consume(',') or not nextIs(')'))
+        process_another
+      endWhile
+      mustConsume ')'
+    call end_rot47
     return
 
   elseOn "$string"
