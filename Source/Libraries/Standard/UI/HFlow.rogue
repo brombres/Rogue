@@ -83,6 +83,7 @@ class HFlow : Component
       use components = display_components
         localize content_position
         layout_cursor    = content_position
+        max_width        = 0
         cur_line_height  = 0
         cur_line_advance = 0
 
@@ -119,7 +120,7 @@ class HFlow : Component
           component.perform_layout( layout_cursor )
           if (layout_cursor.x or not component.is_space)
             layout_cursor.x += w
-            max_width   .= or_larger( layout_cursor.x )
+            max_width .= or_larger( layout_cursor.x )
           endIf
         endWhile
 
