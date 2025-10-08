@@ -25,6 +25,7 @@ $include UI/ScalingMode
 $include UI/SizingMode
 $include UI/Text
 $include UI/TextBox
+$include UI/TextInput
 $include UI/TextStyle
 $include UI/VBox
 $include UI/VList

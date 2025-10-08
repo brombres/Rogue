@@ -1,0 +1,12 @@
+library UI
+
+class TextInput : Widget
+  PROPERTIES
+    value = String()
+
+  METHODS
+    method set_value( other:String )
+      @value.clear
+      @value.print( other )
+endClass
+
