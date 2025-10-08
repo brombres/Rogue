@@ -1992,23 +1992,37 @@ parser
   endOn
 
 - property_declaration
+  consumed_at = false
+  on '@'
+    create LiteralLogical(value="true":Logical)
+    pop is_direct
+    consumed_at = true
+  elseOnOthers
+    createNull
+    pop is_direct
+  endOn
+
   on IDENTIFIER
     optional_initial_value
     createNull
-    produce Property( name=content, initial_value, type:Type )
+    push is_direct
+    produce Property( name=content, initial_value, type:Type, is_direct:Logical )
   elseOn '.'
     create Identifier( name="." )
     identifier
     call join_identifiers
     optional_initial_value
     createNull
-    produce Property( name, initial_value, type:Type )
+    push is_direct
+    produce Property( name, initial_value, type:Type, is_direct:Logical )
   elseOn PLACEHOLDER
     if (not disable_output) syntaxError
     optional_initial_value
     createNull
-    produce Property( name=content, initial_value, type:Type )
+    push is_direct
+    produce Property( name=content, initial_value, type:Type, is_direct:Logical )
   elseOn "native"
+    if (consumed_at) syntaxError "Invalid direct access '@' before native property."
     on "<<"
       identifier
       mustConsume ">>"

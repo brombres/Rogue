@@ -912,12 +912,13 @@ class Property : Cmd
     doc               : String
 
   METHODS
-    method init( t, name, initial_value, type )
+    method init( t, name, initial_value, type, &is_direct )
       attributes = Attributes(t)
       if (name.begins_with('.'))
         name = '_' + name.unleft(1)
         attributes.is_internal_id = true
       endIf
+      attributes.is_direct_auto_store = is_direct
 
     method init( t, name, native_expression )
       type = Program.type_NativeProperty
