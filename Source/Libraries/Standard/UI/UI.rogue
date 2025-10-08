@@ -122,11 +122,11 @@ class UI : Component [singleton]
         if (e.is_consumed) return
 
         if (focus.pointer)
-          if (not focus.pointer.attributes.intangible)
-            focus.pointer.handle( e )
-          else
+          if (focus.pointer.yield_pointer_focus_to(e))
             focus.pointer.release_pointer_focus
             first_content_component?.dispatch( e )
+          else
+            focus.pointer.handle( e )
           endIf
         else
           first_content_component?.dispatch( e )

@@ -789,6 +789,9 @@ class Component : Entity
       sizing_mode.x = SizingMode.NATURAL_SIZE
       size.x = natural_size.x
 
+    method yield_pointer_focus_to( e:PointerEvent )->Logical
+      return attributes.intangible or (e.is_press and not this.contains(e))
+
     method .dispatch_draw [override]
       if (count)
         localize content_display_bounds

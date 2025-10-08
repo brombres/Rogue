@@ -8,6 +8,8 @@ class TextField : Widget
     previous_focus    : Component
     content_alignment = Anchor.LEFT : Anchor?
 
+    behavior = WidgetPointerFocusBehavior.STICKY : WidgetPointerFocusBehavior
+
   METHODS
     method horizontal_margin->Real
       return (size.y * 0.25).floor

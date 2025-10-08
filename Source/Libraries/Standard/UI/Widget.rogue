@@ -4,6 +4,11 @@ enum WidgetState
   IDLE, TARGETED, PRESSED, DISABLED
 endEnum
 
+enum WidgetPointerFocusBehavior
+  CLICK   # is_pressed() only when pointer pressed; on_select() called on pointer release.
+  STICKY  # is_pressed() until out-of-bounds pointer press.
+endEnum
+
 class Widget : Component
   PROPERTIES
     state              : WidgetState
@@ -12,6 +17,8 @@ class Widget : Component
     on_select_arg      : Variant
     select_count       : Int
     just_once          : Logical
+    is_on              : Logical  # every select toggles this value
+    behavior           : WidgetPointerFocusBehavior
 
   METHODS
     method init
@@ -37,6 +44,7 @@ class Widget : Component
       attributes.intangible = false
 
     method handle_select
+      is_on = not is_on
       on_select
       if local signal_id = on_select_signal
         signal_id.signal( on_select_arg )
@@ -81,8 +89,9 @@ class Widget : Component
           if (select_count == 1 or not just_once)
             handle_select
           endIf
+        else
+          release_pointer_focus
         endIf
-        release_pointer_focus
       elseIf (e.is_move)
         if (contains_e)
           if (state == WidgetState.IDLE)
@@ -90,7 +99,7 @@ class Widget : Component
               state = WidgetState.TARGETED
             endIf
           endIf
-        else
+        elseIf (behavior != WidgetPointerFocusBehavior.STICKY)
           release_pointer_focus
           if (state != WidgetState.DISABLED) state = WidgetState.IDLE
         endIf
