@@ -52,12 +52,24 @@ class Component : Entity
       # Called at the beginning of layout
       noAction
 
+    method on_capture_keyboard_focus
+      noAction
+
+    method on_capture_pointer_focus
+      noAction
+
     method on_end_layout [critical]
       noAction
 
     method on_layout_size( layout_size:XY )
       # Called when this component's size has been set but before
       # child component sizes are set.
+      noAction
+
+    method on_release_keyboard_focus
+      noAction
+
+    method on_release_pointer_focus
       noAction
 
     method on_unhandled( e:KeyEvent )
@@ -73,12 +85,6 @@ class Component : Entity
       noAction
 
     method on_unhandled( e:TextEvent )
-      noAction
-
-    method on_release_keyboard_focus
-      noAction
-
-    method on_release_pointer_focus
       noAction
 
   METHODS # Public API
@@ -204,9 +210,22 @@ class Component : Entity
     method bounds->Box
       return Box( position, size )
 
+    method capture_keyboard_focus->Logical
+      if (UI.focus.keyboard is this) return true
+
+      if (UI.focus.keyboard)
+        UI.focus.keyboard.release_keyboard_focus
+        if (UI.focus.keyboard) return false  # refused
+      endIf
+
+      UI.focus.keyboard = this
+      on_capture_keyboard_focus
+      return true
+
     method capture_pointer_focus->Logical
       if (UI.focus.pointer and UI.focus.pointer is not this) return false
       UI.focus.pointer = this
+      on_capture_pointer_focus
       return true
 
     method collect_child_display_components( list:Component[], &only_visible )

@@ -1,0 +1,169 @@
+library UI
+
+class TextField : Widget
+  PROPERTIES
+    @value            = String()
+    cursor            : Int?
+    next_focus        : Component
+    previous_focus    : Component
+    content_alignment = Anchor.LEFT : Anchor?
+
+  METHODS
+    method horizontal_margin->Real
+      return (size.y * 0.25).floor
+
+    method index_at( position:XY )->Int
+      # Returns cursor index (0..value.count) closest to given display position.
+      localize text_bounds
+      localize font
+
+      local x = position.x - text_bounds.position.x
+      if (x < 0) return 0
+      if (x >= text_bounds.size.x) return value.count
+
+      local prev_w = 0.0
+      forEach (i of value)
+        local w = font.measure( value, &count=i+1 ).x
+        if (w >= x)
+          if ((w - x).abs <= (prev_w-x).abs) return i+1
+          else                               return i
+        else
+          prev_w = w
+        endIf
+      endForEach
+
+      return value.count
+
+    method on( e:KeyEvent )
+      if (has_keyboard_focus)
+        if (e.is_press)
+          e.consume
+          if (e.unicode)
+            which (e.unicode)
+              case '\t'
+                release_keyboard_focus
+                <TextField.commit>.signal( this )
+                if (e.is_shift_pressed) previous_focus?.capture_keyboard_focus
+                else                    next_focus?.capture_keyboard_focus
+              case '\n'
+                release_keyboard_focus
+                <TextField.commit>.signal( this )
+              others
+                if (cursor.value == value.count)
+                  value.print( e.unicode )
+                  on_value_changed
+                else
+                  local cursor = cursor.value.clamped( 0, value.count )
+                  value = value.leftmost(cursor) + e.unicode + value.from(cursor)
+                endIf
+                cursor = cursor.value + 1
+            endWhich
+          else
+            which (e.keycode)
+              case BACKSPACE
+                if (cursor and cursor.value > 0)
+                  cursor = cursor.value - 1
+                  value = value.leftmost(cursor.value) + value.from(cursor.value+1)
+                endIf
+              case DELETE
+                if (cursor and cursor.value < value.count)
+                  value = value.leftmost(cursor.value) + value.from(cursor.value+1)
+                endIf
+              case ESCAPE
+                release_keyboard_focus
+                <TextField.commit>.signal( this )
+              case UP_ARROW
+                cursor = 0
+              case LEFT_ARROW
+                cursor = (cursor.value - 1).clamped_low( 0 )
+              case RIGHT_ARROW
+                cursor = (cursor.value + 1).clamped_high( value.count )
+              case DOWN_ARROW
+                cursor = value.count
+            endWhich
+          endIf
+
+          request_redraw
+        endIf
+      endIf
+
+    method on( e:PointerEvent )
+      local was_focus = has_keyboard_focus
+      prior.on( e )
+
+      if (e.is_press and has_keyboard_focus and contains(e))
+        if (not was_focus) cursor = 0
+        cursor = index_at( e.position )
+      endIf
+
+    method on_capture_keyboard_focus
+      cursor = value.count
+
+    method on_cursor_relocated
+      noAction
+
+    method on_draw_cursor( bounds:Box )
+      noAction
+
+    method on_release_keyboard_focus
+      cursor = null
+
+    method on_value_changed
+      noAction
+
+    method set_cursor( new_index:Int? )
+      if (cursor != new_index)
+        @cursor = new_index
+        on_cursor_relocated
+      endIf
+
+    method set_state( new_state:WidgetState ) [override]
+      if (state == new_state) return
+      if (new_state == WidgetState.PRESSED)
+        capture_keyboard_focus
+      endIf
+      prior.set_state( new_state )
+
+    method set_value( other:String )
+      if (value != other)
+        value.clear
+        value.print( other )
+        if (cursor) cursor.value .= clamped_high( value.count )
+        on_value_changed
+      endIf
+
+    method text_bounds->Box
+      localize font
+      if (not font) return display_bounds
+
+      local margin_h = horizontal_margin
+      local internal_bounds = display_bounds.cropped( XY(margin_h,0) ).floor
+      local text_bounds = Box( font.measure(value) )
+      if (cursor and text_bounds.size.x > internal_bounds.size.x)
+        local anchor = Anchor( XY(cursor.value->Real/value.count,0.5) )
+        #local left_w = font.measure( value, &count=cursor.value ).x
+        #local right_w = text_bounds.size.x - left_w
+        #local w80 = internal_bounds.size.x * 0.80
+        #anchor.position = (left_w/w80).lerp( XY(0,0.5), anchor.position )
+        #anchor.position = (right_w/w80).lerp( anchor.position, XY(1,0.5) )
+        text_bounds .= positioned_within( internal_bounds, anchor )
+      else
+        text_bounds .= positioned_within( internal_bounds, Anchor.LEFT )
+      endIf
+      return text_bounds
+
+    method .draw_entity [override]
+      if (cursor)
+        if local font = font
+          localize text_bounds
+          local left_w = font.measure( value, &count=cursor.value ).x
+          local top_dy = (text_bounds.size.y - font.height) / 2
+          local cursor_bounds = Box( text_bounds.position+XY(left_w,top_dy), 1, font.height )
+          on_draw_cursor( cursor_bounds )
+        endIf
+      endIf
+
+
+
+endClass
+

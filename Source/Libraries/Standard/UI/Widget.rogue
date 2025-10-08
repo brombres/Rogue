@@ -71,6 +71,7 @@ class Widget : Component
           endIf
         else
           release_pointer_focus
+          release_keyboard_focus
         endIf
       elseIf (e.is_release)
         if (contains_e and has_pointer_focus)
