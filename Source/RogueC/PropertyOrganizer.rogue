@@ -18,9 +18,15 @@ class PropertyOrganizer : Visitor
           # Turn parameters into properties
           forEach (v in cmd.constructor_properties)
             if (v.type)
+              v.attributes.is_default_parameter = false
               local p = Property( v.t, v.name, v.initial_value, v.type )
               collect( v.t, p )
               v.type = null  # turn into auto-store parameter
+            elseIf (v.attributes.is_default_parameter)  # AKA flag parameter
+              v.attributes.is_default_parameter = false
+              if (not v.initial_value) v.initial_value = LiteralLogical( v.t, false )
+              local p = Property( v.t, v.name, v.initial_value, Program.type_Logical )
+              collect( v.t, p )
             endIf
           endForEach
 
