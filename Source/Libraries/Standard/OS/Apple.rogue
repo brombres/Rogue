@@ -38,17 +38,34 @@ class Apple [singleton]
      |  #else
      |    #import <Foundation/Foundation.h>
      |  #endif
-     |  NSString*    %Ns%Rogue_string_to_ns_string( RogueString* st );
-     |  RogueString* %Ns%Rogue_ns_string_to_string( NSString* st );
      |  NSString*    %Ns%Rogue_find_ns_folder( NSSearchPathDirectory type );
+     |  NSString*    %Ns%Rogue_ns_object_to_json_ns_string( id obj );
+     |  RogueString* %Ns%Rogue_ns_object_to_json_string( id obj );
+     |  RogueString* %Ns%Rogue_ns_string_to_string( NSString* st );
+     |  NSString*    %Ns%Rogue_string_to_ns_string( RogueString* st );
      |#endif
 
     nativeCode
     @|#if defined(%NS%ROGUE_TARGET_APPLE)
-     |  NSString* %Ns%Rogue_string_to_ns_string( RogueString* st )
+     |  NSString* %Ns%Rogue_find_ns_folder( NSSearchPathDirectory type )
      |  {
-     |    if ( !st ) return nil;
-     |    return [NSString stringWithUTF8String:(const char*)st->data->as_utf8];
+     |    return NSSearchPathForDirectoriesInDomains(
+     |      type,
+     |      NSUserDomainMask,
+     |      YES
+     |    ).firstObject;
+     |  }
+     |
+     |  NSString* %Ns%Rogue_ns_object_to_json_ns_string( id obj )
+     |  {
+     |    if ( ![NSJSONSerialization isValidJSONObject:obj] ) return nil;
+     |    NSData *data = [NSJSONSerialization dataWithJSONObject:obj options:0 error:nil];
+     |    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+     |  }
+     |
+     |  RogueString* %Ns%Rogue_ns_object_to_json_string( id obj )
+     |  {
+     |    return %Ns%Rogue_ns_string_to_string( %Ns%Rogue_ns_object_to_json_ns_string(obj) );
      |  }
      |
      |  RogueString* %Ns%Rogue_ns_string_to_string( NSString* st )
@@ -58,13 +75,10 @@ class Apple [singleton]
      |    return %Ns%RogueString_create( [st UTF8String] );
      |  }
      |
-     |  NSString* %Ns%Rogue_find_ns_folder( NSSearchPathDirectory type )
+     |  NSString* %Ns%Rogue_string_to_ns_string( RogueString* st )
      |  {
-     |    return NSSearchPathForDirectoriesInDomains(
-     |      type,
-     |      NSUserDomainMask,
-     |      YES
-     |    ).firstObject;
+     |    if ( !st ) return nil;
+     |    return [NSString stringWithUTF8String:(const char*)st->data->as_utf8];
      |  }
      |#endif
 endClass
