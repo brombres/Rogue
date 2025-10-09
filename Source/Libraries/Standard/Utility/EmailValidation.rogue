@@ -1,0 +1,63 @@
+augment Rogue::String
+  METHODS
+    method is_valid_email->Logical
+      if (count < 4) return false
+
+      local multipart_domain = false
+
+      local state = <local_id_start>
+      forEach (ch in this)
+        contingent
+          which (state)
+            case <local_id_start>
+              necessary (ch.is_letter or ch.is_number)
+              state = <local_id>
+            case <local_id>
+              which (ch)
+                case '.':  state = <local_dot>
+                case '+':  state = <plus>
+                case '@':  state = <domain_id_start>
+                others:    necessary (ch.is_letter or ch.is_number)
+              endWhich
+            case <local_dot>
+              necessary (ch.is_letter or ch.is_number)
+              state = <local_id>
+            case <plus>
+              necessary (ch.is_letter or ch.is_number)
+              state = <tag>
+            case <tag>
+              if (ch == '@')
+                state = <domain_id_start>
+              else
+                sufficient (ch.is_letter or ch.is_number)
+                necessary  ("._-".contains(ch))
+              endIf
+            case <domain_id_start>
+              necessary (ch.is_letter or ch.is_number)
+              state = <domain_id>
+            case <domain_id>
+              which (ch)
+                case '-': state = <domain_id_hyphen>
+                case '.': state = <domain_id_dot>
+                others:   necessary (ch.is_letter or ch.is_number)
+              endWhich
+            case <domain_id_hyphen>
+              necessary (ch.is_letter or ch.is_number)
+              state = <domain_id>
+            case <domain_id_dot>
+              multipart_domain = true
+              necessary (ch.is_letter or ch.is_number)
+              state = <domain_id>
+            others
+              println "String.is_valid_email: Invalid state $"(state)
+          endWhich
+        unsatisfied
+          return false
+        endContingent
+      endForEach
+
+      if (not multipart_domain) return false
+      if (state != <domain_id>) return false
+
+      return true
+endAugment
