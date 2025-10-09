@@ -7,7 +7,7 @@ class Event
   PROPERTIES
     is_consumed  : Logical
     refcount     : Int
-    timestamp    : Int
+    timestamp    : Int64
 
   METHODS
     method init( timestamp=System.execution_time_ms )
@@ -138,6 +138,9 @@ class TextEvent : Event
     method init( character, text=null )
       prior.init
 
+    method init( text )
+      if (text.count == 1) character = text[0]
+
     method init( existing:TextEvent )
       prior.init( existing )
       character = existing.character
@@ -163,6 +166,10 @@ class TextEvent : Event
         case 2
           return (text == value)
       endWhich
+
+    method print_to( buffer:PrintWriter )
+      if (@text) buffer.print( @text )
+      else       buffer.print( character )
 
     method to->String
       return text

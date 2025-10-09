@@ -40,7 +40,7 @@ class TextField : Widget
 
       return value.count
 
-    method on( e:KeyEvent )
+    method on( e:KeyEvent ) [override]
       if (has_keyboard_focus)
         if (e.is_press)
           e.consume
@@ -54,15 +54,6 @@ class TextField : Widget
               case '\n'
                 release_keyboard_focus
                 <TextField.commit>.signal( this )
-              others
-                if (cursor.value == value.count)
-                  value.print( e.unicode )
-                  handle_value_changed
-                else
-                  local cursor = cursor.value.clamped( 0, value.count )
-                  value = value.leftmost(cursor) + e.unicode + value.from(cursor)
-                endIf
-                cursor = cursor.value + 1
             endWhich
           else
             which (e.keycode)
@@ -93,7 +84,7 @@ class TextField : Widget
         endIf
       endIf
 
-    method on( e:PointerEvent )
+    method on( e:PointerEvent ) [override]
       local was_focus = has_keyboard_focus
       prior.on( e )
 
@@ -101,6 +92,21 @@ class TextField : Widget
         if (not was_focus) cursor = 0
         cursor = index_at( e.position )
       endIf
+
+    method on( e:TextEvent ) [override]
+      if (cursor.value == value.count)
+        e.print_to( value )
+      else
+        local cursor = cursor.value.clamped( 0, value.count )
+        local left = value.leftmost( cursor )
+        local right = value.from( cursor )
+        value.clear
+        value.print( left )
+        e.print_to( value )
+        value.print( right )
+      endIf
+      handle_value_changed
+      cursor = cursor.value + e.count
 
     method on_capture_keyboard_focus
       cursor = value.count
