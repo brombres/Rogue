@@ -11,6 +11,10 @@ class TextField : Widget
     behavior = WidgetPointerFocusBehavior.STICKY : WidgetPointerFocusBehavior
 
   METHODS
+    method handle_value_changed
+      <TextField.on_value_changed>.signal( this )
+      on_value_changed
+
     method horizontal_margin->Real
       return (size.y * 0.25).floor
 
@@ -53,7 +57,7 @@ class TextField : Widget
               others
                 if (cursor.value == value.count)
                   value.print( e.unicode )
-                  on_value_changed
+                  handle_value_changed
                 else
                   local cursor = cursor.value.clamped( 0, value.count )
                   value = value.leftmost(cursor) + e.unicode + value.from(cursor)
@@ -131,7 +135,7 @@ class TextField : Widget
         value.clear
         value.print( other )
         if (cursor) cursor.value .= clamped_high( value.count )
-        on_value_changed
+        handle_value_changed
       endIf
 
     method text_bounds->Box
