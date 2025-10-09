@@ -17,7 +17,7 @@ class Widget : Component
     on_select_arg      : Variant
     select_count       : Int
     just_once          : Logical
-    is_on              : Logical  # every select toggles this value
+    is_on              : Logical
     behavior           : WidgetPointerFocusBehavior
 
   METHODS
@@ -35,6 +35,8 @@ class Widget : Component
 
     method disable
       if (is_disabled) return
+      release_pointer_focus
+      release_keyboard_focus
       state = WidgetState.DISABLED
       attributes.intangible = true
 
@@ -99,7 +101,7 @@ class Widget : Component
               state = WidgetState.TARGETED
             endIf
           endIf
-        elseIf (behavior != WidgetPointerFocusBehavior.STICKY)
+        elseIf (not is_on or behavior != WidgetPointerFocusBehavior.STICKY)
           release_pointer_focus
           if (state != WidgetState.DISABLED) state = WidgetState.IDLE
         endIf
@@ -120,6 +122,7 @@ class Widget : Component
 
     method release_pointer_focus [override]
       if (has_pointer_focus)
+        is_on = false
         if (state != WidgetState.DISABLED) state = WidgetState.IDLE
         request_redraw
       endIf
