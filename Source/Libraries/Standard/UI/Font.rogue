@@ -113,7 +113,7 @@ class Font
 
         # find last space or first \n
         while (w <= pixel_width and i2 < len and st[i2] != '\n')
-          local char_w = measure( st, i2, i2 ).x
+          local char_w = measure( st, i2, 1 ).x
           w += char_w
           i2++
         endWhile
