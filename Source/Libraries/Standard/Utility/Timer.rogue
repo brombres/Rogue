@@ -37,11 +37,17 @@ class Timer
       if (stopped) stop_time = start_time
       else         stop_time = null
 
-    method init( duration, &stopped )
+    method init( duration, &stopped, &expired )
       counting_down = true
       start_time = System.execution_time
-      if (stopped) stop_time = start_time
-      else         stop_time = null
+      if (expired) stopped = true
+
+      if (stopped)
+        if( expired) stop_time = start_time + duration
+        else         stop_time = start_time
+      else
+        stop_time = null
+      endIf
 
     method elapsed->Real
       local s : Real
