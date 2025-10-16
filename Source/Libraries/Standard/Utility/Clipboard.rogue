@@ -124,8 +124,10 @@ class MacOSClipboard [singleton]
          |      $height = (%Ns%RogueInt32)CGImageGetHeight( image );
                 result = Bitmap( width, height )
       native ...
-        @|      CGContextRef gc = CGBitmapContextCreate( (GLubyte*)$result->pixels->as_int32s, $width, $height, 8, $width*4,
-         |                                            CGColorSpaceCreateDeviceRGB(), kCGImageAlphaPremultipliedLast );
+        @|      CGContextRef gc = CGBitmapContextCreate(
+         |        (GLubyte*)$result->pixels->as_int32s, $width, $height, 8, $width*4,
+         |        CGColorSpaceCreateDeviceRGB(), (CGBitmapInfo)kCGImageAlphaPremultipliedLast
+         |      );
          |      CGContextDrawImage( gc, CGRectMake(0.0, 0.0, (CGFloat)$width, (CGFloat)$height), image );
          |      CGContextRelease( gc );
 
