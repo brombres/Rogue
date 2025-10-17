@@ -270,6 +270,24 @@ class Box( position:XY, size:XY ) [essential compound]
       # - Box(640,480,100,100).relative_to(Anchor.BOTTOM_RIGHT) places the bottom-right corner of the box on (640,480)
       return Box( position - anchor * size, size )
 
+    method removing_bottommost( height:Real )->Box
+      local h = (size.y - height).clamped_low( 0 )
+      return Box( position, size.x, h )
+
+    method removing_leftmost( width:Real )->Box
+      local x = (position.x + width).clamped_high( size.x )
+      local w = size.x - (x - position.x)
+      return Box( x, position.y, w, size.y )
+
+    method removing_rightmost( width:Real )->Box
+      local w = (size.x - width).clamped_low( 0 )
+      return Box( position, w, size.y )
+
+    method removing_topmost( height:Real )->Box
+      local y = (position.y + height).clamped_high( size.y )
+      local h = size.y - (y - position.y)
+      return Box( position.x, y, size.x, h )
+
     method right->XY
       return at( 1.0, 0.5 )
 
