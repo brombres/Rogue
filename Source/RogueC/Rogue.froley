@@ -2314,13 +2314,13 @@ parser
   on "escapeTry"                     -> EscapeTry:Escape
   on "escapeWhich"                   -> EscapeWhich:Escape
   on "escapeWhile"                   -> EscapeWhile:Escape
-  on "necessary" control_expression  -> Necessary(condition)
+  on "necessary" optional_control_expression_default_false -> Necessary(condition)
   on "nextIteration"                 -> NextIteration
   on "noAction":                        return
   on @"print"   args                 -> Access(name=content,args)
   on @"println" args                 -> Access(name=content,args)
   on "return" optional_expression    -> Return(result)
-  on "sufficient" control_expression -> Sufficient(condition)
+  on "sufficient" optional_control_expression_default_true -> Sufficient(condition)
   on "swapValues" '(' expression ',' expression ')' -> SwapValues(a,b)
   onPeek "trace"
     verbose_trace
@@ -2409,6 +2409,20 @@ parser
     createList TracedExpressions
     create BriefTrace(expressions:TracedExpressions)
   endOn
+
+- optional_control_expression_default_false
+  if (consume(EOL) or (nextHasAttribute(structural) and not nextIs(';')))
+    produce LiteralLogical(value="false":Logical):LiteralPrimitive
+  else
+    control_expression
+  endIf
+
+- optional_control_expression_default_true
+  if (consume(EOL) or (nextHasAttribute(structural) and not nextIs(';')))
+    produce LiteralLogical(value="true":Logical):LiteralPrimitive
+  else
+    control_expression
+  endIf
 
 - local_declarations
   onPeek '(' destructuring_local_declarations: return
