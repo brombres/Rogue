@@ -1426,6 +1426,15 @@ class CommonPrimitiveMethods<<$DataType>> : CommonPrimitiveMethods [aspect]
         return builder.count
       endUse
 
+    method is_between( low:$DataType, high:$DataType, &exclusive )->Logical
+      # Returns true if this value is between low and high.
+      # Inclusive unless 'exclusive' flag is 'true'.
+      if (exclusive)
+        return this > low and this < high
+      else
+        return this >= low and this <= high
+      endIf
+
     method or_larger( other:$DataType )->$DataType
       return which{ this>=other:this || other }
 
