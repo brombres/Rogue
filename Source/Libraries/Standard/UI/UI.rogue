@@ -96,17 +96,18 @@ class UI : Component [singleton]
 
     method handle( e:KeyEvent )
       temporarily UI = this
-        on( e )
-        if (e.is_consumed) return
-
         if (focus.keyboard)
           if (not focus.keyboard.attributes.intangible)
             focus.keyboard.handle( e )
           else
             focus.keyboard.release_keyboard_focus
+            on( e )
+            if (e.is_consumed) return
             first_content_component?.dispatch( e )
           endIf
         else
+          on( e )
+          if (e.is_consumed) return
           first_content_component?.dispatch( e )
         endIf
         if (e.is_consumed) return

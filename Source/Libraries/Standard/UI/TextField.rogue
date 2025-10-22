@@ -11,6 +11,11 @@ class TextField : Widget
     behavior = WidgetPointerFocusBehavior.STICKY : WidgetPointerFocusBehavior
 
   METHODS
+    method init
+      noAction
+
+    method init( value )
+
     method handle_value_changed
       <TextField.on_value_changed>.signal( this )
       on_value_changed
@@ -94,6 +99,8 @@ class TextField : Widget
       endIf
 
     method on( e:TextEvent ) [override]
+      e.consume
+
       if (cursor.value == value.count)
         e.print_to( value )
       else
