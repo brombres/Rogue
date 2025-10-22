@@ -2,7 +2,7 @@ library UI
 
 class TextField : Widget
   PROPERTIES
-    @value            = String()
+    @value            = ""
     cursor            : Int?
     next_focus        : Component
     previous_focus    : Component
@@ -46,47 +46,47 @@ class TextField : Widget
       return value.count
 
     method on( e:KeyEvent ) [override]
-      if (has_keyboard_focus)
-        if (e.is_press)
-          e.consume
-          if (e.unicode)
-            which (e.unicode)
-              case '\t'
-                release_keyboard_focus
-                <TextField.commit>.signal( this )
-                if (e.is_shift_pressed) previous_focus?.capture_keyboard_focus
-                else                    next_focus?.capture_keyboard_focus
-              case '\n'
-                release_keyboard_focus
-                <TextField.commit>.signal( this )
-            endWhich
-          else
-            which (e.keycode)
-              case BACKSPACE
-                if (cursor and cursor.value > 0)
-                  cursor = cursor.value - 1
-                  value = value.leftmost(cursor.value) + value.from(cursor.value+1)
-                endIf
-              case DELETE
-                if (cursor and cursor.value < value.count)
-                  value = value.leftmost(cursor.value) + value.from(cursor.value+1)
-                endIf
-              case ESCAPE
-                release_keyboard_focus
-                <TextField.commit>.signal( this )
-              case UP_ARROW
-                cursor = 0
-              case LEFT_ARROW
-                cursor = (cursor.value - 1).clamped_low( 0 )
-              case RIGHT_ARROW
-                cursor = (cursor.value + 1).clamped_high( value.count )
-              case DOWN_ARROW
-                cursor = value.count
-            endWhich
-          endIf
+      if (not has_keyboard_focus) return
 
-          request_redraw
+      if (e.is_press)
+        e.consume
+        if (e.unicode)
+          which (e.unicode)
+            case '\t'
+              release_keyboard_focus
+              <TextField.on_commit>.signal( this )
+              if (e.is_shift_pressed) previous_focus?.capture_keyboard_focus
+              else                    next_focus?.capture_keyboard_focus
+            case '\n'
+              release_keyboard_focus
+              <TextField.on_commit>.signal( this )
+          endWhich
+        else
+          which (e.keycode)
+            case BACKSPACE
+              if (cursor and cursor.value > 0)
+                cursor = cursor.value - 1
+                value = value.leftmost(cursor.value) + value.from(cursor.value+1)
+              endIf
+            case DELETE
+              if (cursor and cursor.value < value.count)
+                value = value.leftmost(cursor.value) + value.from(cursor.value+1)
+              endIf
+            case ESCAPE
+              release_keyboard_focus
+              <TextField.on_commit>.signal( this )
+            case UP_ARROW
+              cursor = 0
+            case LEFT_ARROW
+              cursor = (cursor.value - 1).clamped_low( 0 )
+            case RIGHT_ARROW
+              cursor = (cursor.value + 1).clamped_high( value.count )
+            case DOWN_ARROW
+              cursor = value.count
+          endWhich
         endIf
+
+        request_redraw
       endIf
 
     method on( e:PointerEvent ) [override]
@@ -99,6 +99,8 @@ class TextField : Widget
       endIf
 
     method on( e:TextEvent ) [override]
+      if (not has_keyboard_focus) return
+
       e.consume
 
       if (cursor.value == value.count)
@@ -107,10 +109,7 @@ class TextField : Widget
         local cursor = cursor.value.clamped( 0, value.count )
         local left = value.leftmost( cursor )
         local right = value.from( cursor )
-        value.clear
-        value.print( left )
-        e.print_to( value )
-        value.print( right )
+        value = "$$$"(left,e.text,right)
       endIf
       handle_value_changed
       cursor = cursor.value + e.count
@@ -145,8 +144,7 @@ class TextField : Widget
 
     method set_value( other:String )
       if (value != other)
-        value.clear
-        value.print( other )
+        @value = other
         if (cursor) cursor.value .= clamped_high( value.count )
         handle_value_changed
       endIf
