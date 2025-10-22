@@ -65,7 +65,7 @@ class Widget : Component
     method is_targeted->Logical
       return (state == WidgetState.TARGETED)
 
-    method on( e:PointerEvent )
+    method on_unhandled( e:PointerEvent )
       if (is_disabled) return
 
       local contains_e = contains( e )

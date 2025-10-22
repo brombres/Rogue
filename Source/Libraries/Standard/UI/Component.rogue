@@ -63,7 +63,7 @@ class Component : Entity
 
     method on_layout_size( layout_size:XY )
       # Called when this component's size has been set but before
-      # child component sizes are set.
+      # child component sizes are set. 'size' may be modified here.
       noAction
 
     method on_release_keyboard_focus
@@ -332,6 +332,9 @@ class Component : Entity
     method expand_to_fill_width
       sizing_mode.x = SizingMode.EXPAND_TO_FILL
 
+    method find( e:PointerEvent )->Entity
+      return find( e.position )
+
     method find( at_position:XY )->Entity
       if (not display_bounds.contains(at_position)) return null
 
@@ -563,7 +566,10 @@ class Component : Entity
       size = sz
 
       if (attributes.manually_update_content_layout)
-        if (not limited) on_layout_size( size )
+        if (not limited)
+          on_layout_size( size )
+          return size
+        endIf
       else
         sz = .resolve_shrink_to_fit_layout_size( &=limited )
         if (not limited)

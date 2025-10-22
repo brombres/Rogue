@@ -104,7 +104,7 @@ class TextField : Widget
       e.consume
 
       if (cursor.value == value.count)
-        e.print_to( value )
+        value += e.text
       else
         local cursor = cursor.value.clamped( 0, value.count )
         local left = value.leftmost( cursor )
@@ -158,16 +158,15 @@ class TextField : Widget
       local text_bounds = Box( font.measure(value) )
       if (cursor and text_bounds.size.x > internal_bounds.size.x)
         local anchor = Anchor( XY(cursor.value->Real/value.count,0.5) )
-        #local left_w = font.measure( value, &count=cursor.value ).x
-        #local right_w = text_bounds.size.x - left_w
-        #local w80 = internal_bounds.size.x * 0.80
-        #anchor.position = (left_w/w80).lerp( XY(0,0.5), anchor.position )
-        #anchor.position = (right_w/w80).lerp( anchor.position, XY(1,0.5) )
         text_bounds .= positioned_within( internal_bounds, anchor )
       else
         text_bounds .= positioned_within( internal_bounds, Anchor.LEFT )
       endIf
       return text_bounds
+
+    method yield_pointer_focus_to( e:PointerEvent )->Logical [override]
+      if (contains(e) and find(e) is not this) return true  # We have a subcomponent that contains the event position
+      return prior.yield_pointer_focus_to( e )
 
     method .draw_entity [override]
       if (cursor)

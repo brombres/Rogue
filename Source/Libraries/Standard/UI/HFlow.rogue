@@ -99,7 +99,10 @@ class HFlow : Component
           local w = component.size.x
           local too_wide = (layout_cursor.x + w > available_width)
           contingent
-            sufficient (component.is_br)
+            if (component.is_br)
+              ++i
+              sufficient
+            endIf
             if (too_wide)
               if local split_position = component.find_h_split( available_width - layout_cursor.x )
                 component.split_h( split_position, components, i )
