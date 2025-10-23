@@ -6,6 +6,9 @@ class HBox : Component
     gap_parameter_id : VariantEntryID
 
   METHODS
+    method init_object
+      is_pointer_passthrough = true
+
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
       local w = 0.0
       local h = 0.0

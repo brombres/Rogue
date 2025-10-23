@@ -11,5 +11,6 @@ class Filler : Component
   METHODS
     method init
       weight = 0.0
+      is_pointer_passthrough = true
 
 endClass

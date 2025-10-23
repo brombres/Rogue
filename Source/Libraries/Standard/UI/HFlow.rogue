@@ -18,6 +18,9 @@ class HFlow : Component
     method init( text:String )
       add( Text(text) )
 
+    method init_object
+      is_pointer_passthrough = true
+
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
       resolve_content_layout_sizes
 

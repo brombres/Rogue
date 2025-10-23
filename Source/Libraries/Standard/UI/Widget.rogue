@@ -67,7 +67,6 @@ class Widget : Component
 
     method on_unhandled( e:PointerEvent )
       if (is_disabled) return
-
       local contains_e = contains( e )
       if (contains_e or has_pointer_focus)
         request_redraw

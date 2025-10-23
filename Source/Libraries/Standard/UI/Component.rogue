@@ -342,6 +342,7 @@ class Component : Entity
         return content
       endIf
 
+      if (attributes.pointer_passthrough) return null
       return this
 
     method find_content( at_position:XY )->Entity
@@ -386,14 +387,19 @@ class Component : Entity
 
     method handle( e:PointerEvent )
       if (attributes.intangible) return
+      local receives_events = not is_pointer_passthrough
 
-      on( e )
-      if (e.is_consumed) return
+      if (receives_events)
+        on( e )
+        if (e.is_consumed) return
+      endIf
 
       first_content_component?.dispatch( e )
       if (e.is_consumed) return
 
-      on_unhandled( e )
+      if (receives_events)
+        on_unhandled( e )
+      endIf
 
     method handle( e:ScrollEvent )
       if (attributes.intangible) return

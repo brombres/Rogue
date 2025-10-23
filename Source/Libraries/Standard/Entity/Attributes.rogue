@@ -5,7 +5,7 @@ enum Attributes [bitflags]
     ACTIVE
     INVISIBLE
     INTANGIBLE
-    INPUT_DISABLED
+    POINTER_PASSTHROUGH
     MODIFIED
     FOREGROUND
     STARTED

@@ -165,7 +165,9 @@ class TextField : Widget
       return text_bounds
 
     method yield_pointer_focus_to( e:PointerEvent )->Logical [override]
-      if (contains(e) and find(e) is not this) return true  # We have a subcomponent that contains the event position
+      if (contains(e) and find(e) is not this)
+        return true  # We have a subcomponent that contains the event position
+      endIf
       return prior.yield_pointer_focus_to( e )
 
     method .draw_entity [override]
