@@ -49,16 +49,28 @@ class Text : Component
       if (is_display_component) return prior.display_position
       else                      return parent->(as Component)?.display_position
 
-    method find_h_split( max_width:Real )->Real? [override]
+    method find_h_split( max_width:Real, &force )->Real? [override]
       local font = font
       assert font
+
       forEach (ch at i in value step -1)
         if (ch == ' ' or ch == '\n' or ch == '\r' or ch == '\t')
-          if (i == 0) return null
-          local w = font.measure( value, 0, i )
+          if (i == 0) escapeForEach
+          local w = font.measure( value, 0, i ).x
           if (w < max_width) return i
         endIf
       endForEach
+
+      if (force)
+        # No good space to break the text, so break mid-word. Can still return
+        # null if not even the first letter will fit.
+        forEach (ch at i in value step -1)
+          if (i == 0) escapeForEach
+          local w = font.measure( value, 0, i ).x
+          if (w < max_width) return i
+        endForEach
+      endIf
+
       return null
 
     method font->Font

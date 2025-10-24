@@ -61,7 +61,7 @@ class Component : Entity
     method on_end_layout [critical]
       noAction
 
-    method on_layout_size( layout_size:XY )
+    method on_layout_size_set
       # Called when this component's size has been set but before
       # child component sizes are set. 'size' may be modified here.
       noAction
@@ -354,7 +354,7 @@ class Component : Entity
 
       return null
 
-    method find_h_split( max_width:Real )->Real?
+    method find_h_split( max_width:Real, &force )->Real?
       return null
 
     method first_content_component->Component
@@ -573,7 +573,7 @@ class Component : Entity
 
       if (attributes.manually_update_content_layout)
         if (not limited)
-          on_layout_size( size )
+          on_layout_size_set
           return size
         endIf
       else
@@ -665,7 +665,7 @@ class Component : Entity
       end_layout( &only_content )
 
     method resolve_content_layout_sizes
-      on_layout_size( size )
+      on_layout_size_set
       resolve_content_layout_sizes( content_size )
 
     method resolve_content_layout_sizes( available_size:XY )

@@ -107,11 +107,24 @@ class HFlow : Component
               sufficient
             endIf
             if (too_wide)
-              if local split_position = component.find_h_split( available_width - layout_cursor.x )
-                component.split_h( split_position, components, i )
-                nextIteration
+              local max_fragment_w = (available_width - (layout_cursor.x - content_position.x))
+              local split_position = component.find_h_split( max_fragment_w )
+              if (not split_position and layout_cursor.x == content_position.x)
+                # We can't naturally split the text and we're already at the beginning
+                # of a line, so force a split. Could still fail if even the first
+                # character is too wide.
+                split_position = component.find_h_split( max_fragment_w, &force )
               endIf
-              sufficient (layout_cursor.x > content_position.x)
+
+              if (split_position)
+                component.split_h( split_position.value, components, i )
+                nextIteration  # components[] adjusted; repeat layout of new smaller piece
+              else
+                sufficient (layout_cursor.x > content_position.x)  # we're not at BOL; just move to next line
+
+                # We're at BOL and we can't split the current fragment. Fall through to escapeContingent,
+                # set it in place, and move on.
+              endIf
             endIf
             escapeContingent
           satisfied
