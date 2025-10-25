@@ -133,8 +133,6 @@ class Widget : Component
       prior.set_is_visible( setting )
       if (not is_disabled) state = WidgetState.IDLE
 
-    method set_on_select( on_select_callback )
-
     method set_state( new_state:WidgetState )
       if (state == new_state) return
       @state = new_state

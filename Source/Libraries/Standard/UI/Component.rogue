@@ -162,16 +162,16 @@ class Component : Entity
     method aspect_fit( aspect_size )
       sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT, SizingMode.ASPECT_FIT )
 
-    method aspect_fit_height
+    method aspect_fit_height_to_natural_width
       sizing_mode.y = SizingMode.ASPECT_FIT_NATURAL_SIZE
 
-    method aspect_fit_height( aspect_size )
+    method aspect_fit_height_to_width( aspect_size )
       sizing_mode.y = SizingMode.ASPECT_FIT
 
-    method aspect_fit_width_NATURAL_SIZE
-      sizing_mode.x = SizingMode.ASPECT_FIT
+    method aspect_fit_width_to_natural_height
+      sizing_mode.x = SizingMode.ASPECT_FIT_NATURAL_SIZE
 
-    method aspect_fit_width( aspect_size )
+    method aspect_fit_width_to_height( aspect_size )
       sizing_mode.x = SizingMode.ASPECT_FIT
 
     method content_alignment->Anchor
@@ -676,10 +676,6 @@ class Component : Entity
 
     method set_anchor( @anchor )
       noAction
-
-    method set_content( content:Component )
-      remove_children
-      add( content )
 
     method set_content_offset( new_content_offset:XY )
       if (content_offset != new_content_offset)

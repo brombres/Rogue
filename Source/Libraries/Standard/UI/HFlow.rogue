@@ -157,7 +157,4 @@ class HFlow : Component
         (forEach in components).resolve_layout_size( available_size )
       endUse
 
-    method set_content( text:String )
-      set_content( Text(text) )
-
 endClass

@@ -129,6 +129,24 @@ class Node<<$ExtendedNodeType>> : IteratorPreferred
         visitor.visit_children( this )
       endIf
 
+    method find( query_fn:Function($ExtendedNodeType)->Logical )->$ExtendedNodeType
+      local extended_node = this->(as $ExtendedNodeType)
+      if (query_fn(extended_node)) return extended_node
+
+      if (first_child)
+        if local result = first_child.find( query_fn )
+          return result
+        endIf
+      endIf
+
+      if (next)
+        if local result = next.find( query_fn )
+          return result
+        endIf
+      endIf
+
+      return null
+
     method get( index:Int )->$ExtendedNodeType
       if (index < 0 or index >= count) return null
       if (index == 0)       return first_child

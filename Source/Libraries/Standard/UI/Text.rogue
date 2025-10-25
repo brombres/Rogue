@@ -15,10 +15,10 @@ class Text : Component
         if (builder.last == ' ')
           # Make a trailing space its own element
           builder.remove_last
-          add( Text(builder.cloned,&fragment) )
-          add( Text(" ",&fragment) )
+          add( create_fragment(builder.cloned,&fragment) )
+          add( create_fragment(" ",&fragment) )
         else
-          add( Text(builder.cloned,&fragment) )
+          add( create_fragment(builder.cloned,&fragment) )
         endIf
         builder.clear
       endIf
@@ -33,8 +33,11 @@ class Text : Component
     method aspect_fit_text_to_width
       scaling_mode.x = ScalingMode.ASPECT_FIT
 
+    method create_fragment( text=String():String, &fragment )->Text [novel]
+      return Text( text, &=fragment )
+
     method description->String
-      local result = ''Text($)''(value?.to_escaped_ascii||"")
+      local result = ''$($)''(type_name,value?.to_escaped_ascii||"")
       if (count)
         result.print '['
         forEach (child at i in children)
@@ -183,9 +186,9 @@ class Text : Component
       local left, center, right : Text
 
       local split_i = split_position->Int
-      if (split_i) left = Text( value.substring(0, split_i), &fragment )
-      center = Text( value[split_i], &fragment )
-      if (split_i + 1 < value.count) right = Text( value.substring(split_i+1), &fragment )
+      if (split_i) left = create_fragment( value.substring(0, split_i), &fragment )
+      center = create_fragment( value[split_i], &fragment )
+      if (split_i + 1 < value.count) right = create_fragment( value.substring(split_i+1), &fragment )
 
       if (left) add( left )
       add( center )
@@ -278,10 +281,10 @@ class Text : Component
             forEach (ch in processed)
               if (ch == '\n')
                 .add_builder( builder )
-                add( Text('\n',&fragment) )
+                add( create_fragment('\n',&fragment) )
               elseIf (ch == ' ' and not builder.count)
                 # Leading space becomes its own element
-                add( Text(' ',&fragment) )
+                add( create_fragment(' ',&fragment) )
               else
                 builder.print ch
               endIf
