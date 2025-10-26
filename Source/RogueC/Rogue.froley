@@ -870,7 +870,7 @@ parser
   consume_eols
   on '&' identifier optional_parameter_initial_value optional_type -> Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type,attribute="default":String)
   on '@'
-    internal_id
+    id_or_internal_id
     optional_parameter_initial_value
     if (nextIs(':')) syntaxError "Direct @property-set parameter cannot specify a type."
     createNull # type
@@ -1156,7 +1156,7 @@ parser
     discardPosition
   elseOn '.'
     restorePosition
-    internal_id
+    id_or_internal_id
     return
   elseOnOthers
     restorePosition
@@ -1166,7 +1166,7 @@ parser
   while nextIs("::")
     on "::"
       if (nextIs('.'))
-        internal_id
+        id_or_internal_id
         create LibraryQualifiedID(context,name:String)
         return
       else
@@ -1982,7 +1982,7 @@ parser
   call parse_doc_comment
   produce PropertyDeclarations( declarations, type:Type, attributes:Attributes, doc:String )
 
-- internal_id
+- id_or_internal_id
   on '.'
     create Identifier( name="." )
     identifier
@@ -2366,7 +2366,7 @@ parser
     consume_eols
     create AccessAndAssignContext(context)
     on '@'
-      internal_id
+      id_or_internal_id
       create ContextDirectAccess(context,name:String)
     elseOnOthers
       procedure_name
@@ -3044,13 +3044,15 @@ parser
     conditional_context_block
   elseOn '=>'
     consume_eols
-    identifier
+    id_or_internal_id
+    call convert_identifier_dot_to_underscore
     if (nextIs('(')) function_param_types
     else             createNull
     produce CallbackFunction(context,name:String,param_types:TypeList)
   elseOn '?=>'
     consume_eols
-    identifier
+    id_or_internal_id
+    call convert_identifier_dot_to_underscore
     if (nextIs('(')) function_param_types
     else             createNull
     produce CallbackFunction(context,name:String,param_types:TypeList,weak="true":Logical)
@@ -3106,7 +3108,7 @@ parser
 
 - member_access
   on '@'
-    internal_id
+    id_or_internal_id
     create ContextDirectAccess(context,name:String)
   elseOnOthers
     procedure_name

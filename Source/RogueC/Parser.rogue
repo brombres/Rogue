@@ -76,6 +76,15 @@ class Parser : ParserCore, Recyclable
     method on_recycle
       reset
 
+    method convert_identifier_dot_to_underscore->Int
+      if (disable_output or _cmd_stack.is_empty) return 0
+
+      if local id = _cmd_stack.last->(as Identifier)
+        id.name = id.name.replacing( '.', '_' )
+      endIf
+
+      return 0
+
     method create_localize->Int
       if (disable_output or _cmd_stack.is_empty) return 0
       local expr = _cmd_stack.remove_last
