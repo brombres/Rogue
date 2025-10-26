@@ -1,0 +1,84 @@
+library UI
+
+class TypedText : Text
+  GLOBAL PROPERTIES
+    default_reveal_rate  = 60.0
+
+  PROPERTIES
+    reveal_rate          = default_reveal_rate : Real
+    revealed_count       = 0.0
+    is_typed_text_active = false
+
+  METHODS
+    method activate_typed_text [novel]
+      .activate_next
+
+    method can_split->Logical [override]
+      if (@can_split) return @can_split.value
+      return (this isType TypedText)
+
+    method create_fragment( text=String():String, &fragment )->Text [override]
+      return TypedText( text, &=fragment )
+
+    method is_revealed->Logical [novel]
+      if local last_fragment = last_child->(as TypedText)
+        return last_fragment.is_revealed
+      else
+        return revealed_count == value.count
+      endIf
+
+    method on_draw [override]
+      if (not value) return
+
+      use temp_value = StringPool
+        forEach (i in 0..<revealed_count->Int)
+          temp_value.print( value[i] )
+        endForEach
+
+        temporarily @value = temp_value
+          prior.on_draw
+        endTemporarily
+      endUse
+
+    method on_update [override]
+      if (not is_typed_text_active or not value) return
+
+      if (is_revealed)
+        is_typed_text_active = false
+        .activate_next
+      else
+        revealed_count = (revealed_count + reveal_rate*Window.dt).clamped_high( value.count )
+      endIf
+
+    method restart
+      if local first_fragment = first_child->(as TypedText)
+        first_fragment.restart
+      else
+        revealed_count = 0
+        is_typed_text_active = true
+      endIf
+
+    method .activate_next [novel]
+      local query_fn = function( entity:Entity )->Logical
+        if local typed_text = entity->(as TypedText)
+          if (typed_text.first_child) return false
+          if (not typed_text.is_revealed and not typed_text.is_typed_text_active) return true
+        endIf
+        return false
+      endFunction
+
+      local cur = this : Text
+      while (cur and cur.parent)
+        if local parent_text = cur.parent->(as Text)
+          cur = parent_text
+        else
+          escapeWhile
+        endIf
+      endWhile
+
+      if local next_typed_text = cur.find( query_fn )->(as TypedText)
+        next_typed_text.is_typed_text_active = true
+      endIf
+
+endClass
+

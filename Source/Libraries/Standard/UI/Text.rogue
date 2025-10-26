@@ -1,10 +1,12 @@
 library UI
 
 class Text : Component
+  # Note: for custom classes that extend Text, you may wish to override can_split().
   PROPERTIES
-    value        : String
-    scaling_mode = ScalingModeXY( ScalingMode.NONE, ScalingMode.NONE )
-    sizing_mode  = SizingModeXY( SizingMode.NATURAL_SIZE, SizingMode.NATURAL_SIZE )
+    value         : String
+    scaling_mode  = ScalingModeXY( ScalingMode.NONE, ScalingMode.NONE )
+    sizing_mode   = SizingModeXY( SizingMode.NATURAL_SIZE, SizingMode.NATURAL_SIZE )
+    can_split : Logical?
 
   METHODS
     method init( text=String():String, &fragment )
@@ -32,6 +34,12 @@ class Text : Component
 
     method aspect_fit_text_to_width
       scaling_mode.x = ScalingMode.ASPECT_FIT
+
+    method can_split->Logical
+      # If true, Text can be internally split for word-wrapping purposes.
+      # By default only true for base type Text.
+      if (@can_split) return @can_split.value
+      return this isType Text
 
     method create_fragment( text=String():String, &fragment )->Text [novel]
       return Text( text, &=fragment )
@@ -91,11 +99,6 @@ class Text : Component
 
     method is_display_component->Logical [override]
       return count == 0
-
-    method is_dynamic->Logical
-      # If true, Text can be internally split for word-wrapping purposes.
-      # By default only true for base type Text.
-      return this isType Text
 
     method line_height->Real
       if local font = font
@@ -227,7 +230,7 @@ class Text : Component
           escapeBlock
         endIf
 
-        if (not is_dynamic)
+        if (not can_split)
           if (value)
             if (value is not text)
               value.clear

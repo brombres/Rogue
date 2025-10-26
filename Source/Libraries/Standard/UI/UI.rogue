@@ -27,6 +27,7 @@ $include UI/Text
 $include UI/TextBox
 $include UI/TextField
 $include UI/TextStyle
+$include UI/TypedText
 $include UI/VBox
 $include UI/VList
 $include UI/VScrollView
