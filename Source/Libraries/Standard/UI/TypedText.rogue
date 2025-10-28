@@ -30,18 +30,34 @@ class TypedText : Text
     method on_draw [override]
       if (not value) return
 
+      localize font
+      local text_size = font.measure( value )
+      local revealed_bounds = Box( Box(text_size).positioned_within( bounds, content_alignment ).position, text_size )
+
       use temp_value = StringPool
         forEach (i in 0..<revealed_count->Int)
           temp_value.print( value[i] )
         endForEach
 
         temporarily @value = temp_value
-          prior.on_draw
+          temporarily content_alignment = Anchor.TOP_LEFT
+            temporarily font.anchor = Anchor.TOP_LEFT
+              temporarily position = revealed_bounds.position
+                prior.on_draw
+              endTemporarily
+            endTemporarily
+          endTemporarily
         endTemporarily
       endUse
 
     method on_update [override]
       if (not is_typed_text_active or not value) return
+
+      if local child = first_child->(as TypedText)
+        # This TypedText was activated before it got split into fragments. Activate its first child.
+        is_typed_text_active = false
+        child.activate_typed_text
+      endIf
 
       if (is_revealed)
         is_typed_text_active = false
@@ -62,7 +78,7 @@ class TypedText : Text
       local query_fn = function( entity:Entity )->Logical
         if local typed_text = entity->(as TypedText)
           if (typed_text.first_child) return false
-          if (not typed_text.is_revealed and not typed_text.is_typed_text_active) return true
+          if (not typed_text.is_revealed) return true
         endIf
         return false
       endFunction
