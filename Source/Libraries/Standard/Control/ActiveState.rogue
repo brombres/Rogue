@@ -59,6 +59,16 @@ class ActiveState<<$ExtendedType>>
         cur .= concurrent_state
       endWhile
 
+    method cancel
+      # Removes any next state and finishes this state.
+      next_state = null
+      finish
+
+    method cancel_all
+      # Cancels this state and all concurrent states
+      cancel
+      concurrent_state?.cancel
+
     method change( new_state:$ExtendedType )
       next_state = new_state
       exit
