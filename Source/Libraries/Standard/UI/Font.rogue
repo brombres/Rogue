@@ -5,6 +5,7 @@ class Font
     name         : String
     line_spacing = 1.0
     anchor       = Anchor.CENTER : Anchor
+    scale        = XY(1,1)
 
   METHODS
     method init_clone( existing:Font )
@@ -94,6 +95,11 @@ class Font
 
         return XY( max_w, h )
       endBlock
+
+    method set_scale( new_scale:Real )
+      @scale = XY( new_scale )
+
+    method set_scale( @scale )
 
     method word_wrap( st:String, pixel_width:Real, buffer=String():String )->String
       # Prints a word-wrapped version of the given string into the specified
