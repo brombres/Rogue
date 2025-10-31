@@ -21,12 +21,13 @@ class Variant [compound]
     TYPE_INT32     =  5
     TYPE_COLOR     =  6
     TYPE_INT       =  7
-    TYPE_INT64     =  8
-    TYPE_REAL32    =  9
-    TYPE_REAL      = 10
-    TYPE_REAL64    = 11
-    TYPE_DEGREES   = 12
-    TYPE_RADIANS   = 13
+    TYPE_XORINT    =  8
+    TYPE_INT64     =  9
+    TYPE_REAL32    = 10
+    TYPE_REAL      = 11
+    TYPE_REAL64    = 12
+    TYPE_DEGREES   = 13
+    TYPE_RADIANS   = 14
     TYPE_FIRST_NUMBER = TYPE_BYTE
     TYPE_LAST_NUMBER  = TYPE_RADIANS
 
@@ -71,12 +72,13 @@ class Variant [compound]
        |#define %NS%ROGUE_VARIANT_TYPE_INT32      5
        |#define %NS%ROGUE_VARIANT_TYPE_COLOR      6
        |#define %NS%ROGUE_VARIANT_TYPE_INT        7
-       |#define %NS%ROGUE_VARIANT_TYPE_INT64      8
-       |#define %NS%ROGUE_VARIANT_TYPE_REAL32     9
-       |#define %NS%ROGUE_VARIANT_TYPE_REAL      10
-       |#define %NS%ROGUE_VARIANT_TYPE_REAL64    11
-       |#define %NS%ROGUE_VARIANT_TYPE_DEGREES   12
-       |#define %NS%ROGUE_VARIANT_TYPE_RADIANS   13
+       |#define %NS%ROGUE_VARIANT_TYPE_XORINT     8
+       |#define %NS%ROGUE_VARIANT_TYPE_INT64      9
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL32    10
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL      11
+       |#define %NS%ROGUE_VARIANT_TYPE_REAL64    12
+       |#define %NS%ROGUE_VARIANT_TYPE_DEGREES   13
+       |#define %NS%ROGUE_VARIANT_TYPE_RADIANS   14
        |
        |#define %NS%ROGUE_VARIANT_TYPE_ANCHOR    20
        |#define %NS%ROGUE_VARIANT_TYPE_BOX       21
@@ -104,7 +106,7 @@ class Variant [compound]
     # All properties should be considered INTERNAL USE ONLY because they are
     # tricky - .type must be checked to know which property is valid.
     type      : Int
-    object    : Object # Can't be mixed into the union due to GC constraints
+    object    : Object # Can't be mixed into the primitives union due to GC constraints
 
     box       : Box       [faux]
     byte      : Byte      [faux]
@@ -115,6 +117,7 @@ class Variant [compound]
     global_id : GlobalID  [faux]
     int32     : Int32     [faux]
     integer   : Int       [faux]
+    xorint    : XorInt    [faux]
     int64     : Int64     [faux]
     line      : Line      [faux]
     logical   : Logical   [faux]
@@ -139,6 +142,7 @@ class Variant [compound]
             |  %Ns%RogueGlobalID         global_id;
             |  %Ns%RogueInt32            int32;
             |  %Ns%RogueInt              integer;
+            |  %Ns%RogueXorInt           xorint;
             |  %Ns%RogueInt64            int64;
             |  %Ns%RogueLogical          logical;
             |  %Ns%RogueGeometryLine     line;
@@ -180,6 +184,9 @@ class Variant [compound]
 
     method create( value:Int )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_INT, 0, {.integer=$value} }" )->Variant
+
+    method create( value:XorInt )->Variant
+      return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_XORINT, 0, {.xorint=$value} }" )->Variant
 
     method create( value:Int64 )->Variant
       return native( "(%Ns%RogueVariant) {  %NS%ROGUE_VARIANT_TYPE_INT64, 0, {.int64=$value} }" )->Variant
@@ -283,7 +290,6 @@ class Variant [compound]
 
     method as_list->Variant[]
       # If this value .is_list, returns the backing Variant[] list; otherwise returns null.
-      if (type != TYPE_LIST) return null
       return object->(as Variant[])
 
     method as_string->String
@@ -296,12 +302,10 @@ class Variant [compound]
       #   "ABC"       | "ABC"     | ABC
       #   [3,4]       | "[3,4]"   | null
       #   {x:22}      | "{x:22}"  | null
-      if (type != TYPE_STRING) return null
       return object->(as String)
 
     method as_table->[Variant:Variant]
       # If this value .is_table, returns the backing [Variant:Variant] table; otherwise returns null.
-      if (type != TYPE_TABLE) return null
       return object->(as [Variant:Variant])
 
     method at( index:Int )->Variant
@@ -638,6 +642,7 @@ class Variant [compound]
         case TYPE_GLOBAL_ID: return global_id.hashcode
         case TYPE_INT32:     return int32.hashcode
         case TYPE_INT:       return integer.hashcode
+        case TYPE_XORINT:    return xorint.hashcode
         case TYPE_INT64:     return int64.hashcode
         case TYPE_RADIANS:   return radians.hashcode
         case TYPE_REAL32:    return real32.hashcode
@@ -756,6 +761,9 @@ class Variant [compound]
 
     method is_undefined->Logical
       return (type <= TYPE_LAST_UNDEFINED)
+
+    method is_xorint->Logical
+      return (type == TYPE_XORINT)
 
     method is_xy->Logical
       return (type == TYPE_XY)
@@ -892,7 +900,7 @@ class Variant [compound]
           if (type >= TYPE_REAL64 or other.type >= TYPE_REAL64) return (this->Real64 <> other->Real64).sign
           if (type == TYPE_REAL   or other.type == TYPE_REAL)   return (this->Real   <> other->Real  ).sign
           if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (this->Real32 <> other->Real32).sign
-          return (int64 <> other.int64).sign
+          return (this->Int64 <> other->Int64).sign
         else
           # One is a number. Covert the other to->String->(PrimitiveType) and compare.
           local a = this
@@ -978,6 +986,7 @@ class Variant [compound]
         case TYPE_INT32:     return Variant( a.int32     + b.int32 )
         case TYPE_COLOR:     return Variant( Color(a.int32 + b.int32) )
         case TYPE_INT:       return Variant( a.integer   + b.integer )
+        case TYPE_XORINT:    return Variant( a.xorint    + b.xorint )
         case TYPE_INT64:     return Variant( a.int64     + b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    + b.real32 )
         case TYPE_REAL:      return Variant( a.real      + b.real )
@@ -1002,6 +1011,7 @@ class Variant [compound]
         case TYPE_INT32:     return Variant( a.int32     - b.int32 )
         case TYPE_COLOR:     return Variant( Color(a.int32 - b.int32) )
         case TYPE_INT:       return Variant( a.integer   - b.integer )
+        case TYPE_XORINT:    return Variant( a.xorint    - b.xorint )
         case TYPE_INT64:     return Variant( a.int64     - b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    - b.real32 )
         case TYPE_REAL:      return Variant( a.real      - b.real )
@@ -1032,6 +1042,7 @@ class Variant [compound]
         case TYPE_INT32:     return Variant( a.int32     * b.int32 )
         case TYPE_COLOR:     return Variant( Color(a.int32 * b.int32) )
         case TYPE_INT:       return Variant( a.integer   * b.integer )
+        case TYPE_XORINT:    return Variant( a.xorint    * b.xorint )
         case TYPE_INT64:     return Variant( a.int64     * b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    * b.real32 )
         case TYPE_REAL:      return Variant( a.real      * b.real )
@@ -1063,6 +1074,7 @@ class Variant [compound]
         case TYPE_INT32:     return Variant( a.int32     / b.int32 )
         case TYPE_COLOR:     return Variant( Color(a.int32 / b.int32) )
         case TYPE_INT:       return Variant( a.integer   / b.integer )
+        case TYPE_XORINT:    return Variant( a.xorint    / b.xorint )
         case TYPE_INT64:     return Variant( a.int64     / b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    / b.real32 )
         case TYPE_REAL:      return Variant( a.real      / b.real )
@@ -1084,6 +1096,7 @@ class Variant [compound]
         case TYPE_INT32:     return Variant( a.int32     % b.int32 )
         case TYPE_COLOR:     return Variant( Color(a.int32 % b.int32) )
         case TYPE_INT:       return Variant( a.integer   % b.integer )
+        case TYPE_XORINT:    return Variant( a.xorint    % b.xorint )
         case TYPE_INT64:     return Variant( a.int64     % b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    % b.real32 )
         case TYPE_REAL:      return Variant( a.real      % b.real )
@@ -1105,6 +1118,7 @@ class Variant [compound]
         case TYPE_INT32:     return Variant( a.int32     ^ b.int32 )
         case TYPE_COLOR:     return Variant( Color(a.int32 ^ b.int32) )
         case TYPE_INT:       return Variant( a.integer   ^ b.integer )
+        case TYPE_XORINT:    return Variant( a.xorint    ^ b.xorint )
         case TYPE_INT64:     return Variant( a.int64     ^ b.int64 )
         case TYPE_REAL32:    return Variant( a.real32    ^ b.real32 )
         case TYPE_REAL:      return Variant( a.real      ^ b.real )
@@ -1121,6 +1135,7 @@ class Variant [compound]
     method operator&( other:Variant )->Variant
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 & other->Int64 )
+        elseIf (type == TYPE_XORINT or other.type == TYPE_XORINT) return Variant( this->XorInt & other->XorInt )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   & other->Int )
         elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32 & other->Int32))
         else                                                return Variant( this->Int32 & other->Int32 )
@@ -1131,6 +1146,7 @@ class Variant [compound]
     method operator|( other:Variant )->Variant
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 | other->Int64 )
+        elseIf (type == TYPE_XORINT or other.type == TYPE_XORINT) return Variant( this->XorInt | other->XorInt )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   | other->Int )
         elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32 | other->Int32))
         else                                                return Variant( this->Int32 | other->Int32 )
@@ -1141,6 +1157,7 @@ class Variant [compound]
     method operator~( other:Variant )->Variant
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 ~ other->Int64 )
+        elseIf (type == TYPE_XORINT or other.type == TYPE_XORINT) return Variant( this->XorInt ~ other->XorInt )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   ~ other->Int )
         elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32 ~ other->Int32))
         else                                                return Variant( this->Int32 ~ other->Int32 )
@@ -1151,6 +1168,7 @@ class Variant [compound]
     method operator:<<:( other:Variant )->Variant
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 :<<: other->Int64 )
+        elseIf (type == TYPE_XORINT or other.type == TYPE_XORINT) return Variant( this->XorInt :<<: other->XorInt )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   :<<: other->Int )
         elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32:<<:other->Int32))
         else                                                return Variant( this->Int32 :<<: other->Int32 )
@@ -1161,6 +1179,7 @@ class Variant [compound]
     method operator:>>:( other:Variant )->Variant
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 :>>: other->Int64 )
+        elseIf (type == TYPE_XORINT or other.type == TYPE_XORINT) return Variant( this->XorInt :>>: other->XorInt )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   :>>: other->Int )
         elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32:>>:other->Int32))
         else                                                return Variant( this->Int32 :>>: other->Int32 )
@@ -1171,6 +1190,7 @@ class Variant [compound]
     method operator:>>>:( other:Variant )->Variant
       if (this.is_number and other.is_number)
         if (type == TYPE_INT64 or other.type == TYPE_INT64) return Variant( this->Int64 :>>>: other->Int64 )
+        elseIf (type == TYPE_XORINT or other.type == TYPE_XORINT) return Variant( this->XorInt :>>>: other->XorInt )
         elseIf (type == TYPE_INT or other.type == TYPE_INT) return Variant( this->Int   :>>>: other->Int )
         elseIf (type == TYPE_COLOR or other.type == TYPE_COLOR) return Variant(Color(this->Int32:>>>:other->Int32))
         else                                                return Variant( this->Int32 :>>>: other->Int32 )
@@ -1198,6 +1218,7 @@ class Variant [compound]
         case TYPE_GLOBAL_ID: global_id.print_to( buffer )
         case TYPE_INT32:     int32.print_to( buffer )
         case TYPE_INT:       integer.print_to( buffer )
+        case TYPE_XORINT:    xorint.value.print_to( buffer )
         case TYPE_INT64:     int64.print_to( buffer )
         case TYPE_REAL32:    real32.print_to( buffer )
         case TYPE_REAL:      real.print_to( buffer )
@@ -1383,6 +1404,7 @@ class Variant [compound]
         case TYPE_INT32:     return int32->Byte
         case TYPE_COLOR:     return color.argb->Byte
         case TYPE_INT:       return integer->Byte
+        case TYPE_XORINT:    return xorint->Int->Byte
         case TYPE_INT64:     return int64->Byte
         case TYPE_REAL32:    return real32->Byte
         case TYPE_REAL:      return real->Byte
@@ -1402,6 +1424,7 @@ class Variant [compound]
         case TYPE_COLOR:     return color.argb->Character
         case TYPE_INT32:     return int32->Character
         case TYPE_INT:       return integer->Character
+        case TYPE_XORINT:    return xorint->Int->Character
         case TYPE_INT64:     return int64->Character
         case TYPE_REAL32:    return real32->Character
         case TYPE_REAL:      return real->Character
@@ -1437,6 +1460,7 @@ class Variant [compound]
         case TYPE_DEGREES:   return degrees
         case TYPE_INT32:     return Degrees(int32->Real)
         case TYPE_INT:       return Degrees(integer->Real)
+        case TYPE_XORINT:    return Degrees( xorint->Real )
         case TYPE_INT64:     return Degrees(int64->Real)
         case TYPE_RADIANS:   return Degrees(radians)
         case TYPE_REAL32:    return Degrees(real32->Real)
@@ -1455,6 +1479,7 @@ class Variant [compound]
       which (type)
         case TYPE_INT32:  return GlobalID(int32)
         case TYPE_INT:    return GlobalID(integer)
+        case TYPE_XORINT: return GlobalID(xorint->Int)
         case TYPE_INT64:  return GlobalID(int64)
         case TYPE_STRING: return GlobalID(object->String)
         others:           return <Undefined>
@@ -1483,6 +1508,7 @@ class Variant [compound]
         case TYPE_GLOBAL_ID: return global_id.value->Int32
         case TYPE_INT32:     return int32->Int32
         case TYPE_INT:       return integer->Int32
+        case TYPE_XORINT:    return xorint->Int->Int32
         case TYPE_INT64:     return int64->Int32
         case TYPE_LOGICAL:   return logical->Int32
         case TYPE_REAL32:    return real32->Int32
@@ -1504,8 +1530,31 @@ class Variant [compound]
         case TYPE_GLOBAL_ID: return global_id.value->Int
         case TYPE_INT32:     return int32->Int
         case TYPE_INT:       return integer->Int
+        case TYPE_XORINT:    return xorint->Int
         case TYPE_INT64:     return int64->Int
-        case TYPE_LOGICAL:   return logical->Logical
+        case TYPE_LOGICAL:   return logical->Int
+        case TYPE_REAL32:    return real32->Int
+        case TYPE_REAL:      return real->Int
+        case TYPE_REAL64:    return real64->Int
+        case TYPE_DEGREES:   return degrees.value->Int
+        case TYPE_RADIANS:   return radians.value->Int
+        case TYPE_OBJECT:    return object->String->Int
+        case TYPE_STRING:    return object->String->Int
+        case TYPE_FILE:      return object->String->Int
+        others:              return 0
+      endWhich
+
+    method to->XorInt
+      which (type)
+        case TYPE_BYTE:      return byte->Int
+        case TYPE_CHARACTER: return character->Int
+        case TYPE_COLOR:     return color.argb->Int
+        case TYPE_GLOBAL_ID: return global_id.value->Int
+        case TYPE_INT32:     return int32->Int
+        case TYPE_INT:       return integer->Int
+        case TYPE_XORINT:    return xorint
+        case TYPE_INT64:     return int64->Int
+        case TYPE_LOGICAL:   return logical->Int
         case TYPE_REAL32:    return real32->Int
         case TYPE_REAL:      return real->Int
         case TYPE_REAL64:    return real64->Int
@@ -1525,6 +1574,7 @@ class Variant [compound]
         case TYPE_GLOBAL_ID: return global_id.value->Int64
         case TYPE_INT32:     return int32->Int64
         case TYPE_INT:       return integer->Int64
+        case TYPE_XORINT:    return xorint->Int->Int64
         case TYPE_INT64:     return int64->Int64
         case TYPE_LOGICAL:   return logical->Int64
         case TYPE_REAL32:    return real32->Int64
@@ -1546,6 +1596,7 @@ class Variant [compound]
         case TYPE_COLOR:     return color.argb?
         case TYPE_INT32:     return int32?
         case TYPE_INT:       return integer?
+        case TYPE_XORINT:    return xorint->Logical
         case TYPE_INT64:     return int64?
         case TYPE_REAL32:    return real32?
         case TYPE_REAL:      return real?
@@ -1575,6 +1626,7 @@ class Variant [compound]
         case TYPE_DEGREES:   return Radians(degrees)
         case TYPE_INT32:     return Radians(int32->Real)
         case TYPE_INT:       return Radians(integer->Real)
+        case TYPE_XORINT:    return Radians(xorint->Real)
         case TYPE_INT64:     return Radians(int64->Real)
         case TYPE_RADIANS:   return radians
         case TYPE_REAL32:    return Radians(real32->Real)
@@ -1593,6 +1645,7 @@ class Variant [compound]
         case TYPE_COLOR:     return color.argb->Real32
         case TYPE_INT32:     return int32->Real32
         case TYPE_INT:       return integer->Real32
+        case TYPE_XORINT:    return xorint->Real->Real32
         case TYPE_INT64:     return int64->Real32
         case TYPE_LOGICAL:   return logical->Real32
         case TYPE_REAL32:    return real32->Real32
@@ -1613,6 +1666,7 @@ class Variant [compound]
         case TYPE_COLOR:     return color.argb->Real
         case TYPE_INT32:     return int32->Real
         case TYPE_INT:       return integer->Real
+        case TYPE_XORINT:    return xorint->Real
         case TYPE_INT64:     return int64->Real
         case TYPE_LOGICAL:   return logical->Real
         case TYPE_REAL32:    return real32->Real
@@ -1633,6 +1687,7 @@ class Variant [compound]
         case TYPE_COLOR:     return color.argb->Real64
         case TYPE_INT32:     return int32->Real64
         case TYPE_INT:       return integer->Real64
+        case TYPE_XORINT:    return xorint->Real->Real64
         case TYPE_INT64:     return int64->Real64
         case TYPE_LOGICAL:   return logical->Real64
         case TYPE_REAL32:    return real32->Real64
@@ -1664,6 +1719,7 @@ class Variant [compound]
         case TYPE_XYZW:            return xyzw->XY
         case TYPE_INT32:           return XY(int32,int32)
         case TYPE_INT:             return XY(integer,integer)
+        case TYPE_XORINT:          return XY(xorint->Real)
         case TYPE_INT64:           return XY(int64,int64)
         case TYPE_REAL32:          return XY(real32,real32)
         case TYPE_REAL:            return XY(real,real)
@@ -1678,6 +1734,7 @@ class Variant [compound]
         case TYPE_XYZW:            return xyzw->XYZ
         case TYPE_INT32:           return XYZ(int32,int32,int32)
         case TYPE_INT:             return XYZ(integer,integer,integer)
+        case TYPE_XORINT:          return XYZ(xorint->Real)
         case TYPE_INT64:           return XYZ(int64,int64,int64)
         case TYPE_REAL32:          return XYZ(real32,real32,real32)
         case TYPE_REAL:            return XYZ(real,real,real)
@@ -1692,6 +1749,7 @@ class Variant [compound]
         case TYPE_XYZW:            return xyzw
         case TYPE_INT32:           return XYZW(int32,int32,int32)
         case TYPE_INT:             return XYZW(integer,integer,integer)
+        case TYPE_XORINT:          return XYZW(xorint->Real)
         case TYPE_INT64:           return XYZW(int64,int64,int64)
         case TYPE_REAL32:          return XYZW(real32,real32,real32)
         case TYPE_REAL:            return XYZW(real,real,real)
@@ -1747,10 +1805,11 @@ class Variant [compound]
         if (type == TYPE_REAL64 or other.type == TYPE_REAL64) return (Variant(this->Real64),Variant(other->Real64))
         if (type == TYPE_REAL   or other.type == TYPE_REAL)   return (Variant(this->Real),  Variant(other->Real))
         if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (Variant(this->Real32),Variant(other->Real32))
-        if (type == TYPE_INT64 or other.type == TYPE_INT64)   return (Variant(this->Int64), Variant(other->Int64))
-        if (type == TYPE_INT   or other.type == TYPE_INT)     return (Variant(this->Int),   Variant(other->Int))
-        if (type == TYPE_COLOR or other.type == TYPE_COLOR)   return (Variant(this->Color), Variant(other->Color))
-        if (type == TYPE_INT32 or other.type == TYPE_INT32)   return (Variant(this->Int32), Variant(other->Int32))
+        if (type == TYPE_INT64  or other.type == TYPE_INT64)   return (Variant(this->Int64), Variant(other->Int64))
+        if (type == TYPE_XORINT or other.type == TYPE_XORINT)  return (Variant(this->XorInt), Variant(other->XorInt))
+        if (type == TYPE_INT    or other.type == TYPE_INT)     return (Variant(this->Int),   Variant(other->Int))
+        if (type == TYPE_COLOR  or other.type == TYPE_COLOR)   return (Variant(this->Color), Variant(other->Color))
+        if (type == TYPE_INT32  or other.type == TYPE_INT32)   return (Variant(this->Int32), Variant(other->Int32))
         if (type == TYPE_CHARACTER or other.type == TYPE_CHARACTER) return (Variant(this->Character),Variant(other->Character))
         return (Variant(this->Byte),Variant(other->Byte))
       endIf
@@ -1800,6 +1859,8 @@ class Variant [compound]
           builder.print( int32 )
         case TYPE_INT
           builder.print( integer )
+        case TYPE_XORINT
+          builder.print( xorint.value )
         case TYPE_INT64
           builder.print( int64 )
         case TYPE_REAL32
@@ -1947,6 +2008,27 @@ class Variant [compound]
             # Store printable Unicode without encoding as \\uXXXX
             builder.print( ch )
           endIf
+      endWhich
+
+    method xorint_encoded->Variant
+      # Returns a duplicate of this Variant graph with any Int values converted into XorInt
+      # instead (which hides those values from runtime memory scanners). The resulting XorInts
+      # can be used just like Ints.
+      which (type)
+        case TYPE_INT
+          return Variant( XorInt(integer) )
+        case TYPE_LIST
+          local result = Variant[]( count )
+          result.add( (forEach in this).xorint_encoded )
+          return Variant( result )
+        case TYPE_TABLE
+          local result = [Variant:Variant]
+          forEach (entry in entries)
+            result[ entry.key.xorint_encoded ] = entry.value.xorint_encoded
+          endForEach
+          return Variant( result )
+        others
+          return this
       endWhich
 
     method .element_if_defined->Variant

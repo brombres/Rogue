@@ -22,3 +22,4 @@ $include Core/Variant
 $include Core/VariantEntry
 $include Core/WeakReference
 $include Core/WorkList
+$include Core/XorInt

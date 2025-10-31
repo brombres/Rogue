@@ -1,6 +1,6 @@
 class Boxed [abstract]
   METHODS
-    method size->Int32  [abstract]
+    method size->Int  [abstract]
 
     method to->String
       return description
@@ -12,8 +12,8 @@ class Boxed<<$DataType>>( value:$DataType ) : Boxed
     method description->String
       return value->String
 
-    method size->Int32
-      return native( "(%Ns%RogueInt32)(%Ns%RogueInt)sizeof($value)" )->Int32
+    method size->Int
+      return native( "(%Ns%RogueInt)(%Ns%RogueInt)sizeof($value)" )->Int
 
     method to->$DataType
       return value

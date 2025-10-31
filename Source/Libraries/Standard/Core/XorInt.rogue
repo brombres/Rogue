@@ -1,0 +1,117 @@
+class XorInt( a:Int, x:Int ) [compound]
+  # XorInt stores an Int 'value' in two Int parts: 'x', arbitrarily taken from
+  # the system time, and 'a', which contains the encoding (value ~ x).
+  #
+  # Methods such as value(), to->Int, and to->String return the original value,
+  # which is obtained with (a ~ x).
+  #
+  # The purpose of XorInt is to store important game stats in such a way
+  # that memory scanners cannot find and modify e.g. gold and score.
+  GLOBAL METHODS
+    method create->XorInt
+      return create( 0 )
+
+    method create( value:Int )->XorInt
+      local x = System.time_ms->Int
+      return XorInt( value~x, x )
+
+  METHODS
+    method hashcode->Int
+      return (a ~ x).hashcode
+
+    method operator-()->XorInt
+      return XorInt( -value, -d )
+
+    method operator+( rhs:XorInt )->XorInt
+      return XorInt( value + rhs.value )
+
+    method operator-( rhs:XorInt )->XorInt
+      return XorInt( value - rhs.value )
+
+    method operator*( rhs:XorInt )->XorInt
+      return XorInt( value * rhs.value )
+
+    method operator/( rhs:XorInt )->XorInt
+      return XorInt( value / rhs.value )
+
+    method operator%( rhs:XorInt )->XorInt
+      return XorInt( value % rhs.value )
+
+    method operator^( rhs:XorInt )->XorInt
+      return XorInt( value ^ rhs.value )
+
+    method operator&( rhs:XorInt )->XorInt
+      return XorInt( value & rhs.value )
+
+    method operator|( rhs:XorInt )->XorInt
+      return XorInt( value | rhs.value )
+
+    method operator~( rhs:XorInt )->XorInt
+      return XorInt( value ~ rhs.value )
+
+    method operator:>>:( rhs:XorInt )->XorInt
+      return XorInt( value :>>: rhs.value )
+
+    method operator:>>>:( rhs:XorInt )->XorInt
+      return XorInt( value :>>>: rhs.value )
+
+    method operator:<<:( rhs:XorInt )->XorInt
+      return XorInt( value :<<: rhs.value )
+
+
+    method operator+( rhs:Int )->XorInt
+      return XorInt( value + rhs )
+
+    method operator-( rhs:Int )->XorInt
+      return XorInt( value - rhs )
+
+    method operator*( rhs:Int )->XorInt
+      return XorInt( value * rhs )
+
+    method operator/( rhs:Int )->XorInt
+      return XorInt( value / rhs )
+
+    method operator%( rhs:Int )->XorInt
+      return XorInt( value % rhs )
+
+    method operator^( rhs:Int )->XorInt
+      return XorInt( value ^ rhs )
+
+    method operator&( rhs:Int )->XorInt
+      return XorInt( value & rhs )
+
+    method operator|( rhs:Int )->XorInt
+      return XorInt( value | rhs )
+
+    method operator~( rhs:Int )->XorInt
+      return XorInt( value ~ rhs )
+
+    method operator:>>:( rhs:Int )->XorInt
+      return XorInt( value :>>: rhs )
+
+    method operator:>>>:( rhs:Int )->XorInt
+      return XorInt( value :>>>: rhs )
+
+    method operator:<<:( rhs:Int )->XorInt
+      return XorInt( value :<<: rhs )
+
+
+    method to->Int
+      return (a ~ x)
+
+    method to->Real
+      return (a ~ x)
+
+    method to->Logical
+      return (a ~ x)?
+
+    method to->String
+      return (a ~ x)
+
+    method to->Variant
+      return Variant( this )
+
+    method value->Int
+      return (a ~ x)
+endClass
+
