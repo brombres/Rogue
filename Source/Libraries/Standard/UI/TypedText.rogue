@@ -77,6 +77,29 @@ class TypedText : Text
         is_typed_text_active = true
       endIf
 
+    method reveal( progress=1.0:Real )
+      if (first_child)
+        local child_sum = 0.0
+        child_sum += (forEach as TypedText in children).value.count
+
+        if (child_sum)
+          local remaining_p = progress
+          forEach (child as TypedText in children)
+            local child_p = child.value.count / child_sum
+            if (remaining_p <= child_p)
+              child.reveal( remaining_p )
+              remaining_p = 0.0
+            else
+              child.reveal( 1.0 )
+              remaining_p -= child_p
+            endIf
+          endForEach
+        endIf
+      else
+        revealed_count = progress * value.count
+      endIf
+
+
     method .activate_next [novel]
       local query_fn = function( entity:Entity )->Logical
         if local typed_text = entity->(as TypedText)
