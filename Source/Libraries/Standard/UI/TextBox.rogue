@@ -2,6 +2,9 @@ library UI
 
 class TextBox : HFlow
   METHODS
+    method add( text:String )
+      add( Text(text) )
+
     method on_end_layout
       prior.on_end_layout
 endClass
