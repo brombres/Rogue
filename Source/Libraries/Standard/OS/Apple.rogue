@@ -27,6 +27,16 @@ class Apple [singleton]
       if (filepath) return File( filepath )
       else          return File( "~" )
 
+    method open_url_in_external_browser( url:String )
+      native
+      @|NSURL *url = [NSURL URLWithString:Rogue_string_to_ns_string($url)];
+       |
+       |#if defined(%NS%ROGUE_TARGET_MACOS)
+       |  [[NSWorkspace sharedWorkspace] openURL:url];
+       |#elif defined(%NS%ROGUE_TARGET_IOS)
+       |  [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+       |#endif
+
     method user_data_folder->File
       return find_system_folder( RogueNSSearchPathDirectory("NSDocumentDirectory") )
 

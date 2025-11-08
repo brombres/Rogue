@@ -206,6 +206,11 @@ class System [essential]
 
       return result
 
+    method open_url_in_external_browser( url:String )
+      if ($target("macOS") or $target("iOS"))
+        Apple.open_url_in_external_browser( url )
+      endIf
+
     method os->String
       # Returns one of:
       #   macOS
