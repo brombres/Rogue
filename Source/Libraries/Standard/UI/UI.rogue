@@ -23,6 +23,7 @@ $include UI/MetaComponent
 $include UI/Overlay
 $include UI/ScalingMode
 $include UI/SizingMode
+$include UI/Table
 $include UI/Text
 $include UI/TextBox
 $include UI/TextField
