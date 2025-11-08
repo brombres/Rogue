@@ -15,7 +15,7 @@ class Entity : Node<<Entity>>
     next_internal_id = 1
 
   PROPERTIES
-    label       : GlobalID
+    entity_id   : GlobalID
     internal_id : Int
     attributes  : Attributes
     script      : EntityScript
@@ -25,11 +25,11 @@ class Entity : Node<<Entity>>
     method init
       noAction
 
-    method init( label )
+    method init( entity_id )
       noAction
 
     method init_clone( existing:Entity )
-      label          = existing.label
+      entity_id   = existing.entity_id
       attributes  = existing.attributes
       script      = existing.script
       add( (forEach in existing.children).cloned )
@@ -72,8 +72,8 @@ class Entity : Node<<Entity>>
 
     method description->String
       local result = String()
-      if (label) result.print( label )
-      else       result.print( type_name )
+      if (entity_id) result.print( entity_id )
+      else           result.print( type_name )
 
       if (count)
         result.print( '(' )
@@ -112,7 +112,7 @@ class Entity : Node<<Entity>>
       return undefined
 
     method get( id:GlobalID, arg=undefined:Variant )->Variant
-      if (label == id) return this
+      if (entity_id == id) return this
       return undefined
 
     method h_flip->Logical
@@ -202,8 +202,8 @@ class Entity : Node<<Entity>>
       endIf
 
     method to->String
-      if (label) return label.name
-      else       return type_name
+      if (entity_id) return entity_id.name
+      else           return type_name
 
     method update
       .begin_update
