@@ -1,3 +1,5 @@
+uses Codec/Base64
+
 class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
   METHODS
     method acos->Real64
@@ -1303,6 +1305,8 @@ class Character : CommonPrimitiveMethods [primitive]
       return Character( this + ('a'-'A') )
 
     method to_number( base=10:Int )->Int
+      if (base == 64) return to_base64_value
+
       local value : Int
       if (this >= '0' and this <= '9')     value = this - '0'
       elseIf (this >= 'A' and this <= 'Z') value = 10 + (this - 'A')
