@@ -197,6 +197,7 @@ class Component : Entity
 
     method begin_layout( &only_content )
       if (not only_content)
+        attributes &= !Attributes.CONSTANT_SIZE
         if (not attributes.active)
           attributes.active = true
           on_activate
@@ -566,6 +567,18 @@ class Component : Entity
       else
         sz.x = .resolve_layout_width( available_size )
         sz.y = .resolve_layout_height( available_size )
+
+        local is_known_w = (sizing_mode.x == SizingMode.FIXED_SIZE or sizing_mode.x == SizingMode.NATURAL_SIZE)
+        local is_known_h = (sizing_mode.y == SizingMode.FIXED_SIZE or sizing_mode.y == SizingMode.NATURAL_SIZE)
+        if (is_known_w)
+          if (is_known_h)
+            attributes.constant_size = true
+          else
+            attributes.constant_width = true
+          endIf
+        elseIf (is_known_h)
+          attributes.constant_height = true
+        endIf
       endIf
 
       if (UI.snap_to_pixel_coordinates) sz .= floor
@@ -584,6 +597,15 @@ class Component : Entity
       endIf
 
       return sz
+
+    method resolve_minmax_layout_size( min_available_size:XY, max_available_size:XY, &limited )->(min:XY,max:XY)
+      local min_size = resolve_layout_size( min_available_size, &=limited )
+      local max_size = resolve_layout_size( max_available_size, &=limited )
+      if (max_available_size.abs.sum > 0)
+        if (min_size.x == max_size.x) attributes.constant_width  = true
+        if (min_size.y == max_size.y) attributes.constant_height = true
+      endIf
+      return (min:min_size,max:max_size)
 
     method .resolve_layout_height( available_size:XY )->Real
       local h = available_size.y
@@ -630,29 +652,34 @@ class Component : Entity
 
     method .resolve_shrink_to_fit_layout_size( &limited )->XY
       local sz = @size
+      if (attributes.constant_size) return sz
 
-      if (sizing_mode.x == SizingMode.SHRINK_TO_FIT or sizing_mode.y == SizingMode.SHRINK_TO_FIT)
-        local min_size = minimum_layout_size( content_size, &=limited )
-        min_size = content_size_to_layout_size( min_size )
+      local is_shrink_to_fit_x = (sizing_mode.x == SizingMode.SHRINK_TO_FIT)
+      local is_shrink_to_fit_y = (sizing_mode.y == SizingMode.SHRINK_TO_FIT)
+      if (is_shrink_to_fit_x or is_shrink_to_fit_y)
+        if (not attributes.constant_size)
+          local min_size = minimum_layout_size( content_size, &=limited )
+          min_size = content_size_to_layout_size( min_size )
 
-        if (sizing_mode.x == SizingMode.SHRINK_TO_FIT)
-          sz.x = min_size.x
-          if (sizing_mode.y == SizingMode.ASPECT_FIT)
-            local scale_x = (sz.x / (aspect_size.x || 1.0))
-            sz.y = (aspect_size * scale_x).y
+          if (is_shrink_to_fit_x)
+            sz.x = min_size.x
+            if (sizing_mode.y == SizingMode.ASPECT_FIT)
+              local scale_x = (sz.x / (aspect_size.x || 1.0))
+              sz.y = (aspect_size * scale_x).y
+            endIf
           endIf
-        endIf
 
-        if (sizing_mode.y == SizingMode.SHRINK_TO_FIT)
-          sz.y = min_size.y
-          if (sizing_mode.x == SizingMode.ASPECT_FIT)
-            local scale_y = (sz.y / (aspect_size.y || 1.0))
-            sz.x = (aspect_size * scale_y).x
+          if (is_shrink_to_fit_y)
+            sz.y = min_size.y
+            if (sizing_mode.x == SizingMode.ASPECT_FIT)
+              local scale_y = (sz.y / (aspect_size.y || 1.0))
+              sz.x = (aspect_size * scale_y).x
+            endIf
           endIf
-        endIf
 
-        if (UI.snap_to_pixel_coordinates) sz .= floor
-        size = sz
+          if (UI.snap_to_pixel_coordinates) sz .= floor
+          size = sz
+        endIf
       endIf
 
       return sz

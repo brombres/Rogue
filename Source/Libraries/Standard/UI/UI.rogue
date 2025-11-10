@@ -9,6 +9,7 @@ $include UI/AbsoluteLayout
 $include UI/AspectRatioLayoutSwitcher
 $include UI/Border
 $include UI/Component
+$include UI/ComponentGroupProperties
 $include UI/ComponentSizeInfo
 $include UI/DisplayComponents
 $include UI/Event

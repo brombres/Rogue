@@ -59,8 +59,8 @@ class HBox : Component
           # Determine the min & max widths of all child components.
           local total_weight : Real
           forEach (component in components)
-            local min_size = component.resolve_layout_size( available_size.yv, &limited )
-            local max_size = component.resolve_layout_size( available_size,    &limited )
+            local (min_size,max_size) =
+              component.resolve_minmax_layout_size( available_size.yv, available_size, &limited )
             if (min_size.x == max_size.x)
               available_size.x -= min_size.x
             else
