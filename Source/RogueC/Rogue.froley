@@ -2496,6 +2496,7 @@ parser
       createList TypedDestructuringLocals
       mustConsume ')'
       mustConsume '='
+      consume_eols
       expression
       produce    TypedDestructuringLocalDeclarations(locals:TypedDestructuringLocals,tuple)
     elseOnOthers
@@ -2507,6 +2508,7 @@ parser
       createList  Identifiers
       mustConsume ')'
       mustConsume '='
+      consume_eols
       expression
       produce     UntypedDestructuringLocalDeclarations(locals:Identifiers,tuple)
     endOn
