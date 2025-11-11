@@ -185,6 +185,22 @@ class Component : Entity
         endIf
       endIf
 
+    method copy_settings_from( other:Component )
+      @size              = other.size
+      @anchor            = other.anchor
+      @content_alignment = other.content_alignment
+      @sizing_mode       = other.sizing_mode
+      @natural_size      = other.natural_size
+      @layout_size       = other.layout_size
+      @aspect_size       = other.aspect_size
+      @content_offset    = other.content_offset
+      @weight            = other.weight
+      @opacity           = other.opacity
+      @content_opacity   = other.content_opacity
+      @font              = other.font
+      @text_style        = other.text_style
+      @size_reference    = other.size_reference
+
     method font->Font
       if (@font) return @font
       return parent->(as Component)?.font
@@ -446,6 +462,16 @@ class Component : Entity
     method line_height->Real
       return size.y
 
+    method managed_height
+      sizing_mode.y = SizingMode.MANAGED
+
+    method managed_size
+      sizing_mode.x = SizingMode.MANAGED
+      sizing_mode.y = SizingMode.MANAGED
+
+    method managed_width
+      sizing_mode.x = SizingMode.MANAGED
+
     method manually_update_content_layout( setting=true:Logical )
       attributes.manually_update_content_layout = setting
 
@@ -570,6 +596,7 @@ class Component : Entity
 
         local is_known_w = (sizing_mode.x == SizingMode.FIXED_SIZE or sizing_mode.x == SizingMode.NATURAL_SIZE)
         local is_known_h = (sizing_mode.y == SizingMode.FIXED_SIZE or sizing_mode.y == SizingMode.NATURAL_SIZE)
+        #{
         if (is_known_w)
           if (is_known_h)
             attributes.constant_size = true
@@ -579,6 +606,7 @@ class Component : Entity
         elseIf (is_known_h)
           attributes.constant_height = true
         endIf
+        }#
       endIf
 
       if (UI.snap_to_pixel_coordinates) sz .= floor
@@ -601,10 +629,12 @@ class Component : Entity
     method resolve_minmax_layout_size( min_available_size:XY, max_available_size:XY, &limited )->(min:XY,max:XY)
       local min_size = resolve_layout_size( min_available_size, &=limited )
       local max_size = resolve_layout_size( max_available_size, &=limited )
+      #{
       if (max_available_size.abs.sum > 0)
         if (min_size.x == max_size.x) attributes.constant_width  = true
         if (min_size.y == max_size.y) attributes.constant_height = true
       endIf
+      }#
       return (min:min_size,max:max_size)
 
     method .resolve_layout_height( available_size:XY )->Real
@@ -625,6 +655,8 @@ class Component : Entity
           h = layout_size.y->Int->VariantEntryID->Real
         case PARAMETER_XY
           h = layout_size.y->Int->VariantEntryID->XY.y
+        case MANAGED
+          h = layout_size.y.or_smaller( h )
       endWhich
       return h
 
@@ -646,6 +678,8 @@ class Component : Entity
           w = layout_size.x->Int->VariantEntryID->Real
         case PARAMETER_XY
           w = layout_size.x->Int->VariantEntryID->XY.x
+        case MANAGED
+          w = layout_size.x.or_smaller( w )
       endWhich
       return w
 

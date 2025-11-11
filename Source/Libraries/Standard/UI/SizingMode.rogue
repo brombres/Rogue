@@ -10,6 +10,7 @@ enum SizingMode
   NATURAL_SIZE
   PARAMETER_REAL
   PARAMETER_XY
+  MANAGED
 endEnum
 
 class SizingModeXY( x:SizingMode, y:SizingMode ) [compound]
