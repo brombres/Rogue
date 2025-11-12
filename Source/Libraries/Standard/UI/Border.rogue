@@ -10,7 +10,7 @@ class Padding( value:Real, mode:SizingMode ) [compound]
       return Padding( parameter_id.value, SizingMode.PARAMETER_REAL )
 
     method fixed( value:Real )->Padding
-      return Padding( value, SizingMode.FIXED_SIZE )
+      return Padding( value, SizingMode.FIXED )
 
     method proportional( value:Real )->Padding
       return Padding( value, SizingMode.PROPORTIONAL )

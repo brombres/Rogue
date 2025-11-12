@@ -5,7 +5,7 @@ class Text : Component
   PROPERTIES
     value         : String
     scaling_mode  = ScalingModeXY( ScalingMode.NONE, ScalingMode.NONE )
-    sizing_mode   = SizingModeXY( SizingMode.NATURAL_SIZE, SizingMode.NATURAL_SIZE )
+    sizing_mode   = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
     can_split : Logical?
 
   METHODS
@@ -125,13 +125,13 @@ class Text : Component
 
       @natural_size = measured_size
 
-      if (sizing_mode.x == SizingMode.NATURAL_SIZE)
-        if (sizing_mode.y == SizingMode.NATURAL_SIZE)
+      if (sizing_mode.x == SizingMode.NATURAL)
+        if (sizing_mode.y == SizingMode.NATURAL)
           size = natural_size
         else
           size.x = natural_size.x
         endIf
-      elseIf (sizing_mode.y == SizingMode.NATURAL_SIZE)
+      elseIf (sizing_mode.y == SizingMode.NATURAL)
         size.y = natural_size.y
       endIf
 
@@ -152,8 +152,8 @@ class Text : Component
         .process_and_store( value )
         if (natural_size != old_natural_size)
           contingent
-            sufficient (sizing_mode.x == SizingMode.NATURAL_SIZE)
-            sufficient (sizing_mode.y == SizingMode.NATURAL_SIZE)
+            sufficient (sizing_mode.x == SizingMode.NATURAL)
+            sufficient (sizing_mode.y == SizingMode.NATURAL)
             sufficient (sizing_mode.x == SizingMode.SHRINK_TO_FIT)
             sufficient (sizing_mode.y == SizingMode.SHRINK_TO_FIT)
             escapeContingent
@@ -219,7 +219,7 @@ class Text : Component
 
     method use_unscaled_text_width
       scaling_mode.x = ScalingMode.NONE
-      sizing_mode.x = SizingMode.FIXED_SIZE
+      sizing_mode.x = SizingMode.FIXED
 
     method .process_and_store( text:String, &fragment )
       block

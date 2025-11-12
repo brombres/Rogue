@@ -6,12 +6,14 @@ enum SizingMode
   ASPECT_FIT_NATURAL_SIZE
   PROPORTIONAL
   SHRINK_TO_FIT
-  FIXED_SIZE
-  NATURAL_SIZE
+  FIXED
+  NATURAL
   PARAMETER_REAL
   PARAMETER_XY
-  MANAGED
 endEnum
 
 class SizingModeXY( x:SizingMode, y:SizingMode ) [compound]
+  GLOBAL METHODS
+    method create( mode:SizingMode )->SizingModeXY
+      return SizingModeXY( mode, mode )
 endClass

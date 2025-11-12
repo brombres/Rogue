@@ -462,16 +462,6 @@ class Component : Entity
     method line_height->Real
       return size.y
 
-    method managed_height
-      sizing_mode.y = SizingMode.MANAGED
-
-    method managed_size
-      sizing_mode.x = SizingMode.MANAGED
-      sizing_mode.y = SizingMode.MANAGED
-
-    method managed_width
-      sizing_mode.x = SizingMode.MANAGED
-
     method manually_update_content_layout( setting=true:Logical )
       attributes.manually_update_content_layout = setting
 
@@ -594,9 +584,9 @@ class Component : Entity
         sz.x = .resolve_layout_width( available_size )
         sz.y = .resolve_layout_height( available_size )
 
-        local is_known_w = (sizing_mode.x == SizingMode.FIXED_SIZE or sizing_mode.x == SizingMode.NATURAL_SIZE)
-        local is_known_h = (sizing_mode.y == SizingMode.FIXED_SIZE or sizing_mode.y == SizingMode.NATURAL_SIZE)
         #{
+        local is_known_w = (sizing_mode.x == SizingMode.FIXED or sizing_mode.x == SizingMode.NATURAL)
+        local is_known_h = (sizing_mode.y == SizingMode.FIXED or sizing_mode.y == SizingMode.NATURAL)
         if (is_known_w)
           if (is_known_h)
             attributes.constant_size = true
@@ -647,16 +637,14 @@ class Component : Entity
         case PROPORTIONAL
           if (size_reference) h = size_reference.size.y * layout_size.y
           else                h = available_size.y * layout_size.y
-        case FIXED_SIZE
+        case FIXED
           h = layout_size.y
-        case NATURAL_SIZE
+        case NATURAL
           h = natural_size.y
         case PARAMETER_REAL
           h = layout_size.y->Int->VariantEntryID->Real
         case PARAMETER_XY
           h = layout_size.y->Int->VariantEntryID->XY.y
-        case MANAGED
-          h = layout_size.y.or_smaller( h )
       endWhich
       return h
 
@@ -670,16 +658,14 @@ class Component : Entity
         case PROPORTIONAL
           if (size_reference) w = size_reference.size.x * layout_size.x
           else                w = available_size.x * layout_size.x
-        case FIXED_SIZE
+        case FIXED
           w = layout_size.x
-        case NATURAL_SIZE
+        case NATURAL
           w = natural_size.x
         case PARAMETER_REAL
           w = layout_size.x->Int->VariantEntryID->Real
         case PARAMETER_XY
           w = layout_size.x->Int->VariantEntryID->XY.x
-        case MANAGED
-          w = layout_size.x.or_smaller( w )
       endWhich
       return w
 
@@ -747,17 +733,17 @@ class Component : Entity
     method set_content_opacity( @content_opacity )
 
     method set_fixed_size( layout_size )
-      sizing_mode = SizingModeXY( SizingMode.FIXED_SIZE, SizingMode.FIXED_SIZE )
+      sizing_mode = SizingModeXY( SizingMode.FIXED, SizingMode.FIXED )
       size = layout_size
 
     method set_fixed_height( h:Real )
       layout_size.y = h
-      sizing_mode.y = SizingMode.FIXED_SIZE
+      sizing_mode.y = SizingMode.FIXED
       size.y = h
 
     method set_fixed_width( w:Real )
       layout_size.x = w
-      sizing_mode.x = SizingMode.FIXED_SIZE
+      sizing_mode.x = SizingMode.FIXED
       size.x = w
 
     method set_gap( gap:Real )
@@ -767,17 +753,17 @@ class Component : Entity
       noAction
 
     method set_natural_size( @natural_size )
-      sizing_mode = SizingModeXY( SizingMode.NATURAL_SIZE, SizingMode.NATURAL_SIZE )
+      sizing_mode = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
       size = natural_size
 
     method set_natural_height( h:Real )
       natural_size.y = h
-      sizing_mode.y = SizingMode.NATURAL_SIZE
+      sizing_mode.y = SizingMode.NATURAL
       size.y = h
 
     method set_natural_width( w:Real )
       natural_size.x = w
-      sizing_mode.x = SizingMode.NATURAL_SIZE
+      sizing_mode.x = SizingMode.NATURAL
       size.x = w
 
     method set_opacity( @opacity )
@@ -847,15 +833,15 @@ class Component : Entity
       return parent->(as Component)?.text_style
 
     method use_natural_size
-      sizing_mode = SizingModeXY( SizingMode.NATURAL_SIZE, SizingMode.NATURAL_SIZE )
+      sizing_mode = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
       size = natural_size
 
     method use_natural_height
-      sizing_mode.y = SizingMode.NATURAL_SIZE
+      sizing_mode.y = SizingMode.NATURAL
       size.y = natural_size.y
 
     method use_natural_width
-      sizing_mode.x = SizingMode.NATURAL_SIZE
+      sizing_mode.x = SizingMode.NATURAL
       size.x = natural_size.x
 
     method yield_pointer_focus_to( e:PointerEvent )->Logical
