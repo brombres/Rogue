@@ -2,23 +2,29 @@ library UI
 
 class Table : Component
   PROPERTIES
-    gap              : Real  # In pixels
-    gap_parameter_id : VariantEntryID
-    width            : Int  # cells wide
-    height           : Int  # cells high
+    gap                : XY  # In pixels
+    h_gap_parameter_id : VariantEntryID
+    v_gap_parameter_id : VariantEntryID
 
-    .cells           = TableCell[]
-    # A list of the direct children; width*height TableCell components which
+    cells_wide         : Int
+    cells_high         : Int
+
+    columns            = TableColumns()
+    rows               = TableRows()
+
+    .cells             = TableCell[]
+    # A list of the direct children; cells_wide*cells_high TableCell components which
     # contain the actual content.
 
-    sizes_resolved_for : XY?
+    size_resolved_for : XY?
 
   METHODS
-    method init( width:Int, height:Int )
-      resize( width, height )
+    method init( cells_wide:Int, cells_high:Int )
+      resize( cells_wide, cells_high )
 
     method init_object
       is_pointer_passthrough = true
+      use_natural_size
 
     method add( entity:Entity ) [override]
       # Adds the entity to the first empty cell. If there are
@@ -30,94 +36,66 @@ class Table : Component
         endIf
       endForEach
 
-      resize( width, height+1 )
+      resize( cells_wide, cells_high+1 )
       update_cell_visibility
 
-      this[XY(0,height-1)] = entity->(as Component)
-
-    method add_column( components:Component[] )
-      resize( width+1, height )
-      components.discard_from( height )
-      local i = width - 1
-      forEach (component at j in components)
-        this[XY(i,j)] = component
-      endForEach
-
-    method add_row( components:Component[] )
-      resize( width, height+1 )
-      components.discard_from( width )
-      local j = height - 1
-      forEach (component at i in components)
-        this[XY(i,j)] = component
-      endForEach
+      this[XY(0,cells_high-1)] = entity->(as Component)
 
     method cell( i:Int, j:Int )->TableCell
-      if (i < 0 or i >= width)  return null
-      if (j < 0 or j >= height) return null
-      return .cells[j*width + i]
+      if (i < 0 or i >= cells_wide)  return null
+      if (j < 0 or j >= cells_high) return null
+      return .cells[j*cells_wide + i]
 
-    method cell( index:XY )->TableCell
-      return cell( index.x->Int, index.y->Int )
+    method cells->TableSubsetProperties
+      return TableSubsetProperties( this, 0, 0, cells_wide-1, cells_high-1 )
 
-    method cells->TableSubset
-      return TableSubset( this, 0, 0, width-1, height-1 )
+    method cells( i1:Int, j1:Int, i2:Int, j2:Int )->TableSubsetProperties
+      return TableSubsetProperties( this, i1, j1, i2, j2 )
 
-    method column( index:Int )->TableSubset
-      return TableSubset( this, index, 0, index, height-1 )
+    method column( i:Int )->TableColumn
+      if (i < 0 or i >= cells_wide) return null
+      return columns[i]
 
-    method column_minmax_width( i:Int, available_size:XY )->(min:Real,max:Real)
+    method .determine_column_minmax_width( column:TableColumn, available_size:XY )
+      local snap = UI.snap_to_pixel_coordinates
+
       local column_min_w = 0.0
       local column_max_w = available_size.x
-      forEach (j in 0..<height)
-        if local cell = cell( i, j )
-          local content : Component
-          if (cell.sizing_mode.x == SizingMode.MANAGED) content = cell.first_content_component
-          else                                          content = cell
-          if (content)
+
+      forEach (j in 0..<cells_high)
+        if local cell = cell( column.i, j )
+          if local content = cell.first_content_component
             local (min_sz,max_sz) = content.resolve_minmax_layout_size( available_size.yv, available_size, &limited )
+            if (cell.span.x > 1)
+              min_sz.x /= cell.span.x
+              max_sz.x /= cell.span.x
+              if (snap) min_sz.x .= ceiling; max_sz.x .= ceiling
+            endIf
             column_min_w .= or_larger( min_sz.x )
             column_max_w .= or_smaller( max_sz.x )
           endIf
         endIf
       endForEach
+
       if (column_min_w > column_max_w) column_max_w = column_min_w
-      return (min:column_min_w,max:column_max_w)
+      column.min_width = column_min_w
+      column.max_width = column_max_w
 
-    method columns->TableSubset
-      return TableSubset( this, 0, 0, width-1, height-1 )
-
-    method columns( range:RangeUpTo<<Int>> )->TableSubset
-      if (range.step != 1) println "[ERROR] Table.columns() range step size must be 1"
-      return TableSubset( this, range.start, 0, range.limit, height-1 )
-
-    method get( index:XY )->Component
-      local cell = cell( index )
+    method get( i:Int, j:Int )->Component
+      local cell = cell( i, j )
       if (cell) return cell.first_content_component
       else      return null
 
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
-      local sz = gap * XY(width-1,height-1)
-      resolve_content_layout_sizes( sz )
-      forEach (i in 0..<width)  sz.x += .cells[i].size.x
-      forEach (j in 0..<height) sz.y += .cells[j*width].size.y
+      local sz = gap * XY(cells_wide-1,cells_high-1)
+      temporarily sizing_mode = SizingModeXY( SizingMode.SHRINK_TO_FIT )
+        resolve_content_layout_sizes( sz )
+      endTemporarily
+      size_resolved_for = null
+
+      forEach (i in 0..<cells_wide)  sz.x += .cells[i].size.x
+      forEach (j in 0..<cells_high) sz.y += .cells[j*cells_wide].size.y
       return sz
-
-    method .minimum_row_layout_size( j:Int, available_size:XY, &limited )->XY
-      local snap = UI.snap_to_pixel_coordinates
-
-      local w = 0.0
-      local h = 0.0
-      forEach (i in 0..<width)
-        local cell = cell( XY(i,j) )
-        local sz = cell.minimum_layout_size( available_size, &=limited )
-        sz /= cell.span
-        if (snap) sz .= ceiling
-
-        if (i) w += gap
-        w += sz.x
-        h .= or_larger( sz.y )
-      endForEach
-      return XY(w,h)
 
     method perform_content_layout [override]
       localize gap
@@ -126,18 +104,18 @@ class Table : Component
         local total_w = 0.0
         local total_h = 0.0
 
-        forEach (i in 0..<width)
+        forEach (i in 0..<cells_wide)
           local cell = .cells[i]
           if (not cell.is_obscured)
-            if (i) total_w += gap
+            if (i) total_w += gap.x
             total_w += cell.size.x
           endIf
         endForEach
 
-        forEach (j in 0..<height)
-          local cell = .cells[j*width]
+        forEach (j in 0..<cells_high)
+          local cell = .cells[j*cells_wide]
           if (not cell.is_obscured)
-            if (j) total_h += gap
+            if (j) total_h += gap.y
             total_h += cell.size.y
           endIf
         endForEach
@@ -145,9 +123,9 @@ class Table : Component
         local pos = Box(XY(total_w,total_h)).positioned_within( content_bounds, anchor ).position
         local start_x = pos.x
         local index = 0
-        forEach (j in 0..<height)
+        forEach (j in 0..<cells_high)
           local row_h = 0.0
-          forEach (i in 0..<width)
+          forEach (i in 0..<cells_wide)
             local cell = .cells[index]
             if (i == 0) row_h = cell.size.y
             if (cell.is_obscured)
@@ -155,12 +133,12 @@ class Table : Component
             else
               cell.show
               cell.perform_layout( pos )
-              pos.x += cell.size.x + gap
+              pos.x += cell.size.x + gap.x
             endIf
             ++index
           endForEach
           pos.x = start_x
-          pos.y += row_h + gap
+          pos.y += row_h + gap.y
         endForEach
 
       endUse
@@ -168,13 +146,15 @@ class Table : Component
     method resize( w:Int, h:Int )
       if (count)
         use new_cells = WorkList<<TableCell>>
-          forEach (j in 0..<height.or_smaller(h))
-            forEach (i in 0..<width.or_smaller(w))
-              new_cells.add( .cells[j*width+i] )
+          forEach (j in 0..<cells_high.or_smaller(h))
+            forEach (i in 0..<cells_wide.or_smaller(w))
+              new_cells.add( .cells[j*cells_wide+i] )
             endForEach
-            if (w > width)
-              local last_i = width - 1
-              forEach (i in width..<w)
+
+            if (w > cells_wide)
+              local last_i = cells_wide - 1
+              forEach (i in cells_wide..<w)
+                columns.add( TableColumn(this,i) )
                 local new_cell = TableCell( XY(i,j) )
                 new_cell.copy_settings_from( cell(last_i,j) )
                 new_cells.add( new_cell )
@@ -182,9 +162,10 @@ class Table : Component
             endIf
           endForEach
 
-          if (h > height)
-            local last_j = height - 1
-            forEach (j in height..<h)
+          if (h > cells_high)
+            local last_j = cells_high - 1
+            forEach (j in cells_high..<h)
+              rows.add( TableRow(this,j) )
               forEach (i in 0..<w)
                 local new_cell = TableCell( XY(i,j) )
                 new_cell.copy_settings_from( cell(i,last_j) )
@@ -196,353 +177,372 @@ class Table : Component
           .cells.clear
           .cells.add( forEach in new_cells )
 
+          deactivate
           prior.clear
           prior.add( forEach in .cells )
         endUse
       else
+        forEach (i in 0..<w) columns.add( TableColumn(this,i) )
+        forEach (j in 0..<h) rows.add( TableRow(this,j) )
+
         forEach (j in 0..<h)
           forEach (i in 0..<w)
             .cells.add( TableCell(XY(i,j)) )
           endForEach
         endForEach
         prior.add( forEach in .cells )
+
       endIf
 
-      @width = w
-      @height = h
+      cells_wide = w
+      cells_high = h
+
+    method resolve_layout_size( available_size:XY, &limited )->XY [override]
+      if (sizing_mode.x == SizingMode.NATURAL or sizing_mode.y == SizingMode.NATURAL)
+        resolve_content_layout_sizes( available_size )  # sets natural_size
+      endIf
+      return prior.resolve_layout_size( available_size, &=limited )
 
     method resolve_content_layout_sizes( available_size:XY ) [override]
-      if (sizes_resolved_for == available_size) return
-      sizes_resolved_for = available_size
+      if (size_resolved_for == available_size) return
+      size_resolved_for = available_size
 
-      if (width > 1)  available_size.x = (available_size.x - (width-1) * gap).clamped_low( 0 )
-      if (height > 1) available_size.y = (available_size.y - (height-1) * gap).clamped_low( 0 )
+      available_size -= (XY(cells_wide-1,cells_high-1) * gap).clamped_low( XY(0,0) )
+
+      use unresolved_columns = WorkList<<TableColumn>>,
+          unresolved_rows = WorkList<<TableRow>>
+
+        # Apply widths of fixed-width columns and collect variable width columns for
+        # further processing.
+        forEach (column in columns)
+          if (column.sizing_mode == SizingMode.FIXED)
+            column.is_resolved = true
+            column.width = column.layout_width
+            available_size.x -= column.width
+          else
+            column.is_resolved = false
+            unresolved_columns.add( column )
+          endIf
+        endForEach
+
+        if (unresolved_columns.count)
+          # Collect largest min & smallest max sizes of unresolved columns and rows
+          forEach (column in unresolved_columns)
+            .determine_column_minmax_width( column, available_size )
+          endForEach
+
+          .resolve_column_widths( unresolved_columns, available_size )
+        endIf
+
+        # Apply heights of fixed-height rows and collect variable-height rows for
+        # further processing.
+        forEach (row in rows)
+          if (row.sizing_mode == SizingMode.FIXED)
+            row.is_resolved = true
+            row.height = row.layout_height
+            available_size.y -= row.height
+          else
+            row.is_resolved = false
+            unresolved_rows.add( row )
+          endIf
+        endForEach
+
+        if (unresolved_rows.count)
+          # Collect largest min & smallest max sizes of unresolved columns and rows
+          forEach (row in unresolved_rows)
+            .determine_row_minmax_height( row, available_size )
+          endForEach
+
+          .resolve_row_heights( unresolved_rows, available_size )
+        endIf
+
+        .resolve_cell_layout_sizes
+
+        if (this.sizing_mode.x == SizingMode.NATURAL)
+          natural_size.x = gap.x * (cells_wide-1)
+          natural_size.x += (forEach in columns).width
+        endIf
+
+        if (this.sizing_mode.y == SizingMode.NATURAL)
+          natural_size.y = gap.y * (cells_high-1)
+          natural_size.y += (forEach in rows).height
+        endIf
+
+      endUse
+
+    method .resolve_column_widths( unresolved_columns:TableColumn[], available_size:XY )
+      # Resolve shrink-to-fit columns by assigning them their min size
+      forEach (column in writer=unresolved_columns.rewriter)
+        if (column.sizing_mode == SizingMode.SHRINK_TO_FIT)
+          column.width = (column.min_width * column.weight).floor
+          available_size.x -= column.width
+        else
+          writer.write( column )
+        endIf
+      endForEach
+
+      if (unresolved_columns.is_empty) return
+
+      # Each remaining unresolved column is expand-to-fill.
+
+      if (this.sizing_mode.x == SizingMode.NATURAL)
+        # Natural column width is the min width of the widest column
+        local natural_width = 0.0
+        natural_width .= or_larger( (forEach in unresolved_columns).min_width )
+
+        local necessary_width = 0.0
+        forEach (column in unresolved_columns)
+          necessary_width += (natural_width * column.weight).floor
+        endForEach
+
+        available_size.x .= or_smaller( necessary_width )
+      endIf
 
       local snap = UI.snap_to_pixel_coordinates
 
-      use column_info_list = WorkList<<ColumnSizeInfo>>,
-          row_info_list = WorkList<<RowSizeInfo>>
-        # Collect largest min & smallest max sizes of columns and rows
-        local largest_cell_min_w = 0.0
-        local smallest_cell_max_w = available_size.x
-        forEach (i in 0..<width)
-          local (min_w,max_w) = column_minmax_width( i, available_size )
-          largest_cell_min_w .= or_larger( min_w )
-          smallest_cell_max_w .= or_smaller( max_w )
-          column_info_list.add( ColumnSizeInfo(i, min_w, max_w, .column_weight(i)) )
-        endForEach
-        smallest_cell_max_w .= or_larger( largest_cell_min_w )
+      # Resolve column widths of columns with min-width too wide for proportional share.
+      block
+        local repeat = true
+        while (repeat)
+          repeat = false
 
-        local largest_cell_min_h = 0.0
-        local smallest_cell_max_h = available_size.y
-        forEach (j in 0..<height)
-          local (min_h,max_h) = row_minmax_height( j, available_size )
-          largest_cell_min_h .= or_larger( min_h )
-          smallest_cell_max_h .= or_smaller( max_h )
-          row_info_list.add( RowSizeInfo(j, min_h, max_h, .row_weight(j)) )
-        endForEach
-        smallest_cell_max_h .= or_larger( largest_cell_min_h )
-
-        # Assign widths to non-managed columns with a max width too narrow or a min width too wide
-        # for their proportional share.
-        block
-          local total_column_weight = 0.0
-          total_column_weight += (forEach in column_info_list).weight
-
-          local repeat = true
-          while (repeat)
-            repeat = false
-
-            local remaining_width = available_size.x
-            local remaining_count = column_info_list.count
-
-            forEach (info in rewriter=column_info_list.rewriter)
-              local cell = this.cell( info.i, 0 )
-              if (cell.sizing_mode.x == SizingMode.MANAGED)
-                rewriter.write( info )
-              else
-                local w = remaining_width
-                if (remaining_count > 1)
-                  w = w * info.weight / total_column_weight
-                  if (snap) w .= floor
-                endIf
-                if (info.max_width < w)
-                  # Column's max width falls short of its share. Assign it its max width and
-                  # remove it from the list by not rewriting it.
-                  available_size.x -= info.max_width
-                  .set_column_width( info.i, info.max_width )
-                  total_column_weight -= info.weight
-                  if (total_column_weight == 0) total_column_weight = 1.0
-                  repeat = true
-                elseIf (info.min_width > w)
-                  # Component's min width exceeds its share. Assign it its min width
-                  # and remove it from the list by not rewriting it.
-                  available_size.x -= info.min_width
-                  .set_column_width( info.i, info.min_width )
-                  total_column_weight -= info.weight
-                  if (total_column_weight == 0) total_column_weight = 1.0
-                  repeat = true
-                else
-                  # Component can size at least as wide as its proportional share; keep it for the next pass.
-                  rewriter.write( info )
-                endIf
-                remaining_width -= w
-                --remaining_count
-              endIf
-            endForEach
-          endWhile
-        endBlock
-
-        # If the table is shrink-to-fit-width, assign remaining managed columns the largest min cell width.
-        if (sizing_mode.x == SizingMode.SHRINK_TO_FIT)
-          forEach (info in rewriter=column_info_list.rewriter)
-            local cell = this.cell( info.i, 0 )
-            if (cell.sizing_mode.x == SizingMode.MANAGED)
-              local w = (largest_cell_min_w * cell.weight.x).floor
-              available_size.x -= w
-              .set_column_width( info.i, w )
-            else
-              rewriter.write( info )
-            endIf
-          endForEach
-        endIf
-
-        # Assign remaining columns their proportional share of available width.
-        block
-          local total_column_weight = 0.0
-          total_column_weight += (forEach in column_info_list).weight
-
-          # Weighted columns
           local remaining_width = available_size.x
-          local remaining_count = column_info_list.count( $.weight > 0 )
-          forEach (info in column_info_list)
-            if (info.weight)
+          local total_weight = 0.0
+          total_weight += (forEach in unresolved_columns).weight
+          local remaining_count = unresolved_columns.count( $.weight > 0 )
+
+          forEach (column in writer=unresolved_columns.rewriter)
+            if (column.weight)
               local w = remaining_width
               if (remaining_count > 1)
-                w = w * info.weight / total_column_weight
-                total_column_weight -= info.weight
+                w = w * column.weight / total_weight
+                total_weight -= column.weight
                 if (snap) w .= floor
               endIf
-              .set_column_width( info.i, w )
+
+              if (column.min_width > w)
+                # Component's min width exceeds its share. Assign it its min width
+                # and remove it from the list by not rewriting it.
+                available_size.x -= column.min_width
+                column.width = column.min_width
+                repeat = true
+              else
+                writer.write( column )
+              endIf
               remaining_width -= w
               --remaining_count
             else
-              # Set zero-weight column width to 0 for now
-              .set_column_width( info.i, 0 )
+              writer.write( column )
             endIf
           endForEach
+        endWhile
+      endBlock
 
-          if (remaining_width)
-            # Unweighted columns
-            remaining_count = column_info_list.count( $.weight == 0 )
-            forEach (info in column_info_list)
-              if (info.weight == 0)
-                local w = remaining_width
-                if (remaining_count > 1)
-                  w /= remaining_count
-                  if (snap) w .= floor
-                endIf
-                .set_column_width( info.i, w )
-                remaining_width -= w
-                --remaining_count
-              endIf
-            endForEach
+      # Resolve column widths of remaining weighted columns.
+      block
+        local total_weight = 0.0
+        total_weight += (forEach in unresolved_columns).weight
+        local remaining_count = unresolved_columns.count( $.weight > 0 )
+
+        forEach (column in writer=unresolved_columns.rewriter)
+          if (column.weight)
+            local w = available_size.x
+            if (remaining_count > 1)
+              w = w * column.weight / total_weight
+              total_weight -= column.weight
+              if (snap) w .= floor
+            endIf
+            available_size.x -= w
+            column.width = w
+            --remaining_count
+          else
+            writer.write( column )
           endIf
+        endForEach
+      endBlock
 
-        endBlock
+      # Divide remaining width among remaining unweighted columns
+      block
+        local remaining_count = unresolved_columns.count
 
-        # Assign row heights for components that are too high or too short
-        block
-          local total_row_weight = 0.0
-          total_row_weight += (forEach in column_info_list).weight
+        forEach (column in unresolved_columns)
+          local w = available_size.x
+          if (remaining_count > 1)
+            w /= remaining_count
+            if (snap) w .= floor
+          endIf
+          available_size.x -= w
+          column.width = w
+          --remaining_count
+        endForEach
+      endBlock
 
-          local repeat = true
-          while (repeat)
-            repeat = false
-
-            local remaining_height = available_size.y
-            local remaining_count = row_info_list.count
-
-            forEach (info in rewriter=row_info_list.rewriter)
-              local cell = this.cell( 0, info.j )
-              if (cell.sizing_mode.y == SizingMode.MANAGED)
-                rewriter.write( info )
-              else
-                local h = remaining_height
-                if (remaining_count > 1)
-                  h = h * info.weight / total_row_weight
-                  if (snap) h .= floor
-                endIf
-                if (info.max_height < h)
-                  # Column's max height falls short of its share. Assign it its max height and
-                  # remove it from the list by not rewriting it.
-                  available_size.y -= info.max_height
-                  .set_row_height( info.j, info.max_height )
-                  total_row_weight -= info.weight
-                  if (total_row_weight == 0) total_row_weight = 1.0
-                  repeat = true
-                elseIf (info.min_height > h)
-                  # Component's min height exceeds its share. Assign it its min height
-                  # and remove it from the list by not rewriting it.
-                  available_size.y -= info.min_height
-                  .set_row_height( info.j, info.min_height )
-                  total_row_weight -= info.weight
-                  if (total_row_weight == 0) total_row_weight = 1.0
-                  repeat = true
-                else
-                  # Component can size at least as high as its proportional share; keep it for the next pass.
-                  rewriter.write( info )
-                endIf
-                remaining_height -= h
-                --remaining_count
-              endIf
-            endForEach
-          endWhile
-        endBlock
-
-        # If the table is shrink-to-fit-height, assign remaining managed rows the largest min cell height.
-        if (sizing_mode.y == SizingMode.SHRINK_TO_FIT)
-          forEach (info in rewriter=row_info_list.rewriter)
-            local cell = this.cell( 0, info.j )
-            if (cell.sizing_mode.y == SizingMode.MANAGED)
-              local h = (largest_cell_min_h * cell.weight.y).floor
-              available_size.y -= h
-              .set_row_height( info.j, h )
-            else
-              rewriter.write( info )
-            endIf
-          endForEach
+    method .resolve_row_heights( unresolved_rows:TableRow[], available_size:XY )
+      # Resolve shrink-to-fit rows by assigning them their min size
+      forEach (row in writer=unresolved_rows.rewriter)
+        if (row.sizing_mode == SizingMode.SHRINK_TO_FIT)
+          row.height = (row.min_height * row.weight).floor
+          available_size.y -= row.height
+        else
+          writer.write( row )
         endIf
+      endForEach
 
-        # Assign remaining rows their proportional share of available height.
-        block
-          # Weighted columns
-          local total_row_weight = 0.0
-          total_row_weight += (forEach in column_info_list).weight
+      if (unresolved_rows.is_empty) return
+
+      # Each remaining unresolved row is expand-to-fill.
+
+      if (this.sizing_mode.y == SizingMode.NATURAL)
+        # Natural row height is the min height of the widest row
+        local natural_height = 0.0
+        natural_height .= or_larger( (forEach in unresolved_rows).min_height )
+
+        local necessary_height = 0.0
+        forEach (row in unresolved_rows)
+          necessary_height += (natural_height * row.weight).floor
+        endForEach
+
+        available_size.y .= or_smaller( necessary_height )
+      endIf
+
+      local snap = UI.snap_to_pixel_coordinates
+
+      # Resolve row heights of rows with min-height too tall for proportional share.
+      block
+        local repeat = true
+        while (repeat)
+          repeat = false
 
           local remaining_height = available_size.y
-          local remaining_count = row_info_list.count
-          forEach (info in row_info_list)
-            if (info.weight)
+          local total_weight = 0.0
+          total_weight += (forEach in unresolved_rows).weight
+          local remaining_count = unresolved_rows.count( $.weight > 0 )
+
+          forEach (row in writer=unresolved_rows.rewriter)
+            if (row.weight)
               local h = remaining_height
               if (remaining_count > 1)
-                h = h * info.weight / total_row_weight
-                total_row_weight -= info.weight
+                h = h * row.weight / total_weight
+                total_weight -= row.weight
                 if (snap) h .= floor
               endIf
-              .set_row_height( info.j, h )
+
+              if (row.min_height > h)
+                # Component's min height exceeds its share. Assign it its min height
+                # and remove it from the list by not rewriting it.
+                available_size.y -= row.min_height
+                row.height = row.min_height
+                repeat = true
+              else
+                writer.write( row )
+              endIf
               remaining_height -= h
               --remaining_count
             else
-              # Set zero-weight row height to 0 for now
-              .set_row_height( info.j, 0 )
+              writer.write( row )
             endIf
           endForEach
+        endWhile
+      endBlock
 
-          if (remaining_height)
-            # Unweighted columns
-            remaining_count = row_info_list.count( $.weight == 0 )
-            forEach (info in row_info_list)
-              if (info.weight == 0)
-                local h = remaining_height
-                if (remaining_count > 1)
-                  h /= remaining_count
-                  if (snap) h .= floor
-                endIf
-                .set_row_height( info.j, h )
-                remaining_height -= h
-                --remaining_count
-              endIf
-            endForEach
+      # Resolve row heights of remaining weighted rows.
+      block
+        local total_weight = 0.0
+        total_weight += (forEach in unresolved_rows).weight
+        local remaining_count = unresolved_rows.count( $.weight > 0 )
+
+        forEach (row in writer=unresolved_rows.rewriter)
+          if (row.weight)
+            local h = available_size.y
+            if (remaining_count > 1)
+              h = h * row.weight / total_weight
+              total_weight -= row.weight
+              if (snap) h .= floor
+            endIf
+            available_size.y -= h
+            row.height = h
+            --remaining_count
+          else
+            writer.write( row )
           endIf
-
-        endBlock
-
-        # All child cells have their own size set or assigned; have them recursively
-        # determine their child sizes.
-        forEach (cell in .cells)
-          cell.resolve_layout_size( .spanned_size(cell) )
-          cell.resolve_content_layout_sizes
         endForEach
+      endBlock
 
-      endUse
+      # Divide remaining height among remaining unweighted rows
+      block
+        local remaining_count = unresolved_rows.count
+
+        forEach (row in unresolved_rows)
+          local h = available_size.y
+          if (remaining_count > 1)
+            h /= remaining_count
+            if (snap) h .= floor
+          endIf
+          available_size.y -= h
+          row.height = h
+          --remaining_count
+        endForEach
+      endBlock
+
+    method .resolve_cell_layout_sizes
+      # All child cells have their own size set or assigned; have them recursively
+      # determine their child sizes.
+      forEach (cell in .cells)
+        cell.resolve_layout_size( .spanned_size(cell) )
+        cell.resolve_content_layout_sizes
+      endForEach
 
     method .spanned_size( cell:TableCell )->XY
       if (cell.span == XY(1,1)) return cell.size
       local sz = (cell.span-XY(1,1)) * gap
       forEach (j in 0..<cell.span.y)
         forEach (i in 0..<cell.span.x)
-          if local part = this.cell( cell.index+XY(i,j) )
+          if local part = this.cell( cell.index.x+i, cell.index.y+j )
             sz += part.size
           endIf
         endForEach
       endForEach
       return sz
 
-    method .column_weight( i:Int )->Real
-      local result = 0.0
-      result += cell( XY(i,forEach in 0..<height) ).weight.x
-      return result
+    method .determine_row_minmax_height( row:TableRow, available_size:XY )
+      local snap = UI.snap_to_pixel_coordinates
 
-    method .row_weight( j:Int )->Real
-      local result = 0.0
-      result += cell( XY(forEach in 0..<width,j) ).weight.y
-      return result
-
-    method row( index:Int )->TableSubset
-      return TableSubset( this, 0, index, width-1, index )
-
-    method row_minmax_height( j:Int, available_size:XY )->(min:Real,max:Real)
       local row_min_h = 0.0
       local row_max_h = available_size.y
-      forEach (i in 0..<width)
-        if local cell = cell( i, j )
-          local content : Component
-          if (cell.sizing_mode.y == SizingMode.MANAGED) content = cell.first_content_component
-          else                                          content = cell
-          if (content)
+
+      forEach (i in 0..<cells_wide)
+        if local cell = cell( i, row.j )
+          if local content = cell.first_content_component
             local (min_sz,max_sz) = content.resolve_minmax_layout_size( available_size.xv, available_size, &limited )
+            if (cell.span.y > 1)
+              min_sz.y /= cell.span.y
+              max_sz.y /= cell.span.y
+              if (snap) min_sz.y .= ceiling; max_sz.y .= ceiling
+            endIf
             row_min_h .= or_larger( min_sz.y )
             row_max_h .= or_smaller( max_sz.y )
           endIf
         endIf
       endForEach
+
       if (row_min_h > row_max_h) row_max_h = row_min_h
-      return (min:row_min_h,max:row_max_h)
-
-    method rows->TableSubset
-      return TableSubset( this, 0, 0, width-1, height-1 )
-
-    method rows( range:RangeUpTo<<Int>> )->TableSubset
-      if (range.step != 1) println "[ERROR] Table.rows() range step size must be 1"
-      return TableSubset( this, 0, range.start, width-1, range.limit )
-
-    method .set_column_width( i:Int, w:Real )
-      forEach (j in 0..<height)
-        local index = j*width + i
-        local cell = .cells[index]
-        cell.size.x = w
-        if (cell.sizing_mode.x == SizingMode.MANAGED) cell.layout_size.x = w
-      endForEach
-
-    method .set_row_height( j:Int, h:Real )
-      forEach (i in 0..<width)
-        local index = j*width + i
-        local cell = .cells[index]
-        cell.size.y = h
-        if (cell.sizing_mode.y == SizingMode.MANAGED) cell.layout_size.y = h
-      endForEach
+      row.min_height = row_min_h
+      row.max_height = row_max_h
 
     method on_begin_layout
       prior.on_begin_layout
-      if (gap_parameter_id)
-        @gap = gap_parameter_id->Real
-      endIf
-      sizes_resolved_for = null
+      size_resolved_for = null
+      if (h_gap_parameter_id) @gap.x = h_gap_parameter_id->Real
+      if (v_gap_parameter_id) @gap.y = v_gap_parameter_id->Real
+
+    method row( j:Int )->TableRow
+      if (j < 0 or j >= cells_high) return null
+      return rows[j]
 
     method set( index:XY, component:Component )
-      local cell = cell( index )
+      local cell = cell( index.x, index.y )
       if (cell)
+        cell.deactivate
         cell.clear
         cell.add( component )
       endIf
@@ -550,29 +550,49 @@ class Table : Component
     method set_cell( index:XY, cell:TableCell )
       local i = index.x->Int
       local j = index.y->Int
-      if (i < 0 or i >= width)  return
-      if (j < 0 or j >= height) return
-      .cells[j*width + i] = cell
+      if (i < 0 or i >= cells_wide)  return
+      if (j < 0 or j >= cells_high) return
+      local index = j*cells_wide + i
+      .cells[index]?.deactivate
+      .cells[index] = cell
 
-    method set_gap( @gap ) [override]
-      @gap_parameter_id = VariantEntryID(0)
+    method set_gap( gap:Real ) [override]
+      @gap = XY( gap, gap )
+      h_gap_parameter_id = VariantEntryID(0)
+      v_gap_parameter_id = VariantEntryID(0)
 
-    method set_gap( gap_parameter_id )
-      @gap = gap_parameter_id->Real
+    method set_gap( gap_parameter_id:VariantEntryID ) [override]
+      h_gap_parameter_id = gap_parameter_id
+      v_gap_parameter_id = gap_parameter_id
+      @gap = XY( h_gap_parameter_id->Real, v_gap_parameter_id->Real )
+
+    method set_h_gap( gap:Real ) [override]
+      @gap.x = gap
+      h_gap_parameter_id = VariantEntryID(0)
+
+    method set_h_gap( h_gap_parameter_id ) [override]
+      @gap.x = h_gap_parameter_id->Real
+
+    method set_v_gap( gap:Real ) [override]
+      @gap.y = gap
+      v_gap_parameter_id = VariantEntryID(0)
+
+    method set_v_gap( v_gap_parameter_id ) [override]
+      @gap.y = v_gap_parameter_id->Real
 
     method update_cell_visibility
       # Update cell visibility settings based on current cell span values
       (forEach in .cells).is_obscured = false
 
       local index = 0
-      forEach (j in 0..<height)
-        forEach (i in 0..<width)
+      forEach (j in 0..<cells_high)
+        forEach (i in 0..<cells_wide)
           local cell = .cells[index]
           if (cell.span.product > 1)
             forEach (dj in 0..<cell.span.y)
               forEach (di in 0..<cell.span.x)
                 if (di or dj)
-                  local obscured_cell = this.cell( XY(i+di,j+dj) )
+                  local obscured_cell = this.cell( i+di,j+dj )
                   obscured_cell.is_obscured = true
                 endIf
               endForEach
@@ -584,6 +604,113 @@ class Table : Component
 
 endClass
 
+class TableColumns : TableColumn[]
+  METHODS
+    method expand_to_fill_width
+      (forEach in this).expand_to_fill_width
+
+    method fixed_width( w:Real )
+      (forEach in this).fixed_width( w )
+
+    method set_width( width:Real )
+      (forEach in this).set_width( w )
+
+    method shrink_to_fit_width
+      (forEach in this).shrink_to_fit_width
+
+endClass
+
+class TableColumn( table:Table, i:Int )
+  # Specifies table column size
+  PROPERTIES
+    sizing_mode  = SizingMode.EXPAND_TO_FILL : SizingMode
+    layout_width : Real
+
+    width        : Real
+    min_width    : Real
+    max_width    : Real
+    weight       = 1.0
+
+    is_resolved  : Logical
+
+  METHODS
+    method cells->TableSubsetProperties
+      return TableSubsetProperties( table, i, 0, i, table.cells_high-1 )
+
+    method expand_to_fill_width
+      sizing_mode  = SizingMode.EXPAND_TO_FILL
+
+    method fixed_width( w:Real )
+      sizing_mode  = SizingMode.FIXED
+      layout_width = w
+      width        = w
+
+    method set_width( @width )
+      localize i
+      forEach (j in 0..<table.cells_high)
+        if local cell = table.cell( i, j )
+          cell.fixed_width = width
+        endIf
+      endForEach
+
+    method shrink_to_fit_width
+      sizing_mode  = SizingMode.SHRINK_TO_FIT
+
+endClass
+
+class TableRows : TableRow[]
+  METHODS
+    method cells->TableSubsetProperties
+      return TableSubsetProperties( table, 0, j, table.cells_wide-1, j )
+
+    method expand_to_fill_height
+      (forEach in this).expand_to_fill_height
+
+    method fixed_height( h:Real )
+      (forEach in this).fixed_height( h )
+
+    method set_height( height:Real )
+      (forEach in this).set_height( height )
+
+    method shrink_to_fit_height
+      (forEach in this).shrink_to_fit_height
+endClass
+
+class TableRow( table:Table, j:Int )
+  # Specifies table row size
+  PROPERTIES
+    sizing_mode   = SizingMode.EXPAND_TO_FILL : SizingMode
+    layout_height : Real
+
+    height        : Real
+    min_height    : Real
+    max_height    : Real
+    weight        = 1.0
+
+    is_resolved   : Logical
+
+  METHODS
+    method expand_to_fill_height
+      sizing_mode  = SizingMode.EXPAND_TO_FILL
+
+    method fixed_height( h:Real )
+      sizing_mode  = SizingMode.FIXED
+      layout_height = h
+      height        = h
+
+    method set_height( @height )
+      localize j
+      forEach (i in 0..<table.cells_wide)
+        if local cell = table.cell( i, j )
+          cell.fixed_height = height
+        endIf
+      endForEach
+
+    method shrink_to_fit_height
+      sizing_mode  = SizingMode.SHRINK_TO_FIT
+
+endClass
+
 class TableCell( index:XY ) : Component
   PROPERTIES
     span        = XY( 1, 1 )
@@ -592,7 +719,7 @@ class TableCell( index:XY ) : Component
   METHODS
     method init_object
       is_pointer_passthrough = true
-      managed_size
+      use_natural_size
 
     method set_span( @span )
       if local table = parent->(as Table)
@@ -604,23 +731,17 @@ class TableCell( index:XY ) : Component
 
 endClass
 
-class ColumnSizeInfo( i:Int, min_width:Real, max_width:Real, weight:Real ) [compound]
-endClass
-
-class RowSizeInfo( j:Int, min_height:Real, max_height:Real, weight:Real ) [compound]
-endClass
-
-class TableSubset( table:Table, i1:Int, j1:Int, i2:Int, j2:Int ) : ComponentGroupProperties [compound]
+class TableSubsetProperties( table:Table, i1:Int, j1:Int, i2:Int, j2:Int ) : ComponentGroupProperties [compound]
   METHODS
-    method iterator->TableSubsetIterator
-      return TableSubsetIterator( table, i1, j1, i2, j2, i1 )
+    method iterator->TableSubsetPropertiesIterator
+      return TableSubsetPropertiesIterator( table, i1, j1, i2, j2, i1 )
 endClass
 
-class TableSubsetIterator( table:Table, i:Int, j:Int, i2:Int, j2:Int, i1:Int ) [compound]
+class TableSubsetPropertiesIterator( table:Table, i:Int, j:Int, i2:Int, j2:Int, i1:Int ) [compound]
   METHODS
     method read_another->TableCell? [mutating]
       if (i <= i2 and j <= j2)
-        local result = table.cell( XY(i, j) )
+        local result = table.cell( i, j )
         ++i
         if (i > i2)
           i = i1
