@@ -188,6 +188,12 @@ class VBox : Component
     method set_gap( gap_parameter_id )
       @gap = gap_parameter_id->Real
 
+    method set_v_gap( gap:Real )
+      set_gap( gap )
+
+    method set_v_gap( parameter_id:VariantEntryID )
+      set_gap( parameter_id )
+
 endClass
 
 class UIGeneratedVBox : VBox

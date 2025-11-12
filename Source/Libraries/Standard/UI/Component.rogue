@@ -752,6 +752,18 @@ class Component : Entity
     method set_gap( parameter_id:VariantEntryID )
       noAction
 
+    method set_h_gap( gap:Real )
+      noAction
+
+    method set_h_gap( parameter_id:VariantEntryID )
+      noAction
+
+    method set_v_gap( gap:Real )
+      noAction
+
+    method set_v_gap( parameter_id:VariantEntryID )
+      noAction
+
     method set_natural_size( @natural_size )
       sizing_mode = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
       size = natural_size
