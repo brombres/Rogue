@@ -24,7 +24,7 @@ syn keyword rogueClassDecl   with
 syn keyword rogueClassDecl   subclass endSubclass
 syn keyword rogueClassDecl   augment endAugment
 syn keyword rogueClassDecl   nativeCode nativeHeader nativeType
-syn keyword rogueMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES
+syn keyword rogueMember      ENUMERATE DEFINITIONS CATEGORIES
 syn keyword rogueMember      NATIVE PROPERTIES METHODS GLOBAL STATES
 syn match   rogueError       "\<for\(\s\|(\)"
 syn keyword rogueConditional  if elseIf else endIf then

@@ -122,7 +122,7 @@ repository:
   keywords_formatting:
     patterns:
     - name: keyword.other.rogue
-      match: \b(ENUMERATE|DEFINITIONS|SETTINGS|CATEGORIES)\b
+      match: \b(ENUMERATE|DEFINITIONS|CATEGORIES)\b
 
     - name: keyword.other.rogue
       match: \b(PROPERTIES|METHODS|STATES|ROUTINES)\b

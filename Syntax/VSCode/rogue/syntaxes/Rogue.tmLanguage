@@ -267,7 +267,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>\b(ENUMERATE|DEFINITIONS|SETTINGS|CATEGORIES)\b</string>
+					<string>\b(ENUMERATE|DEFINITIONS|CATEGORIES)\b</string>
 					<key>name</key>
 					<string>keyword.other.rogue</string>
 				</dict>
