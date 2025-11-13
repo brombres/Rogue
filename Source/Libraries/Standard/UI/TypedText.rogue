@@ -8,17 +8,15 @@ class TypedText : Text
     reveal_rate          = default_reveal_rate : Real
     revealed_count       = 0.0
     is_typed_text_active = false
+    reveal_next          = true
 
   METHODS
-    method activate_typed_text [novel]
-      .activate_next
-
     method can_split->Logical [override]
       if (@can_split) return @can_split.value
       return (this isType TypedText)
 
     method create_fragment( text=String():String, &fragment )->Text [override]
-      return TypedText( text, &=fragment )
+      return TypedText( text, &=fragment ).[ reveal_next=reveal_next ]
 
     method is_revealed->Logical [novel]
       if local last_fragment = last_child->(as TypedText)
@@ -59,12 +57,12 @@ class TypedText : Text
       if local child = first_child->(as TypedText)
         # This TypedText was activated before it got split into fragments. Activate its first child.
         is_typed_text_active = false
-        child.activate_typed_text
+        child.start_typing
       endIf
 
       if (is_revealed)
         is_typed_text_active = false
-        .activate_next
+        if (reveal_next) .activate_next
       else
         revealed_count = (revealed_count + reveal_rate*Window.dt).clamped_high( value.count )
       endIf
@@ -99,6 +97,22 @@ class TypedText : Text
         revealed_count = progress * value.count
       endIf
 
+    method set_value( new_value:String ) [override]
+      local is_modified = (new_value != value)
+
+      prior.set_value( new_value )
+
+      if (is_modified)
+        is_typed_text_active = false
+        revealed_count = 0.0
+      endIf
+
+    method start_typing( reveal_next=true ) [novel]
+      .activate_next
+
+    method stop_typing( &rewind )
+      is_typed_text_active = false
+      if (rewind) reveal( 0 )
 
     method .activate_next [novel]
       local query_fn = function( entity:Entity )->Logical
@@ -119,6 +133,21 @@ class TypedText : Text
       endWhile
 
       if local next_typed_text = cur.find( query_fn )->(as TypedText)
+
+        if (not reveal_next)
+          # Make sure next_typed_text is this or a fragment of this.
+          block cur = next_typed_text
+            while (cur)
+              if (cur is this)
+                cur.is_typed_text_active = true
+                return
+              endIf
+              cur .= parent->(as TypedText)
+            endWhile
+            return
+          endBlock
+        endIf
+
         next_typed_text.is_typed_text_active = true
       endIf
 
