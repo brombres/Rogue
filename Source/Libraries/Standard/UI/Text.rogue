@@ -41,6 +41,14 @@ class Text : Component
       if (@can_split) return @can_split.value
       return this isType Text
 
+    method can_split_from( next_component:Component )->Logical
+      if local next_text = next_component->(as Text)
+        if (value.count == 0 or next_text.value.count == 0) return true
+        return " \n\r\t".contains(value.last) or " \n\r\t".contains(next_text.value[0])
+      else
+        return true
+      endIf
+
     method create_fragment( text=String():String, &fragment )->Text [novel]
       return Text( text, &=fragment )
 
@@ -95,7 +103,7 @@ class Text : Component
       return value == "\n"
 
     method is_space->Logical [override]
-      return value == " "
+      return value == " " or value == "\t"
 
     method is_display_component->Logical [override]
       return count == 0

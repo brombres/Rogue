@@ -83,7 +83,7 @@ class HFlow : Component
     method perform_content_layout [override]
       if (layout_finished) return
 
-      use components = display_components
+      use components = display_components, cluster=RecyclePool<<LayoutCluster>>
         localize content_position
         layout_cursor    = content_position
         max_width        = 0
@@ -95,49 +95,69 @@ class HFlow : Component
         # Perform layout with top-left origin.
         local i = 0
         while (i < components.count)
-          local component = components[i]
-          cur_line_height  .= or_larger( component.size.y )
-          cur_line_advance .= or_larger( component.line_height )
+          # Collect a cluster of components that can't be split from one another.
+          # We can probably split some of them internally but it's easiest to start
+          # large and then split to reduce.
+          cluster.clear
+          cluster.add( components[i] )
+          local i2 = i + 1
+          while (i2 < components.count and not cluster.last.can_split_from(components[i2]))
+            cluster.add( components[i2] )
+            ++i2
+          endWhile
 
-          local w = component.size.x
+          local w = cluster.width
           local too_wide = (layout_cursor.x + w > available_width)
-          contingent
-            if (component.is_br)
+          block
+            if (cluster.is_br)
               ++i
-              sufficient
+              cur_line_height  .= or_larger( cluster.height )
+              cur_line_advance .= or_larger( cluster.line_advance )
+              layout_cursor.x = content_position.x
+              layout_cursor.y += cur_line_advance
+              cur_line_height  = 0
+              cur_line_advance = 0
+              nextIteration
             endIf
+
             if (too_wide)
               local max_fragment_w = (available_width - (layout_cursor.x - content_position.x))
-              local split_position = component.find_h_split( max_fragment_w )
+              local split_position = cluster.find_h_split( max_fragment_w )
               if (not split_position and layout_cursor.x == content_position.x)
                 # We can't naturally split the text and we're already at the beginning
                 # of a line, so force a split. Could still fail if even the first
                 # character is too wide.
-                split_position = component.find_h_split( max_fragment_w, &force )
+                split_position = cluster.find_h_split( max_fragment_w, &force )
               endIf
 
               if (split_position)
-                component.split_h( split_position.value, components, i )
+                cluster.split_h( split_position.value, components, i )
+                i += cluster.count
                 nextIteration  # components[] adjusted; repeat layout of new smaller piece
               else
-                sufficient (layout_cursor.x > content_position.x)  # we're not at BOL; just move to next line
+                if (layout_cursor.x > content_position.x)
+                  # We're not at BOL; move to next line and retry
+                  layout_cursor.x = content_position.x
+                  layout_cursor.y += cur_line_advance
+                  cur_line_height  = 0
+                  cur_line_advance = 0
+                  nextIteration
+                endIf
 
                 # We're at BOL and we can't split the current fragment. Fall through to escapeContingent,
                 # set it in place, and move on.
               endIf
             endIf
-            escapeContingent
-          satisfied
-            layout_cursor.x = content_position.x
-            layout_cursor.y += cur_line_advance
-            cur_line_height  = 0
-            cur_line_advance = 0
-            nextIteration
-          endContingent
+            escapeBlock
 
-          ++i
-          component.perform_layout( layout_cursor )
-          if (layout_cursor.x or not component.is_space)
+          endBlock
+
+          cur_line_height  .= or_larger( cluster.height )
+          cur_line_advance .= or_larger( cluster.line_advance )
+
+          i += cluster.count
+          cluster.perform_layout( layout_cursor )
+          if (layout_cursor.x or not cluster.is_space)
             layout_cursor.x += w
             max_width .= or_larger( layout_cursor.x )
           endIf
@@ -158,3 +178,74 @@ class HFlow : Component
       endUse
 
 endClass
+
+
+class LayoutCluster : Component[]
+  # Used by HFlow layout.
+  METHODS
+    method find_h_split( max_width:Real, &force )->Real?
+      local x = this.width
+      local remaining_w = max_width - x
+      forEach (component in this step -1)
+        local w = component.size.x
+        x -= w
+        remaining_w += w
+        if (remaining_w >= 0.0)
+          if local split_x = component.find_h_split( remaining_w, &=force )
+            return x + split_x
+          endIf
+        endIf
+      endForEach
+
+      return null
+
+    method height->Real
+      local h = 0.0
+      h .= or_larger( (forEach in this).size.y )
+      return h
+
+    method is_br->Logical
+      return (count == 1 and first.is_br)
+
+    method is_space->Logical
+      return (count == 1 and first.is_space)
+
+    method line_advance->Real
+      local h = 0.0
+      h .= or_larger( (forEach in this).line_height )
+      return h
+
+    method perform_layout( position:XY )
+      forEach (component in this)
+        local w = component.size.x
+        component.perform_layout( position )
+        position += XY( w, 0 )
+      endForEach
+
+    method release  # Called by RecyclePool
+      clear
+
+    method split_h( split_position:Real, components:Component[], component_i:Int )
+      local discard_from_i = 0
+      forEach (component at i in this)
+        discard_from_i = i
+        local w = component.size.x
+        if (w < split_position)
+          split_position -= w
+          ++component_i
+        elseIf (w == split_position)
+          # The split falls between components; no need to actually split.
+          escapeForEach
+        else
+          component.split_h( split_position, components, component_i )
+          escapeForEach
+        endIf
+      endForEach
+      this.discard_from( discard_from_i )
+
+    method width->Real
+      local w = 0.0
+      w += (forEach in this).size.x
+      return w
+endClass
+
