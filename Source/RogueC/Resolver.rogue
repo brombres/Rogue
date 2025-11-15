@@ -1245,11 +1245,11 @@ class Resolver : Recyclable, Visitor
 
     method on_visit( cmd:LogicalAnd )->Cmd
       cmd.left  = visit( cmd.left ).logicalized( this )
-      cmd.right = visit( cmd.right ).logicalized( this )
       if (cmd.left instanceOf LiteralPrimitive)
         if (cmd.left.is_truthy) return cmd.right.logicalized( this )
         else                    return LiteralLogical( cmd.t, false )
       endIf
+      cmd.right = visit( cmd.right ).logicalized( this )
       return cmd
 
     method on_validate( cmd:LogicalNot )->Cmd
@@ -1273,12 +1273,14 @@ class Resolver : Recyclable, Visitor
 
     method on_visit( cmd:LogicalOr )->Cmd
       cmd.left  = visit( cmd.left ).logicalized( this )
-      cmd.right = visit( cmd.right ).logicalized( this )
       if (cmd.left instanceOf LiteralPrimitive)
-        return LiteralLogical( cmd.t, cmd.left.is_truthy or cmd.right.is_truthy )
-        if (cmd.left.is_truthy) return LiteralLogical( cmd.t, true )
-        return cmd.right.logicalized( this )
+        if (cmd.left.is_truthy)
+          return LiteralLogical( cmd.t, true )
+        else
+          return visit( cmd.right ).logicalized( this )
+        endIf
       endIf
+      cmd.right = visit( cmd.right ).logicalized( this )
       return cmd
 
     method on_visit( cmd:LogicalXor )->Cmd
