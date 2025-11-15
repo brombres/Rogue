@@ -40,6 +40,9 @@ class ConsoleUI : UI
       #  underline_font = default_font.cloned.[ underline=true ]
       #endIf
 
+    method default_scroll_rate->Real
+      return 3.0
+
     method draw
       prior.draw
       ConsoleUICanvas.display(0,0)

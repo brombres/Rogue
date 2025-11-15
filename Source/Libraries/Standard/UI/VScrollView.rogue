@@ -12,7 +12,7 @@ class VScrollView : Component
     allow_overscroll       = true
     clamp_to_bounds        = true
 
-    scroll_rate = ScrollRate( default_scroll_rate )
+    scroll_rate = ScrollRate( UI.default_scroll_rate )
 
     is_pressed  = false
     is_dragging = false
@@ -32,10 +32,6 @@ class VScrollView : Component
       else
         return 0
       endIf
-
-    method default_scroll_rate->Real
-      if (UI instanceOf ConsoleUI) return 3
-      else                         return 5
 
     method left_offset->Real
       return 0

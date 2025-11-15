@@ -54,6 +54,8 @@ class UI : Component [singleton]
 
     find_handler   : Function(GlobalID,Variant)->Variant
 
+    scroll_rate    = default_scroll_rate : Real
+
   METHODS
     method init_object
       UI = this
@@ -70,6 +72,9 @@ class UI : Component [singleton]
       local container = spacer( &=w, &=h )
       container.add( content )
       return container
+
+    method default_scroll_rate->Real
+      return 5.0
 
     method display_density->Real
       return display_density_fn()
