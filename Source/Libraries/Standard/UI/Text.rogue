@@ -1,12 +1,10 @@
 library UI
 
 class Text : Component
-  # Note: for custom classes that extend Text, you may wish to override can_split().
   PROPERTIES
     value         : String
     scaling_mode  = ScalingModeXY( ScalingMode.NONE, ScalingMode.NONE )
     sizing_mode   = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
-    can_split : Logical?
 
   METHODS
     method init( text=String():String, &fragment )
@@ -37,9 +35,7 @@ class Text : Component
 
     method can_split->Logical
       # If true, Text can be internally split for word-wrapping purposes.
-      # By default only true for base type Text.
-      if (@can_split) return @can_split.value
-      return this isType Text
+      return true
 
     method can_split_from( next_component:Component )->Logical
       if local next_text = next_component->(as Text)

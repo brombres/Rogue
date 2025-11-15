@@ -11,10 +11,6 @@ class TypedText : Text
     reveal_next          = true
 
   METHODS
-    method can_split->Logical [override]
-      if (@can_split) return @can_split.value
-      return (this isType TypedText)
-
     method create_fragment( text=String():String, &fragment )->Text [override]
       return TypedText( text, &=fragment ).[ reveal_next=reveal_next ]
 
