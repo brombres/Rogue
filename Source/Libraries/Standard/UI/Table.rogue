@@ -21,6 +21,7 @@ class Table : Component
   METHODS
     method init( cells_wide:Int, cells_high:Int )
       resize( cells_wide, cells_high )
+      align_content_center
 
     method init_object
       is_pointer_passthrough = true
