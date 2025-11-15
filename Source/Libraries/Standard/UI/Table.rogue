@@ -690,6 +690,9 @@ class TableRow( table:Table, j:Int )
     is_resolved   : Logical
 
   METHODS
+    method cells->TableSubsetProperties
+      return TableSubsetProperties( table, 0, j, table.cells_wide-1, j )
+
     method expand_to_fill_height
       sizing_mode  = SizingMode.EXPAND_TO_FILL
 

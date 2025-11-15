@@ -77,9 +77,6 @@ class ComponentGroupProperties [aspect]
     method set_fixed_width( w:Real )
       (forEach in this).set_fixed_width( w )
 
-    method set_font( font:Font )
-      (forEach in this).set_font( font )
-
     method set_proportional_size( layout_size:XY )
       (forEach in this).set_proportional_size( layout_size )
 
@@ -98,14 +95,17 @@ class ComponentGroupProperties [aspect]
     method set_proportional_width( size_reference:Component, w:Real )
       (forEach in this).set_proportional_width( size_reference, w )
 
-    method set_size( parameter_id:VariantEntryID )
-      (forEach in this).set_size( parameter_id )
+    method set_font( font:Font )
+      (forEach in this).font = font
 
     method set_height( parameter_id:VariantEntryID )
       (forEach in this).set_height( parameter_id )
 
     method set_opacity( opacity:Real )
       (forEach in this).set_opacity( opacity )
+
+    method set_size( parameter_id:VariantEntryID )
+      (forEach in this).set_size( parameter_id )
 
     method set_text_style( style:TextStyle )
       (forEach in this).set_text_style( style )

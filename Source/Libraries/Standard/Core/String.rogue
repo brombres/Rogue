@@ -1829,6 +1829,12 @@ class String : Recyclable PrintWriter
         else                 return builder.cloned
       endUse
 
+    method trim( n:Int )->String
+      # Trims 'n' characters from both ends.
+      if (n <= 0)       return this
+      if (count <= n*2) return ""
+      return substring( n, count-n*2 )
+
     method trimmed->String
       # Trim white spaces on both ends
       local i1 = 0
