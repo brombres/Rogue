@@ -175,7 +175,7 @@ class Component : Entity
       sizing_mode.x = SizingMode.ASPECT_FIT
 
     method can_split_from( next_component:Component )->Logical
-      # Used by Text components
+      # Used by HFlow layout, overridden by Text
       return true
 
     method content_alignment->Anchor
@@ -485,6 +485,12 @@ class Component : Entity
         next_component = next_entity->(as Component)
       endWhile
       return next_component
+
+    method on_begin_draw [critical]
+      if (attributes.clip) Display.push_clip( display_bounds )
+
+    method on_end_draw [critical]
+      if (attributes.clip) Display.pop_clip
 
     method opacity->Real
       if local parent_component = parent->(as Component)

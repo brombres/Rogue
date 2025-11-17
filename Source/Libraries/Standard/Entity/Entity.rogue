@@ -172,6 +172,9 @@ class Entity : Node<<Entity>>
 
     method on_update
 
+    method set_clip( setting:Logical )
+      attributes.clip = setting
+
     method set_h_flip( setting:Logical )
       attributes.h_flip = setting
 

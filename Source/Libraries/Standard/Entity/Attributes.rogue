@@ -12,6 +12,7 @@ enum Attributes [bitflags]
     H_FLIP
     V_FLIP
     MANUALLY_UPDATE_CONTENT_LAYOUT
+    CLIP
     CONSTANT_WIDTH
     CONSTANT_HEIGHT
 
