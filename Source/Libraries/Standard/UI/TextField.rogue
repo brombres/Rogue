@@ -7,6 +7,7 @@ class TextField : Widget
     next_focus        : Component
     previous_focus    : Component
     content_alignment = Anchor.LEFT : Anchor?
+    max_count         : Int?
 
     behavior = WidgetPointerFocusBehavior.STICKY : WidgetPointerFocusBehavior
 
@@ -102,6 +103,7 @@ class TextField : Widget
       if (not has_keyboard_focus) return
 
       e.consume
+      if (max_count and value.count >= max_count.value) return
 
       if (cursor.value == value.count)
         value += e.text
@@ -144,6 +146,7 @@ class TextField : Widget
 
     method set_value( other:String )
       if (value != other)
+        if (max_count and other.count > max_count.value) other .= leftmost( max_count.value )
         @value = other
         if (cursor) cursor.value .= clamped_high( value.count )
         handle_value_changed
