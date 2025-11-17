@@ -45,8 +45,11 @@ class Text : Component
         return true
       endIf
 
-    method create_fragment( text=String():String, &fragment )->Text [novel]
-      return Text( text, &=fragment )
+    method create_fragment( text=String():String, &fragment )->$thisType [propagated]
+      local result = new<<$thisType>>
+      result->(as Text).init( text, &=fragment )
+      result.copy_settings_from( this )
+      return result
 
     method description->String
       local result = ''$($)''(type_name,value?.to_escaped_ascii||"")

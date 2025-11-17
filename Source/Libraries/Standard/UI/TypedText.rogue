@@ -11,8 +11,11 @@ class TypedText : Text
     reveal_next          = true
 
   METHODS
-    method create_fragment( text=String():String, &fragment )->Text [override]
-      return TypedText( text, &=fragment ).[ reveal_next=reveal_next ]
+    method copy_settings_from( other:Component ) [override]
+      prior.copy_settings_from( other )
+      if local other_typed_text = other->(as TypedText)
+        @reveal_next = other_typed_text.reveal_next
+      endIf
 
     method is_revealed->Logical [novel]
       if local last_fragment = last_child->(as TypedText)
