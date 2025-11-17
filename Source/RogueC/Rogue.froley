@@ -3396,6 +3396,14 @@ parser
 
   onPeek "function" function_definition: return
 
+  onPeek '=>'
+    # '=> fndef' is shorthand for '() => fndef'
+    beginList
+    createList IDList
+    remaining_generic_function_definition
+    return
+  endOn
+
   on "[>"
     beginList
       expression
