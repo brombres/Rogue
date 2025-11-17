@@ -24,6 +24,7 @@ class VScrollView : Component
   METHODS
     method init_object
       content_alignment = Anchor.TOP_LEFT
+      clip = true
 
     method bottom_offset->Real
       # Result will be negative or zero.
@@ -33,16 +34,19 @@ class VScrollView : Component
         return 0
       endIf
 
+    method bottom_position->XY
+      return XY( content_offset.x, bottom_offset )
+
+    method item_position( index:Int )->XY
+      local y = 0.0
+      forEach (item as Component at i in this)
+        if (i == index) return XY( 0, y )
+        y -= item.size.y
+      endForEach
+      return XY( 0, y )
+
     method left_offset->Real
       return 0
-
-    method right_offset->Real
-      # Result will be negative or zero.
-      if local content = first_content_component
-        return (size.x - content.size.x).clamped_high(0)
-      else
-        return 0
-      endIf
 
     method on( e:PointerEvent )
       if (e.is_press)
@@ -232,6 +236,14 @@ class VScrollView : Component
         endIf
       endIf
 
+    method right_offset->Real
+      # Result will be negative or zero.
+      if local content = first_content_component
+        return (size.x - content.size.x).clamped_high(0)
+      else
+        return 0
+      endIf
+
     method scroll( delta:XY, &clamp )
       if (delta.abs.max < 0.1) return
 
@@ -269,7 +281,18 @@ class VScrollView : Component
     method scroll_position->XY
       return content_offset
 
-    method scroll_to( offset:XY, duration=0.5:Real )
+    method scroll_to( index:Int, duration=0.5:Real, &clamp )
+      scroll_to( item_position(index), &=duration, &=clamp )
+
+    method scroll_to( offset:XY, duration=0.5:Real, &clamp )
+      if (clamp)
+        if (offset.x < right_offset) offset.x = right_offset
+        elseIf (offset.x > 0)        offset.x = 0
+
+        if (offset.y < bottom_offset) offset.y = bottom_offset
+        elseIf (offset.y > 0)         offset.y = 0
+      endIf
+
       actions = null
       if (offset != content_offset)
         if (duration)
@@ -277,14 +300,23 @@ class VScrollView : Component
           local start_pos = content_offset
           local delta = offset - start_pos
           actions = Action(
-          (p) => view.scroll_position = start_pos + delta * p,
-            &=duration,
-            ProgressFn.QUADRATIC
+            (p) => view.scroll_position = start_pos + delta * ProgressFn.CUBIC(p),
+            &=duration
           )
         else
           scroll_position = offset
         endIf
       endIf
+
+    method scroll_to_make_visible( bounds:Box, duration=0.5:Real )
+      if (content_offset.y + bounds.position.y < 0)
+        scroll_to( XY(0,-bounds.position.y), duration )
+      elseIf (content_offset.y + bounds.y2 > size.y)
+        scroll_to( XY(0,size.y-bounds.y2), duration )
+      endIf
+
+    method set_scroll_position( index:Int, &clamp )
+      set_scroll_position( item_position(index), &=clamp )
 
     method set_scroll_position( offset:XY, &clamp )
       if (UI.snap_to_pixel_coordinates) offset .= ceiling
@@ -300,6 +332,9 @@ class VScrollView : Component
 
     method top_offset->Real
       return 0
+
+    method top_position->XY
+      return XY( content_offset.x, top_offset )
 
 endClass
 
