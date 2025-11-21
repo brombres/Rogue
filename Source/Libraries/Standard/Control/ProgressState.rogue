@@ -129,7 +129,7 @@ class ProgressState<<$ExtendedType>> : ActiveState<<$ExtendedType>>
 
 endClass
 
-# The following are [undocumented] because otherwise they up the API doc generator
+# The following are [undocumented] because otherwise they confuse the API doc generator
 
 class ProgressStateWait<<$ExtendedType>>( duration ) : $ExtendedType [undocumented];
 

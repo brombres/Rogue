@@ -2,6 +2,12 @@ $include Control
 
 class ActiveState<<$ExtendedType>>
   GLOBAL METHODS
+    method if_then( condition:Function->Logical, if_true:$ExtendedType )->$ExtendedType
+      return ActiveStateIfThen<<$ExtendedType>>( condition, if_true )
+
+    method if_then_else( condition:Function->Logical, if_true:$ExtendedType, if_false:$ExtendedType )->$ExtendedType
+      return ActiveStateIfThenElse<<$ExtendedType>>( condition, if_true, if_false )
+
     method operator+( a:$ExtendedType, b:$ExtendedType )->$ExtendedType
       if (not a) return b
       if (not b) return a
@@ -260,5 +266,24 @@ class ActiveState<<$ExtendedType>>
       # to the state being updated.
       noAction
 
+endClass
+
+# The following are [undocumented] because otherwise they confuse the API doc generator
+
+class ActiveStateIfThen<<$ExtendedType>>( condition:Function->Logical, if_true:$ExtendedType )
+  : $ExtendedType [undocumented]
+  METHODS
+    method on_activate [override]
+      if (condition()) insert_next( if_true )
+      exit
+endClass
+
+class ActiveStateIfThenElse<<$ExtendedType>>( condition:Function->Logical, if_true:$ExtendedType,
+    if_false:$ExtendedType ) : $ExtendedType [undocumented]
+  METHODS
+    method on_activate [override]
+      if (condition()) insert_next( if_true )
+      else             insert_next( if_false )
+      exit
 endClass
 
