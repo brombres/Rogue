@@ -2732,7 +2732,7 @@ augment
       c_writer = update_c_writer( c_writer )
 
       c_writer.println @|
-                        |void  %Ns%Rogue_collect_garbage( void )
+                        |void %Ns%Rogue_collect_garbage( void )
                         |{
       c_writer.indent += 2
       c_writer.println   @|%Ns%RogueMM_bytes_allocated_since_gc = 0;
@@ -2743,8 +2743,15 @@ augment
                           |%Ns%RogueInt i;
                           |%Ns%RogueInt write_i;
                           |
-                          |// Trace all retained objects (positive refcount)
+                          |// Trace all retained standard objects (positive refcount)
                           |for (i=%Ns%RogueMM_objects.count, refptr=%Ns%RogueMM_objects.data-1; --i>=0; )
+                          |{
+                          |  if ((ref=(%Ns%RogueObject*)*(++refptr)) && ref->__refcount > 0) ref->__type->fn_gc_trace(ref);
+                          |}
+                          |
+                          |// Trace all retained objects requiring cleanup (positive refcount)
+                          |for (i=%Ns%RogueMM_objects_requiring_cleanup.count,
+                          |     refptr=%Ns%RogueMM_objects_requiring_cleanup.data-1; --i>=0; )
                           |{
                           |  if ((ref=(%Ns%RogueObject*)*(++refptr)) && ref->__refcount > 0) ref->__type->fn_gc_trace(ref);
                           |}
