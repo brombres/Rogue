@@ -189,7 +189,10 @@ class String : Recyclable PrintWriter
       # the given index.
       #
       # Equivalent to `from(index+1)`.
-      return from(index+1)
+      return from( index + 1 )
+
+    method after( span:Span )->String
+      return from( span.index + span.count )
 
     method after_any( ch:Character, &ignore_case )->String
       local i = locate_last( ch, &=ignore_case )
@@ -241,7 +244,10 @@ class String : Recyclable PrintWriter
       # the given index.
       #
       # Equivalent to ''leftmost(index)''.
-      return from(0,index-1)
+      return from( 0, index-1 )
+
+    method before( span:Span )->String
+      return from( 0, span.index-1 )
 
     method before_first( ch:Character, &ignore_case )->String
       local i = locate( ch, &=ignore_case )
@@ -2353,8 +2359,6 @@ class String : Recyclable PrintWriter
 
           case '$':
             # Match one or more characters
-            while (remaining_count and (this[i0]==' ' or this[i0]=='\t')) ++i0; --remaining_count
-
             if (fcount>=3 and format[f0+1] == '(')
               if (format[f0+2] == ')')
                 f0     += 2
@@ -2403,6 +2407,8 @@ class String : Recyclable PrintWriter
 
               endIf
             endIf
+
+            while (remaining_count and (this[i0]==' ' or this[i0]=='\t')) ++i0; --remaining_count
 
             if (fcount == 1)
               # Last pattern symbol - greedy match

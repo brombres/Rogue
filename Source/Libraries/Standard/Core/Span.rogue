@@ -8,4 +8,12 @@ class Span( index:Int, count:Int ) [compound]
 
     method to->String
       return "@$ x$"(index,count)
+
+    method unleft( n:Int )->Span
+      if (count <= n) return Span( index+count, 0 )
+      else            return Span( index+n, count-n )
+
+    method unright( n:Int )->Span
+      if (count <= n) return Span( index, 0 )
+      else            return Span( index, count-n )
 endClass
