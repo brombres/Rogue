@@ -3,9 +3,10 @@ $include IO/UTF8
 
 class LineReader : Reader<<String>>
   PROPERTIES
-    source : Reader<<Character>>
-    next   : String
-    prev   : Character
+    source          : Reader<<Character>>
+    next            : String
+    internal_buffer = String()
+    prev            : Character
 
   METHODS
     method init( source )
@@ -34,7 +35,11 @@ class LineReader : Reader<<String>>
       if (not source.has_another) return false
 
       prev = 0
-      use buffer = StringPool
+      use temporary_buffer = StringPool
+        local buffer = internal_buffer
+        if (buffer) buffer.clear
+        else        buffer = temporary_buffer
+
         while (source.has_another)
           local ch = source.read
           if (ch == '\r') nextIteration
@@ -45,7 +50,8 @@ class LineReader : Reader<<String>>
           buffer.print( ch )
         endWhile
 
-        next = buffer.cloned
+        if (buffer is temporary_buffer) buffer .= cloned
+        next = buffer
       endUse
       return true
 
@@ -70,6 +76,13 @@ class LineReader : Reader<<String>>
       while (pos > position)
         read
       endWhile
+
+    method set_use_recycled_buffer( setting:Logical )
+      if (setting)
+        if (not internal_buffer) internal_buffer = String()
+      else
+        internal_buffer = null
+      endIf
 
     method to->String[]
       local lines = String[]

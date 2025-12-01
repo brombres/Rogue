@@ -19,7 +19,7 @@ class GitIgnorePatcher
     method init( file )
       if (file.exists)
         local section : GitIgnoreSection
-        forEach (line in LineReader(file))
+        forEach (line in LineReader(file).[use_recycled_buffer=false])
           line .= trimmed
           if (line.begins_with('#'))
             local name = line.unleft(1).trimmed
