@@ -1,0 +1,25 @@
+class CURL( url:String )
+  PROPERTIES
+    result           : ProcessResult
+    follow_redirects = true
+
+  METHODS
+    method fetch->ProcessResult
+      use cmd = StringPool
+        cmd.print "curl --silent "
+        if (follow_redirects) cmd.print "-L "
+        cmd.print url
+        result = Process.run( cmd, &env )
+        return result
+      endUse
+
+    method fetch_bytes->Byte[]
+      local result = fetch
+      if (result.success) return result.output_bytes
+      else                return null
+
+    method fetch_string->String
+      local result = fetch
+      if (result.success) return result->String
+      else                return null
+endClass
