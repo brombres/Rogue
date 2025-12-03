@@ -11,7 +11,12 @@ class Random [singleton]
   # is used.
   #
   # Under the hood Random uses the PCG32 algorithm adapted from:
-  # https://github.com/imneme/pcg-c-basic
+  #   https://github.com/imneme/pcg-c-basic
+  #
+  # JS equivalent:
+  # - https://www.npmjs.com/package/pcg-random
+  # - new PcgRandom(seed,0).integer() & 0x7FFFFFFF <> Random(seed).int32
+
   PROPERTIES
     seed   : Int64  # The original state value.
     state  : Int64  # The current state used to produce the next psuedo-random number.
