@@ -1,4 +1,8 @@
 class FileReader : Reader<<Byte>>
+  GLOBAL METHODS
+    method create( filepath:String )->FileReader
+      return CFileReader( filepath )
+
   PROPERTIES
     filepath        : String
     count           : Int
@@ -6,32 +10,15 @@ class FileReader : Reader<<Byte>>
     buffer_position : Int
     buffer          = Byte[](1024)
     error           : Logical
-    native "FILE* fp;"
 
   METHODS
-    method init
-      noAction
-
-    method init( _filepath:String )
-      if (not open(_filepath))
-        Global.error.println( "Unable to open $ for reading." (filepath) )
-        error = true
-      endIf
-
     method on_cleanup
       close
 
     method close
-      if (fp)
-        native @|fclose( $this->fp );
-                |$this->fp = 0;
-      endIf
-
       position = 0
+      buffer_position = 0
       count = 0
-
-    method fp->Int64
-      return native("(%Ns%RogueInt64)$this->fp")->Int64
 
     method has_another->Logical
       return (position < count)
@@ -45,16 +32,73 @@ class FileReader : Reader<<Byte>>
     method open( filepath )->Logical
       close
       error = false
+      return false
 
-      native @|$this->fp = fopen( (char*)$filepath->data->as_utf8, "rb" );
-               if (native("!$this->fp")->Logical)
-                 error = true
-                 return false
-               endIf
-      native @|
-              |fseek( $this->fp, 0, SEEK_END );
-              |$count = (%Ns%RogueInt) ftell( $this->fp );
-              |fseek( $this->fp, 0, SEEK_SET );
+    method peek->Byte
+      return 0
+
+    method read->Byte
+      if (position == count) return 0
+
+      local result = peek
+
+      ++position
+      ++buffer_position
+      if (position == count) close
+
+      return result
+
+    method read( result:Byte[], limit:Int )->Int
+      return 0
+
+    method remaining->Int
+      return count - position
+
+    method reset
+      noAction
+
+    method seek( pos:Int )
+      noAction
+endClass
+
+class CFileReader : FileReader
+  PROPERTIES
+    native "FILE* fp;"
+
+  METHODS
+    method init( filepath:String )
+      if (not open(filepath))
+        Global.error.println( "Unable to open $ for reading." (filepath) )
+        error = true
+      endIf
+
+    method close
+      if (fp)
+        native @|fclose( $this->fp );
+                |$this->fp = 0;
+      endIf
+
+      position = 0
+      count = 0
+
+    method fp->Int64
+      return native("(%Ns%RogueInt64)$this->fp")->Int64
+
+    method open( filepath )->Logical
+      close
+      error = false
+
+      native
+      @|$this->fp = fopen( (char*)$filepath->data->as_utf8, "rb" );
+        if (native("!$this->fp")->Logical)
+          error = true
+          return false
+        endIf
+
+      native
+      @|fseek( $this->fp, 0, SEEK_END );
+       |$count = (%Ns%RogueInt) ftell( $this->fp );
+       |fseek( $this->fp, 0, SEEK_SET );
 
       # Always close after the last byte is read, so if there are no
       # bytes then close right away.
@@ -71,17 +115,6 @@ class FileReader : Reader<<Byte>>
       endIf
 
       return buffer[ buffer_position ]
-
-    method read->Byte
-      if (position == count) return 0
-
-      local result = peek
-
-      ++position
-      ++buffer_position
-      if (position == count) close
-
-      return result
 
     method read( result:Byte[], limit:Int )->Int
       if (position == count) return 0
@@ -110,9 +143,6 @@ class FileReader : Reader<<Byte>>
       if (position == count) close
 
       return total_read
-
-    method remaining->Int
-      return count - position
 
     method reset
       if (not fp) return
