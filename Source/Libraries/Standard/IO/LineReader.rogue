@@ -19,6 +19,9 @@ class LineReader : Reader<<String>>
     method init( string:String )
       init( string.reader )
 
+    method disable_recycled_buffer
+      use_recycled_buffer = false
+
     method close
       source.close
 
@@ -89,5 +92,7 @@ class LineReader : Reader<<String>>
       forEach (line in this) lines.add( line )
       return lines
 
+    method use_recycled_buffer
+      use_recycled_buffer = true
 endClass
 
