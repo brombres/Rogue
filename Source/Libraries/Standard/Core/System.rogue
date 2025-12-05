@@ -16,7 +16,7 @@ class System [essential]
        |  #define PATH_MAX 4096
        |#endif
        |
-       |extern char **environ;
+       |extern char** environ;
 
     nativeHeader
       @|#if defined(__APPLE__)
@@ -44,7 +44,7 @@ class System [essential]
 
     method current_language_code->String
       # Returns e.g. "en" or "es", not "es-MX".
-      if (is_apple) return Apple.current_language_code
+      if ($target("ObjC")) return Apple.current_language_code
       return "en"  # default
 
     method execution_time->Real
@@ -318,11 +318,10 @@ class SystemEnvironment [singleton]
     method definitions->[String:String]
       if (@definitions) return @definitions
 
-
       @definitions = [String:String]
 
       native "char** env = environ;"
-      while (native("!!*env")->Logical)
+      while (native("env && *env")->Logical)
         local parts = native("%Ns%RogueString_create( *(env++) )")->String.split('=')
         local name  = parts.first
         local value = which{ parts.count==2:parts.last || "" }
@@ -353,4 +352,7 @@ class SystemEnvironment [singleton]
 
         native @|unsetenv( (char*)$name->data->as_utf8 );
       endIf
+
+    method to->String
+      return definitions
 endClass
