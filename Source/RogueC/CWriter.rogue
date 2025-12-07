@@ -21,7 +21,7 @@ class CWriter : BufferedPrintWriter
                  |  #define BEGIN_ROGUE_EXTERN_C extern "C" {
                  |  #define END_ROGUE_EXTERN_C }
                  |#else
-                 |  #define ROGUE_EXTERN_C
+                 |  #define ROGUE_EXTERN_C extern
                  |  #define BEGIN_ROGUE_EXTERN_C
                  |  #define END_ROGUE_EXTERN_C
                  |#endif

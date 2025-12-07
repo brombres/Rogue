@@ -16,7 +16,7 @@ class System [essential]
        |  #define PATH_MAX 4096
        |#endif
        |
-       |extern char** environ;
+       |ROGUE_EXTERN_C char** environ;
 
     nativeHeader
       @|#if defined(__APPLE__)
