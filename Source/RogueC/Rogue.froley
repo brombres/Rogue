@@ -3126,7 +3126,8 @@ parser
 
 - context_block_command
   create ContextBlockContext
-  procedure_name
+  id_or_internal_id
+  call convert_identifier_dot_to_underscore
   access_args
   create ContextAccess(context,name:String,args)
   access_inner
