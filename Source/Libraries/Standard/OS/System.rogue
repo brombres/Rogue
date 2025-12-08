@@ -42,11 +42,6 @@ class System [essential]
        |  __builtin_debugtrap();
        |#endif
 
-    method current_language_code->String
-      # Returns e.g. "en" or "es", not "es-MX".
-      if ($target("ObjC")) return Apple.current_language_code
-      return "en"  # default
-
     method execution_time->Real
       # Execution time in seconds.
       return execution_time_ms / 1000.0
@@ -210,6 +205,98 @@ class System [essential]
       if ($target("macOS") or $target("iOS"))
         Apple.open_url_in_external_browser( url )
       endIf
+
+    method preferred_language_code( supported_languages=null:String[] )->String
+      # Returns the the fully qualified language code ("en-US") of the first language
+      # the system prefers that also appears in the supported_languages list (if provided).
+      # If there are no matches (or the system does not provide any language preferences)
+      # then null is returned.
+      #
+      # 'supported_languages' can include general languages such as "en" and/or specialized
+      # languages such as "en-US".
+      if ($target("SDL"))
+        use language = StringPool
+        use language_country = StringPool
+
+        local count = 0
+
+        native
+        @|int n_locales;
+         |SDL_Locale** locales = SDL_GetPreferredLocales( &n_locales );
+         |$count = (RogueInt)n_locales;
+
+        forEach (i in 0..<count)
+          language.clear
+          language.print(
+            native( "ROGUE_COMPOUND(RogueConstCharPointer){locales[(size_t)$i]->language}" )->RogueConstCharPointer
+          )
+
+          language_country.clear
+          language_country.print( language )
+          if (native("locales[(size_t)$i]->country")->Logical)
+            language_country.print( '-' )
+            language_country.print(
+              native( "ROGUE_COMPOUND(RogueConstCharPointer){locales[(size_t)$i]->country}" )->RogueConstCharPointer
+            )
+          endIf
+
+          if (supported_languages)
+            forEach (supported in supported_languages)
+              if (language.compare_to(supported) == 0 or language_country.compare_to(supported) == 0)
+                return language_country.cloned
+              endIf
+            endForEach
+          else
+            # First one in list is preferred
+            return language_country.cloned
+          endIf
+        endForEach
+
+      elseIf ($target("ObjC"))
+        return Apple.current_language_code
+
+      endIf
+
+      return null
+
+    method preferred_language_codes->String[]
+      # Returns a list of preferred languages (e.g. "en", "pt-BR").
+      local result = String[]
+
+      if ($target("SDL"))
+        use language = StringPool
+
+        local count = 0
+
+        native
+        @|int n_locales;
+         |SDL_Locale** locales = SDL_GetPreferredLocales( &n_locales );
+         |$count = (RogueInt)n_locales;
+
+        forEach (i in 0..<count)
+          language.clear
+          language.print(
+            native( "ROGUE_COMPOUND(RogueConstCharPointer){locales[(size_t)$i]->language}" )->RogueConstCharPointer
+          )
+
+          if (native("locales[(size_t)$i]->country")->Logical)
+            language.print( '-' )
+            language.print(
+              native( "ROGUE_COMPOUND(RogueConstCharPointer){locales[(size_t)$i]->country}" )->RogueConstCharPointer
+            )
+          endIf
+
+          result.add( language.cloned )
+        endForEach
+
+      else
+        if local code = preferred_language_code
+          result.add( code )
+        endIf
+
+      endIf
+
+      return result
 
     method os->String
       # Returns one of:
