@@ -3,8 +3,11 @@
 class JSON : String
   GLOBAL METHODS
     method load( file:File, error_log=null:PrintWriter )->Variant
-      if (not file.exists) return undefined
-      return parse( String(file) )
+      if (not file.exists)
+        if (error_log) error_log.println "[JSON] No such file: $"(file)
+        return undefined
+      endIf
+      return parse( String(file), &=error_log )
 
     method parse( file:File, error_log=null:PrintWriter )->Variant
       return load( file, &=error_log )

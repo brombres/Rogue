@@ -1,0 +1,2 @@
+class Android [singleton]
+endClass
