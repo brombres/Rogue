@@ -617,8 +617,10 @@ class Parser : ParserCore, Recyclable
       return _position < _limit or inserted_tokens.count
 
     method include_filepath->Int
-      Program.include( marked_token, buffer.cloned, &api=include_attribute_api,
-                       &is_optional=include_attribute_optional, &include_folder=include_attribute_folder )
+      if (include_target_matched)
+        Program.include( marked_token, buffer.cloned, &api=include_attribute_api,
+                         &is_optional=include_attribute_optional, &include_folder=include_attribute_folder )
+      endIf
       return 0
 
     method join_identifiers->Int
@@ -642,6 +644,13 @@ class Parser : ParserCore, Recyclable
         local a = _cmd_stack[_cmd_stack.count-2]->(as LiteralString)
         local b = _cmd_stack.remove_last->(as LiteralString)  # we already know b is a literal string
         a.value += b.value
+      endIf
+      return 0
+
+    method match_include_target->Int
+      if (not disable_output and _cmd_stack.count >= 1)
+        local target = _cmd_stack.remove_last
+        include_target_matched = (Program.targets.contains(target->String))
       endIf
       return 0
 

@@ -3800,6 +3800,7 @@ parser
     include_attribute_api      = false
     include_attribute_folder   = false
     include_attribute_optional = false
+    include_target_matched     = true
     include_attributes
     call include_filepath
     return
@@ -3809,6 +3810,7 @@ parser
     include_attribute_api      = false
     include_attribute_folder   = true
     include_attribute_optional = false
+    include_target_matched     = true
     include_attributes
     call include_filepath
     return
@@ -4052,6 +4054,13 @@ parser
   endOn
   on @"optional"
     include_attribute_optional = true
+    return
+  endOn
+  on @"target"
+    mustConsume '('
+    string
+    call match_include_target
+    mustConsume ')'
     return
   endOn
   syntaxError "Illegal $include attribute. Expected one or more of [api folder optional]."
