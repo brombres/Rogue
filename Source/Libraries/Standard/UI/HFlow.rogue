@@ -2,7 +2,7 @@ library UI
 
 class HFlow : Component
   PROPERTIES
-    layout_finished  : Logical
+    layout_finished  : XY?   # size finished for
     layout_cursor    : XY
     max_width        : Real
     cur_line_height  : Real
@@ -30,7 +30,7 @@ class HFlow : Component
       return layout_cursor
 
     method on_begin_layout [override]
-      layout_finished = false
+      layout_finished = null
       prior.on_begin_layout
 
     method on_end_layout [override]
@@ -81,7 +81,7 @@ class HFlow : Component
       prior.on_end_layout
 
     method perform_content_layout [override]
-      if (layout_finished) return
+      if (layout_finished == size) return
 
       use components = display_components, cluster=RecyclePool<<LayoutCluster>>
         localize content_position
@@ -167,11 +167,11 @@ class HFlow : Component
         layout_cursor.x = max_width
         layout_cursor.y += cur_line_height
 
-        layout_finished = true
+        layout_finished = size
       endUse
 
     method resolve_content_layout_sizes( available_size:XY ) [override]
-      if (layout_finished) return
+      if (layout_finished == size) return
       use components = WorkList<<Component>>
         collect_child_display_components( components )
         (forEach in components).resolve_layout_size( available_size )
