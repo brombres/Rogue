@@ -1,2 +1,60 @@
 class Android [singleton]
+  NATIVE
+    nativeHeader @|#include <jni.h>
+
+  METHODS
+    method dpi->Real
+      local result : Real
+
+      native
+      @|JNIEnv* env = (JNIEnv*)SDL_GetAndroidJNIEnv();
+       |jobject activity = (jobject)SDL_GetAndroidActivity();
+       |
+       |jclass activityClass = env->GetObjectClass( activity );
+       |jmethodID getWindowManager = env->GetMethodID( activityClass,
+       |    "getWindowManager", "()Landroid/view/WindowManager;");
+       |jobject windowManager = env->CallObjectMethod( activity, getWindowManager );
+       |
+       |jclass windowManagerClass = env->GetObjectClass( windowManager );
+       |jmethodID getDefaultDisplay = env->GetMethodID( windowManagerClass,
+       |    "getDefaultDisplay", "()Landroid/view/Display;");
+       |jobject display = env->CallObjectMethod( windowManager, getDefaultDisplay);
+       |
+       |jclass displayMetricsClass = env->FindClass( "android/util/DisplayMetrics");
+       |jmethodID displayMetricsConstructor = env->GetMethodID( displayMetricsClass, "<init>", "()V");
+       |jobject metrics = env->NewObject( displayMetricsClass, displayMetricsConstructor );
+       |
+       |jclass displayClass = env->GetObjectClass( display );
+       |jmethodID getMetrics = env->GetMethodID( displayClass,
+       |    "getMetrics", "(Landroid/util/DisplayMetrics;)V");
+       |env->CallVoidMethod( display, getMetrics, metrics );
+       |
+       |jfieldID xdpiField = env->GetFieldID( displayMetricsClass, "xdpi", "F" );
+       |
+       |$result = env->GetFloatField( metrics, xdpiField );
+
+      return result
+
+    method is_tablet->Logical
+      local result : Logical
+      local size   : XY?
+
+      native
+      @|SDL_Rect bounds{};
+       |if (SDL_GetDisplayBounds(0, &bounds))
+       |{
+       |  $size.exists = (RogueLogical) 1;
+       |  $size.value.x = bounds.w;
+       |  $size.value.y = bounds.h;
+       |}
+
+      if local size = size
+        localize dpi
+
+        local diagonal_squared = (size.x/dpi)^2 + (size.y/dpi)^2
+        if (diagonal_squared >= 7*7) return true  # screen 7.0" or bigger
+      endIf
+
+      return false
+
 endClass
