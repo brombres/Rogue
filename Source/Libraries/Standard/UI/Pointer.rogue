@@ -42,6 +42,9 @@ class Pointer [singleton]
       endForEach
       return null
 
+    method .is_os_navigation_gesture( e:PointerEvent )->Logical
+      return (System.is_mobile and e.position.y >= Window.size.y - 60.0 * Window.density)
+
     method record( e:PointerEvent )
       if (e.is_press)
         e.retain
@@ -57,6 +60,7 @@ class Pointer [singleton]
           is_dragging = false
         endIf
         e.is_multitouch = is_multitouch
+        e.ignore_sequence = .is_os_navigation_gesture( e )
 
       elseIf (e.is_move)
         which (presses.count)
@@ -66,6 +70,8 @@ class Pointer [singleton]
           case 1
             position = e.position
             presses[0].position = e.position
+            e.ignore_sequence = presses[0].ignore_sequence
+
             if (not is_multitouch and not is_dragging)
               if ((e.position - press_position).magnitude > drag_threshold_px * UI.display_density)
                 is_dragging = true
@@ -75,6 +81,7 @@ class Pointer [singleton]
           others
             if local i = locate( e.pointer_id )
               presses[i].position = e.position
+              e.ignore_sequence = presses[i].ignore_sequence
               if (i == 0) position = e.position
             endIf
         endWhich
@@ -86,6 +93,7 @@ class Pointer [singleton]
             position = e.position
           case 1
             position = e.position
+            e.ignore_sequence = presses.last.ignore_sequence
             presses.remove_last.release
             e.is_drag = is_dragging
             if (not is_multitouch and not is_dragging)
@@ -95,6 +103,7 @@ class Pointer [singleton]
             endIf
           others
             if local i = locate( e.pointer_id )
+              e.ignore_sequence = presses[i].ignore_sequence
               presses.remove_at( i ).release
             endIf
         endWhich

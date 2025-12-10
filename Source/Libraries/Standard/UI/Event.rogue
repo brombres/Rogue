@@ -183,22 +183,23 @@ class PointerEvent : Event
     MIDDLE   = 2
 
   PROPERTIES
-    type          : GlobalID  # <PRESS>, <MOVE>, <RELEASE>, <LEAVE>
-    position      : XY
-    delta         : XY
-    index         : Int     # button index for mouse press
-    pointer_id    : Int     # used to distinguish touches, only valid if is_touch
-    is_cancelled  : Logical
+    type            : GlobalID  # <PRESS>, <MOVE>, <RELEASE>, <LEAVE>
+    position        : XY
+    delta           : XY
+    index           : Int     # button index for mouse press
+    pointer_id      : Int     # used to distinguish touches, only valid if is_touch
+    is_cancelled    : Logical
     # When a touch event in progress is interrupted, a <RELEASE> event is sent
     # with .is_cancelled==true.
 
-    is_click      : Logical # Can be true for <RELEASE> events
-    is_long_press : Logical # Can be true for any event type, including redispatched <PRESS>
-    is_drag       : Logical # this <MOVE> or <RELEASE> event is part of a press and drag movement
-    is_touch      : Logical # this pointer event is from a touch rather than the mouse
-    is_multitouch : Logical # this is one of at least two touches that are currently active
+    is_click        : Logical # Can be true for <RELEASE> events
+    is_long_press   : Logical # Can be true for any event type, including redispatched <PRESS>
+    is_drag         : Logical # this <MOVE> or <RELEASE> event is part of a press and drag movement
+    is_touch        : Logical # this pointer event is from a touch rather than the mouse
+    is_multitouch   : Logical # this is one of at least two touches that are currently active
+    ignore_sequence : Logical # gesure overlaps with e.g. Android 'show system bar'; press/move/release are ignored
 
-    tick_delay    : Int # used on iOS as time for touch events to be recognized as OS gestures
+    tick_delay      : Int # used on iOS as time for touch events to be recognized as OS gestures
 
   METHODS
     method init
@@ -209,12 +210,13 @@ class PointerEvent : Event
 
     method init( type, position, delta, index, is_cancelled=false, is_touch=false )
       prior.init
-      pointer_id    = 0
-      is_click      = false
-      is_long_press = false
-      is_drag       = false
-      is_multitouch = false
-      tick_delay    = 0
+      pointer_id      = 0
+      is_click        = false
+      is_long_press   = false
+      is_drag         = false
+      is_multitouch   = false
+      tick_delay      = 0
+      ignore_sequence = false
 
     method init( existing:PointerEvent )
       prior.init( existing )
@@ -222,13 +224,14 @@ class PointerEvent : Event
       position  = existing.position
       delta     = existing.delta
       index     = existing.index
-      is_cancelled  = existing.is_cancelled
-      pointer_id    = existing.pointer_id
-      is_click      = existing.is_click
-      is_long_press = existing.is_long_press
-      is_drag       = existing.is_drag
-      is_touch      = existing.is_touch
-      is_multitouch = existing.is_multitouch
+      is_cancelled    = existing.is_cancelled
+      pointer_id      = existing.pointer_id
+      is_click        = existing.is_click
+      is_long_press   = existing.is_long_press
+      is_drag         = existing.is_drag
+      is_touch        = existing.is_touch
+      is_multitouch   = existing.is_multitouch
+      ignore_sequence = existing.ignore_sequence
 
     method is_enter->Logical
       return (this.type == <ENTER>)
