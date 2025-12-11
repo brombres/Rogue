@@ -27,6 +27,17 @@ class Apple [singleton]
       if (filepath) return File( filepath )
       else          return File( "~" )
 
+
+    method is_ios_app_on_mac->Logical
+      local result = false
+
+      native
+      @|#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+       |  if (@available(iOS 14.0, *)) $result = (RogueLogical) [NSProcessInfo processInfo].isiOSAppOnMac;
+       |#endif
+
+      return result
+
     method open_url_in_external_browser( url:String )
       native
       @|NSURL *url = [NSURL URLWithString:Rogue_string_to_ns_string($url)];
