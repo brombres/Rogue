@@ -43,7 +43,7 @@ class Pointer [singleton]
       return null
 
     method .is_os_navigation_gesture( e:PointerEvent )->Logical
-      return (System.is_mobile and e.position.y >= Window.size.y - 60.0 * Window.density)
+      return (System.is_mobile and e.position.y >= Window.size.y - 60.0)
 
     method record( e:PointerEvent )
       if (e.is_press)

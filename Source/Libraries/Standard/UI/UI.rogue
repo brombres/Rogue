@@ -125,8 +125,6 @@ class UI : Component [singleton]
 
     method handle( e:PointerEvent )
       temporarily UI = this
-        UI = this
-
         on( e )
         if (e.is_consumed) return
 
@@ -147,8 +145,6 @@ class UI : Component [singleton]
 
     method handle( e:ScrollEvent )
       temporarily UI = this
-        UI = this
-
         on( e )
         if (e.is_consumed) return
 
@@ -164,8 +160,6 @@ class UI : Component [singleton]
 
     method handle( e:TextEvent )
       temporarily UI = this
-        UI = this
-
         on( e )
         if (e.is_consumed) return
 
