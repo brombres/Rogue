@@ -204,6 +204,12 @@ class System [essential]
     method open_url_in_external_browser( url:String )
       if ($target("macOS") or $target("iOS"))
         Apple.open_url_in_external_browser( url )
+      elseIf ($target("SDL"))
+        native
+        @|if ( !SDL_OpenURL($url->data->as_utf8) )
+         |{
+         |  SDL_Log( "SDL_OpenURL failed: %s", SDL_GetError() );
+         |}
       endIf
 
     method preferred_language_code( supported_languages=null:String[] )->String
