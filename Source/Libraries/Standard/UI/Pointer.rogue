@@ -43,7 +43,17 @@ class Pointer [singleton]
       return null
 
     method .is_os_navigation_gesture( e:PointerEvent )->Logical
-      return (System.is_mobile and e.position.y >= Window.size.y - 60.0)
+      #return (System.is_mobile and e.position.y >= Window.size.y - 60.0)
+      contingent
+        necessary (System.is_mobile)
+        sufficient (e.position.y <= 60.0)
+        sufficient (e.position.y >= Window.size.y - 60.0)
+        return false
+      satisfied
+        return true
+      unsatisfied
+        return false
+      endContingent
 
     method record( e:PointerEvent )
       if (e.is_press)

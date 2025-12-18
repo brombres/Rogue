@@ -10,8 +10,8 @@ class Android [singleton]
       @|JNIEnv* env = (JNIEnv*)SDL_GetAndroidJNIEnv();
        |jobject activity = (jobject)SDL_GetAndroidActivity();
        |
-       |jclass activityClass = env->GetObjectClass( activity );
-       |jmethodID getWindowManager = env->GetMethodID( activityClass,
+       |jclass activity_class = env->GetObjectClass( activity );
+       |jmethodID getWindowManager = env->GetMethodID( activity_class,
        |    "getWindowManager", "()Landroid/view/WindowManager;");
        |jobject windowManager = env->CallObjectMethod( activity, getWindowManager );
        |
@@ -37,24 +37,8 @@ class Android [singleton]
 
     method is_tablet->Logical
       local result : Logical
-      local size   : XY?
+      native @|$result = (RogueLogical) SDL_IsTablet();
+      return result
 
-      native
-      @|SDL_Rect bounds{};
-       |if (SDL_GetDisplayBounds(0, &bounds))
-       |{
-       |  $size.exists = (RogueLogical) 1;
-       |  $size.value.x = bounds.w;
-       |  $size.value.y = bounds.h;
-       |}
-
-      if local size = size
-        localize dpi
-
-        local diagonal_squared = (size.x/dpi)^2 + (size.y/dpi)^2
-        if (diagonal_squared >= 7*7) return true  # screen 7.0" or bigger
-      endIf
-
-      return false
 
 endClass
