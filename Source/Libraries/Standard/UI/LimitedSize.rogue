@@ -8,7 +8,25 @@ class LimitedSize : Component
     maximum_height  : Real?
     is_proportional : Logical  # limits are proportional to display size
 
+    minimum_aspect_width  : Logical
+    minimum_aspect_height : Logical
+    maximum_aspect_width  : Logical
+    maximum_aspect_height : Logical
+    aspect_limit          : XY?
+
   METHODS
+    method minimum_aspect_width( aspect_limit )
+      minimum_aspect_width = true
+
+    method minimum_aspect_height( aspect_limit )
+      minimum_aspect_height = true
+
+    method maximum_aspect_width( aspect_limit )
+      maximum_aspect_width = true
+
+    method maximum_aspect_height( aspect_limit )
+      maximum_aspect_height = true
+
     method proportional
       is_proportional = true
 
@@ -32,7 +50,7 @@ class LimitedSize : Component
     method set_minimum_width( width:Real )
       @minimum_width   = width
 
-    method resolve_layout_size( available_size:XY, &limited )->XY
+    method resolve_layout_size( available_size:XY, &limited )->XY [override]
       local snap = (UI.snap_to_pixel_coordinates)
 
       if (is_proportional)
@@ -46,6 +64,21 @@ class LimitedSize : Component
         if (minimum_height) available_size.y .= clamped_low( minimum_height.value )
         if (maximum_width)  available_size.x .= clamped_high( maximum_width.value )
         if (maximum_height) available_size.y .= clamped_high( maximum_height.value )
+      endIf
+
+      if local aspect_limit = aspect_limit
+        if (minimum_aspect_width)
+          available_size.y .= clamped_high( (available_size.x / aspect_limit.x) * aspect_limit.y )
+        endIf
+        if (minimum_aspect_height)
+          available_size.x .= clamped_high( (available_size.y / aspect_limit.y) * aspect_limit.x )
+        endIf
+        if (maximum_aspect_width)
+          available_size.x .= clamped_high( (available_size.y / aspect_limit.y) * aspect_limit.x )
+        endIf
+        if (maximum_aspect_height)
+          available_size.y .= clamped_high( (available_size.x / aspect_limit.x) * aspect_limit.y )
+        endIf
       endIf
 
       if (snap) available_size .= floor
@@ -63,6 +96,21 @@ class LimitedSize : Component
         if (minimum_height) sz.y .= clamped_low( minimum_height.value )
         if (maximum_width)  sz.x .= clamped_high( maximum_width.value )
         if (maximum_height) sz.y .= clamped_high( maximum_height.value )
+      endIf
+
+      if local aspect_limit = aspect_limit
+        if (minimum_aspect_width)
+          sz.y .= clamped_high( (sz.x / aspect_limit.x) * aspect_limit.y )
+        endIf
+        if (minimum_aspect_height)
+          sz.x .= clamped_high( (sz.y / aspect_limit.y) * aspect_limit.x )
+        endIf
+        if (maximum_aspect_width)
+          sz.x .= clamped_high( (sz.y / aspect_limit.y) * aspect_limit.x )
+        endIf
+        if (maximum_aspect_height)
+          sz.y .= clamped_high( (sz.x / aspect_limit.x) * aspect_limit.y )
+        endIf
       endIf
 
       if (snap) sz .= floor
