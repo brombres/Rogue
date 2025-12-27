@@ -30,7 +30,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       init( width, height, ' ' )
       if (content.contains('\n'))
         local y = 0
-        forEach (line in LineReader(content))
+        forEach (line in LineReader(content).[recycle])
           forEach (ch at x in line)
             set( x, y, ch )
           endForEach

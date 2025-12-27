@@ -1224,7 +1224,7 @@ class String : Recyclable PrintWriter
         contingent
           # Do an initial check to make sure the pattern occurs to avoid a bunch of
           # unnecessary string allocations otherwise.
-          forEach (line in LineReader(this))
+          forEach (line in LineReader(this).[recycle])
             sufficient (line.contains_pattern(search_pattern))
           endForEach
           return this  # not found
@@ -1232,7 +1232,7 @@ class String : Recyclable PrintWriter
         satisfied
           # The pattern occurs somewhere in this string
           local result = String( count )
-          forEach (line in LineReader(this))
+          forEach (line in LineReader(this).[recycle])
             result.println( line.replacing_pattern(search_pattern,replacement_pattern,parens) )
           endForEach
           return result

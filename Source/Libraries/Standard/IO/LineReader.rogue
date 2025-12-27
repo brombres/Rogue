@@ -5,7 +5,7 @@ class LineReader : Reader<<String>>
   PROPERTIES
     source          : Reader<<Character>>
     next            : String
-    internal_buffer = String()
+    internal_buffer : String
     prev            : Character
 
   METHODS
@@ -57,6 +57,9 @@ class LineReader : Reader<<String>>
         next = buffer
       endUse
       return true
+
+    method recycle
+      use_recycled_buffer = true
 
     method read->String
       local result = peek
