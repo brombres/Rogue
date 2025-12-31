@@ -80,9 +80,8 @@ class UI : Component [singleton]
       return display_density_fn()
 
     method draw [override]
-      temporarily UI = this
-        prior.draw
-      endTemporarily
+      UI = this
+      prior.draw
 
     method filler( &h, &v )->Component
       local component = Component().[ weight=0.0 ]
@@ -103,75 +102,75 @@ class UI : Component [singleton]
       return default_font
 
     method handle( e:KeyEvent )
-      temporarily UI = this
-        if (focus.keyboard)
-          if (not focus.keyboard.attributes.intangible)
-            focus.keyboard.handle( e )
-          else
-            focus.keyboard.release_keyboard_focus
-            on( e )
-            if (e.is_consumed) return
-            first_content_component?.dispatch( e )
-          endIf
+      UI = this
+
+      if (focus.keyboard)
+        if (not focus.keyboard.attributes.intangible)
+          focus.keyboard.handle( e )
         else
+          focus.keyboard.release_keyboard_focus
           on( e )
           if (e.is_consumed) return
           first_content_component?.dispatch( e )
         endIf
+      else
+        on( e )
         if (e.is_consumed) return
+        first_content_component?.dispatch( e )
+      endIf
+      if (e.is_consumed) return
 
-        on_unhandled( e )
-      endTemporarily
+      on_unhandled( e )
 
     method handle( e:PointerEvent )
-      temporarily UI = this
-        on( e )
-        if (e.is_consumed) return
+      UI = this
 
-        if (focus.pointer)
-          if (focus.pointer.yield_pointer_focus_to(e))
-            focus.pointer.release_pointer_focus
-            first_content_component?.dispatch( e )
-          else
-            focus.pointer.handle( e )
-          endIf
-        else
+      on( e )
+      if (e.is_consumed) return
+
+      if (focus.pointer)
+        if (focus.pointer.yield_pointer_focus_to(e))
+          focus.pointer.release_pointer_focus
           first_content_component?.dispatch( e )
+        else
+          focus.pointer.handle( e )
         endIf
-        if (e.is_consumed) return
+      else
+        first_content_component?.dispatch( e )
+      endIf
+      if (e.is_consumed) return
 
-        on_unhandled( e )
-      endTemporarily
+      on_unhandled( e )
 
     method handle( e:ScrollEvent )
-      temporarily UI = this
-        on( e )
-        if (e.is_consumed) return
+      UI = this
 
-        if (focus.pointer)
-          focus.pointer.handle( e )
-        else
-          first_content_component?.dispatch( e )
-        endIf
-        if (e.is_consumed) return
+      on( e )
+      if (e.is_consumed) return
 
-        on_unhandled( e )
-      endTemporarily
+      if (focus.pointer)
+        focus.pointer.handle( e )
+      else
+        first_content_component?.dispatch( e )
+      endIf
+      if (e.is_consumed) return
+
+      on_unhandled( e )
 
     method handle( e:TextEvent )
-      temporarily UI = this
-        on( e )
-        if (e.is_consumed) return
+      UI = this
 
-        if (focus.keyboard)
-          focus.keyboard.handle( e )
-        else
-          first_content_component?.dispatch( e )
-        endIf
-        if (e.is_consumed) return
+      on( e )
+      if (e.is_consumed) return
 
-        on_unhandled( e )
-      endTemporarily
+      if (focus.keyboard)
+        focus.keyboard.handle( e )
+      else
+        first_content_component?.dispatch( e )
+      endIf
+      if (e.is_consumed) return
+
+      on_unhandled( e )
 
     method on_resize
       # '.size' has changed since the previous update.
@@ -232,20 +231,20 @@ class UI : Component [singleton]
       return component
 
     method update( bounds:Box )
-      temporarily UI = this
-        # Ensure we've got a layout before the first update().
-        # This is a necessary step on first launch and whenever the
-        # display size is adjusted between frames.
+      UI = this
+
+      # Ensure we've got a layout before the first update().
+      # This is a necessary step on first launch and whenever the
+      # display size is adjusted between frames.
+      update_layout( bounds )
+
+      # Happens every frame
+      update
+
+      if (needs_layout)
+        # update() has modified the UI, so we need another update_layout().
         update_layout( bounds )
-
-        # Happens every frame
-        update
-
-        if (needs_layout)
-          # update() has modified the UI, so we need another update_layout().
-          update_layout( bounds )
-        endIf
-      endTemporarily
+      endIf
 
     method update_bounds( bounds:Box )
       needs_layout = true
@@ -253,20 +252,20 @@ class UI : Component [singleton]
       on_resize
 
     method update_layout( bounds:Box )
-      temporarily UI = this
-        position = bounds.position
-        if (bounds_changed(bounds))
-          update_bounds( bounds )
-        endIf
+      UI = this
 
-        if (needs_layout)
-          needs_layout = false
-          needs_redraw = true
-          begin_layout
-          resolve_layout_size( bounds.size )
-          perform_layout( position )
-          end_layout
-        endIf
-      endTemporarily
+      position = bounds.position
+      if (bounds_changed(bounds))
+        update_bounds( bounds )
+      endIf
+
+      if (needs_layout)
+        needs_layout = false
+        needs_redraw = true
+        begin_layout
+        resolve_layout_size( bounds.size )
+        perform_layout( position )
+        end_layout
+      endIf
 
 endClass

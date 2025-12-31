@@ -296,7 +296,7 @@ class Node<<$ExtendedNodeType>> : IteratorPreferred
       if (first_child) remove_first
       insert( node )
 
-    method set_structure_modified( setting:Logical )
+    method set_structure_modified( setting:Logical ) [critical]
       if (@structure_modified == setting) return
       @structure_modified = setting
       if (setting and parent) parent.structure_modified = true

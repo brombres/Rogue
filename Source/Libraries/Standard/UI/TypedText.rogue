@@ -66,11 +66,20 @@ class TypedText : Text
         revealed_count = (revealed_count + reveal_rate*Window.dt).clamped_high( value.count )
       endIf
 
+    method reset( progress=0.0:Real )
+      if local first_fragment = first_child->(as TypedText)
+        forEach (child as TypedText in children) child.reset
+      else
+        is_typed_text_active = false
+      endIf
+
+      reveal( progress )
+
     method restart
+      reset
       if local first_fragment = first_child->(as TypedText)
         first_fragment.restart
       else
-        revealed_count = 0
         is_typed_text_active = true
       endIf
 
