@@ -2165,22 +2165,24 @@ class Resolver : Recyclable, Visitor
 
         if (not context)
           if (not is_fallback)
-            # Check for a matching method in implicit context types (Global, Routine, ...)
-            assert this_library
-            use implicit_context = ImplicitContext( this_library, this_procedure )
-              forEach (implicit_type in implicit_context)
-                local implicit_match = find_procedure( t, implicit_type, null, name, args, &suppress_error )
-                if (implicit_match) return resolve_call( t, GetSingleton(t,implicit_type), implicit_match, args )
+            if (name != "init")
+              # Check for a matching method in implicit context types (Global, Routine, ...)
+              assert this_library
+              use implicit_context = ImplicitContext( this_library, this_procedure )
+                forEach (implicit_type in implicit_context)
+                  local implicit_match = find_procedure( t, implicit_type, null, name, args, &suppress_error )
+                  if (implicit_match) return resolve_call( t, GetSingleton(t,implicit_type), implicit_match, args )
 
-                if (implicit_type is not this_type)
-                  if (implicit_type.properties.contains(name) or implicit_type.global_properties.contains(name) or
-                      implicit_type.definitions.contains(name))
-                    local result = resolve_access( t, TypeContext(t,implicit_type), name, args, &suppress_error )
-                    if (result) return result
+                  if (implicit_type is not this_type)
+                    if (implicit_type.properties.contains(name) or implicit_type.global_properties.contains(name) or
+                        implicit_type.definitions.contains(name))
+                      local result = resolve_access( t, TypeContext(t,implicit_type), name, args, &suppress_error )
+                      if (result) return result
+                    endIf
                   endIf
-                endIf
-              endForEach
-            endUse
+                endForEach
+              endUse
+            endIf
 
           endIf
         endIf
@@ -2202,7 +2204,7 @@ class Resolver : Recyclable, Visitor
         endBlock
 
         if (not context)
-          block
+          if (name != "init")
             assert this_library
             use implicit_context = ImplicitContext( this_library, this_procedure )
               forEach (implicit_type in implicit_context)
@@ -2210,7 +2212,7 @@ class Resolver : Recyclable, Visitor
                 if (result) return result
               endForEach
             endUse
-          endBlock
+          endIf
 
           # Global singleton property
           local p = Program.type_Global.properties[ name ]
