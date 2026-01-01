@@ -3523,10 +3523,12 @@ parser
   beginList
     variant_expression
     consume_eols
-    while (consume(',') or not nextIs(']'))
+    if (consume(',')) consume_eols
+    while (not nextIs(']'))
       consume_eols
       variant_expression
       consume_eols
+      if (consume(',')) consume_eols
     endWhile
     mustConsume ']'
   createList Args
@@ -3541,8 +3543,10 @@ parser
   beginList
     variant_key_value_pair
     consume_eols
-    while (consume(',') or not nextIs('}'))
+    if (consume(',')) consume_eols
+    while (not nextIs('}'))
       variant_key_value_pair
+      if (consume(',')) consume_eols
     endWhile
     mustConsume '}'
   createList KeyValuePairList
