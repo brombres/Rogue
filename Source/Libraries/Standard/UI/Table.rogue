@@ -557,10 +557,12 @@ class Table : Component
       .cells[index]?.deactivate
       .cells[index] = cell
 
-    method set_gap( gap:Real ) [override]
-      @gap = XY( gap, gap )
+    method set_gap( @gap )
       h_gap_parameter_id = VariantEntryID(0)
       v_gap_parameter_id = VariantEntryID(0)
+
+    method set_gap( gap:Real ) [override]
+      this.gap = XY( gap, gap )
 
     method set_gap( gap_parameter_id:VariantEntryID ) [override]
       h_gap_parameter_id = gap_parameter_id
