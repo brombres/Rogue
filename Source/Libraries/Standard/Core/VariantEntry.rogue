@@ -5,6 +5,10 @@ class VariantEntryID( value:Int ) [compound]
     method entry->VariantEntry
       return VariantEntryIDManager[value]
 
+    method exists->Logical
+      if (value?) return this->Variant.exists
+      else        return false
+
     method operator?->Logical
       return value?
 
@@ -99,6 +103,9 @@ class VariantEntry( variant:Variant, path:String, key:String ) [compound]
         endWhile
         return cur
       endUse
+
+    method exists->Logical
+      return this->Variant.exists
 
     method hashcode->Int
       local result = variant.hashcode ~ key.hashcode
