@@ -1774,6 +1774,9 @@ augment
         if (this.is_object or this.is_aspect)
           writer.println "%Ns%RogueRuntimeType* __type;"
           writer.println "%Ns%RogueInt32 __refcount;"
+          writer.println "#if %NS%ROGUE_ENABLE_GC_POISON"
+          writer.println "  %Ns%RogueInt32 __poison_level;"
+          writer.println "#endif"
         elseIf (this.properties.is_empty)
           writer.println "int dummy;"
         endIf
@@ -2106,6 +2109,22 @@ augment
             else                 c_writer.println @|  %Ns%RogueMM_gc_request = 1;
       c_writer.println ...
         @|}
+         |
+         |void %Ns%Rogue_trace_ref_debug( RogueObject* THISOBJ, RogueObject* ref )
+         |{
+         |  #if %NS%ROGUE_ENABLE_GC_POISON
+         |  if (ref->__poison_level && !THISOBJ->__poison_level)
+         |  {
+         |    if (++ref->__poison_level >= 2)
+         |    {
+         |      printf( "[WARNING] %s references poisoned object %s\n", THISOBJ->__type->name, ref->__type->name );
+         |      THISOBJ->__poison_level = 1;
+         |    }
+         |  }
+         |  #endif
+         |
+         |  ref->__type->fn_gc_trace( ref );
+         |}
          |
          |int %Ns%Rogue_quit(void)
          |{
@@ -2763,7 +2782,9 @@ augment
             if (type.is_reference)
               c_writer.print   "if ((ref = (%Ns%RogueObject*)"
               c_writer.print   type.c_name
-              c_writer.println "_singleton) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
+              c_writer.print   "_singleton) && ref->__refcount >= 0) %NS%ROGUE_TRACE_REF("
+              c_writer.print   type.c_name
+              c_writer.println "_singleton);"
             elseIf (type.contains_reference)
               use path = WorkList<<String>>
                 path.add( "if ((ref=(%Ns%RogueObject*)(" )
@@ -2784,7 +2805,9 @@ augment
             if (p.type.is_reference)
               c_writer.print   "if ((ref = (%Ns%RogueObject*)"
               c_writer.print   p.c_name
-              c_writer.println ") && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
+              c_writer.print   ") && ref->__refcount >= 0) %NS%ROGUE_TRACE_REF("
+              c_writer.print   p.c_name
+              c_writer.println ");"
             elseIf (p.type.contains_reference)
               use path = WorkList<<String>>
                 path.add( "if ((ref=(%Ns%RogueObject*)(" )
@@ -3087,7 +3110,7 @@ augment
             writer.println "*)THISOBJ)->capacity);"
             writer.println @|while (--n >= 0)
                             |{
-                            |  if ((ref = *(++cursor)) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
+                            |  if ((ref = *(++cursor)) && ref->__refcount >= 0) %NS%ROGUE_TRACE_REF(THISOBJ);
                             |}
 
           elseIf (element_type and element_type.contains_reference)
@@ -3103,10 +3126,6 @@ augment
             writer.print   c_name
             writer.println "*)THISOBJ)->capacity);"
 
-            # while (--n >= 0)
-            # {
-            #   if ((ref = (%Ns%RogueObject*)((*(++cursor)).object)) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
-            # }
             writer.println "while (--n >= 0)"
             writer.println "{"
             use path = WorkList<<String>>

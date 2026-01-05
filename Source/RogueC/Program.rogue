@@ -109,6 +109,8 @@ class Program [singleton]
 
     labels = [String:CmdGlobalID]
 
+    enable_gc_poison = false
+
   METHODS
     method init
       Program = this  # update singleton reference

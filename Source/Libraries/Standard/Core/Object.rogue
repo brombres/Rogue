@@ -24,6 +24,12 @@ class Object
     method operator==( other:Object )->Logical
       return this is other
 
+    method poison_object
+      native
+      @|#if %NS%ROGUE_ENABLE_GC_POISON
+       |  $this->__poison_level = 1;
+       |#endif
+
     method print_to( buffer:PrintWriter )
       buffer.print( this->String )
 

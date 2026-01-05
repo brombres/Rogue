@@ -176,6 +176,16 @@ class CWriter : BufferedPrintWriter
         println "#define %NS%ROGUE_TYPE_ASPECT    $" (Attribute.ASPECT)
         println "#define %NS%ROGUE_TYPE_SINGLETON $" (Attribute.SINGLETON)
 
+        println
+        println "#define %NS%ROGUE_ENABLE_GC_POISON $"(Program.enable_gc_poison->Int)
+        println
+        println ...
+        @|#if %NS%ROGUE_ENABLE_GC_POISON
+         |  #define %NS%ROGUE_TRACE_REF(context) %Ns%Rogue_trace_ref_debug( (RogueObject*)context, ref )
+         |#else
+         |  #define %NS%ROGUE_TRACE_REF(context) ref->__type->fn_gc_trace(ref)
+         |#endif
+
         println ...
           @|
            |#if !defined(%NS%ROGUE_MM_GC_THRESHOLD)
@@ -288,6 +298,7 @@ class CWriter : BufferedPrintWriter
            |void  %Ns%Rogue_collect_garbage(void); // Call this to force a GC
            |void  %Ns%Rogue_exit( int exit_code ); // Internal use - call exit() directly instead
            |void  %Ns%Rogue_request_gc(void);      // Ensures next call to Rogue_check_gc() will result in a GC
+           |void  %Ns%Rogue_trace_ref_debug( RogueObject* THISOBJ, RogueObject* ref );
            |int   %Ns%Rogue_quit(void);            // Call to shut down; prints any pending exception & calls Rogue on_exit functions
            |void  %Ns%Rogue_clean_up(void);        // Calls clean_up() on every living object w/on_cleanup() then deletes all objects
            |
