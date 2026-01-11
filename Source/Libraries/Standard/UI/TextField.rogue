@@ -17,6 +17,11 @@ class TextField : Widget
 
     method init( value )
 
+    method capture_focus->Logical [override]
+      local result = prior.capture_focus
+      cursor = value.count
+      return result
+
     method handle_value_changed
       <TextField.on_value_changed>.signal( this )
       on_value_changed

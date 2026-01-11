@@ -231,6 +231,11 @@ class Component : Entity
     method bounds->Box
       return Box( position, size )
 
+    method capture_focus->Logical
+      local captured_keyboard_and_pointer = capture_keyboard_focus
+      if (not capture_pointer_focus) captured_keyboard_and_pointer = false
+      return captured_keyboard_and_pointer
+
     method capture_keyboard_focus->Logical
       if (UI.focus.keyboard is this) return true
 
