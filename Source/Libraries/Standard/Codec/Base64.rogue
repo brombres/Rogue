@@ -2,7 +2,7 @@ $include IO/BitIO
 
 augment Byte[]
   METHODS
-    method to_base64( &no_padding )->String
+    method to_base64( &omit_padding )->String
       local base64_count = ((count+2) / 3) * 4
       local result = String( base64_count )
       local reader = BitReader( this )
@@ -14,7 +14,7 @@ augment Byte[]
         result.print( (reader.read(available_bits) :<<: (6-available_bits)).to_digit(&base64) )
       endIf
 
-      if (not no_padding)
+      if (not omit_padding)
         while ((result.count & 3) != 0) result.print('=')
       endIf
 

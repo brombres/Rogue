@@ -219,4 +219,16 @@ class Random [singleton]
       # Returns a random number low < n < high
       return (real64 * (high-low)) + low
 
+    method string( n:Int, characters=null:String )->String
+      if (not characters)
+        characters = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+      endIf
+
+      local builder = String()
+      loop (n)
+        builder.print( characters[this.int(characters.count)] )
+      endLoop
+
+      return builder
+
 endClass
