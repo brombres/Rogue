@@ -72010,7 +72010,7 @@ extern RogueString* str___column_;
 extern RogueString* str_Run__roguec__without;
 extern RogueString* str_version;
 extern RogueString* str_2_39;
-extern RogueString* str_April_22__2025;
+extern RogueString* str_January_30__2026;
 extern RogueString* str__by_Brom_Bresenham;
 extern RogueString* str_help;
 extern RogueString* str_doc;
