@@ -492,10 +492,10 @@ class Component : Entity
       return next_component
 
     method on_begin_draw [critical]
-      if (attributes.clip) Display.push_clip( display_bounds )
+      if ($target("Warlock") and attributes.clip) Display.push_clip( display_bounds )
 
     method on_end_draw [critical]
-      if (attributes.clip) Display.pop_clip
+      if ($target("Warlock") and attributes.clip) Display.pop_clip
 
     method opacity->Real
       if local parent_component = parent->(as Component)
