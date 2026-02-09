@@ -14,8 +14,24 @@ class TypedText : Text
     method copy_settings_from( other:Component ) [override]
       prior.copy_settings_from( other )
       if local other_typed_text = other->(as TypedText)
+        @reveal_rate = other_typed_text.reveal_rate
         @reveal_next = other_typed_text.reveal_next
       endIf
+
+    method create_fragment( text:String, i1=0:Int, n=undefined:Int? )->$thisType [propagated]
+      if (not n) n = text.count
+      if (i1 > 0 or n.value < text.count) text = text.substring( i1, n.value )
+
+      local result = new<<$thisType>>
+      result->(as Text).init( text, &fragment )
+      result.copy_settings_from( this )
+
+      if (revealed_count > i1)
+        result.revealed_count = (revealed_count - i1).or_larger( n.value )
+        result.is_typed_text_active = true
+      endIf
+
+      return result
 
     method is_revealed->Logical [novel]
       if local last_fragment = last_child->(as TypedText)
@@ -105,6 +121,9 @@ class TypedText : Text
         revealed_count = progress * value.count
       endIf
 
+    method set_reveal_next( @reveal_next )
+      forEach (child as TypedText in children) child.reveal_next = reveal_next
+
     method set_value( new_value:String ) [override]
       local is_modified = (new_value != value)
 
@@ -144,16 +163,9 @@ class TypedText : Text
 
         if (not reveal_next)
           # Make sure next_typed_text is this or a fragment of this.
-          block cur = next_typed_text
-            while (cur)
-              if (cur is this)
-                cur.is_typed_text_active = true
-                return
-              endIf
-              cur .= parent->(as TypedText)
-            endWhile
+          if (not (next_typed_text is this or next_typed_text.has_ancestor(this)))
             return
-          endBlock
+          endIf
         endIf
 
         next_typed_text.is_typed_text_active = true
