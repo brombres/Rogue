@@ -103,6 +103,14 @@ class Parser : ParserCore, Recyclable
         _cmd_stack.add( Identifier(t, context_direct_access.name) )
         _cmd_stack.add( context_direct_access )
       else
+        if local indexed_access = expr->(as IndexedAccess)
+          if local literal_string = indexed_access.index->(as LiteralString)
+            _cmd_stack.add( Identifier(t, literal_string.value) )
+            _cmd_stack.add( indexed_access )
+            return 0
+          endIf
+        endIf
+
         throw t.error( "Expected 'identifier' or 'context.identifier'." )
       endIf
 
