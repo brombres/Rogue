@@ -155,6 +155,16 @@ class Node<<$ExtendedNodeType>> : IteratorPreferred
       loop (index) cur = cur.next
       return cur
 
+    method has_ancestor( ancestor:$ExtendedNodeType )->Logical
+      local cur = this
+
+      while (cur)
+        if (cur is ancestor) return true
+        cur = cur.parent->(as $ExtendedNodeType)
+      endWhile
+
+      return false
+
     method insert( new_child:$ExtendedNodeType, before_index=0:Int )
       if (new_child is null) return
       if (new_child.parent is this) return
