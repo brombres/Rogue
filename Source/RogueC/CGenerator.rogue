@@ -750,17 +750,15 @@ class CGenerator : Visitor
         writer.println ";"
       endIf
 
-      if (VCALLS)
-        # Declare temporary variables for implementing virtual calls
-        forEach (n in 0..<this_procedure.vcall_max)
-          writer.print   "%Ns%RogueObject* _auto_virtual_context_"
-          writer.print   n
-          writer.println ';'
-          writer.print   "(void) _auto_virtual_context_"
-          writer.print   n
-          writer.println ';'
-        endForEach
-      endIf
+      # Declare temporary variables for implementing virtual calls
+      forEach (n in 0..<this_procedure.vcall_max)
+        writer.print   "%Ns%RogueObject* _auto_virtual_context_"
+        writer.print   n
+        writer.println ';'
+        writer.print   "(void) _auto_virtual_context_"
+        writer.print   n
+        writer.println ';'
+      endForEach
 
       if (Program.gc_auto)
         # Declare all local variables.
