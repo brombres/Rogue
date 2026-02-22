@@ -35,14 +35,13 @@ class ExceptionAnalyzer : InspectionVisitor
         back_propagate_thrown_exception( forEach in exception_types )
       endUse
 
-    method propagate_exceptions_among_dynamic_methods( reference_m:Procedure )
-      local group = Program.dynamic_methods[reference_m.dynamic_signature].methods
+    method update_dynamic_method_group_throws( reference_m:Procedure )
+      local group = Program.dynamic_methods[reference_m.dynamic_signature]
       if (not group) return
 
       local throws : ExceptionTypes
-      throws |= (forEach in group).throws
-      (forEach in group).throws = throws
-      reference_m.throws = throws
+      throws |= (forEach in group.methods).throws
+      group.throws = throws
 
     method on_visit_node( cmd:CallProcedure )
       if (cmd.info.throws)
@@ -50,7 +49,13 @@ class ExceptionAnalyzer : InspectionVisitor
       endIf
 
     method on_visit_node( cmd:CallDynamicMethod )
-      propagate_exceptions_among_dynamic_methods( cmd.info )
+      update_dynamic_method_group_throws( cmd.info )
+      block group = Program.dynamic_methods[cmd.info.dynamic_signature]
+        if (group and group.throws?)
+          back_propagate_thrown_exception( group.throws )
+          return
+        endIf
+      endBlock
       on_visit_node( cmd->(as CallProcedure) )
 
     method on_visit( cmd:CleanupBlock )->Logical
@@ -67,7 +72,13 @@ class ExceptionAnalyzer : InspectionVisitor
       return false
 
     method on_visit_node( cmd:CallThisDynamicMethod )
-      propagate_exceptions_among_dynamic_methods( cmd.info )
+      update_dynamic_method_group_throws( cmd.info )
+      block group = Program.dynamic_methods[cmd.info.dynamic_signature]
+        if (group and group.throws?)
+          back_propagate_thrown_exception( group.throws )
+          return
+        endIf
+      endBlock
       on_visit_node( cmd->(as CallProcedure) )
 
     method on_visit_node( cmd:CreateObject )

@@ -3,6 +3,7 @@ library RogueC
 class DynamicMethodGroup
   PROPERTIES
     methods = Method[]
+    throws  : ExceptionTypes
     is_used : Logical
 
   METHODS
