@@ -2,9 +2,9 @@ library RogueC
 
 class DynamicMethodGroup
   PROPERTIES
-    methods = Method[]
-    throws  : ExceptionTypes
-    is_used : Logical
+    methods         = Method[]
+    exception_types = [Type:ExceptionTypes]
+    is_used         : Logical
 
   METHODS
     method init( m:Method )
@@ -15,8 +15,27 @@ class DynamicMethodGroup
       methods.add( m )
       m.attributes.is_collected = true
 
+      if local entry = exception_types.find( m.type_context )
+        entry.value |= m.throws
+      else
+        exception_types[m.type_context] = m.throws
+      endIf
+
     method mark_uncollected
       (forEach in methods).attributes.is_collected = false
+
+    method throws_for_context( context_type:Type )->ExceptionTypes
+      local throws : ExceptionTypes
+
+      forEach (value at key in exception_types)
+        if (key.instance_of(context_type)) throws |= value
+      endForEach
+
+      forEach (entry in exception_types.entries)
+        if (entry.key.instance_of(context_type)) entry.value |= throws
+      endForEach
+
+      return throws
 
     method to->String
       return methods->String
