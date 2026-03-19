@@ -29,14 +29,14 @@
 #   @trace today.days_in_year
 #
 #   # Example output
-#   It's 2020.03.15 in the programming world
+#   It's 2020-03-15 in the programming world
 #   It's March 15, 2020 in the US
 #   and 15 March 2020 in Europe
 #   It's been 17214 days since my birthday
 #   1973.01.27 + 17214 days = 2020.03.15
 #   2020.03.15 - 17214 days = 1973.01.27
-#   Yesterday was 2020.03.14
-#   Tomorrow will be 2020.03.16
+#   Yesterday was 2020-03-14
+#   Tomorrow will be 2020-03-16
 #   today.year:2020
 #   today.month:3
 #   today.day:15
