@@ -2685,7 +2685,7 @@ class CleanupBlock : ControlStructure
       return "CleanupBlock($,$)" (%statements,%cleanup)
 
     method requires_cleanup->Logical
-      return true
+      return cleanup.count?
 endClass
 
 class While : Cmd
