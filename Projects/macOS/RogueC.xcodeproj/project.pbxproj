@@ -7,22 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		30A18B042F72DA7E003990AF /* Libraries in CopyFiles */ = {isa = PBXBuildFile; fileRef = 30A18B032F72DA7E003990AF /* Libraries */; };
 		30E603A929BAA77B0043F85C /* RogueC-macOS.c in Sources */ = {isa = PBXBuildFile; fileRef = 30E603A829BAA77B0043F85C /* RogueC-macOS.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		30E6039B29BAA7210043F85C /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
 			files = (
+				30A18B042F72DA7E003990AF /* Libraries in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		30A18B032F72DA7E003990AF /* Libraries */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Libraries; path = ../../Source/Libraries; sourceTree = "<group>"; };
 		30E6039D29BAA7210043F85C /* RogueC */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RogueC; sourceTree = BUILT_PRODUCTS_DIR; };
 		30E603A729BAA77B0043F85C /* RogueC-macOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "RogueC-macOS.h"; path = "../../../Build/RogueC-macOS.h"; sourceTree = "<group>"; };
 		30E603A829BAA77B0043F85C /* RogueC-macOS.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "RogueC-macOS.c"; path = "../../../Build/RogueC-macOS.c"; sourceTree = "<group>"; };
@@ -42,6 +45,7 @@
 		30E6039429BAA7210043F85C = {
 			isa = PBXGroup;
 			children = (
+				30A18B032F72DA7E003990AF /* Libraries */,
 				30E6039F29BAA7210043F85C /* RogueC */,
 				30E6039E29BAA7210043F85C /* Products */,
 			);

@@ -36,7 +36,7 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
-      customWorkingDirectory = "$(PROJECT_DIR)/../.."
+      customWorkingDirectory = "/Users/abe/Projects/Tools/0x"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
@@ -55,6 +55,10 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "Test.rogue --debug --main --libraries=&quot;Source/Libraries&quot;"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "Source/Ox.rogue  --debug --main --output=Build/Ox-macOS --target=Console,C,macOS,ObjC"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
