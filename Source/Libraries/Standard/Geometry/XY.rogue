@@ -239,6 +239,12 @@ class XY( x:Real, y:Real ) [compound]
       if (x == other.x) return y <> other.y
       else              return x <> other.x
 
+    method operator|( other:XY )->Box
+      # Returns the Box that encloses both this point and the other point.
+      local min = this.min( other )
+      local max = this.max( other )
+      return Box( min, max-min )
+
     method or_larger( other:XY )->XY
       # Returns the largest X and the largest Y between this value and the other value.
       return XY( this.x.or_larger(other.x), this.y.or_larger(other.y) )

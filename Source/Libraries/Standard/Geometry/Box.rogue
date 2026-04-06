@@ -241,6 +241,12 @@ class Box( position:XY, size:XY ) [essential compound]
 
       return Box( tl, br-tl )
 
+    method operator|( point:XY )->Box
+      # Returns the Box that encloses both this box and the specified point.
+      local min = position.min( point )
+      local max = bottom_right.max( point )
+      return Box( min, max-min )
+
     method operator<>( other:Box )->Int
       local result = size <> other.size
       if (result) return result
