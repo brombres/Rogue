@@ -2869,13 +2869,14 @@ augment
                         |// objects requiring cleanup.
                         |//
                         |// We can't delete them yet because they could add themselves back to the object
-                        |// graph during cleanup, so we'll go ahead and trace them one last time. They'll
-                        |// be deleted from the regular list the next time they're unreferenced with no
-                        |// additional chance to clean up.
+                        |// graph during cleanup, so we'll go ahead and trace them one last time as well
+                        |// as calling fn_on_cleanup on them. They'll deleted from the regular list the
+                        |// next time they're unreferenced with no chance to clean up.
                         |for (i=cleanup_count, refptr=%Ns%RogueMM_objects.data+%Ns%RogueMM_objects.count; --i>=0; )
                         |{
                         |  ref = (%Ns%RogueObject*) *(--refptr);
                         |  ref->__type->fn_gc_trace( ref );
+                        |  ref->__type->fn_on_cleanup( ref );
                         |}
                         |
                         |// Null out weak references to objects that are about to be deleted.
