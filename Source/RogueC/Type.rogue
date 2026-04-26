@@ -123,6 +123,14 @@ class Type : Cmd
         if (type) return type
       endIf
 
+      # Strip any explicit library prefix from 'name' so the cache key in
+      # library_context.types[] and the scoped_name don't end up doubled
+      # (e.g. "Rogue::ProgressState<<...>>" stored under Rogue would
+      # scoped_name to "Rogue::Rogue::ProgressState<<...>>").
+      local explicit_lib : Library
+      (explicit_lib, name) = library_context.split_library_and_type( t, name, &suppress_error )
+      if (explicit_lib) library_context = explicit_lib
+
       local type = Type( t, library_context, name, 0 )
       if (is_tuple) type.attributes.is_tuple = true
       type.type_template = template
