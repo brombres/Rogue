@@ -9,6 +9,9 @@ class WeakReference [essential]
               |$next_weak_reference = %Ns%RogueMM_weak_references;
               |%Ns%RogueMM_weak_references = $this;
 
+    method exists->Logical
+      return object?
+
     method on_cleanup
       native @|$this->object = 0;
               |if (%Ns%RogueMM_weak_references == $this)
