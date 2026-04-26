@@ -36,7 +36,7 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
-      customWorkingDirectory = "/Users/abe/Projects/Tools/0x"
+      customWorkingDirectory = "/Users/abe/Projects/Games/TombSweeper"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
@@ -59,6 +59,10 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "Source/Ox.rogue  --debug --main --output=Build/Ox-macOS --target=Console,C,macOS,ObjC"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "Source/Main.rogue Source/Platform-macOS.rogue Warlock Warlock/Framework/SDL Warlock/Graphics/BGFX --libraries=Libraries/Warlock/Libraries/Rogue --target=C++,Warlock,macOS,ObjC,SDL,bgfx --gc=manual --output=Build/macOS/Source/RogueProgram-macOS"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
