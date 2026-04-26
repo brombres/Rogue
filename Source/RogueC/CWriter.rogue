@@ -318,6 +318,7 @@ class CWriter : BufferedPrintWriter
            |void  %Ns%Rogue_call_stack_pop(void);
            |void  %Ns%RogueRuntimeType_local_pointer_stack_add( %Ns%RogueRuntimeType* type, void* local_pointer );
            |void  %Ns%RogueMMObjectList_add( %Ns%RogueMMObjectList* list, void* obj );
+           |void  %Ns%RogueMMObjectList_transfer( %Ns%RogueMMObjectList* from_list, %Ns%RogueMMObjectList* to_list );
            |
            |struct %Ns%RogueObject;
            |
