@@ -13,7 +13,7 @@ class TypeInfo
        |  if ( !THISOBJ->type_info )
        |  {
        |    %Ns%RogueTypeInfo* type_info = %NS%ROGUE_CREATE_OBJECT(%Ns%RogueTypeInfo);
-       |    ++type_info->__refcount;
+       |    ++type_info->__refcount;  // Permanently keep this object from getting GC'd because it's not visible to the collector
        |
        |    type_info->library_context = %Ns%Rogue_string_table[ THISOBJ->library_name_index ];
        |    type_info->name           = %Ns%RogueObject____type_name__%Ns%RogueInt( THISOBJ->index );
@@ -23,7 +23,6 @@ class TypeInfo
        |
        |    THISOBJ->type_info = (%Ns%RogueObject*) type_info;
        |    %Ns%RogueTypeInfo__init( type_info );
-       |    --type_info->__refcount;
 
     nativeCode
       @|  }
