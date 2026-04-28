@@ -2905,6 +2905,28 @@ augment
                         |}
                         |objects_requiring_cleanup.count -= cleanup_count;
                         |
+                        |
+                        |// Null out weak references to objects that are about to be cleaned
+                        |// up or deleted. It's important to delete the unused objects requiring
+                        |// cleanup now, before they are reset and moved to the regular object
+                        |// list, even though the objects won't be deleted until at least
+                        |// the next GC, because it's a reasonable user expectation that when
+                        |// on_cleanup() is called and objects release all their resources, that
+                        |// no weak references will be keeping the objects alive.
+                        |{
+                        |  %Ns%RogueWeakReference* cur = %Ns%RogueMM_weak_references;
+                        |  while (cur)
+                        |  {
+                        |    if (cur->object && cur->object->__refcount >= 0)
+                        |    {
+                        |      // The object ref held by this weak reference is about to be
+                        |      // deleted by the GC system; null out the object.
+                        |      cur->object = 0;
+                        |    }
+                        |    cur = cur->next_weak_reference;
+                        |  }
+                        |}
+                        |
                         |// The last 'cleanup_count' objects on the regular objects list are unreferenced
                         |// objects requiring cleanup.
                         |//
@@ -2935,20 +2957,6 @@ augment
                         |{
                         |  ref = (%Ns%RogueObject*) *(--refptr);
                         |  if (ref->__refcount < 0) ref->__refcount = ~ref->__refcount;
-                        |}
-                        |
-                        |
-                        |// Null out weak references to objects that are about to be deleted.
-                        |%Ns%RogueWeakReference* cur = %Ns%RogueMM_weak_references;
-                        |while (cur)
-                        |{
-                        |  if (cur->object && cur->object->__refcount >= 0)
-                        |  {
-                        |    // The object ref held by this weak reference is about to be
-                        |    // deleted by the GC system; null out the object.
-                        |    cur->object = 0;
-                        |  }
-                        |  cur = cur->next_weak_reference;
                         |}
                         |
                         |// Free unreferenced objects and reset the traced flag on referenced objects.
