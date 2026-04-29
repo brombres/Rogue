@@ -22,7 +22,7 @@ class Object
       return addr
 
     method object_refcount->Int
-      return native("$this->__refcount;")->Int32
+      return native("$this->__refcount")->Int32
 
     method operator==( other:Object )->Logical
       return this is other
