@@ -279,7 +279,7 @@ class Text : Component
             endIf
           endLoop
 
-          local has_edge_spaces = processed[0] == ' ' or processed.last == ' '
+          local has_edge_spaces = processed.count? and (processed[0] == ' ' or processed.last == ' ')
           if (has_eol or has_edge_spaces) is_modified = true
 
           if (not is_modified)
