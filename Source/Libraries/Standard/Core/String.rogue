@@ -1756,6 +1756,29 @@ class String : Recyclable PrintWriter
             case 'æ': result.print "ae"
             case 'Œ': result.print "OE"
             case 'œ': result.print "oe"
+
+            # Double quotation marks and guillemets -> straight double quote
+            case '«','»','“','”','„','‟','″','‶': result.print '"'
+
+            # Single quotation marks, guillemets, and primes -> straight single quote
+            case '‘','’','‚','‛','‹','›','′','‵': result.print '\''
+
+            # Em dash -> space-hyphen-space
+            case '—': result.print " - "
+
+            # Other dashes and minus signs -> hyphen
+            case '‐','‑','‒','–','―','−': result.print '-'
+
+            # Ellipsis -> three periods
+            case '…': result.print "..."
+
+            # Fraction and division slashes -> forward slash
+            case '⁄','∕': result.print '/'
+
+            # Assorted Unicode spaces -> single space
+            case 0xA0,0x2002,0x2003,0x2004,0x2005,0x2006,0x2007,0x2008,0x2009,0x200A,0x202F,0x205F,0x3000:
+              result.print ' '
+
             others
               if (ch >= 161 and ch <= 383)
                 local ch2 = lookup[ ch-161 ]
