@@ -1775,6 +1775,14 @@ class String : Recyclable PrintWriter
             # Fraction and division slashes -> forward slash
             case '⁄','∕': result.print '/'
 
+            # Right-pointing arrows -> "->"
+            case 0x2192,0x21A6,0x21D2,0x21E8,0x2794,0x2799,0x279C,0x279D,0x279E,0x27A1,0x27F6,0x27F9,0x2B95:
+              result.print "->"
+
+            # Left-pointing arrows -> "<-"
+            case 0x2190,0x21A4,0x21D0,0x21E6,0x2B05,0x27F5,0x27F8:
+              result.print "<-"
+
             # Assorted Unicode spaces -> single space
             case 0xA0,0x2002,0x2003,0x2004,0x2005,0x2006,0x2007,0x2008,0x2009,0x200A,0x202F,0x205F,0x3000:
               result.print ' '
