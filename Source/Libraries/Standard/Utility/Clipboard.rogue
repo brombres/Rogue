@@ -186,7 +186,7 @@ class MacOSClipboard [singleton]
          |}
          |#endif
 
-         if (result) result.[ swap_red_and_blue, is_premultiplied_alpha=true, unmultiply_alpha ]
+         if (result) result.[ swap_red_and_blue, is_premultiplied_alpha=true, validate_premultiplied_alpha, unmultiply_alpha ]
        return result
 
     method set_bitmap( bitmap:Bitmap )
