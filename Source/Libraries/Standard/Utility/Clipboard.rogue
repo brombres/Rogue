@@ -190,6 +190,14 @@ class MacOSClipboard [singleton]
        return result
 
     method set_bitmap( bitmap:Bitmap )
+      # Writes both PNG and PDF flavors to the pasteboard.
+      #
+      # The PDF flavor exists for Photoshop's benefit. Photoshop's raster
+      # clipboard importer (PNG/TIFF/etc.) composites semi-transparent pixels
+      # against white while retaining their alpha - brightening translucent
+      # areas - regardless of how the data is encoded. Its PDF importer
+      # preserves alpha exactly, and Photoshop prefers PDF over PNG when both
+      # flavors are present. Other apps generally prefer the PNG.
       native...
         @|#if defined(%NS%ROGUE_TARGET_MACOS)
 
@@ -202,6 +210,25 @@ class MacOSClipboard [singleton]
          |NSPasteboard* pb = NSPasteboard.generalPasteboard;
          |[pb clearContents];
          |[pb setData:data forType:NSPasteboardTypePNG];
+         |
+         |CGImageRef image = [[[NSImage alloc] initWithData:data] CGImageForProposedRect:NULL context:NULL hints:NULL];
+         |if (image)
+         |{
+         |  CGRect media_box = CGRectMake( 0, 0, (CGFloat)CGImageGetWidth(image), (CGFloat)CGImageGetHeight(image) );
+         |  NSMutableData* pdf_data = [NSMutableData data];
+         |  CGDataConsumerRef consumer = CGDataConsumerCreateWithCFData( (CFMutableDataRef)pdf_data );
+         |  CGContextRef pdf_context = CGPDFContextCreate( consumer, &media_box, NULL );
+         |  if (pdf_context)
+         |  {
+         |    CGPDFContextBeginPage( pdf_context, NULL );
+         |    CGContextDrawImage( pdf_context, media_box, image );
+         |    CGPDFContextEndPage( pdf_context );
+         |    CGPDFContextClose( pdf_context );
+         |    CGContextRelease( pdf_context );
+         |    [pb setData:pdf_data forType:NSPasteboardTypePDF];
+         |  }
+         |  CGDataConsumerRelease( consumer );
+         |}
          |#endif
 
     method text->String
