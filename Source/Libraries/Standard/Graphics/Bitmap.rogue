@@ -29,8 +29,8 @@ library Graphics
 
 class Bitmap
   GLOBAL PROPERTIES
-    transparent_checkerboard_evens = Color(0xFF555555)
-    transparent_checkerboard_odds  = Color(0xFFAAAAAA)
+    transparent_checkerboard_evens  = Color(0xFF555555)
+    transparent_checkerboard_odds   = Color(0xFFAAAAAA)
 
   GLOBAL METHODS
     method create( width:Int, height:Int )->Bitmap
@@ -780,7 +780,7 @@ class Bitmap
       native
       @|RogueInt32* a = $pixels->as_int32s - 1;
        |RogueInt32* b = $other->pixels->as_int32s - 1;
-       |int count = $width * $height;
+       |int count = (%Ns%RogueInt32)($width * $height);
        |while (--count >= 0)
        |{
        |  if (*(++a) != *(++b))
@@ -800,7 +800,7 @@ class Bitmap
 
       native
       @|RogueInt32* data = $pixels->as_int32s - 1;
-       |int count = $width * $height;
+       |int count = (%Ns%RogueInt32)($width * $height);
        |while (--count >= 0)
        |{
        |  RogueInt32 argb = *(++data);
@@ -1163,7 +1163,7 @@ class Bitmap
 
       native
       @|RogueInt32* data = $pixels->as_int32s - 1;
-       |int count = $width * $height;
+       |int count = (%Ns%RogueInt32)($width * $height);
        |while (--count >= 0)
        |{
        |  RogueInt32 argb = *(++data);
@@ -1180,12 +1180,11 @@ class Bitmap
       is_premultiplied_alpha = false
 
     method validate_premultiplied_alpha
-      # Checks for pixels that
       if (not is_premultiplied_alpha) return
 
       native
       @|RogueInt32* data = $pixels->as_int32s - 1;
-       |int count = $width * $height;
+       |int count = (%Ns%RogueInt32)($width * $height);
        |while (--count >= 0)
        |{
        |  RogueInt32 argb = *(++data);
