@@ -13,6 +13,8 @@ class AspectRatioLayoutSwitcher : Component
       add_alternate( component, 0.0 )
 
     method resolve_layout_size( available_size:XY, &limited )->XY
+      if (alternates.is_empty) return XY.zero
+
       local ar = UI.size.x / UI.size.y
       local best = alternates.first
       forEach (alt in alternates from 1)
