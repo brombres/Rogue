@@ -21,6 +21,9 @@ class Object
       native "$addr = (%Ns%RogueInt64)(void*)$this;"
       return addr
 
+    method object_refcount->Int
+      return native("$this->__refcount")->Int32
+
     method operator==( other:Object )->Logical
       return this is other
 

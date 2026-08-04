@@ -48,6 +48,29 @@ class Clipboard [singleton]
         MacOSClipboard.bitmap = bitmap
       endIf
 
+    method text->String
+      # Returns the system clipboard contents as a String, or null if the
+      # clipboard does not contain data that can be readily converted to plain text.
+      if (System.is_windows)
+        return WindowsClipboard.text
+      elseIf (System.is_linux)
+        return LinuxClipboard.text
+      elseIf (System.is_macos)
+        return MacOSClipboard.text
+      else
+        return null
+      endIf
+
+    method set_text( new_text:String )
+      # Replaces the system clipboard contents with the given text.
+      if (System.is_windows)
+        WindowsClipboard.text = new_text
+      elseIf (System.is_linux)
+        LinuxClipboard.text = new_text
+      elseIf (System.is_macos)
+        MacOSClipboard.text = new_text
+      endIf
+
 endClass
 
 class LinuxClipboard [singleton]
@@ -95,6 +118,32 @@ class LinuxClipboard [singleton]
       png_file.delete
       script_file.delete
 
+    method text->String
+      if (not System.is_linux) return null
+
+      # 'xclip -o' exits non-zero when no UTF8_STRING target is available
+      # (e.g. the clipboard holds an image only), in which case we return null.
+      local cmd = "timeout 1.0 xclip -display :0 -selection clipboard -t UTF8_STRING -out 2> /dev/null"
+      local result = Process.run( cmd )
+      if (not result.success) return null
+      return result.output_string
+
+    method set_text( new_text:String )
+      if (not new_text) return
+
+      local txt_file = temp_file( "txt" )
+      txt_file.save( new_text )
+
+      local cmd = "timeout 1.0 xclip -d :0 -selection clipboard -t UTF8_STRING -in $ &> /dev/null\n"(txt_file.esc)
+      local script_file = temp_file( "sh" )
+      script_file.save( cmd )
+      cmd = "sh $"(script_file.esc)
+      Process( cmd ).finish
+
+      System.sleep( 0.1 )
+      txt_file.delete
+      script_file.delete
+
     method temp_file( extension="png":String )->File
       return File( "/tmp/$.$"(UUID(),extension) )
 
@@ -137,10 +186,18 @@ class MacOSClipboard [singleton]
          |}
          |#endif
 
-         if (result) result.[ swap_red_and_blue, is_premultiplied_alpha=true, unmultiply_alpha ]
+         if (result) result.[ swap_red_and_blue, is_premultiplied_alpha=true, validate_premultiplied_alpha, unmultiply_alpha ]
        return result
 
     method set_bitmap( bitmap:Bitmap )
+      # Writes both PNG and PDF flavors to the pasteboard.
+      #
+      # The PDF flavor exists for Photoshop's benefit. Photoshop's raster
+      # clipboard importer (PNG/TIFF/etc.) composites semi-transparent pixels
+      # against white while retaining their alpha - brightening translucent
+      # areas - regardless of how the data is encoded. Its PDF importer
+      # preserves alpha exactly, and Photoshop prefers PDF over PNG when both
+      # flavors are present. Other apps generally prefer the PNG.
       native...
         @|#if defined(%NS%ROGUE_TARGET_MACOS)
 
@@ -153,6 +210,64 @@ class MacOSClipboard [singleton]
          |NSPasteboard* pb = NSPasteboard.generalPasteboard;
          |[pb clearContents];
          |[pb setData:data forType:NSPasteboardTypePNG];
+         |
+         |CGImageRef image = [[[NSImage alloc] initWithData:data] CGImageForProposedRect:NULL context:NULL hints:NULL];
+         |if (image)
+         |{
+         |  CGRect media_box = CGRectMake( 0, 0, (CGFloat)CGImageGetWidth(image), (CGFloat)CGImageGetHeight(image) );
+         |  NSMutableData* pdf_data = [NSMutableData data];
+         |  CGDataConsumerRef consumer = CGDataConsumerCreateWithCFData( (CFMutableDataRef)pdf_data );
+         |  CGContextRef pdf_context = CGPDFContextCreate( consumer, &media_box, NULL );
+         |  if (pdf_context)
+         |  {
+         |    CGPDFContextBeginPage( pdf_context, NULL );
+         |    CGContextDrawImage( pdf_context, media_box, image );
+         |    CGPDFContextEndPage( pdf_context );
+         |    CGPDFContextClose( pdf_context );
+         |    CGContextRelease( pdf_context );
+         |    [pb setData:pdf_data forType:NSPasteboardTypePDF];
+         |  }
+         |  CGDataConsumerRelease( consumer );
+         |}
+         |#endif
+
+    method text->String
+      local result : String
+      native...
+        @|#if defined(%NS%ROGUE_TARGET_MACOS)
+         |{
+         |  NSPasteboard* pb = NSPasteboard.generalPasteboard;
+         |  NSString* s = [pb stringForType:NSPasteboardTypeString];
+         |  if (s)
+         |  {
+         |    const char* utf8 = [s UTF8String];
+         |    if (utf8)
+         |    {
+            result = native( "%Ns%RogueString_create( (char*)utf8 )" )->String
+      native...
+        @|    }
+         |  }
+         |}
+         |#endif
+      return result
+
+    method set_text( new_text:String )
+      if (not new_text) return
+      local byte_count = native( "$new_text->data->count" )->Int32
+
+      native...
+        @|#if defined(%NS%ROGUE_TARGET_MACOS)
+         |{
+         |  NSString* s = [[NSString alloc] initWithBytes:(char*)$new_text->data->as_utf8
+         |                                         length:$byte_count
+         |                                       encoding:NSUTF8StringEncoding];
+         |  if (s)
+         |  {
+         |    NSPasteboard* pb = NSPasteboard.generalPasteboard;
+         |    [pb clearContents];
+         |    [pb setString:s forType:NSPasteboardTypeString];
+         |  }
+         |}
          |#endif
 
   NATIVE
@@ -234,6 +349,58 @@ class WindowsClipboard [singleton]
       native...
         @|#endif
         return false
+
+    method text->String
+      if (not open) return null
+
+      local result : String
+      native...
+        @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
+         |HANDLE clipboard_text_handle = GetClipboardData( CF_UNICODETEXT );
+         |if (clipboard_text_handle)
+         |{
+         |  const wchar_t* wstr = (const wchar_t*) GlobalLock( clipboard_text_handle );
+         |  if (wstr)
+         |  {
+         |    int utf8_len = WideCharToMultiByte( CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL );
+         |    if (utf8_len > 0)
+         |    {
+         |      char* utf8 = (char*) malloc( (size_t)utf8_len );
+         |      WideCharToMultiByte( CP_UTF8, 0, wstr, -1, utf8, utf8_len, NULL, NULL );
+            result = native( "%Ns%RogueString_create( utf8 )" )->String
+      native...
+        @|      free( utf8 );
+         |    }
+         |    GlobalUnlock( clipboard_text_handle );
+         |  }
+         |}
+         |CloseClipboard();
+         |#endif
+      return result
+
+    method set_text( new_text:String )
+      if (not new_text or not open) return
+
+      local byte_count = native( "$new_text->data->count" )->Int32
+      native...
+        @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
+         |EmptyClipboard();
+         |{
+         |  const char* utf8 = (const char*) $new_text->data->as_utf8;
+         |  int wlen = MultiByteToWideChar( CP_UTF8, 0, utf8, (int)$byte_count, NULL, 0 );
+         |  HGLOBAL h_global = GlobalAlloc( GMEM_MOVEABLE, ((size_t)wlen + 1) * sizeof(wchar_t) );
+         |  if (h_global)
+         |  {
+         |    wchar_t* wmem = (wchar_t*) GlobalLock( h_global );
+         |    MultiByteToWideChar( CP_UTF8, 0, utf8, (int)$byte_count, wmem, wlen );
+         |    wmem[wlen] = L'\0';
+         |    GlobalUnlock( h_global );
+         |    SetClipboardData( CF_UNICODETEXT, h_global );
+         |    // h_global now belongs to the clipboard; do not free it.
+         |  }
+         |}
+         |CloseClipboard();
+         |#endif
 
     method set_bitmap( bitmap:Bitmap )
      # Adapted from https://stackoverflow.com/a/66401824/135791

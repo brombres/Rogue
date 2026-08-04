@@ -37,9 +37,23 @@ class iOS : Apple [singleton]
        |  os_log( OS_LOG_DEFAULT, "[induce_memory_warning] pressure allocations released" );
        |#endif
 
+    method request_review
+      native
+      @|#if defined(%NS%ROGUE_TARGET_IOS)
+       |  for (UIScene *scene in UIApplication.sharedApplication.connectedScenes)
+       |  {
+       |    if (scene.activationState == UISceneActivationStateForegroundActive && [scene isKindOfClass:[UIWindowScene class]])
+       |    {
+       |      [SKStoreReviewController requestReviewInScene:(UIWindowScene *)scene];
+       |      break;
+       |    }
+       |  }
+       |#endif
+
   NATIVE
     nativeHeader
     @|#if defined(%NS%ROGUE_TARGET_IOS)
+     |  #import <StoreKit/StoreKit.h>
      |  #import <UIKit/UIKit.h>
      |  #import <os/log.h>
      |  #import <os/proc.h> // os_proc_available_memory()

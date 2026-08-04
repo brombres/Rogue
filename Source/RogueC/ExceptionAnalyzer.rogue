@@ -35,23 +35,52 @@ class ExceptionAnalyzer : InspectionVisitor
         back_propagate_thrown_exception( forEach in exception_types )
       endUse
 
-    method propagate_exceptions_among_dynamic_methods( reference_m:Procedure )
-      local group = Program.dynamic_methods[reference_m.dynamic_signature].methods
-      if (not group) return
-
-      local throws : ExceptionTypes
-      throws |= (forEach in group).throws
-      (forEach in group).throws = throws
-      reference_m.throws = throws
-
     method on_visit_node( cmd:CallProcedure )
       if (cmd.info.throws)
         back_propagate_thrown_exception( cmd.info.throws )
       endIf
 
     method on_visit_node( cmd:CallDynamicMethod )
-      propagate_exceptions_among_dynamic_methods( cmd.info )
+      if local group = Program.dynamic_methods[cmd.info.dynamic_signature]
+        if local throws = group.throws_for_context( cmd.context.require_type )
+          back_propagate_thrown_exception( throws )
+          return
+        endIf
+      endIf
+
       on_visit_node( cmd->(as CallProcedure) )
+
+    method on_visit_node( cmd:CallThisDynamicMethod )
+      if local group = Program.dynamic_methods[cmd.info.dynamic_signature]
+        if local throws = group.throws_for_context( cmd.info.type_context )
+          back_propagate_thrown_exception( throws )
+          return
+        endIf
+      endIf
+
+      on_visit_node( cmd->(as CallProcedure) )
+
+      #{
+    method on_visit_node( cmd:CallVirtualMethod )
+      if local group = Program.dynamic_methods[cmd.info.dynamic_signature]
+        if local throws = group.throws_for_context( cmd.context.require_type )
+          back_propagate_thrown_exception( throws )
+          return
+        endIf
+      endIf
+
+      on_visit_node( cmd->(as CallProcedure) )
+
+    method on_visit_node( cmd:CallThisVirtualMethod )
+      if local group = Program.dynamic_methods[cmd.info.dynamic_signature]
+        if local throws = group.throws_for_context( cmd.info.type_context )
+          back_propagate_thrown_exception( throws )
+          return
+        endIf
+      endIf
+
+      on_visit_node( cmd->(as CallProcedure) )
+      }#
 
     method on_visit( cmd:CleanupBlock )->Logical
       control_stack.add( cmd )
@@ -65,10 +94,6 @@ class ExceptionAnalyzer : InspectionVisitor
       visit_children( cmd )
       control_stack.remove_last
       return false
-
-    method on_visit_node( cmd:CallThisDynamicMethod )
-      propagate_exceptions_among_dynamic_methods( cmd.info )
-      on_visit_node( cmd->(as CallProcedure) )
 
     method on_visit_node( cmd:CreateObject )
       if (cmd.m_init and cmd.m_init.throws?)

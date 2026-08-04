@@ -14,44 +14,60 @@
 ================================================================================
 class UUID
   PROPERTIES
-    bytes     = Byte[](16)
+    bytes     : Byte[]
     as_string : String
 
   METHODS
     method init
-      bytes.clear
-      native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
-        native @|UUID uuid;
-                |UuidCreate( &uuid );
-        local d1 = native( "uuid.Data1" )->Int32
-        local d2 = native( "(%Ns%RogueInt32) uuid.Data2" )->Int32
-        local d3 = native( "(%Ns%RogueInt32) uuid.Data2" )->Int32
-        bytes.add( d1 :>>: 24 )
-        bytes.add( d1 :>>: 16 )
-        bytes.add( d1 :>>: 8 )
-        bytes.add( d1 )
-        bytes.add( d2 :>>: 8 )
-        bytes.add( d2 )
-        bytes.add( d3 :>>: 8 )
-        bytes.add( d3 )
-        forEach (i in 0..7)
-          bytes.add( native("uuid.Data4[$i]")->Byte )
-        endForEach
-      native @|#else
-        native @|uuid_t uuid;
-                |uuid_generate( uuid );
-        forEach (i in 0..15)
-          bytes.add( native("uuid[$i]")->Byte )
-        endForEach
-      native @|#endif
+      if ($target("Android"))
+        as_string = NativeAndroid.generate_uuid  # defined in Warlock/OS/NativeAndroid.rogue
+      else
+        localize bytes
 
-              local st = bytes->String(&hex)
-      local a = st.substring(  0,  8 )
-      local b = st.substring(  8,  4 )
-      local c = st.substring( 12,  4 )
-      local d = st.substring( 16,  4 )
-      local e = st.substring( 20, 12 )
-      as_string = "$-$-$-$-$" (a,b,c,d,e)
+        native @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
+          native @|UUID uuid;
+                  |UuidCreate( &uuid );
+          local d1 = native( "uuid.Data1" )->Int32
+          local d2 = native( "(%Ns%RogueInt32) uuid.Data2" )->Int32
+          local d3 = native( "(%Ns%RogueInt32) uuid.Data2" )->Int32
+          bytes.add( d1 :>>: 24 )
+          bytes.add( d1 :>>: 16 )
+          bytes.add( d1 :>>: 8 )
+          bytes.add( d1 )
+          bytes.add( d2 :>>: 8 )
+          bytes.add( d2 )
+          bytes.add( d3 :>>: 8 )
+          bytes.add( d3 )
+          forEach (i in 0..7)
+            bytes.add( native("uuid.Data4[$i]")->Byte )
+          endForEach
+        native @|#else
+          native @|uuid_t uuid;
+                  |uuid_generate( uuid );
+          forEach (i in 0..15)
+            bytes.add( native("uuid[$i]")->Byte )
+          endForEach
+        native @|#endif
+
+        local st = bytes->String(&hex)
+        local a = st.substring(  0,  8 )
+        local b = st.substring(  8,  4 )
+        local c = st.substring( 12,  4 )
+        local d = st.substring( 16,  4 )
+        local e = st.substring( 20, 12 )
+        as_string = "$-$-$-$-$" (a,b,c,d,e)
+      endIf
+
+    method bytes->Byte[]
+      if (@bytes) return @bytes
+
+      if (as_string)
+        bytes = Byte[]( as_string.replacing( "-", "" ), &hex )
+      else
+        bytes = Byte[]( 16 )
+      endIf
+
+      return @bytes
 
     method to->String
       return as_string
@@ -60,7 +76,7 @@ class UUID
     nativeHeader...
      @|#if defined(%NS%ROGUE_TARGET_WINDOWS)
       |  #include <Rpc.h>
-      |#else
+      |#elif !defined(%NS%ROGUE_TARGET_ANDROID)
       |  #include <uuid/uuid.h>
       |#endif
 endClass

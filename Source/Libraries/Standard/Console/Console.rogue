@@ -164,6 +164,9 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     method set_cursor( position:(x:Int,y:Int), output=Global:PrintWriter )
       set_cursor( position.x, position.y, output )
 
+    method set_cursor( position:XY, output=Global:PrintWriter )
+      set_cursor( position.x, position.y, output )
+
     method set_immediate_mode( setting:Logical )
       # setting==true: turn off echo and line buffer, turn on mouse events.
       #                Must call has_another_event / read_event / peek_event

@@ -750,17 +750,15 @@ class CGenerator : Visitor
         writer.println ";"
       endIf
 
-      if (VCALLS)
-        # Declare temporary variables for implementing virtual calls
-        forEach (n in 0..<this_procedure.vcall_max)
-          writer.print   "%Ns%RogueObject* _auto_virtual_context_"
-          writer.print   n
-          writer.println ';'
-          writer.print   "(void) _auto_virtual_context_"
-          writer.print   n
-          writer.println ';'
-        endForEach
-      endIf
+      # Declare temporary variables for implementing virtual calls
+      forEach (n in 0..<this_procedure.vcall_max)
+        writer.print   "%Ns%RogueObject* _auto_virtual_context_"
+        writer.print   n
+        writer.println ';'
+        writer.print   "(void) _auto_virtual_context_"
+        writer.print   n
+        writer.println ';'
+      endForEach
 
       if (Program.gc_auto)
         # Declare all local variables.
@@ -1828,7 +1826,7 @@ augment
 
     method Library.generate_c_header( writer:CWriter )
       if (native_headers.count)
-        native_headers.sort( (a,b) => (a.ordinal <= b.ordinal) )
+        native_headers.sort( (a,b) => (a.ordinal < b.ordinal) )
         writer.println( (forEach in native_headers).content )
         writer.println
       endIf
@@ -2216,6 +2214,38 @@ augment
          |  }
          |
          |  list->data[ list->count++ ] = (%Ns%RogueObject*)obj;
+         |}
+         |
+         |void  %Ns%RogueMMObjectList_transfer( %Ns%RogueMMObjectList* from_list, %Ns%RogueMMObjectList* to_list )
+         |{
+         |  // to_list is probably empty but if it has references, add them all to from_list before the transfer.
+         |  if (to_list->count)
+         |  {
+         |    %Ns%RogueObject*  ref;
+         |    %Ns%RogueObject** refptr;
+         |    %Ns%RogueInt i;
+         |    for (i=to_list->count, refptr=to_list->data-1; --i>=0; )
+         |    {
+         |      ref = (%Ns%RogueObject*) *(++refptr);
+         |      %Ns%RogueMMObjectList_add( from_list, ref );
+         |    }
+         |  }
+         |
+         |  // free existing to_list data if different
+         |  if (to_list->data && to_list->data != from_list->data)
+         |  {
+         |    %NS%ROGUE_FREE( to_list->data );
+         |  }
+         |
+         |  // to_list gets a straight copy of from_list.
+         |  to_list->data = from_list->data;
+         |  to_list->count = from_list->count;
+         |  to_list->capacity = from_list->capacity;
+         |
+         |  // from_list gets cleared
+         |  from_list->data = 0;
+         |  from_list->count = 0;
+         |  from_list->capacity = 0;
          |}
          |
          |%Ns%RogueObject*     %Ns%Rogue_exception  = 0;
@@ -2762,15 +2792,23 @@ augment
                           |%Ns%RogueInt i;
                           |%Ns%RogueInt write_i;
                           |
+                          |// Move object lists to be local copies. Calls to on_cleanup() may create more objects
+                          |// after the object graph has been traced and before cleanup, so this ensures that those
+                          |// new objects don't get caught up in being freed.
+                          |%Ns%RogueMMObjectList objects = {0};
+                          |%Ns%RogueMMObjectList objects_requiring_cleanup = {0};
+                          |%Ns%RogueMMObjectList_transfer( &%Ns%RogueMM_objects, &objects );
+                          |%Ns%RogueMMObjectList_transfer( &%Ns%RogueMM_objects_requiring_cleanup, &objects_requiring_cleanup );
+                          |
                           |// Trace all retained standard objects (positive refcount)
-                          |for (i=%Ns%RogueMM_objects.count, refptr=%Ns%RogueMM_objects.data-1; --i>=0; )
+                          |for (i=objects.count, refptr=objects.data-1; --i>=0; )
                           |{
                           |  if ((ref=(%Ns%RogueObject*)*(++refptr)) && ref->__refcount > 0) ref->__type->fn_gc_trace(ref);
                           |}
                           |
                           |// Trace all retained objects requiring cleanup (positive refcount)
-                          |for (i=%Ns%RogueMM_objects_requiring_cleanup.count,
-                          |     refptr=%Ns%RogueMM_objects_requiring_cleanup.data-1; --i>=0; )
+                          |for (i=objects_requiring_cleanup.count,
+                          |     refptr=objects_requiring_cleanup.data-1; --i>=0; )
                           |{
                           |  if ((ref=(%Ns%RogueObject*)*(++refptr)) && ref->__refcount > 0) ref->__type->fn_gc_trace(ref);
                           |}
@@ -2851,50 +2889,78 @@ augment
       c_writer.println @|// Find unreferenced objects requiring cleanup and move them to
                         |// the end of the regular list.
                         |%Ns%RogueInt cleanup_count = 0;
-                        |for (write_i=-1,i=%Ns%RogueMM_objects_requiring_cleanup.count,
-                        |     refptr=%Ns%RogueMM_objects_requiring_cleanup.data-1; --i>=0; )
+                        |for (write_i=-1,i=objects_requiring_cleanup.count,
+                        |     refptr=objects_requiring_cleanup.data-1; --i>=0; )
                         |{
                         |  ref = (%Ns%RogueObject*) *(++refptr);
                         |  if (ref->__refcount >= 0)
                         |  {
                         |    ++cleanup_count;
-                        |    %Ns%RogueMMObjectList_add( &%Ns%RogueMM_objects, ref );
+                        |    %Ns%RogueMMObjectList_add( &objects, ref );
                         |  }
                         |  else
                         |  {
-                        |    %Ns%RogueMM_objects_requiring_cleanup.data[++write_i] = ref;
+                        |    objects_requiring_cleanup.data[++write_i] = ref;
                         |  }
                         |}
-                        |%Ns%RogueMM_objects_requiring_cleanup.count -= cleanup_count;
+                        |objects_requiring_cleanup.count -= cleanup_count;
+                        |
+                        |
+                        |// Null out weak references to objects that are about to be cleaned
+                        |// up or deleted. It's important to delete the unused objects requiring
+                        |// cleanup now, before they are reset and moved to the regular object
+                        |// list, even though the objects won't be deleted until at least
+                        |// the next GC, because it's a reasonable user expectation that when
+                        |// on_cleanup() is called and objects release all their resources, that
+                        |// no weak references will be keeping the objects alive.
+                        |{
+                        |  %Ns%RogueWeakReference* cur = %Ns%RogueMM_weak_references;
+                        |  while (cur)
+                        |  {
+                        |    if (cur->object && cur->object->__refcount >= 0)
+                        |    {
+                        |      // The object ref held by this weak reference is about to be
+                        |      // deleted by the GC system; null out the object.
+                        |      cur->object = 0;
+                        |    }
+                        |    cur = cur->next_weak_reference;
+                        |  }
+                        |}
                         |
                         |// The last 'cleanup_count' objects on the regular objects list are unreferenced
                         |// objects requiring cleanup.
                         |//
                         |// We can't delete them yet because they could add themselves back to the object
-                        |// graph during cleanup, so we'll go ahead and trace them one last time. They'll
-                        |// be deleted from the regular list the next time they're unreferenced with no
-                        |// additional chance to clean up.
-                        |for (i=cleanup_count, refptr=%Ns%RogueMM_objects.data+%Ns%RogueMM_objects.count; --i>=0; )
+                        |// graph during cleanup, so we'll go ahead and trace them one last time as well
+                        |// as calling fn_on_cleanup on them. They'll deleted from the regular list the
+                        |// next time they're unreferenced with no chance to clean up.
+                        |for (i=cleanup_count, refptr=objects.data+objects.count; --i>=0; )
                         |{
                         |  ref = (%Ns%RogueObject*) *(--refptr);
                         |  ref->__type->fn_gc_trace( ref );
+                        |  ref->__type->fn_on_cleanup( ref );
                         |}
                         |
-                        |// Null out weak references to objects that are about to be deleted.
-                        |%Ns%RogueWeakReference* cur = %Ns%RogueMM_weak_references;
-                        |while (cur)
+                        |// Reset the traced flag on any new objects created during the GC that
+                        |// could have gotten swept up in tracing.
+                        |%Ns%RogueInt end_i = %Ns%RogueMM_objects.count;
+                        |refptr = %Ns%RogueMM_objects.data + end_i;
+                        |for (i=end_i; --i>=0; )
                         |{
-                        |  if (cur->object && cur->object->__refcount >= 0)
-                        |  {
-                        |    // The object ref held by this weak reference is about to be
-                        |    // deleted by the GC system; null out the object.
-                        |    cur->object = 0;
-                        |  }
-                        |  cur = cur->next_weak_reference;
+                        |  ref = (%Ns%RogueObject*) *(--refptr);
+                        |  if (ref->__refcount < 0) ref->__refcount = ~ref->__refcount;
+                        |}
+                        |
+                        |end_i = %Ns%RogueMM_objects_requiring_cleanup.count;
+                        |refptr = %Ns%RogueMM_objects_requiring_cleanup.data + end_i;
+                        |for (i=end_i; --i>=0; )
+                        |{
+                        |  ref = (%Ns%RogueObject*) *(--refptr);
+                        |  if (ref->__refcount < 0) ref->__refcount = ~ref->__refcount;
                         |}
                         |
                         |// Free unreferenced objects and reset the traced flag on referenced objects.
-                        |for (write_i=-1,i=%Ns%RogueMM_objects.count, refptr=%Ns%RogueMM_objects.data-1; --i>=0; )
+                        |for (write_i=-1,i=objects.count, refptr=objects.data-1; --i>=0; )
                         |{
                         |  ref = (%Ns%RogueObject*) *(++refptr);
                         |  if (ref->__refcount >= 0)
@@ -2906,18 +2972,22 @@ augment
                         |  {
                         |    // Still referenced. Reset flag.
                         |    ref->__refcount = ~ref->__refcount;
-                        |    %Ns%RogueMM_objects.data[++write_i] = ref;
+                        |    objects.data[++write_i] = ref;
                         |  }
                         |}
-                        |%Ns%RogueMM_objects.count = write_i + 1;
+                        |objects.count = write_i + 1;
                         |
-                        |%Ns%RogueInt end_i = %Ns%RogueMM_objects_requiring_cleanup.count;
-                        |refptr = %Ns%RogueMM_objects_requiring_cleanup.data + end_i;
+                        |end_i = objects_requiring_cleanup.count;
+                        |refptr = objects_requiring_cleanup.data + end_i;
                         |for (i=end_i; --i>=0; )
                         |{
                         |  ref = (%Ns%RogueObject*) *(--refptr);
                         |  ref->__refcount = ~ref->__refcount;
                         |}
+                        |
+                        |// Transfer the temp object lists back to the permanent lists.
+                        |%Ns%RogueMMObjectList_transfer( &objects, &%Ns%RogueMM_objects );
+                        |%Ns%RogueMMObjectList_transfer( &objects_requiring_cleanup, &%Ns%RogueMM_objects_requiring_cleanup );
                         |
                         |//printf("New object count:%d\n",%Ns%RogueMM_objects.count);
                         |

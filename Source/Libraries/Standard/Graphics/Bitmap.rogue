@@ -29,8 +29,8 @@ library Graphics
 
 class Bitmap
   GLOBAL PROPERTIES
-    transparent_checkerboard_evens = Color(0xFF555555)
-    transparent_checkerboard_odds  = Color(0xFFAAAAAA)
+    transparent_checkerboard_evens  = Color(0xFF555555)
+    transparent_checkerboard_odds   = Color(0xFFAAAAAA)
 
   GLOBAL METHODS
     method create( width:Int, height:Int )->Bitmap
@@ -780,7 +780,7 @@ class Bitmap
       native
       @|RogueInt32* a = $pixels->as_int32s - 1;
        |RogueInt32* b = $other->pixels->as_int32s - 1;
-       |int count = $width * $height;
+       |int count = (%Ns%RogueInt32)($width * $height);
        |while (--count >= 0)
        |{
        |  if (*(++a) != *(++b))
@@ -800,7 +800,7 @@ class Bitmap
 
       native
       @|RogueInt32* data = $pixels->as_int32s - 1;
-       |int count = $width * $height;
+       |int count = (%Ns%RogueInt32)($width * $height);
        |while (--count >= 0)
        |{
        |  RogueInt32 argb = *(++data);
@@ -1163,7 +1163,7 @@ class Bitmap
 
       native
       @|RogueInt32* data = $pixels->as_int32s - 1;
-       |int count = $width * $height;
+       |int count = (%Ns%RogueInt32)($width * $height);
        |while (--count >= 0)
        |{
        |  RogueInt32 argb = *(++data);
@@ -1180,35 +1180,71 @@ class Bitmap
       is_premultiplied_alpha = false
 
     method validate_premultiplied_alpha
-      # Checks for pixels that
+      # Ensures that pixel data flagged as premultiplied alpha is actually in
+      # standard (black-matte) premultiplied form (c*a), correcting or
+      # reclassifying the data if not. The whole image is classified as one of
+      # three cases and any correction applies the same formula to every pixel:
+      #
+      # 1. Every component <= alpha: standard premultiplied alpha. No change.
+      # 2. Some component > alpha, but every component >= 255-alpha: the image
+      #    is premultiplied and matted against white (c*a + (255-a)) - the
+      #    format some versions of Photoshop place on the clipboard. The white
+      #    matte is subtracted, leaving standard premultiplied alpha.
+      # 3. Otherwise the data is not premultiplied at all; the pixel data is
+      #    left unchanged and is_premultiplied_alpha is set to false.
+      #
+      # A small per-component tolerance absorbs rounding drift introduced by
+      # decoding and color matching.
       if (not is_premultiplied_alpha) return
 
+      local premul_violations = 0
+      local white_violations  = 0
+
       native
-      @|RogueInt32* data = $pixels->as_int32s - 1;
-       |int count = $width * $height;
-       |while (--count >= 0)
-       |{
-       |  RogueInt32 argb = *(++data);
-       |  int a = (argb >> 24) & 255;
-       |  if (a)
+      @|{
+       |  RogueInt32* data = $pixels->as_int32s - 1;
+       |  int count = (%Ns%RogueInt32)($width * $height);
+       |  while (--count >= 0)
        |  {
+       |    RogueInt32 argb = *(++data);
+       |    int a = (argb >> 24) & 255;
        |    int r = (argb >> 16) & 255;
        |    int g = (argb >> 8)  & 255;
        |    int b = argb & 255;
-       |    if (r > a || g > a || b > a)
-       |    {
-       |      r = (r * 255 + (a>>1)) / a;
-       |      g = (g * 255 + (a>>1)) / a;
-       |      b = (b * 255 + (a>>1)) / a;
-       |      if (r > 255) r = 255;
-       |      if (g > 255) g = 255;
-       |      if (b > 255) b = 255;
-       |      *data = (a<<24) | (r<<16) | (g<<8) | b;
-       |    }
+       |    int hi = r; if (g > hi) hi = g; if (b > hi) hi = b;
+       |    int lo = r; if (g < lo) lo = g; if (b < lo) lo = b;
+       |    if (hi > a + 2)         ++$premul_violations;
+       |    if (lo < (255 - a) - 2) ++$white_violations;
        |  }
-       |  else
+       |}
+
+      if (premul_violations == 0) return  # Standard premultiplied alpha
+
+      if (white_violations)
+        # Neither standard premultiplied nor white-matted; the components must
+        # already be straight (unmultiplied) color values.
+        is_premultiplied_alpha = false
+        return
+      endIf
+
+      # White-matte premultiplied. Subtract the white matte from every pixel,
+      # leaving standard premultiplied alpha.
+      native
+      @|{
+       |  RogueInt32* data = $pixels->as_int32s - 1;
+       |  int count = (%Ns%RogueInt32)($width * $height);
+       |  while (--count >= 0)
        |  {
-       |    *data = 0;
+       |    RogueInt32 argb = *(++data);
+       |    int a = (argb >> 24) & 255;
+       |    int m = 255 - a;
+       |    int r = ((argb >> 16) & 255) - m;
+       |    int g = ((argb >> 8)  & 255) - m;
+       |    int b = (argb & 255) - m;
+       |    if (r < 0) r = 0; else if (r > a) r = a;
+       |    if (g < 0) g = 0; else if (g > a) g = a;
+       |    if (b < 0) b = 0; else if (b > a) b = a;
+       |    *data = (a<<24) | (r<<16) | (g<<8) | b;
        |  }
        |}
 

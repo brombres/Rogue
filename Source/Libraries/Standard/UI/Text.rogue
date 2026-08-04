@@ -15,10 +15,10 @@ class Text : Component
         if (builder.last == ' ')
           # Make a trailing space its own element
           builder.remove_last
-          add( create_fragment(builder.cloned,&fragment) )
-          add( create_fragment(" ",&fragment) )
+          add( create_fragment(builder.cloned) )
+          add( create_fragment(" ") )
         else
-          add( create_fragment(builder.cloned,&fragment) )
+          add( create_fragment(builder.cloned) )
         endIf
         builder.clear
       endIf
@@ -45,9 +45,12 @@ class Text : Component
         return true
       endIf
 
-    method create_fragment( text=String():String, &fragment )->$thisType [propagated]
+    method create_fragment( text:String, i1=0:Int, n=undefined:Int? )->$thisType [propagated]
+      if (not n) n = text.count
+      if (i1 > 0 or n.value < text.count) text = text.substring( i1, n.value )
+
       local result = new<<$thisType>>
-      result->(as Text).init( text, &=fragment )
+      result->(as Text).init( text, &fragment )
       result.copy_settings_from( this )
       return result
 
@@ -196,9 +199,9 @@ class Text : Component
       local left, center, right : Text
 
       local split_i = split_position->Int
-      if (split_i) left = create_fragment( value.substring(0, split_i), &fragment )
-      center = create_fragment( value[split_i], &fragment )
-      if (split_i + 1 < value.count) right = create_fragment( value.substring(split_i+1), &fragment )
+      if (split_i) left = create_fragment( value, 0, split_i )
+      center = create_fragment( value, split_i, 1 )
+      if (split_i + 1 < value.count) right = create_fragment( value, split_i+1 )
 
       if (left) add( left )
       add( center )
@@ -276,7 +279,7 @@ class Text : Component
             endIf
           endLoop
 
-          local has_edge_spaces = processed[0] == ' ' or processed.last == ' '
+          local has_edge_spaces = processed.count? and (processed[0] == ' ' or processed.last == ' ')
           if (has_eol or has_edge_spaces) is_modified = true
 
           if (not is_modified)
@@ -291,10 +294,10 @@ class Text : Component
             forEach (ch in processed)
               if (ch == '\n')
                 .add_builder( builder )
-                add( create_fragment('\n',&fragment) )
+                add( create_fragment('\n') )
               elseIf (ch == ' ' and not builder.count)
                 # Leading space becomes its own element
-                add( create_fragment(' ',&fragment) )
+                add( create_fragment(' ') )
               else
                 builder.print ch
               endIf

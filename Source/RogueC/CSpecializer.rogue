@@ -38,7 +38,7 @@ class CSpecializer : Visitor
         endForEach
       endIf
 
-      if (VCALLS) CollectVirtualCallInfo()
+      CollectVirtualCallInfo()
 
     method visit_type( type:Type )
       if (type.attributes.is_used)

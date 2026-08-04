@@ -11,6 +11,10 @@ class Optional<<$DataType>>( value:$DataType, exists=true:Logical ) : OptionalTy
       if (exists) return which{ other.exists:(value==other.value) || false }
       else        return which{ other.exists:false || true }
 
+    method require_value->$DataType
+      if (not exists) throw Error( "Required $ value does not exist."(<<$DataType>>.name) )
+      return value
+
     method to->String
       if (exists) return value->String
       else        return "null"

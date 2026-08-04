@@ -21,6 +21,9 @@ class PropertyInfo( id:Int32, name:String, type_index:Int32, is_global:Logical )
     method to->String
       return name
 
+    method to->TypeID
+      return TypeID( type_index )
+
     method type->TypeInfo
       return TypeInfo[type_index]
 

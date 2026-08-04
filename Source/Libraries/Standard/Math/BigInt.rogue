@@ -149,7 +149,7 @@ class BigInt
       data = other.data.cloned
       sign_flag = other.sign_flag
 
-    method bits->Int32
+    method bits->Int
       local result = data.count * 32
       forEach (n in data step -1)
         if (n)
@@ -187,7 +187,7 @@ class BigInt
 
       return result
 
-    method operator:<<:( bits:Int32 )->BigInt
+    method operator:<<:( bits:Int )->BigInt
       if (bits == 0) return this
       if (bits < 0 ) return this :>>: -bits
 
@@ -211,10 +211,10 @@ class BigInt
 
       return result
 
-    method operator:>>>:( bits:Int32 )->BigInt
+    method operator:>>>:( bits:Int )->BigInt
       return this :>>: bits
 
-    method operator:>>:( bits:Int32 )->BigInt
+    method operator:>>:( bits:Int )->BigInt
       if (bits == 0) return this
       if (bits < 0)  return this :<<: -bits
 
@@ -358,6 +358,9 @@ class BigInt
         return false
 
       endContingent
+
+    method to->Int
+      return this->Int32
 
     method to->Int32
       contingent
