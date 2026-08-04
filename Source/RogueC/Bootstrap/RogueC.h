@@ -72448,7 +72448,7 @@ extern RogueString* str__line_;
 extern RogueString* str___column_;
 extern RogueString* str_Run__roguec__without;
 extern RogueString* str_version;
-extern RogueString* str_2_43_1;
+extern RogueString* str_2_43;
 extern RogueString* str_August_4__2026;
 extern RogueString* str__by_Brom_Bresenham;
 extern RogueString* str_help;
