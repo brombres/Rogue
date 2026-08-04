@@ -335,7 +335,21 @@ class System [essential]
     method request_gc
       native @|%Ns%Rogue_request_gc();
 
-    method run( command:String )->Int32
+    method run( command:String, &with_aliases )->Int32
+      if (with_aliases)
+        local shell_path = System.env//SHELL || "/bin/sh"
+        local shell = shell_path.after_last( '/' )
+        local rc = File( "~/.$rc"(shell) )
+        if (rc.exists)
+          local aliases = File( "~/.$rc-rogue-aliases"(shell) )
+          if (rc.is_newer_than(aliases))
+            local content = String(rc).split('\n').discarding(not $.contains("alias")).join('\n')
+            aliases.save( content )
+          endIf
+          command = "$ -c 'source $; $'"(shell,aliases,command.replacing("'","\\'"))
+        endIf
+      endIf
+
       local return_val = 0
       native @|$return_val = system( (char*)$command->data->as_utf8 );
       if (return_val == -1) return -1
