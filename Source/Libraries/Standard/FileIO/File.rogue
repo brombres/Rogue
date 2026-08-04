@@ -332,16 +332,11 @@ class File( filepath:String ) [compound]
           # Surrounding the filepath with double quotes is all the escaping we need.
           return '"$"' (filepath)
         else
-          # On Unixy OS's, put a '\' in front of every character that needs it.
-          local result = String()
-          forEach (ch in filepath)
-            if (ch.is_alphanumeric or acceptable.contains(ch))
-              result.print( ch )
-            else
-              result.[ print('\\'), print(ch) ]
-            endIf
-          endForEach
-          return result
+          # On Unixy OS's, surround the filepath with single quotes, which
+          # handles every special character except single quotes themselves.
+          # Any single quote in the filepath is replaced with '\'' (close
+          # quote, escaped quote, reopen quote).
+          return "'$'" (filepath.replacing("'","'\\''"))
         endIf
 
       endContingent
