@@ -136,40 +136,20 @@ class CommandLineParser
 
       if (default) defaults[ _extract_name(name) ] = default
 
-      if (name.ends_with('='))
-        # --option=value
-        name = name.before_first('=')
-        handlers[ name ] =
-          function( parser:CommandLineParser ) with (require_value,multi)
-            block options=parser.options, name=parser.name.before_first('='), arg=parser.arg
-              if (arg.contains('='))
-                local value = arg.after_first( '=' )
-                if (multi)
-                  if (not options[name].is_list) options[ name ] = @[]
-                  options[ name ].add( value )
-                else
-                  options[ name ] = value
-                endIf
-              elseIf (require_value)
-                throw ValueExpectedError( arg )
+      # --option=value
+      name = name.before_first('=')
+      handlers[ name ] =
+        function( parser:CommandLineParser ) with (require_value,multi)
+          block options=parser.options, name=parser.name.before_first('='), arg=parser.arg
+            if (arg.contains('='))
+              local value = arg.after_first( '=' )
+              if (multi)
+                if (not options[name].is_list) options[ name ] = @[]
+                options[ name ].add( value )
               else
-                # Be careful not to overwrite a default value if no value supplied
-                if (not parser.defaults.contains(name) or not options.contains(name))
-                  if (multi)
-                    if (not options[name].is_list) options[ name ] = @[]
-                    options[ name ].add( true )
-                  else
-                    options[ name ] = true
-                  endIf
-                endIf
+                options[ name ] = value
               endIf
-            endBlock
-          endFunction
-      else
-        # --option arg
-        handlers[ name ] =
-          function( parser:CommandLineParser ) with (require_value,multi)
-            if (require_value)
+            elseIf (require_value)
               if (parser.arg_reader.has_another)
                 block options=parser.options, name=parser.name
                   if (multi)
@@ -182,20 +162,19 @@ class CommandLineParser
               else
                 throw ValueExpectedError( parser.arg )
               endIf
-            elseIf (parser.arg.contains('='))
-              throw UnexpectedValueError( parser.arg )
             else
-              block options=parser.options, name=parser.name
+              # Be careful not to overwrite a default value if no value supplied
+              if (not parser.defaults.contains(name) or not options.contains(name))
                 if (multi)
                   if (not options[name].is_list) options[ name ] = @[]
                   options[ name ].add( true )
                 else
                   options[ name ] = true
                 endIf
-              endBlock
+              endIf
             endIf
-          endFunction
-      endIf
+          endBlock
+        endFunction
 
     method option( name:String, handler:Function(CommandLineParser), &alias=null:String, &aliases=null:String[], &require_value )
       if (alias)
