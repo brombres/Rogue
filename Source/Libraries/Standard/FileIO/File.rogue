@@ -399,6 +399,16 @@ class File( filepath:String ) [compound]
     method hashcode->Int
       return filepath.hashcode
 
+    method inserting( prefix:String )->File
+      # "~/Downloads/Filename.txt".inserting("Temp-") -> "~/Downloads/Temp-Filename.txt"
+      if (not prefix) return this
+      local (filepath,ext) = split_filepath_and_extension
+      local file = File( filepath )
+      if (file.filepath.contains('/')) filepath = (file.folder / prefix) + file.filename
+      else                             filepath = prefix + file.filename
+      if (ext == "") return filepath
+      return File("$.$"(filepath,ext))
+
     method is_absolute->Logical
       local filepath = resolved.filepath
       if (filepath.begins_with('/')) return true
