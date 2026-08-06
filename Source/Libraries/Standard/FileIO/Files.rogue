@@ -272,6 +272,36 @@ class Files
 
       return change_count
 
+    method timestamped( &date_added )->TimestampedFile[]
+      local result = TimestampedFile[]
+      local files = this->File[]
+
+      if (date_added and System.is_macos)
+        local cmd = String( "mdls -name kMDItemDateAdded" )
+        cmd.[print(' '), print((forEach in files).abs.esc)]
+        local process_result = Process.run( cmd, &env )
+        if (process_result.success)
+          local lines = process_result->String.trimmed.split( '\n' )
+          if (lines.count == files.count)
+            forEach (line at i in lines)
+              local date_added = line.split( '=' ).last.trimmed
+              if (date_added.count > 10)  # effectively checking for non-"(null)"
+                result.add( TimestampedFile(files[i],Timestamp(date_added)) )
+              else
+                result.add( TimestampedFile(files[i],files[i].timestamp) )
+              endIf
+            endForEach
+            return result
+          endIf
+        endIf
+      endIf
+
+      forEach (file in files)
+        result.add( TimestampedFile(file,file.timestamp) )
+      endForEach
+
+      return result
+
     method to->File[]
       local result = File[]( filepath_set.count )
       result.add( File(forEach in filepath_set.values) )
@@ -282,4 +312,10 @@ class Files
 
     method to->String[]
       return filepath_set.values->String[]
+endClass
+
+class TimestampedFile( file:File, timestamp:Timestamp ) [compound]
+  METHODS
+    method to->String
+      return "[$] $"(timestamp,file)
 endClass

@@ -52,7 +52,7 @@ class Timestamp( value=System.time:Real ) [compound]
               |cur_date.tm_sec  = $second;
               |cur_date.tm_isdst = -1;
               |
-      return Timestamp( native( "((%Ns%RogueInt64)mktime(&cur_date))" )->Int64 * 1000 + millisecond )
+      return Timestamp( native( "((%Ns%RogueInt64)mktime(&cur_date))" )->Int64 + (millisecond/1000.0) )
 
     method create( date:String )->Timestamp
       local parts = String[]
@@ -65,6 +65,28 @@ class Timestamp( value=System.time:Real ) [compound]
         local hh = parts[3]->Int
         local mm = parts[4]->Int
         local ss = parts[5]->Int
+        return Timestamp( y, m, d, hh, mm, ss )
+
+      elseIf (date.extract_strings("$(I)-$(I)-$(I) $(I):$(I):$(I) $$(I)",parts))
+        # 2026-08-06 01:58:56 +0000
+        local y  = parts[0]->Int
+        local m  = parts[1]->Int
+        local d  = parts[2]->Int
+        local hh = parts[3]->Int
+        local mm = parts[4]->Int
+        local ss = parts[5]->Int
+        local op = parts[6].first
+        local dh = parts[7].leftmost(2)->Int
+        local dm = parts[7].rightmost(2)->Int
+        if (op == '+')
+          hh += dh
+          mm += dm
+        elseIf (op == '-')
+          hh -= dh
+          mm -= dm
+        else
+          println( "[Warning] Syntax error in UTC offset: " + date )
+        endIf
         return Timestamp( y, m, d, hh, mm, ss )
 
       elseIf (date.extract_strings("$ $ $(I) $(I):$(I):$(I) $ $(I)",parts))
