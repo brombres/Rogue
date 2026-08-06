@@ -52,7 +52,7 @@ class Timestamp( value=System.time:Real ) [compound]
               |cur_date.tm_sec  = $second;
               |cur_date.tm_isdst = -1;
               |
-      return Timestamp( native( "((%Ns%RogueInt64)mktime(&cur_date))" )->Int64 * 1000 + millisecond )
+      return Timestamp( native( "((%Ns%RogueInt64)mktime(&cur_date))" )->Int64 + (millisecond/1000.0) )
 
     method create( date:String )->Timestamp
       local parts = String[]
