@@ -748,6 +748,21 @@ class File( filepath:String ) [compound]
     method timestamp->Timestamp
       return Timestamp( timestamp_ms / 1000.0 )
 
+    method timestamp_added->Timestamp
+      # macOS:  Returns the timestamp of when the file was added to its folder.
+      #         Note: Relatively slow; use Files.timestamped(&date_added) for batches.
+      # Others: Returns the timestamp of last modification.
+      if (System.is_macos)
+        local result = Process.run( "mdls -name kMDItemDateAdded $"(resolved.esc) )
+        if (result.success)
+          local date_added = result->String.split('=').last.trimmed
+          if (date_added.count > 10)  # effectively checking for non-"(null)"
+            return Timestamp( date_added )
+          endIf
+        endIf
+      endIf
+      return timestamp
+
     method timestamp_ms->Int64
       # Returns the last modified time.
       local ms : Int64
