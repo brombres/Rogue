@@ -341,12 +341,13 @@ class System [essential]
         local shell = shell_path.after_last( '/' )
         local rc = File( "~/.$rc"(shell) )
         if (rc.exists)
-          local aliases = File( "~/.$rc-rogue-aliases"(shell) )
-          if (rc.is_newer_than(aliases))
-            local content = String(rc).split('\n').discarding(not $.contains("alias")).join('\n')
-            aliases.save( content )
+          local aliases_file = File( "~/.$rc-rogue-aliases"(shell) )
+          if (rc.is_newer_than(aliases_file))
+            local content = String(rc).split('\n').discarding(not $.trimmed.begins_with("alias")).join('\n')
+            aliases_file.save( content )
           endIf
-          command = "$ -c 'source $; $'"(shell,aliases,command.replacing("'","\\'"))
+
+          command = "$ -c 'source $; $'"(shell,aliases_file,.expand_aliases(command).replacing("'","\\'"))
         endIf
       endIf
 
@@ -357,6 +358,14 @@ class System [essential]
               |$return_val = (%Ns%RogueInt32) WEXITSTATUS($return_val);
               |#endif
       return return_val
+
+    method .expand_aliases( command:String )->String
+      # Kludge: put an 'eval' in front of every segment of the command
+      command = "eval " + command
+      command .= replacing( "&&", "&& eval" )
+      command .= replacing( "||", "|| eval" )
+      command .= replacing( ";", "; eval" )
+      return command
 
     method sleep( seconds:Real )
       # Suspends execution of this program for the specified number of seconds.
