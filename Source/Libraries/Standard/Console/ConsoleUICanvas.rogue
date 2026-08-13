@@ -2,5 +2,13 @@ uses Console/TextCanvas
 
 class ConsoleUICanvas : TextCanvas [singleton]
   # All console UI drawing commands should draw characters to this singleon.
+  METHODS
+    method request_redraw [override]
+      prior.invalidate
+      UI.request_redraw
+
+    method request_redraw( bounds:Box ) [override]
+      prior.invalidate( bounds )
+      UI.request_redraw
 endClass
 

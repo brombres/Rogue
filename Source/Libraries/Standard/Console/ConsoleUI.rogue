@@ -7,6 +7,38 @@ uses Utility/Epilog
 uses Utility/Timer
 
 class ConsoleUI : UI
+  # EXAMPLE USE
+  #   uses Console/ConsoleUI
+  #
+  #   class TestUI : ConsoleUI
+  #     METHODS
+  #       method on( e:KeyEvent )
+  #         @trace e
+  #
+  #         if (e.is_press(Keycode.Q)) exit
+  #
+  #         if (e.is_press(Keycode.R))
+  #           ConsoleUICanvas.request_redraw
+  #         endIf
+  #
+  #       method on( e:PointerEvent )
+  #         @trace e
+  #
+  #       method on_draw [override]
+  #         prior.on_draw
+  #         ConsoleUICanvas.resize( size.x, size.y )
+  #         ConsoleUICanvas.draw_frame( ConsoleUICanvas.bounds )
+  #         ConsoleUICanvas.cursor = XY(1,1)
+  #         ConsoleUICanvas.println "Simple ConsoleUI Demo"
+  #         ConsoleUICanvas.println
+  #         ConsoleUICanvas.println "Mouse and keyboard events are logged to stdout."
+  #         ConsoleUICanvas.println
+  #         ConsoleUICanvas.println "You can also (Q)uit or (R)eset"
+  #
+  #   endClass
+  #
+  #   TestUI().run
+
   GLOBAL PROPERTIES
     #bold_font      : ConsoleUIFont
     #inverse_font   : ConsoleUIFont
@@ -47,6 +79,9 @@ class ConsoleUI : UI
       prior.draw
       ConsoleUICanvas.display(0,0)
       Console.set_cursor( 0, bounds.y2 )
+
+    method exit
+      is_running = false
 
     method font->ConsoleUIFont [override]
       return ConsoleUIFont

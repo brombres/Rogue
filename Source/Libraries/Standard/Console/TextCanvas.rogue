@@ -54,6 +54,9 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       lines = lines.map<<String>>( (line) with (max_w) => line.justified(-max_w) )
       init( lines.join(""), max_w )
 
+    method bounds->Box
+      return Box( size )
+
     method cloned->TextCanvas
       return TextCanvas( width, height, buffer.cloned ).[ cursor=cursor ]
 
@@ -451,6 +454,12 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       endForEach
 
       return result
+
+    method request_redraw
+      invalidate
+
+    method request_redraw( bounds:Box )
+      invalidate( bounds )
 
     method resize( new_size:XY )
       resize( new_size.x, new_size.y )
