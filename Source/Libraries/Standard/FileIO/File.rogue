@@ -737,6 +737,23 @@ class File( filepath:String ) [compound]
               |fclose( fp );
       return size;
 
+    method size_string->String
+      localize size
+      if (size < 1_000) return "$B"(size)
+
+      if (size < 1_000_000)
+        if (size < 10 * 1024) return "$K"((size/1024.0).format(".1"))
+        return "$K"(size / 1024)
+      endIf
+
+      if (size < 1_000_000_000)
+        if (size < 10 * 1024 * 1024) return "$M"((size/(1024.0*1024.0)).format(".1"))
+        return "$M"(size / (1024*1024))
+      endIf
+
+      if (size < 10 * 1024 * 1024 * 1024) return "$G"((size/(1024.0*1024.0*1024.0)).format(".1"))
+      return "$G"(size / (1024*1024*1024))
+
     method split_filepath_and_extension->(filepath:String,extension:String)
       local filepath = resolved.filepath
       localize filename
