@@ -626,7 +626,7 @@ class TableColumns : TableColumn[]
     method fixed_width( w:Points )
       (forEach in this).fixed_width( w )
 
-    method set_width( width:Real )
+    method set_width( w:Real )
       (forEach in this).set_width( w )
 
     method shrink_to_fit_width
