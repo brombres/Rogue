@@ -75,6 +75,9 @@ class XY( x:Real, y:Real ) [compound]
     method abs->XY
       return XY( x.abs, y.abs )
 
+    method at( uv:XY )->XY
+      return XY( x*uv.x, y*uv.y )
+
     method bounding_box->Box
       return Box( this )
 
