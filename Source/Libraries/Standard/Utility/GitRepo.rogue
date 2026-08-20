@@ -126,12 +126,32 @@ class GitRepo( url:String, folder:File ) [compound]
     method has_remote_changes->Logical
       # Note: the response may take a few moments. Due to the delay it is not recommended to
       # automatically call this method frequentlly.
-      local cmd = "cd $ && git fetch --all && git status"(folder.esc)
-      return Process.run( cmd, &env )->String.contains("can be fast-forwarded")
+      if (is_head_detached)
+        checkout( head_branch )
+      endIf
+
+      local rev_status = Process.run( "cd $ && git rev-list --left-right --count $...origin/$"(folder.esc,branch,branch) )->String
+      local rev_list = rev_status.replacing('\t',' ').split( ' ' ).map<<String>>( $.trimmed ).discarding($=="").map<<Int>>( $->String )
+      if (rev_list.count != 2) return false
+
+      return (rev_list.first == 0 and rev_list.last > 0)
 
     method head( &short )->String
       if (short) return Process.run( "cd $ && git rev-parse --short HEAD"(folder.esc) )->String.trimmed
       else       return Process.run( "cd $ && git rev-parse HEAD"(folder.esc) )->String.trimmed
+
+    method head_branch->String
+      local lines = Process.run( "cd $ && git ls-remote --symref origin HEAD"(folder.esc) )->String.trimmed.split('\n')
+      lines.keep( $.contains("ref:") )
+      if (lines.is_empty) return ""
+
+      local parts = lines.first.replacing( '\t', ' ' ).split( ' ' ).keeping( $.contains("refs/heads/") )
+      if (parts.is_empty) return ""
+
+      return parts.first.split( '/' ).last
+
+    method is_head_detached->Logical
+      return (not Process.run("cd $ && git symbolic-ref -q HEAD"(folder.esc),&env).success)
 
     method local_branch_exists( branch_name:String )->Logical
       local process_result = Process.run( "cd $ && git branch -a"(folder.esc), &env )
