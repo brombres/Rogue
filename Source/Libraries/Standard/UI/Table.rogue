@@ -220,6 +220,10 @@ class Table : Component
             column.is_resolved = true
             column.width = column.layout_width
             available_size.x -= column.width
+          elseIf (column.sizing_mode == SizingMode.FIXED_POINTS)
+            column.is_resolved = true
+            column.width = column.layout_width * UI.display_density
+            available_size.x -= column.width
           else
             column.is_resolved = false
             unresolved_columns.add( column )
@@ -241,6 +245,10 @@ class Table : Component
           if (row.sizing_mode == SizingMode.FIXED)
             row.is_resolved = true
             row.height = row.layout_height
+            available_size.y -= row.height
+          elseIf (row.sizing_mode == SizingMode.FIXED_POINTS)
+            row.is_resolved = true
+            row.height = row.layout_height * UI.display_density
             available_size.y -= row.height
           else
             row.is_resolved = false
@@ -615,6 +623,9 @@ class TableColumns : TableColumn[]
     method fixed_width( w:Real )
       (forEach in this).fixed_width( w )
 
+    method fixed_width( w:Points )
+      (forEach in this).fixed_width( w )
+
     method set_width( width:Real )
       (forEach in this).set_width( w )
 
@@ -648,6 +659,11 @@ class TableColumn( table:Table, i:Int )
       layout_width = w
       width        = w
 
+    method fixed_width( w:Points )
+      sizing_mode  = SizingMode.FIXED_POINTS
+      layout_width = w.value
+      width        = w->Real
+
     method set_width( @width )
       localize i
       forEach (j in 0..<table.cells_high)
@@ -670,6 +686,9 @@ class TableRows : TableRow[]
       (forEach in this).expand_to_fill_height
 
     method fixed_height( h:Real )
+      (forEach in this).fixed_height( h )
+
+    method fixed_height( h:Points )
       (forEach in this).fixed_height( h )
 
     method set_height( height:Real )
@@ -703,6 +722,11 @@ class TableRow( table:Table, j:Int )
       sizing_mode  = SizingMode.FIXED
       layout_height = h
       height        = h
+
+    method fixed_height( h:Points )
+      sizing_mode  = SizingMode.FIXED_POINTS
+      layout_height = h.value
+      height        = h->Real
 
     method set_height( @height )
       localize j

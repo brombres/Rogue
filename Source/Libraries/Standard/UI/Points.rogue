@@ -1,0 +1,23 @@
+library UI
+
+uses Geometry
+
+class Points( value:Real ) [compound]
+  # A size in logical (density-independent) coordinates. Automatically
+  # multiplied by UI.display_density when converted to pixels.
+  METHODS
+    method to->Real
+      return value * UI.display_density
+endClass
+
+class PointsXY( value:XY ) [compound]
+  # A size in logical (density-independent) coordinates. Automatically
+  # multiplied by UI.display_density when converted to pixels.
+  GLOBAL METHODS
+    method create( x:Real, y:Real )->PointsXY
+      return PointsXY( XY(x,y) )
+
+  METHODS
+    method to->XY
+      return value * UI.display_density
+endClass
