@@ -7,7 +7,7 @@ class Proportional( value:Real ) [compound]
   # multiplied by UI.display_density when converted to pixels.
   METHODS
     method to->Real
-      return value * UI.display_density
+      return value
 endClass
 
 class ProportionalXY( value:XY ) [compound]
@@ -19,5 +19,5 @@ class ProportionalXY( value:XY ) [compound]
 
   METHODS
     method to->XY
-      return value * UI.display_density
+      return value
 endClass
