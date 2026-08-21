@@ -25,6 +25,7 @@ $include UI/Overlay
 $include UI/Points
 $include UI/ScalingMode
 $include UI/SizingMode
+$include UI/Spacer
 $include UI/Table
 $include UI/Text
 $include UI/TextBox
@@ -210,26 +211,6 @@ class UI : Component [singleton]
       UI.display_density_fn = display_density_fn
 
     method set_needs_layout( @needs_layout )
-
-    method spacer( fixed_size:XY )->Component
-      return Component( fixed_size )
-
-    method spacer( size_parameter_id:VariantEntryID )->Component
-      return Component( size_parameter_id )
-
-    method spacer( &h, &v )->Component [preferred]
-      local component = Component()
-      if (h xor v)
-        if (h) component.fixed_height = 0  # horizontal spacer has fixed height 0
-        else   component.fixed_width  = 0  # vice-versa
-      endIf
-      return component
-
-    method spacer( w=null:Real?, h=null:Real? )->Component
-      local component = Component()
-      if (w) component.fixed_width = w.value
-      if (h) component.fixed_height = h.value
-      return component
 
     method update( bounds:Box )
       UI = this
