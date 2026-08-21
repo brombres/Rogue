@@ -23,6 +23,7 @@ $include UI/LimitedSize
 $include UI/MetaComponent
 $include UI/Overlay
 $include UI/Points
+$include UI/Proportional
 $include UI/ScalingMode
 $include UI/SizingMode
 $include UI/Spacer
