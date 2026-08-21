@@ -817,25 +817,19 @@ class Component : Entity
 
     method set_opacity( @opacity )
 
-    method set_proportional_size( layout_size )
+    method set_proportional_size( layout_size:XY, size_reference=null:Component )
       sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL, SizingMode.PROPORTIONAL )
+      if (size_reference) this.size_reference = size_reference
 
-    method set_proportional_size( size_reference, layout_size:XY )
-      set_proportional_size( layout_size )
-
-    method set_proportional_height( h:Real )
+    method set_proportional_height( h:Real, size_reference=null:Component )
       layout_size.y = h
       sizing_mode.y = SizingMode.PROPORTIONAL
+      if (size_reference) this.size_reference = size_reference
 
-    method set_proportional_height( size_reference, h:Real )
-      set_proportional_height( h )
-
-    method set_proportional_width( w:Real )
+    method set_proportional_width( w:Real, size_reference=null:Component )
       layout_size.x = w
       sizing_mode.x = SizingMode.PROPORTIONAL
-
-    method set_proportional_width( size_reference, w:Real )
-      set_proportional_width( w )
+      if (size_reference) this.size_reference = size_reference
 
     method set_structure_modified( setting:Logical ) [override]
       prior.set_structure_modified( setting )
