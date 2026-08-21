@@ -41,7 +41,8 @@ $include UI/Widget
 class UI : Component [singleton]
   GLOBAL PROPERTIES
     shared_focus       = Focus()
-    display_density_fn = () => 1.0 : Function->Real
+    display_density_fn = () => 1.0          : Function->Real
+    display_size_fn    = () => Console.size : Function->XY
 
   PROPERTIES
     default_font   : Font
@@ -81,6 +82,9 @@ class UI : Component [singleton]
 
     method display_density->Real
       return display_density_fn()
+
+    method display_size->XY
+      return display_size_fn()
 
     method draw [override]
       UI = this
@@ -210,6 +214,9 @@ class UI : Component [singleton]
 
     method set_display_density( display_density_fn:Function->Real )
       UI.display_density_fn = display_density_fn
+
+    method set_display_size( display_size_fn:Function->XY )
+      UI.display_size_fn = display_size_fn
 
     method set_needs_layout( @needs_layout )
 
