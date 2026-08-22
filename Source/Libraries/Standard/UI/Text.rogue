@@ -229,7 +229,7 @@ class Text : Component
 
     method use_unscaled_text_width
       scaling_mode.x = ScalingMode.NONE
-      sizing_mode.x = SizingMode.FIXED
+      sizing_mode.x = SizingMode.FIXED_PIXELS
 
     method .process_and_store( text:String, &fragment )
       block

@@ -13,7 +13,7 @@ class Padding( value:Real, mode:SizingMode ) [compound]
       return Padding( points.value, SizingMode.FIXED_POINTS )
 
     method fixed( value:Real )->Padding
-      return Padding( value, SizingMode.FIXED )
+      return Padding( value, SizingMode.FIXED_PIXELS )
 
     method proportional( value:Real )->Padding
       return Padding( value, SizingMode.PROPORTIONAL )

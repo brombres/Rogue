@@ -3,16 +3,16 @@ library UI
 uses Geometry
 
 class Proportional( value:Real ) [compound]
-  # A size in logical (density-independent) coordinates. Automatically
-  # multiplied by UI.display_density when converted to pixels.
+  # A size expressed as a fraction of the available size or of a
+  # reference component's size.
   METHODS
     method to->Real
       return value
 endClass
 
 class ProportionalXY( value:XY ) [compound]
-  # A size in logical (density-independent) coordinates. Automatically
-  # multiplied by UI.display_density when converted to pixels.
+  # A size expressed as a fraction of the available size or of a
+  # reference component's size.
   GLOBAL METHODS
     method create( x:Real, y:Real )->ProportionalXY
       return ProportionalXY( XY(x,y) )

@@ -22,6 +22,7 @@ $include UI/HFlow
 $include UI/Label
 $include UI/LimitedSize
 $include UI/MetaComponent
+$include UI/Natural
 $include UI/Overlay
 $include UI/Points
 $include UI/Proportional

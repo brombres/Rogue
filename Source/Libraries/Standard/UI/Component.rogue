@@ -34,7 +34,7 @@ class Component : Entity
       this.fixed_size = fixed_size
 
     method init( size_parameter_id:VariantEntryID )
-      size = size_parameter_id
+      fixed_size = size_parameter_id
 
     method on( e:KeyEvent )
       noAction
@@ -162,20 +162,11 @@ class Component : Entity
     method aspect_fit
       sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT_NATURAL_SIZE, SizingMode.ASPECT_FIT_NATURAL_SIZE )
 
-    method aspect_fit( aspect_size )
-      sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT, SizingMode.ASPECT_FIT )
-
     method aspect_fit_height_to_natural_width
       sizing_mode.y = SizingMode.ASPECT_FIT_NATURAL_SIZE
 
-    method aspect_fit_height_to_width( aspect_size )
-      sizing_mode.y = SizingMode.ASPECT_FIT
-
     method aspect_fit_width_to_natural_height
       sizing_mode.x = SizingMode.ASPECT_FIT_NATURAL_SIZE
-
-    method aspect_fit_width_to_height( aspect_size )
-      sizing_mode.x = SizingMode.ASPECT_FIT
 
     method can_split_from( next_component:Component )->Logical
       # Used by HFlow layout, overridden by Text
@@ -603,8 +594,8 @@ class Component : Entity
         sz.y = .resolve_layout_height( available_size )
 
         #{
-        local is_known_w = (sizing_mode.x == SizingMode.FIXED or sizing_mode.x == SizingMode.NATURAL)
-        local is_known_h = (sizing_mode.y == SizingMode.FIXED or sizing_mode.y == SizingMode.NATURAL)
+        local is_known_w = (sizing_mode.x == SizingMode.FIXED_PIXELS or sizing_mode.x == SizingMode.NATURAL)
+        local is_known_h = (sizing_mode.y == SizingMode.FIXED_PIXELS or sizing_mode.y == SizingMode.NATURAL)
         if (is_known_w)
           if (is_known_h)
             attributes.constant_size = true
@@ -655,7 +646,7 @@ class Component : Entity
         case PROPORTIONAL
           if (size_reference) h = size_reference.size.y * layout_size.y
           else                h = available_size.y * layout_size.y
-        case FIXED
+        case FIXED_PIXELS
           h = layout_size.y
         case FIXED_POINTS
           h = layout_size.y * UI.display_density
@@ -678,7 +669,7 @@ class Component : Entity
         case PROPORTIONAL
           if (size_reference) w = size_reference.size.x * layout_size.x
           else                w = available_size.x * layout_size.x
-        case FIXED
+        case FIXED_PIXELS
           w = layout_size.x
         case FIXED_POINTS
           w = layout_size.x * UI.display_density
@@ -755,7 +746,7 @@ class Component : Entity
     method set_content_opacity( @content_opacity )
 
     method set_fixed_size( layout_size )
-      sizing_mode = SizingModeXY( SizingMode.FIXED, SizingMode.FIXED )
+      sizing_mode = SizingModeXY( SizingMode.FIXED_PIXELS, SizingMode.FIXED_PIXELS )
       size = layout_size
 
     method set_fixed_size( fixed_size:PointsXY )
@@ -763,9 +754,28 @@ class Component : Entity
       layout_size = fixed_size.value
       size = fixed_size->XY
 
+    method set_fixed_size( natural_size:NaturalXY )
+      @natural_size = natural_size->XY
+      sizing_mode = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
+      size = @natural_size
+
+    method set_fixed_size( proportional_size:ProportionalXY, size_reference=null:Component )
+      layout_size = proportional_size->XY
+      sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL, SizingMode.PROPORTIONAL )
+      if (size_reference) this.size_reference = size_reference
+
+    method set_fixed_size( aspect_size:Aspect )
+      @aspect_size = aspect_size->XY
+      sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT, SizingMode.ASPECT_FIT )
+
+    method set_fixed_size( parameter_id:VariantEntryID )
+      sizing_mode = SizingModeXY( SizingMode.PARAMETER_XY, SizingMode.PARAMETER_XY )
+      layout_size = XY( parameter_id.value, parameter_id.value )
+      size = parameter_id->XY
+
     method set_fixed_height( h:Real )
       layout_size.y = h
-      sizing_mode.y = SizingMode.FIXED
+      sizing_mode.y = SizingMode.FIXED_PIXELS
       size.y = h
 
     method set_fixed_height( h:Points )
@@ -773,15 +783,53 @@ class Component : Entity
       sizing_mode.y = SizingMode.FIXED_POINTS
       size.y = h->Real
 
+    method set_fixed_height( h:Natural )
+      natural_size.y = h->Real
+      sizing_mode.y = SizingMode.NATURAL
+      size.y = h->Real
+
+    method set_fixed_height( h:Proportional, size_reference=null:Component )
+      layout_size.y = h->Real
+      sizing_mode.y = SizingMode.PROPORTIONAL
+      if (size_reference) this.size_reference = size_reference
+
+    method set_fixed_height( aspect_size:Aspect )
+      @aspect_size = aspect_size->XY
+      sizing_mode.y = SizingMode.ASPECT_FIT
+
+    method set_fixed_height( parameter_id:VariantEntryID )
+      sizing_mode.y = SizingMode.PARAMETER_REAL
+      layout_size.y = parameter_id.value
+      size.y = parameter_id->Real
+
     method set_fixed_width( w:Real )
       layout_size.x = w
-      sizing_mode.x = SizingMode.FIXED
+      sizing_mode.x = SizingMode.FIXED_PIXELS
       size.x = w
 
     method set_fixed_width( w:Points )
       layout_size.x = w.value
       sizing_mode.x = SizingMode.FIXED_POINTS
       size.x = w->Real
+
+    method set_fixed_width( w:Natural )
+      natural_size.x = w->Real
+      sizing_mode.x = SizingMode.NATURAL
+      size.x = w->Real
+
+    method set_fixed_width( w:Proportional, size_reference=null:Component )
+      layout_size.x = w->Real
+      sizing_mode.x = SizingMode.PROPORTIONAL
+      if (size_reference) this.size_reference = size_reference
+
+    method set_fixed_width( aspect_size:Aspect )
+      @aspect_size = aspect_size->XY
+      sizing_mode.x = SizingMode.ASPECT_FIT
+
+    method set_fixed_width( parameter_id:VariantEntryID )
+      sizing_mode.x = SizingMode.PARAMETER_REAL
+      layout_size.x = parameter_id.value
+      size.x = parameter_id->Real
 
     method set_gap( gap:Real )
       noAction
@@ -801,35 +849,7 @@ class Component : Entity
     method set_v_gap( parameter_id:VariantEntryID )
       noAction
 
-    method set_natural_size( @natural_size )
-      sizing_mode = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
-      size = natural_size
-
-    method set_natural_height( h:Real )
-      natural_size.y = h
-      sizing_mode.y = SizingMode.NATURAL
-      size.y = h
-
-    method set_natural_width( w:Real )
-      natural_size.x = w
-      sizing_mode.x = SizingMode.NATURAL
-      size.x = w
-
     method set_opacity( @opacity )
-
-    method set_proportional_size( layout_size:XY, size_reference=null:Component )
-      sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL, SizingMode.PROPORTIONAL )
-      if (size_reference) this.size_reference = size_reference
-
-    method set_proportional_height( h:Real, size_reference=null:Component )
-      layout_size.y = h
-      sizing_mode.y = SizingMode.PROPORTIONAL
-      if (size_reference) this.size_reference = size_reference
-
-    method set_proportional_width( w:Real, size_reference=null:Component )
-      layout_size.x = w
-      sizing_mode.x = SizingMode.PROPORTIONAL
-      if (size_reference) this.size_reference = size_reference
 
     method set_structure_modified( setting:Logical ) [override]
       prior.set_structure_modified( setting )
@@ -843,21 +863,6 @@ class Component : Entity
 
     method set_size( @size )
       noAction
-
-    method set_size( parameter_id:VariantEntryID )
-      sizing_mode = SizingModeXY( SizingMode.PARAMETER_XY, SizingMode.PARAMETER_XY )
-      layout_size = XY( parameter_id.value, parameter_id.value )
-      size = parameter_id->XY
-
-    method set_height( parameter_id:VariantEntryID )
-      sizing_mode.y = SizingMode.PARAMETER_REAL
-      layout_size.y = parameter_id.value
-      size.y = parameter_id->Real
-
-    method set_width( parameter_id:VariantEntryID )
-      sizing_mode.x = SizingMode.PARAMETER_REAL
-      layout_size.x = parameter_id.value
-      size.x = parameter_id->Real
 
     method shrink_to_fit
       sizing_mode = SizingModeXY( SizingMode.SHRINK_TO_FIT, SizingMode.SHRINK_TO_FIT )

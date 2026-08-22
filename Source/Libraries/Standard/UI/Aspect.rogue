@@ -3,8 +3,8 @@ library UI
 uses Geometry
 
 class Aspect( value:XY ) [compound]
-  # A size in logical (density-independent) coordinates. Automatically
-  # multiplied by UI.display_density when converted to pixels.
+  # An aspect ratio for ASPECT_FIT sizing. The dimension it is assigned to
+  # is scaled to maintain this ratio relative to the other dimension.
   GLOBAL METHODS
     method create( x:Real, y:Real )->Aspect
       return Aspect( XY(x,y) )

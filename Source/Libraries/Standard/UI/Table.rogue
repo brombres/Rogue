@@ -216,7 +216,7 @@ class Table : Component
         # Apply widths of fixed-width columns and collect variable width columns for
         # further processing.
         forEach (column in columns)
-          if (column.sizing_mode == SizingMode.FIXED)
+          if (column.sizing_mode == SizingMode.FIXED_PIXELS)
             column.is_resolved = true
             column.width = column.layout_width
             available_size.x -= column.width
@@ -242,7 +242,7 @@ class Table : Component
         # Apply heights of fixed-height rows and collect variable-height rows for
         # further processing.
         forEach (row in rows)
-          if (row.sizing_mode == SizingMode.FIXED)
+          if (row.sizing_mode == SizingMode.FIXED_PIXELS)
             row.is_resolved = true
             row.height = row.layout_height
             available_size.y -= row.height
@@ -655,7 +655,7 @@ class TableColumn( table:Table, i:Int )
       sizing_mode  = SizingMode.EXPAND_TO_FILL
 
     method fixed_width( w:Real )
-      sizing_mode  = SizingMode.FIXED
+      sizing_mode  = SizingMode.FIXED_PIXELS
       layout_width = w
       width        = w
 
@@ -719,7 +719,7 @@ class TableRow( table:Table, j:Int )
       sizing_mode  = SizingMode.EXPAND_TO_FILL
 
     method fixed_height( h:Real )
-      sizing_mode  = SizingMode.FIXED
+      sizing_mode  = SizingMode.FIXED_PIXELS
       layout_height = h
       height        = h
 

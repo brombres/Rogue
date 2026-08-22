@@ -9,7 +9,7 @@ class Spacer : Component
       return Spacer().[ fixed_size=fixed_point_size ]
 
     method create( size_parameter_id:VariantEntryID )->Spacer
-      return Spacer().[ size = size_parameter_id ]
+      return Spacer().[ fixed_size = size_parameter_id ]
 
     method h->Spacer
       return Spacer().[ fixed_width=0 ]
@@ -21,7 +21,7 @@ class Spacer : Component
       return Spacer().[ fixed_width=0, fixed_height=height ]
 
     method h( height_parameter_id:VariantEntryID )->Spacer
-      return Spacer().[ height = height_parameter_id ]
+      return Spacer().[ fixed_height = height_parameter_id ]
 
     method w->Spacer
       return Spacer().[ fixed_height=0 ]
@@ -33,7 +33,7 @@ class Spacer : Component
       return Spacer().[ fixed_width=width, fixed_height=0 ]
 
     method w( width_parameter_id:VariantEntryID )->Spacer
-      return Spacer().[ width = width_parameter_id ]
+      return Spacer().[ fixed_width = width_parameter_id ]
 
   METHODS
     method init
