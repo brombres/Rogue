@@ -1,126 +1,187 @@
 library UI
 
 class LimitedSize : Component
+  # Clamps the layout size of its content to optional minimum and maximum
+  # limits. Each limit axis has its own sizing mode:
+  #
+  #   NATURAL      - No limit is applied (the default).
+  #   FIXED_PIXELS - The limit is 'minimum_size'/'maximum_size' in pixels.
+  #   FIXED_POINTS - The limit is 'minimum_size'/'maximum_size' in points
+  #                  (multiplied by UI.display_density).
+  #   PROPORTIONAL - The limit is 'minimum_size'/'maximum_size' as a fraction
+  #                  of 'size_reference.size' (or of UI.display_size if no
+  #                  size reference is set).
+  #   ASPECT_FIT   - The limited axis is clamped relative to the other axis
+  #                  using the 'minimum_aspect_size'/'maximum_aspect_size'
+  #                  ratio.
   PROPERTIES
-    minimum_width   : Real?
-    minimum_height  : Real?
-    maximum_width   : Real?
-    maximum_height  : Real?
-    is_points       : Logical  # limits are in point values, not pixel values
-    is_proportional : Logical  # limits are proportional to display size (if set, is_points is ignored)
-
-    minimum_aspect_width  : Logical
-    minimum_aspect_height : Logical
-    maximum_aspect_width  : Logical
-    maximum_aspect_height : Logical
-    aspect_limit          : XY?
+    minimum_sizing_mode = SizingModeXY( SizingMode.NATURAL )
+    maximum_sizing_mode = SizingModeXY( SizingMode.NATURAL )
+    minimum_size        : XY
+    maximum_size        : XY
+    minimum_aspect_size : XY
+    maximum_aspect_size : XY
+    # size_reference : Component - inherited from Component
 
   METHODS
-    method minimum_aspect_width( aspect_limit )
-      minimum_aspect_width = true
-
-    method minimum_aspect_height( aspect_limit )
-      minimum_aspect_height = true
-
-    method maximum_aspect_width( aspect_limit )
-      maximum_aspect_width = true
-
-    method maximum_aspect_height( aspect_limit )
-      maximum_aspect_height = true
-
-    method points
-      is_points = true
-
-    method proportional
-      is_proportional = true
-
     method set_maximum_height( height:Real )
-      @maximum_height  = height
+      @maximum_size = XY( maximum_size.x, height )
+      maximum_sizing_mode.y = SizingMode.FIXED_PIXELS
+
+    method set_maximum_height( height:Points )
+      @maximum_size = XY( maximum_size.x, height.value )
+      maximum_sizing_mode.y = SizingMode.FIXED_POINTS
+
+    method set_maximum_height( height:Proportional, size_reference=null:Component )
+      @maximum_size = XY( maximum_size.x, height.value )
+      maximum_sizing_mode.y = SizingMode.PROPORTIONAL
+      if (size_reference) @size_reference = size_reference
+
+    method set_maximum_height( aspect_size:Aspect )
+      @maximum_aspect_size = aspect_size->XY
+      maximum_sizing_mode.y = SizingMode.ASPECT_FIT
 
     method set_maximum_size( size:XY )
-      @maximum_width   = size.x
-      @maximum_height  = size.y
+      @maximum_size = size
+      maximum_sizing_mode = SizingModeXY( SizingMode.FIXED_PIXELS )
+
+    method set_maximum_size( size:PointsXY )
+      @maximum_size = size.value
+      maximum_sizing_mode = SizingModeXY( SizingMode.FIXED_POINTS )
+
+    method set_maximum_size( size:ProportionalXY, size_reference=null:Component )
+      @maximum_size = size.value
+      maximum_sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL )
+      if (size_reference) @size_reference = size_reference
+
+    method set_maximum_size( aspect_size:Aspect )
+      @maximum_aspect_size = aspect_size->XY
+      maximum_sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT )
 
     method set_maximum_width( width:Real )
-      @maximum_width   = width
+      @maximum_size = XY( width, maximum_size.y )
+      maximum_sizing_mode.x = SizingMode.FIXED_PIXELS
+
+    method set_maximum_width( width:Points )
+      @maximum_size = XY( width.value, maximum_size.y )
+      maximum_sizing_mode.x = SizingMode.FIXED_POINTS
+
+    method set_maximum_width( width:Proportional, size_reference=null:Component )
+      @maximum_size = XY( width.value, maximum_size.y )
+      maximum_sizing_mode.x = SizingMode.PROPORTIONAL
+      if (size_reference) @size_reference = size_reference
+
+    method set_maximum_width( aspect_size:Aspect )
+      @maximum_aspect_size = aspect_size->XY
+      maximum_sizing_mode.x = SizingMode.ASPECT_FIT
 
     method set_minimum_height( height:Real )
-      @minimum_height  = height
+      @minimum_size = XY( minimum_size.x, height )
+      minimum_sizing_mode.y = SizingMode.FIXED_PIXELS
+
+    method set_minimum_height( height:Points )
+      @minimum_size = XY( minimum_size.x, height.value )
+      minimum_sizing_mode.y = SizingMode.FIXED_POINTS
+
+    method set_minimum_height( height:Proportional, size_reference=null:Component )
+      @minimum_size = XY( minimum_size.x, height.value )
+      minimum_sizing_mode.y = SizingMode.PROPORTIONAL
+      if (size_reference) @size_reference = size_reference
+
+    method set_minimum_height( aspect_size:Aspect )
+      @minimum_aspect_size = aspect_size->XY
+      minimum_sizing_mode.y = SizingMode.ASPECT_FIT
 
     method set_minimum_size( size:XY )
-      @minimum_width   = size.x
-      @minimum_height  = size.y
+      @minimum_size = size
+      minimum_sizing_mode = SizingModeXY( SizingMode.FIXED_PIXELS )
+
+    method set_minimum_size( size:PointsXY )
+      @minimum_size = size.value
+      minimum_sizing_mode = SizingModeXY( SizingMode.FIXED_POINTS )
+
+    method set_minimum_size( size:ProportionalXY, size_reference=null:Component )
+      @minimum_size = size.value
+      minimum_sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL )
+      if (size_reference) @size_reference = size_reference
+
+    method set_minimum_size( aspect_size:Aspect )
+      @minimum_aspect_size = aspect_size->XY
+      minimum_sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT )
 
     method set_minimum_width( width:Real )
-      @minimum_width   = width
+      @minimum_size = XY( width, minimum_size.y )
+      minimum_sizing_mode.x = SizingMode.FIXED_PIXELS
+
+    method set_minimum_width( width:Points )
+      @minimum_size = XY( width.value, minimum_size.y )
+      minimum_sizing_mode.x = SizingMode.FIXED_POINTS
+
+    method set_minimum_width( width:Proportional, size_reference=null:Component )
+      @minimum_size = XY( width.value, minimum_size.y )
+      minimum_sizing_mode.x = SizingMode.PROPORTIONAL
+      if (size_reference) @size_reference = size_reference
+
+    method set_minimum_width( aspect_size:Aspect )
+      @minimum_aspect_size = aspect_size->XY
+      minimum_sizing_mode.x = SizingMode.ASPECT_FIT
 
     method resolve_layout_size( available_size:XY, &limited )->XY [override]
       local snap = (UI.snap_to_pixel_coordinates)
 
-      if (is_proportional)
-        local display_size = UI.display_size
-        if (minimum_width)  available_size.x .= clamped_low( minimum_width.value * display_size.x )
-        if (minimum_height) available_size.y .= clamped_low( minimum_height.value * display_size.y )
-        if (maximum_width)  available_size.x .= clamped_high( maximum_width.value * display_size.x )
-        if (maximum_height) available_size.y .= clamped_high( maximum_height.value * display_size.y )
-      else
-        local density = which{ is_points:UI.display_density || 1.0 }
-        if (minimum_width)  available_size.x .= clamped_low( minimum_width.value * density )
-        if (minimum_height) available_size.y .= clamped_low( minimum_height.value * density )
-        if (maximum_width)  available_size.x .= clamped_high( maximum_width.value * density )
-        if (maximum_height) available_size.y .= clamped_high( maximum_height.value * density )
-      endIf
-
-      if local aspect_limit = aspect_limit
-        if (minimum_aspect_width)
-          available_size.y .= clamped_high( (available_size.x / aspect_limit.x) * aspect_limit.y )
-        endIf
-        if (minimum_aspect_height)
-          available_size.x .= clamped_high( (available_size.y / aspect_limit.y) * aspect_limit.x )
-        endIf
-        if (maximum_aspect_width)
-          available_size.x .= clamped_high( (available_size.y / aspect_limit.y) * aspect_limit.x )
-        endIf
-        if (maximum_aspect_height)
-          available_size.y .= clamped_high( (available_size.x / aspect_limit.x) * aspect_limit.y )
-        endIf
-      endIf
-
+      available_size = .apply_limits( available_size )
       if (snap) available_size .= floor
 
       local sz = prior.resolve_layout_size( available_size, &=limited )
 
-      if (is_proportional)
-        local display_size = UI.display_size
-        if (minimum_width)  sz.x .= clamped_low( minimum_width.value * display_size.x )
-        if (minimum_height) sz.y .= clamped_low( minimum_height.value * display_size.y )
-        if (maximum_width)  sz.x .= clamped_high( maximum_width.value * display_size.x )
-        if (maximum_height) sz.y .= clamped_high( maximum_height.value * display_size.y )
-      else
-        local density = which{ is_points:UI.display_density || 1.0 }
-        if (minimum_width)  sz.x .= clamped_low( minimum_width.value * density )
-        if (minimum_height) sz.y .= clamped_low( minimum_height.value * density )
-        if (maximum_width)  sz.x .= clamped_high( maximum_width.value * density )
-        if (maximum_height) sz.y .= clamped_high( maximum_height.value * density )
-      endIf
-
-      if local aspect_limit = aspect_limit
-        if (minimum_aspect_width)
-          sz.y .= clamped_high( (sz.x / aspect_limit.x) * aspect_limit.y )
-        endIf
-        if (minimum_aspect_height)
-          sz.x .= clamped_high( (sz.y / aspect_limit.y) * aspect_limit.x )
-        endIf
-        if (maximum_aspect_width)
-          sz.x .= clamped_high( (sz.y / aspect_limit.y) * aspect_limit.x )
-        endIf
-        if (maximum_aspect_height)
-          sz.y .= clamped_high( (sz.x / aspect_limit.x) * aspect_limit.y )
-        endIf
-      endIf
-
+      sz = .apply_limits( sz )
       if (snap) sz .= floor
       size = sz
+
+      return sz
+
+    method .apply_limits( sz:XY )->XY
+      local density = UI.display_density
+      local proportional_base = which{ size_reference:size_reference.size || UI.display_size }
+
+      which (minimum_sizing_mode.x)
+        case FIXED_PIXELS: sz.x .= clamped_low( minimum_size.x )
+        case FIXED_POINTS: sz.x .= clamped_low( minimum_size.x * density )
+        case PROPORTIONAL: sz.x .= clamped_low( minimum_size.x * proportional_base.x )
+      endWhich
+
+      which (minimum_sizing_mode.y)
+        case FIXED_PIXELS: sz.y .= clamped_low( minimum_size.y )
+        case FIXED_POINTS: sz.y .= clamped_low( minimum_size.y * density )
+        case PROPORTIONAL: sz.y .= clamped_low( minimum_size.y * proportional_base.y )
+      endWhich
+
+      which (maximum_sizing_mode.x)
+        case FIXED_PIXELS: sz.x .= clamped_high( maximum_size.x )
+        case FIXED_POINTS: sz.x .= clamped_high( maximum_size.x * density )
+        case PROPORTIONAL: sz.x .= clamped_high( maximum_size.x * proportional_base.x )
+      endWhich
+
+      which (maximum_sizing_mode.y)
+        case FIXED_PIXELS: sz.y .= clamped_high( maximum_size.y )
+        case FIXED_POINTS: sz.y .= clamped_high( maximum_size.y * density )
+        case PROPORTIONAL: sz.y .= clamped_high( maximum_size.y * proportional_base.y )
+      endWhich
+
+      # Aspect limits are applied after the other limits so they clamp
+      # relative to the other axis's already-limited value.
+      if (minimum_sizing_mode.x == SizingMode.ASPECT_FIT)
+        sz.x .= clamped_low( (sz.y / (minimum_aspect_size.y || 1.0)) * minimum_aspect_size.x )
+      endIf
+      if (minimum_sizing_mode.y == SizingMode.ASPECT_FIT)
+        sz.y .= clamped_low( (sz.x / (minimum_aspect_size.x || 1.0)) * minimum_aspect_size.y )
+      endIf
+      if (maximum_sizing_mode.x == SizingMode.ASPECT_FIT)
+        sz.x .= clamped_high( (sz.y / (maximum_aspect_size.y || 1.0)) * maximum_aspect_size.x )
+      endIf
+      if (maximum_sizing_mode.y == SizingMode.ASPECT_FIT)
+        sz.y .= clamped_high( (sz.x / (maximum_aspect_size.x || 1.0)) * maximum_aspect_size.y )
+      endIf
 
       return sz
 
