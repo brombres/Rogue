@@ -70,12 +70,18 @@ class UI : Component [singleton]
       return bounds.size != size
 
     method container( content:Component, &h, &v )->Component [preferred]
-      local container = spacer( &=h, &=v )
+      local container = Component()
+      if (h xor v)
+        if (h) container.fixed_height = 0  # horizontal container has fixed height 0
+        else   container.fixed_width  = 0  # vice-versa
+      endIf
       container.add( content )
       return container
 
     method container( content:Component, w=null:Real?, h=null:Real? )->Component
-      local container = spacer( &=w, &=h )
+      local container = Component()
+      if (w) container.fixed_width = w.value
+      if (h) container.fixed_height = h.value
       container.add( content )
       return container
 
