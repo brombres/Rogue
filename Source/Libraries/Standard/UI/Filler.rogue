@@ -2,10 +2,10 @@ library UI
 
 class Filler : Component
   GLOBAL METHODS
-    method width->Filler
+    method horizontal->Filler
       return Filler().[ fixed_height=0 ]
 
-    method height->Filler
+    method vertical->Filler
       return Filler().[ fixed_width=0 ]
 
   METHODS

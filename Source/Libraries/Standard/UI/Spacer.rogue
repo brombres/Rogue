@@ -11,7 +11,7 @@ class Spacer : Component
     method create( size_parameter_id:VariantEntryID )->Spacer
       return Spacer().[ fixed_size = size_parameter_id ]
 
-    method height->Spacer
+    method vertical->Spacer
       return Spacer().[ fixed_width=0 ]
 
     method height( height:Real )->Spacer
@@ -23,7 +23,7 @@ class Spacer : Component
     method height( height_parameter_id:VariantEntryID )->Spacer
       return Spacer().[ fixed_height = height_parameter_id ]
 
-    method width->Spacer
+    method horizontal->Spacer
       return Spacer().[ fixed_height=0 ]
 
     method width( width:Real )->Spacer
@@ -38,5 +38,8 @@ class Spacer : Component
   METHODS
     method init
       prior.init
+
+    method on_draw_over
+      display_bounds.draw(Color.MAGENTA,&outline)
 
 endClass
