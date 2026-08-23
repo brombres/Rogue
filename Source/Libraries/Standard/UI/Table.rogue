@@ -315,19 +315,14 @@ class Table : Component
         while (repeat)
           repeat = false
 
-          local remaining_width = available_size.x
+          local total_width = available_size.x
           local total_weight = 0.0
           total_weight += (forEach in unresolved_columns).weight
-          local remaining_count = unresolved_columns.count( $.weight > 0 )
 
           forEach (column in writer=unresolved_columns.rewriter)
             if (column.weight)
-              local w = remaining_width
-              if (remaining_count > 1)
-                w = w * column.weight / total_weight
-                total_weight -= column.weight
-                if (snap) w .= floor
-              endIf
+              local w = total_width * column.weight / total_weight
+              if (snap) w .= floor
 
               if (column.min_width > w)
                 # Component's min width exceeds its share. Assign it its min width
@@ -338,8 +333,6 @@ class Table : Component
               else
                 writer.write( column )
               endIf
-              remaining_width -= w
-              --remaining_count
             else
               writer.write( column )
             endIf
@@ -349,21 +342,16 @@ class Table : Component
 
       # Resolve column widths of remaining weighted columns.
       block
+        local total_width = available_size.x
         local total_weight = 0.0
         total_weight += (forEach in unresolved_columns).weight
-        local remaining_count = unresolved_columns.count( $.weight > 0 )
 
         forEach (column in writer=unresolved_columns.rewriter)
           if (column.weight)
-            local w = available_size.x
-            if (remaining_count > 1)
-              w = w * column.weight / total_weight
-              total_weight -= column.weight
-              if (snap) w .= floor
-            endIf
+            local w = total_width * column.weight / total_weight
+            if (snap) w .= floor
             available_size.x -= w
             column.width = w
-            --remaining_count
           else
             writer.write( column )
           endIf
@@ -422,19 +410,14 @@ class Table : Component
         while (repeat)
           repeat = false
 
-          local remaining_height = available_size.y
+          local total_height = available_size.y
           local total_weight = 0.0
           total_weight += (forEach in unresolved_rows).weight
-          local remaining_count = unresolved_rows.count( $.weight > 0 )
 
           forEach (row in writer=unresolved_rows.rewriter)
             if (row.weight)
-              local h = remaining_height
-              if (remaining_count > 1)
-                h = h * row.weight / total_weight
-                total_weight -= row.weight
-                if (snap) h .= floor
-              endIf
+              local h = total_height * row.weight / total_weight
+              if (snap) h .= floor
 
               if (row.min_height > h)
                 # Component's min height exceeds its share. Assign it its min height
@@ -445,8 +428,6 @@ class Table : Component
               else
                 writer.write( row )
               endIf
-              remaining_height -= h
-              --remaining_count
             else
               writer.write( row )
             endIf
@@ -456,21 +437,16 @@ class Table : Component
 
       # Resolve row heights of remaining weighted rows.
       block
+        local total_height = available_size.y
         local total_weight = 0.0
         total_weight += (forEach in unresolved_rows).weight
-        local remaining_count = unresolved_rows.count( $.weight > 0 )
 
         forEach (row in writer=unresolved_rows.rewriter)
           if (row.weight)
-            local h = available_size.y
-            if (remaining_count > 1)
-              h = h * row.weight / total_weight
-              total_weight -= row.weight
-              if (snap) h .= floor
-            endIf
+            local h = total_height * row.weight / total_weight
+            if (snap) h .= floor
             available_size.y -= h
             row.height = h
-            --remaining_count
           else
             writer.write( row )
           endIf

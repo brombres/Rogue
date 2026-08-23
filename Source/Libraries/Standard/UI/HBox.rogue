@@ -77,14 +77,10 @@ class HBox : Component
             local repeat = true
             while (repeat)
               repeat = false
-              local remaining_width = available_size.x
-              local remaining_count = info_list.count
+              local total_width = available_size.x
               forEach (info in rewriter=info_list.rewriter)
-                local w = remaining_width
-                if (remaining_count > 1)
-                  w = w * info.component.weight.x / total_weight
-                  if (snap) w .= floor
-                endIf
+                local w = total_width * info.component.weight.x / total_weight
+                if (snap) w .= floor
                 if (info.max_size.x < w)
                   # Component's max size falls short of its share. Let it keep its max size and
                   # remove it from the list by not rewriting it.
@@ -109,8 +105,6 @@ class HBox : Component
                   # Component can size at least as big as its proportional share; keep it for the next pass.
                   rewriter.write( info )
                 endIf
-                remaining_width -= w
-                --remaining_count
               endForEach
             endWhile
           endBlock
@@ -118,19 +112,12 @@ class HBox : Component
           # Assign remaining weighted components their proportional share of available width.
           block
             local remaining_width = available_size.x
-            local remaining_count = info_list.count( $.component.weight.x > 0 )
             forEach (info in info_list)
               if (info.component.weight.x)
-                local w = remaining_width
-                if (remaining_count > 1)
-                  local weight = info.component.weight.x
-                  w = w * weight / total_weight
-                  total_weight -= weight
-                  if (snap) w .= floor
-                endIf
+                local w = available_size.x * info.component.weight.x / total_weight
+                if (snap) w .= floor
                 info.component.size.x = w
                 remaining_width -= w
-                --remaining_count
               else
                 # Set zero-weight component width to 0 for now.
                 info.component.size.x = 0
@@ -145,7 +132,7 @@ class HBox : Component
               total_weight = 0
               if ((forEach in info_list).component.weight.x == 0) ++total_weight
 
-              remaining_count = info_list.count( $.component.weight.x == 0 )
+              local remaining_count = info_list.count( $.component.weight.x == 0 )
               forEach (info in info_list)
                 if (info.component.weight.x == 0)
                   local w = remaining_width

@@ -81,14 +81,10 @@ class VBox : Component
             local repeat = true
             while (repeat)
               repeat = false
-              local remaining_height = available_size.y
-              local remaining_count = info_list.count
-              forEach (info at i in rewriter=info_list.rewriter)
-                local h = remaining_height
-                if (remaining_count > 1)
-                  h = h * info.component.weight.y / total_weight
-                  if (snap) h .= floor
-                endIf
+              local total_height = available_size.y
+              forEach (info in rewriter=info_list.rewriter)
+                local h = total_height * info.component.weight.y / total_weight
+                if (snap) h .= floor
                 if (info.max_size.y < h)
                   # Component's max size falls short of its share. Let it keep its max size and
                   # remove it from the list by not rewriting it.
@@ -113,8 +109,6 @@ class VBox : Component
                   # Component can size at least as big as its proportional share; keep it for the next pass.
                   rewriter.write( info )
                 endIf
-                remaining_height -= h
-                --remaining_count
               endForEach
             endWhile
           endBlock
@@ -122,19 +116,12 @@ class VBox : Component
           # Assign remaining weighted components their proportional share of available height.
           block
             local remaining_height = available_size.y
-            local remaining_count = info_list.count( $.component.weight.y > 0 )
             forEach (info in info_list)
               if (info.component.weight.y)
-                local h = remaining_height
-                if (remaining_count > 1)
-                  local weight = info.component.weight.y
-                  h = h * weight / total_weight
-                  total_weight -= weight
-                  if (snap) h .= floor
-                endIf
+                local h = available_size.y * info.component.weight.y / total_weight
+                if (snap) h .= floor
                 info.component.size.y = h
                 remaining_height -= h
-                --remaining_count
               else
                 # Set zero-weight component height to 0 for now.
                 info.component.size.y = 0
@@ -149,7 +136,7 @@ class VBox : Component
               total_weight = 0
               if ((forEach in info_list).component.weight.y == 0) ++total_weight
 
-              remaining_count = info_list.count( $.component.weight.y == 0 )
+              local remaining_count = info_list.count( $.component.weight.y == 0 )
               forEach (info in info_list)
                 if (info.component.weight.y == 0)
                   local h = remaining_height
