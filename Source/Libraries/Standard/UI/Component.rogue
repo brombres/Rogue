@@ -34,7 +34,7 @@ class Component : Entity
       this.fixed_size = fixed_size
 
     method init( size_parameter_id:VariantEntryID )
-      fixed_size = size_parameter_id
+      dynamic_size = size_parameter_id
 
     method on( e:KeyEvent )
       noAction
@@ -767,16 +767,16 @@ class Component : Entity
       sizing_mode = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
       size = @natural_size
 
-    method set_fixed_size( proportional_size:ProportionalXY, size_reference=null:Component )
+    method set_dynamic_size( proportional_size:ProportionalXY, size_reference=null:Component )
       layout_size = proportional_size->XY
       sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL, SizingMode.PROPORTIONAL )
       if (size_reference) this.size_reference = size_reference
 
-    method set_fixed_size( aspect_size:Aspect )
+    method set_dynamic_size( aspect_size:Aspect )
       @aspect_size = aspect_size->XY
       sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT, SizingMode.ASPECT_FIT )
 
-    method set_fixed_size( parameter_id:VariantEntryID )
+    method set_dynamic_size( parameter_id:VariantEntryID )
       sizing_mode = SizingModeXY( SizingMode.PARAMETER_XY, SizingMode.PARAMETER_XY )
       layout_size = XY( parameter_id.value, parameter_id.value )
       size = parameter_id->XY
@@ -796,16 +796,16 @@ class Component : Entity
       sizing_mode.y = SizingMode.NATURAL
       size.y = h->Real
 
-    method set_fixed_height( h:Proportional, size_reference=null:Component )
+    method set_dynamic_height( h:Proportional, size_reference=null:Component )
       layout_size.y = h->Real
       sizing_mode.y = SizingMode.PROPORTIONAL
       if (size_reference) this.size_reference = size_reference
 
-    method set_fixed_height( aspect_size:Aspect )
+    method set_dynamic_height( aspect_size:Aspect )
       @aspect_size = aspect_size->XY
       sizing_mode.y = SizingMode.ASPECT_FIT
 
-    method set_fixed_height( parameter_id:VariantEntryID )
+    method set_dynamic_height( parameter_id:VariantEntryID )
       sizing_mode.y = SizingMode.PARAMETER_REAL
       layout_size.y = parameter_id.value
       size.y = parameter_id->Real
@@ -825,16 +825,16 @@ class Component : Entity
       sizing_mode.x = SizingMode.NATURAL
       size.x = w->Real
 
-    method set_fixed_width( w:Proportional, size_reference=null:Component )
+    method set_dynamic_width( w:Proportional, size_reference=null:Component )
       layout_size.x = w->Real
       sizing_mode.x = SizingMode.PROPORTIONAL
       if (size_reference) this.size_reference = size_reference
 
-    method set_fixed_width( aspect_size:Aspect )
+    method set_dynamic_width( aspect_size:Aspect )
       @aspect_size = aspect_size->XY
       sizing_mode.x = SizingMode.ASPECT_FIT
 
-    method set_fixed_width( parameter_id:VariantEntryID )
+    method set_dynamic_width( parameter_id:VariantEntryID )
       sizing_mode.x = SizingMode.PARAMETER_REAL
       layout_size.x = parameter_id.value
       size.x = parameter_id->Real

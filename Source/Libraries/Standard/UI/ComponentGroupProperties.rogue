@@ -68,14 +68,14 @@ class ComponentGroupProperties [aspect]
     method set_fixed_size( natural_size:NaturalXY )
       (forEach in this).set_fixed_size( natural_size )
 
-    method set_fixed_size( proportional_size:ProportionalXY, size_reference=null:Component )
-      (forEach in this).set_fixed_size( proportional_size, size_reference )
+    method set_dynamic_size( proportional_size:ProportionalXY, size_reference=null:Component )
+      (forEach in this).set_dynamic_size( proportional_size, size_reference )
 
-    method set_fixed_size( aspect_size:Aspect )
-      (forEach in this).set_fixed_size( aspect_size )
+    method set_dynamic_size( aspect_size:Aspect )
+      (forEach in this).set_dynamic_size( aspect_size )
 
-    method set_fixed_size( parameter_id:VariantEntryID )
-      (forEach in this).set_fixed_size( parameter_id )
+    method set_dynamic_size( parameter_id:VariantEntryID )
+      (forEach in this).set_dynamic_size( parameter_id )
 
     method set_fixed_height( h:Real )
       (forEach in this).set_fixed_height( h )
@@ -86,14 +86,14 @@ class ComponentGroupProperties [aspect]
     method set_fixed_height( h:Natural )
       (forEach in this).set_fixed_height( h )
 
-    method set_fixed_height( h:Proportional, size_reference=null:Component )
-      (forEach in this).set_fixed_height( h, size_reference )
+    method set_dynamic_height( h:Proportional, size_reference=null:Component )
+      (forEach in this).set_dynamic_height( h, size_reference )
 
-    method set_fixed_height( aspect_size:Aspect )
-      (forEach in this).set_fixed_height( aspect_size )
+    method set_dynamic_height( aspect_size:Aspect )
+      (forEach in this).set_dynamic_height( aspect_size )
 
-    method set_fixed_height( parameter_id:VariantEntryID )
-      (forEach in this).set_fixed_height( parameter_id )
+    method set_dynamic_height( parameter_id:VariantEntryID )
+      (forEach in this).set_dynamic_height( parameter_id )
 
     method set_fixed_width( w:Real )
       (forEach in this).set_fixed_width( w )
@@ -104,14 +104,14 @@ class ComponentGroupProperties [aspect]
     method set_fixed_width( w:Natural )
       (forEach in this).set_fixed_width( w )
 
-    method set_fixed_width( w:Proportional, size_reference=null:Component )
-      (forEach in this).set_fixed_width( w, size_reference )
+    method set_dynamic_width( w:Proportional, size_reference=null:Component )
+      (forEach in this).set_dynamic_width( w, size_reference )
 
-    method set_fixed_width( aspect_size:Aspect )
-      (forEach in this).set_fixed_width( aspect_size )
+    method set_dynamic_width( aspect_size:Aspect )
+      (forEach in this).set_dynamic_width( aspect_size )
 
-    method set_fixed_width( parameter_id:VariantEntryID )
-      (forEach in this).set_fixed_width( parameter_id )
+    method set_dynamic_width( parameter_id:VariantEntryID )
+      (forEach in this).set_dynamic_width( parameter_id )
 
     method set_font( font:Font )
       (forEach in this).font = font
