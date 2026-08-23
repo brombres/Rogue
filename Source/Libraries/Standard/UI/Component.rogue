@@ -511,6 +511,9 @@ class Component : Entity
       add_next( rhs )
       return this
 
+    method parent_component->Component
+      return parent->(as Component)
+
     method perform_layout( position )
       if (not attributes.manually_update_content_layout)
         perform_content_layout
@@ -729,13 +732,6 @@ class Component : Entity
 
       return sz
 
-    method update_content_layout
-      begin_layout( &only_content )
-      .resolve_shrink_to_fit_layout_size
-      resolve_content_layout_sizes( content_size )
-      perform_content_layout
-      end_layout( &only_content )
-
     method resolve_content_layout_sizes
       on_layout_size_resolved
       resolve_content_layout_sizes( content_size )
@@ -891,6 +887,13 @@ class Component : Entity
     method text_style->TextStyle
       if (@text_style) return @text_style
       return parent->(as Component)?.text_style
+
+    method update_content_layout
+      begin_layout( &only_content )
+      .resolve_shrink_to_fit_layout_size
+      resolve_content_layout_sizes( content_size )
+      perform_content_layout
+      end_layout( &only_content )
 
     method use_natural_size
       sizing_mode = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
