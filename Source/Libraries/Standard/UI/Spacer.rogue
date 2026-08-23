@@ -39,7 +39,4 @@ class Spacer : Component
     method init
       prior.init
 
-    method on_draw_over
-      display_bounds.draw(Color.MAGENTA,&outline)
-
 endClass
