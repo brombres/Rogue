@@ -88,6 +88,8 @@ class HBox : Component
                 if (info.max_size.x < w)
                   # Component's max size falls short of its share. Let it keep its max size and
                   # remove it from the list by not rewriting it.
+                  info.component.size.x = info.max_size.x
+                  info.component.attributes.constant_width = true
                   available_size.x -= info.max_size.x
                   total_weight -= info.component.weight.x
                   if (total_weight == 0) total_weight = 1.0
@@ -97,7 +99,8 @@ class HBox : Component
                   # re-resolve its size to allow width to adjust accordingly, and
                   # remove it from the list by not rewriting it.
                   info.component.size.x = info.min_size.x
-                  info.component.resolve_layout_size( info.component.size, &limited )
+                  info.component.attributes.constant_width = true
+                  info.component.resolve_layout_size( XY(info.min_size.x,available_size.y), &limited )
                   available_size.x -= info.min_size.x
                   total_weight -= info.component.weight.x
                   if (total_weight == 0) total_weight = 1.0
@@ -132,7 +135,8 @@ class HBox : Component
                 # Set zero-weight component width to 0 for now.
                 info.component.size.x = 0
               endIf
-              info.component.resolve_layout_size( info.component.size, &limited )
+              info.component.attributes.constant_width = true
+              info.component.resolve_layout_size( XY(info.component.size.x,available_size.y), &limited )
             endForEach
 
             if (remaining_width)
@@ -151,7 +155,7 @@ class HBox : Component
                     if (snap) w .= floor
                   endIf
                   info.component.size.x = w
-                  info.component.resolve_layout_size( info.component.size, &limited )
+                  info.component.resolve_layout_size( XY(w,available_size.y), &limited )
                   remaining_width -= w
                   --remaining_count
                 endIf
@@ -167,7 +171,7 @@ class HBox : Component
         # has only been called in a &limited fashion; call it once more, non-&limited,
         # to ensure that on_layout_size_resolved() fires.
         forEach (component in components)
-          component.resolve_layout_size( component.size )
+          component.resolve_layout_size( XY(component.size.x,available_size.y) )
           component.resolve_content_layout_sizes
         endForEach
       endUse
@@ -197,4 +201,5 @@ class UIGeneratedHBox : HBox
     method operator+( rhs:Component )->Component [override]
       add( rhs )
       return this
+
 endClass

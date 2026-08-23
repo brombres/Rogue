@@ -637,6 +637,12 @@ class Component : Entity
       return (min:min_size,max:max_size)
 
     method .resolve_layout_height( available_size:XY )->Real
+      if (attributes.constant_height)
+        # A box layout has assigned this component its final height for this
+        # layout pass; keep it rather than re-deriving from available_size.
+        return @size.y
+      endIf
+
       local h = available_size.y
       which (sizing_mode.y)
         case EXPAND_TO_FILL
@@ -660,6 +666,12 @@ class Component : Entity
       return h
 
     method .resolve_layout_width( available_size:XY )->Real
+      if (attributes.constant_width)
+        # A box layout has assigned this component its final width for this
+        # layout pass; keep it rather than re-deriving from available_size.
+        return @size.x
+      endIf
+
       local w = available_size.x
       which (sizing_mode.x)
         case EXPAND_TO_FILL

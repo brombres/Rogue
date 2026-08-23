@@ -92,6 +92,8 @@ class VBox : Component
                 if (info.max_size.y < h)
                   # Component's max size falls short of its share. Let it keep its max size and
                   # remove it from the list by not rewriting it.
+                  info.component.size.y = info.max_size.y
+                  info.component.attributes.constant_height = true
                   available_size.y -= info.max_size.y
                   total_weight -= info.component.weight.y
                   if (total_weight == 0) total_weight = 1.0
@@ -101,7 +103,8 @@ class VBox : Component
                   # re-resolve its size to allow width to adjust accordingly, and
                   # remove it from the list by not rewriting it.
                   info.component.size.y = info.min_size.y
-                  info.component.resolve_layout_size( info.component.size, &limited )
+                  info.component.attributes.constant_height = true
+                  info.component.resolve_layout_size( XY(available_size.x,info.min_size.y), &limited )
                   available_size.y -= info.min_size.y
                   total_weight -= info.component.weight.y
                   if (total_weight == 0) total_weight = 1.0
@@ -136,7 +139,8 @@ class VBox : Component
                 # Set zero-weight component height to 0 for now.
                 info.component.size.y = 0
               endIf
-              info.component.resolve_layout_size( info.component.size, &limited )
+              info.component.attributes.constant_height = true
+              info.component.resolve_layout_size( XY(available_size.x,info.component.size.y), &limited )
             endForEach
 
             if (remaining_height)
@@ -155,7 +159,7 @@ class VBox : Component
                     if (snap) h .= floor
                   endIf
                   info.component.size.y = h
-                  info.component.resolve_layout_size( info.component.size, &limited )
+                  info.component.resolve_layout_size( XY(available_size.x,h), &limited )
                   remaining_height -= h
                   --remaining_count
                 endIf
@@ -171,7 +175,7 @@ class VBox : Component
         # has only been called in a &limited fashion; call it once more, non-&limited,
         # to ensure that on_layout_size_resolved() fires.
         forEach (component in components)
-          component.resolve_layout_size( component.size )
+          component.resolve_layout_size( XY(available_size.x,component.size.y) )
           component.resolve_content_layout_sizes
         endForEach
       endUse
