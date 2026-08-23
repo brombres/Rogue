@@ -11,29 +11,29 @@ class Spacer : Component
     method create( size_parameter_id:VariantEntryID )->Spacer
       return Spacer().[ dynamic_size = size_parameter_id ]
 
-    method vertical->Spacer
-      return Spacer().[ fixed_width=0 ]
-
-    method height( height:Real )->Spacer
-      return Spacer().[ fixed_width=0, fixed_height=height ]
-
-    method height( height:Points )->Spacer
-      return Spacer().[ fixed_width=0, fixed_height=height ]
-
-    method height( height_parameter_id:VariantEntryID )->Spacer
-      return Spacer().[ dynamic_height = height_parameter_id ]
-
     method horizontal->Spacer
       return Spacer().[ fixed_height=0 ]
 
-    method width( width:Real )->Spacer
+    method horizontal( width:Real )->Spacer
       return Spacer().[ fixed_width=width, fixed_height=0 ]
 
-    method width( width:Points )->Spacer
+    method horizontal( width:Points )->Spacer
       return Spacer().[ fixed_width=width, fixed_height=0 ]
 
-    method width( width_parameter_id:VariantEntryID )->Spacer
+    method horizontal( width_parameter_id:VariantEntryID )->Spacer
       return Spacer().[ dynamic_width = width_parameter_id ]
+
+    method vertical->Spacer
+      return Spacer().[ fixed_width=0 ]
+
+    method vertical( height:Real )->Spacer
+      return Spacer().[ fixed_width=0, fixed_height=height ]
+
+    method vertical( height:Points )->Spacer
+      return Spacer().[ fixed_width=0, fixed_height=height ]
+
+    method vertical( height_parameter_id:VariantEntryID )->Spacer
+      return Spacer().[ dynamic_height = height_parameter_id ]
 
   METHODS
     method init
