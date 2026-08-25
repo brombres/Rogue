@@ -150,6 +150,9 @@ class IntBox( position:IntXY, size:IntXY ) [essential compound]
     method intersects( circle:Circle )->Logical
       return this->Quad.intersects( circle )
 
+    method intersects( ellipse:Ellipse )->Logical
+      return this->Quad.intersects( ellipse )
+
     method intersects( quad:Quad )->Logical
       return this->Quad.intersects( quad )
 

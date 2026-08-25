@@ -1,11 +1,151 @@
 library Geometry
 
 class Ellipse( position:XY, size:XY ) [compound]
+  # An axis-aligned ellipse. 'position' is the center and 'size' is the
+  # full width and height (2*rx, 2*ry).
+  GLOBAL METHODS
+    method create( size:XY )->Ellipse
+      return Ellipse( XY(0,0), size )
+
+    method create( position:XY, width:Real, height:Real )->Ellipse
+      return Ellipse( position, XY(width,height) )
+
+    method create( circle:Circle )->Ellipse
+      return Ellipse( circle.position, XY(circle.radius*2,circle.radius*2) )
+
   METHODS
+    method at( angle:Radians )->XY
+      # Returns the point along the edge of the ellipse at the given angle.
+      #
+      # Example:
+      #   one_oclock = ellipse.at( 2*Radians(pi/12) )
+      return position + XY( 1.0, angle ) * radius
+
+    method at( angle:Degrees )->XY
+      # Returns the point along the edge of the ellipse at the given angle.
+      #
+      # Example:
+      #   one_oclock = ellipse.at( Degrees(360.0/12.0) )
+      return position + XY( 1.0, angle ) * radius
+
+    method at_random( random=Random:Random )->XY
+      # Returns a random point inside the ellipse. Results of repeated calls
+      # will be evenly distributed across the area of the ellipse.
+      return position + XY( random.real.sqrt, random.radians ) * radius
+
+    method bounding_box->Box
+      return Box( position-radius, size )
+
+    method contains( point:XY )->Logical
+      return normalized( point ).magnitude_squared <= 1.0
+
+    method contains( box:Box )->Logical
+      if (not contains(box.position))     return false
+      if (not contains(box.top_right))    return false
+      if (not contains(box.bottom_right)) return false
+      if (not contains(box.bottom_left))  return false
+      return true
+
     method hashcode->Int
       return position.hashcode ~ size.hashcode
+
+    method intersects( box:Box )->Logical
+      return box.intersects( this )
+
+    method intersects( circle:Circle )->Logical
+      return intersects( Ellipse(circle) )
+
+    method intersects( other:Ellipse )->Logical
+      # Approximate test: checks each ellipse's center and sampled perimeter
+      # points against the other ellipse.
+      if (this.contains(other.position)) return true
+      if (other.contains(this.position)) return true
+      local n = 64
+      forEach (i in 0..<n)
+        local angle = Radians( (i * 2.0 * pi) / n )
+        if (this.contains(other.at(angle))) return true
+        if (other.contains(this.at(angle))) return true
+      endForEach
+      return false
+
+    method intersects( quad:Quad )->Logical
+      return quad.intersects( this )
+
+    method intersects( line:Line )->Logical
+      return line.intersects( this )
+
+    method intersects( triangle:Triangle )->Logical
+      return triangle.intersects( this )
+
+    method normalized( point:XY )->XY
+      # Maps 'point' into this ellipse's "unit circle space": the result is
+      # inside the unit circle at the origin iff 'point' is inside this ellipse.
+      return (point - position) / radius
+
+    method normalized( line:Line )->Line
+      return Line( normalized(line.a), normalized(line.b) )
+
+    method normalized( ray:Ray )->Ray
+      return Ray( normalized(ray.position), ray.direction / radius )
+
+    method denormalized( point:XY )->XY
+      # Inverse of normalized(XY).
+      return point * radius + position
+
+    method normal_at( point:XY )->XY
+      # Returns the outward-facing unit normal of the ellipse's edge at
+      # the given edge point.
+      local r = radius
+      local delta = point - position
+      return XY( delta.x/(r.x*r.x), delta.y/(r.y*r.y) ).normalized
+
+    method operator==( other:Ellipse )->Logical
+      return position == other.position and size == other.size
+
+    method operator<>( other:Ellipse )->Logical
+      local result = position <> other.position
+      if (result) return result
+      return size <> other.size
+
+    method operator+( delta:XY )->Ellipse
+      return Ellipse( position+delta, size )
+
+    method operator-( delta:XY )->Ellipse
+      return Ellipse( position-delta, size )
+
+    method operator*( scale:Real )->Ellipse
+      return Ellipse( position*scale, size*scale )
+
+    method operator/( scale:Real )->Ellipse
+      return Ellipse( position/scale, size/scale )
+
+    method operator*( scale:XY )->Ellipse
+      return Ellipse( position*scale, size*scale )
+
+    method operator/( scale:XY )->Ellipse
+      return Ellipse( position/scale, size/scale )
+
+    method print_to( buffer:PrintWriter )
+      buffer.print "(@"
+      buffer.print position
+      buffer.print ", "
+      buffer.print size.x
+      buffer.print 'x'
+      buffer.print size.y
+      buffer.print ')'
+
+    method radius->XY
+      # The horizontal and vertical radii (size/2).
+      return size / 2
+
+    method to->Box
+      # Returns a Box that encloses this Ellipse.
+      return Box( position-radius, size )
+
+    method to->Circle
+      # Returns a Circle centered on this Ellipse with the larger radius.
+      return Circle( position, radius.max )
 
     method to->String
       return "(@$, $x$)" (position,size.x,size.y)
 endClass
-

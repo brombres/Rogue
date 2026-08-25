@@ -192,6 +192,9 @@ class Box( position:XY, size:XY ) [essential compound]
     method intersects( circle:Circle )->Logical
       return this->Quad.intersects( circle )
 
+    method intersects( ellipse:Ellipse )->Logical
+      return this->Quad.intersects( ellipse )
+
     method intersects( quad:Quad )->Logical
       return this->Quad.intersects( quad )
 
@@ -340,6 +343,9 @@ class Box( position:XY, size:XY ) [essential compound]
 
     method to->Circle
       return Circle( center, size.max/2 )
+
+    method to->Ellipse
+      return Ellipse( center, size )
 
     method to->Quad
       return Quad( this )

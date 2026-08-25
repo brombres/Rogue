@@ -29,6 +29,12 @@ class Ray( position:XY, direction:XY ) [compound]
       if (t < 0.0) return null
       return position + t * direction
 
+    method intersection( ellipse:Ellipse )->XY?
+      # Solves in the ellipse's unit-circle space and maps the result back.
+      local result = ellipse.normalized( this ).intersection( Circle(1.0) )
+      if (not result.exists) return null
+      return ellipse.denormalized( result.value )
+
     method intersection( line:Line )->XY?
       local A = direction
       local B = line.b - line.a
@@ -78,6 +84,9 @@ class Ray( position:XY, direction:XY ) [compound]
       local closest_pt = circle.position.clamped( this )
       return ((circle.position - closest_pt).magnitude_squared <= circle.radius^2)
 
+    method intersects( ellipse:Ellipse )->Logical
+      return ellipse.normalized( this ).intersects( Circle(1.0) )
+
     method intersects( line:Line )->Logical
       return intersection( line ).exists
 
@@ -103,6 +112,11 @@ class Ray( position:XY, direction:XY ) [compound]
       local i = intersection( circle )
       if (not i.exists) return this
       return Ray( i.value, direction.reflected( Line(circle.position,i.value).direction.normalized ) )
+
+    method reflected( ellipse:Ellipse )->Ray
+      local i = intersection( ellipse )
+      if (not i.exists) return this
+      return Ray( i.value, direction.reflected( ellipse.normal_at(i.value) ) )
 
     method reflected( quad:Quad )->Ray
       if (this.intersects(Line(quad.a,quad.b))) return this.reflected( Line(quad.a,quad.b) )

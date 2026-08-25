@@ -46,6 +46,11 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
       if (Line(b,c).intersects(circle)) return true
       return (Line(a,c).intersects(circle))
 
+    method intersects( ellipse:Ellipse )->Logical
+      if (Line(a,b).intersects(ellipse)) return true
+      if (Line(b,c).intersects(ellipse)) return true
+      return (Line(a,c).intersects(ellipse))
+
     method intersects( quad:Quad )->Logical
       return quad.intersects( this )
 

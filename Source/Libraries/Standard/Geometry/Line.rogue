@@ -47,6 +47,12 @@ class Line( a:XY, b:XY ) [compound]
         endIf
       endIf
 
+    method intersection( ellipse:Ellipse )->Line?
+      # Solves in the ellipse's unit-circle space and maps the result back.
+      local result = ellipse.normalized( this ).intersection( Circle(1.0) )
+      if (not result.exists) return null
+      return Line( ellipse.denormalized(result.value.a), ellipse.denormalized(result.value.b) )
+
     method intersection( other:Line, &clamp=true )->XY?
       # Returns the point of intersection between this line and another line.
       local P1 = this.a
@@ -72,6 +78,9 @@ class Line( a:XY, b:XY ) [compound]
     method intersects( circle:Circle )->Logical
       local closest_pt = circle.position.clamped( this )
       return ((circle.position - closest_pt).magnitude_squared <= circle.radius^2)
+
+    method intersects( ellipse:Ellipse )->Logical
+      return ellipse.normalized( this ).intersects( Circle(1.0) )
 
     method intersects( quad:Quad )->Logical
       return quad.intersects( this )

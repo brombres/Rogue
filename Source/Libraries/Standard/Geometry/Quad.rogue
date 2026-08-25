@@ -89,6 +89,15 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
       # The circle could be entirely inside this quad
       return (this.contains(circle.position))
 
+    method intersects( ellipse:Ellipse )->Logical
+      if (Line(a,b).intersects(ellipse)) return true
+      if (Line(b,c).intersects(ellipse)) return true
+      if (Line(c,d).intersects(ellipse)) return true
+      if (Line(d,a).intersects(ellipse)) return true
+
+      # The ellipse could be entirely inside this quad
+      return (this.contains(ellipse.position))
+
     method intersects( triangle:Triangle )->Logical
       return (Triangle(a,b,c).intersects(triangle) or Triangle(a,c,d).intersects(triangle))
 

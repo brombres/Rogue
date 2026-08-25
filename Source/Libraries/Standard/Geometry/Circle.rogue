@@ -48,6 +48,9 @@ class Circle( position:XY, radius:Real ) [compound]
       local delta = (position - other.position).magnitude_squared
       return (delta <= (radius + other.radius) ^ 2)
 
+    method intersects( ellipse:Ellipse )->Logical
+      return ellipse.intersects( this )
+
     method intersects( quad:Quad )->Logical
       return quad.intersects( this )
 
@@ -87,6 +90,9 @@ class Circle( position:XY, radius:Real ) [compound]
     method to->Box
       # Returns a Box that encloses this Circle.
       return Box( position-radius, radius*2 )
+
+    method to->Ellipse
+      return Ellipse( this )
 
     method to->String
       return "(@$, r:$)" (position,radius)
