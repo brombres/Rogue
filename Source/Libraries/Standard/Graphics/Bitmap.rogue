@@ -658,6 +658,120 @@ class Bitmap
         fill( Box(0, -thickness/2, delta.magnitude, thickness).rotated( delta.radians ) + line.a, color )
       endIf
 
+    method draw( ellipse:Ellipse, color:Color, &aa )
+      # Draws a 1-pixel outline of the ellipse, optionally anti-aliased.
+      # Drawing is clipped to the edges of this bitmap.
+      _render_ellipse( ellipse, color, null, &outline, &=aa )
+
+    method fill( ellipse:Ellipse, color:Color, &aa )
+      # Fills the ellipse with a solid color, optionally anti-aliasing the edge.
+      # Drawing is clipped to the edges of this bitmap.
+      _render_ellipse( ellipse, color, null, &=aa )
+
+    method fill( ellipse:Ellipse, inner_color:Color, outer_color:Color, &aa )
+      # Fills the ellipse with a radial gradient from 'inner_color' at the
+      # center to 'outer_color' at the edge, optionally anti-aliasing the edge.
+      # Drawing is clipped to the edges of this bitmap.
+      _render_ellipse( ellipse, inner_color, outer_color, &=aa )
+
+    method _render_ellipse( ellipse:Ellipse, color:Color, outer_color:Color?, &outline, &aa )
+      local rx = ellipse.size.x / 2
+      local ry = ellipse.size.y / 2
+      if (rx <= 0 or ry <= 0) return
+
+      local cx = ellipse.position.x
+      local cy = ellipse.position.y
+
+      if (outline and not aa)
+        # Gap-free 1-pixel outline: for every pixel column plot the nearest pixel
+        # on the top and bottom arcs, and for every pixel row plot the nearest
+        # pixel on the left and right arcs.
+        local x1 = (cx - rx).floor->Int.clamped( 0, width-1 )
+        local x2 = (cx + rx).ceiling->Int.clamped( 0, width-1 )
+        forEach (x in x1..x2)
+          local n = ((x + 0.5) - cx) / rx
+          if (n.abs > 1.0) nextIteration
+          local dy = ry * (1.0 - n*n).sqrt
+          set( x, ((cy - dy) - 0.5).round->Int, color )
+          set( x, ((cy + dy) - 0.5).round->Int, color )
+        endForEach
+
+        local y1 = (cy - ry).floor->Int.clamped( 0, height-1 )
+        local y2 = (cy + ry).ceiling->Int.clamped( 0, height-1 )
+        forEach (y in y1..y2)
+          local n = ((y + 0.5) - cy) / ry
+          if (n.abs > 1.0) nextIteration
+          local dx = rx * (1.0 - n*n).sqrt
+          set( ((cx - dx) - 0.5).round->Int, y, color )
+          set( ((cx + dx) - 0.5).round->Int, y, color )
+        endForEach
+        return
+      endIf
+
+      # Clip the ellipse's bounding box (padded by a pixel for AA) to the bitmap
+      local bounds = ellipse.bounding_box
+      if (aa) bounds = Box( bounds.position - XY(1,1), bounds.size + XY(2,2) )
+      local clipped = bounds & Box( this.size )
+      if (not clipped) return
+      local x1 = clipped.value.position.x.floor->Int.clamped( 0, width )
+      local y1 = clipped.value.position.y.floor->Int.clamped( 0, height )
+      local x2 = (clipped.value.position.x + clipped.value.size.x).ceiling->Int.clamped( 0, width )
+      local y2 = (clipped.value.position.y + clipped.value.size.y).ceiling->Int.clamped( 0, height )
+
+      local width  = this.width
+      local pixels = this.pixels
+      local inv_rx2 = 1.0 / (rx*rx)
+      local inv_ry2 = 1.0 / (ry*ry)
+      local is_gradient = outer_color.exists
+
+      forEach (y in y1..<y2)
+        local dy = (y + 0.5) - cy
+        local row_start = y * width
+        forEach (x in x1..<x2)
+          local dx = (x + 0.5) - cx
+
+          # Implicit ellipse function f(p) = (dx/rx)^2 + (dy/ry)^2 - 1, which is
+          # < 0 inside, 0 on the edge, and > 0 outside. Dividing by |gradient|
+          # approximates the signed distance in pixels from the edge.
+          local fx = dx * inv_rx2
+          local fy = dy * inv_ry2
+          local f  = dx*fx + dy*fy - 1.0
+
+          local coverage : Real
+          if (aa)
+            local g = 2.0 * (fx*fx + fy*fy).sqrt
+            local dist = which{ g:f/g || f }
+            if (outline) coverage = (1.0 - dist.abs).clamped( 0.0, 1.0 )
+            else         coverage = (0.5 - dist).clamped( 0.0, 1.0 )
+          else
+            coverage = which{ f <= 0:1.0 || 0.0 }
+          endIf
+          if (coverage <= 0) nextIteration
+
+          local pixel_color = color
+          if (is_gradient)
+            local t = (f + 1.0).clamped_low(0.0).sqrt.clamped_high( 1.0 )
+            pixel_color = t.lerp( color, outer_color.value )
+          endIf
+
+          local index = row_start + x
+          if (coverage >= 1.0) pixels[ index ] = pixel_color
+          else                 pixels[ index ] = _composite( pixels[index], pixel_color, coverage )
+        endForEach
+      endForEach
+
+    method _composite( dst:Color, src:Color, coverage:Real )->Color
+      # Straight-alpha "source over" composite of 'src' (scaled by 'coverage')
+      # onto 'dst'. Correctly handles a fully or partially transparent 'dst'.
+      local sa = src.alpha * coverage
+      if (sa <= 0) return dst
+      local da = dst.alpha
+      local out_a = sa + da * (1.0 - sa)
+      if (out_a <= 0) return Color(0)
+      local dw = (da * (1.0 - sa)) / out_a
+      local sw = sa / out_a
+      return Color( src.red*sw + dst.red*dw, src.green*sw + dst.green*dw, src.blue*sw + dst.blue*dw, out_a )
+
     method fill( quad:Quad, color:Color )
       fill( Triangle(quad.a,quad.b,quad.c), color )
       fill( Triangle(quad.a,quad.c,quad.d), color )
