@@ -7,6 +7,11 @@ class Ellipse( position:XY, size:XY ) [compound]
     method create( size:XY )->Ellipse
       return Ellipse( XY(0,0), size )
 
+    method create( bounds:Box )->Ellipse
+      # Creates an ellipse whose edges are aligned with the edges of 'bounds',
+      # such that Ellipse(a->Box) == a for any ellipse 'a'.
+      return Ellipse( bounds.center, bounds.size )
+
     method create( position:XY, width:Real, height:Real )->Ellipse
       return Ellipse( position, XY(width,height) )
 
