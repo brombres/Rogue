@@ -658,23 +658,29 @@ class Bitmap
         fill( Box(0, -thickness/2, delta.magnitude, thickness).rotated( delta.radians ) + line.a, color )
       endIf
 
-    method draw( ellipse:Ellipse, color:Color, &aa )
-      # Draws a 1-pixel outline of the ellipse, optionally anti-aliased.
+    method draw( ellipse:Ellipse, color:Color, thickness=1:Real, &aa )
+      # Draws an outline of the ellipse 'thickness' pixels wide, optionally
+      # anti-aliased. Thickness increases inward, so the outer bounds of the
+      # outline are the same regardless of thickness. Fractional thicknesses are
+      # only honored when 'aa' is true; otherwise 'thickness' is floored.
       # Drawing is clipped to the edges of this bitmap.
-      _render_ellipse( ellipse, color, null, &outline, &=aa )
+      if (not aa) thickness = thickness.floor
+      if (thickness < 1) return
+      _render_ellipse( ellipse, color, null, thickness, &=aa )
 
     method fill( ellipse:Ellipse, color:Color, &aa )
       # Fills the ellipse with a solid color, optionally anti-aliasing the edge.
       # Drawing is clipped to the edges of this bitmap.
-      _render_ellipse( ellipse, color, null, &=aa )
+      _render_ellipse( ellipse, color, null, 0, &=aa )
 
     method fill( ellipse:Ellipse, inner_color:Color, outer_color:Color, &aa )
       # Fills the ellipse with a radial gradient from 'inner_color' at the
       # center to 'outer_color' at the edge, optionally anti-aliasing the edge.
       # Drawing is clipped to the edges of this bitmap.
-      _render_ellipse( ellipse, inner_color, outer_color, &=aa )
+      _render_ellipse( ellipse, inner_color, outer_color, 0, &=aa )
 
-    method _render_ellipse( ellipse:Ellipse, color:Color, outer_color:Color?, &outline, &aa )
+    method _render_ellipse( ellipse:Ellipse, color:Color, outer_color:Color?, thickness:Real, &aa )
+      # thickness == 0 -> solid fill; thickness > 0 -> outline of that width.
       local rx = ellipse.size.x / 2
       local ry = ellipse.size.y / 2
       if (rx <= 0 or ry <= 0) return
@@ -682,7 +688,18 @@ class Bitmap
       local cx = ellipse.position.x
       local cy = ellipse.position.y
 
-      if (outline and not aa)
+      # Inner ellipse of the outline ring. If the thickness consumes the whole
+      # ellipse there is no hole and the outline is rendered as a solid fill.
+      local has_hole = false
+      local irx = 0.0
+      local iry = 0.0
+      if (thickness > 0)
+        irx = rx - thickness
+        iry = ry - thickness
+        has_hole = (irx > 0 and iry > 0)
+      endIf
+
+      if (thickness == 1 and not aa)
         # Gap-free 1-pixel outline: for every pixel column plot the nearest pixel
         # on the top and bottom arcs, and for every pixel row plot the nearest
         # pixel on the left and right arcs.
@@ -722,6 +739,8 @@ class Bitmap
       local pixels = this.pixels
       local inv_rx2 = 1.0 / (rx*rx)
       local inv_ry2 = 1.0 / (ry*ry)
+      local inv_irx2 = which{ has_hole:1.0 / (irx*irx) || 0.0 }
+      local inv_iry2 = which{ has_hole:1.0 / (iry*iry) || 0.0 }
       local is_gradient = outer_color.exists
 
       forEach (y in y1..<y2)
@@ -741,10 +760,22 @@ class Bitmap
           if (aa)
             local g = 2.0 * (fx*fx + fy*fy).sqrt
             local dist = which{ g:f/g || f }
-            if (outline) coverage = (1.0 - dist.abs).clamped( 0.0, 1.0 )
-            else         coverage = (0.5 - dist).clamped( 0.0, 1.0 )
+            coverage = (0.5 - dist).clamped( 0.0, 1.0 )
+            if (has_hole and coverage > 0)
+              # Subtract the coverage of the inner ellipse to leave the ring.
+              local ifx = dx * inv_irx2
+              local ify = dy * inv_iry2
+              local fi  = dx*ifx + dy*ify - 1.0
+              local gi  = 2.0 * (ifx*ifx + ify*ify).sqrt
+              local dist_i = which{ gi:fi/gi || fi }
+              coverage -= (0.5 - dist_i).clamped( 0.0, 1.0 )
+            endIf
           else
             coverage = which{ f <= 0:1.0 || 0.0 }
+            if (has_hole and coverage > 0)
+              local fi = dx*dx*inv_irx2 + dy*dy*inv_iry2 - 1.0
+              if (fi <= 0) coverage = 0.0
+            endIf
           endIf
           if (coverage <= 0) nextIteration
 
