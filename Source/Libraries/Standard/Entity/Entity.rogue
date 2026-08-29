@@ -9,6 +9,7 @@ $include Entity/Entity2D
 $include Entity/Entity3D
 $include Entity/Attributes
 $include Entity/EntityScript
+$include Entity/ScriptIterator
 
 class Entity : Node<<Entity>>
   GLOBAL PROPERTIES
@@ -31,7 +32,7 @@ class Entity : Node<<Entity>>
     method init_clone( existing:Entity )
       entity_id   = existing.entity_id
       attributes  = existing.attributes
-      script      = existing.script
+      @script     = null
       add( (forEach in existing.children).cloned )
 
     method cloned->$thisType [propagated]
@@ -54,14 +55,24 @@ class Entity : Node<<Entity>>
       endIf
       (forEach in children).activate
 
+    method active_scripts->ScriptIterator<<EntityScript>>
+      return ScriptIterator<<EntityScript>>( script )
+
+    method active_scripts<<$ScriptType>>->ScriptIterator<<$ScriptType>>
+      return ScriptIterator<<$ScriptType>>( script )
+
     method attach_script( new_script:EntityScript )
       new_script.entity = this
-      script |= new_script.started
+      @script |= new_script.started
 
     method change_script( new_script:EntityScript )
-      new_script.entity = this
-      if (script) script.change_script( new_script )
-      else        script = new_script.started
+      if (new_script)
+        new_script.entity = this
+        if (script) script.change_script( new_script )
+        else        @script = new_script.started
+      else
+        script?.change_script( new_script )
+      endIf
 
     method deactivate
       if (attributes.active)
@@ -187,6 +198,9 @@ class Entity : Node<<Entity>>
     method set_is_visible( setting:Logical )
       attributes.invisible = not setting
 
+    method set_script( new_script:EntityScript )
+      change_script( new_script )
+
     method set_v_flip( setting:Logical )
       attributes.v_flip = setting
 
@@ -200,7 +214,7 @@ class Entity : Node<<Entity>>
     method start
       if (not attributes.started)
         attributes.started = true
-        script = script?.started
+        @script = script?.started
         on_start
       endIf
 
@@ -211,7 +225,7 @@ class Entity : Node<<Entity>>
     method update
       .begin_update
 
-      script = script?.updated
+      @script = script?.updated
       if (actions) actions = actions.updated
       on_update
       (forEach in children).update

@@ -1,0 +1,9 @@
+library UI
+
+class ComponentScript : EntityScript
+  METHODS
+    method on_begin_layout
+
+    method on_end_layout
+endClass
+

@@ -1,0 +1,60 @@
+library Entity
+
+class ScriptIterator<<$RequiredScriptType>>( cur:$RequiredScriptType, position:Int ) [compound]
+  GLOBAL METHODS
+    method create( script:EntityScript )->ScriptIterator<<$RequiredScriptType>>
+      while (script)
+        if local desired_type = script->(as $RequiredScriptType)
+          return ScriptIterator<<$RequiredScriptType>>( desired_type, 0 )
+        else
+          script .= concurrent_state
+        endIf
+      endWhile
+
+      return ScriptIterator<<$RequiredScriptType>>( null, 0 )
+
+  METHODS
+    method cloned->ScriptIterator<<$RequiredScriptType>>
+      return ScriptIterator<<$RequiredScriptType>>( cur, position )
+
+    method has_another->Logical
+      return cur?
+
+    method peek->$RequiredScriptType
+      return cur
+
+    method read->$RequiredScriptType [mutating]
+      if local result = read_another
+        return result
+      else
+        return null
+      endIf
+
+    method read_another->$RequiredScriptType? [mutating]
+      if (not cur) return null
+
+      ++position
+      local result = cur
+
+      while (cur)
+        local next = cur.concurrent_state
+        if local desired_type = next->(as $RequiredScriptType)
+          cur = desired_type
+          return result
+        endIf
+      endWhile
+
+      cur = null
+      return result
+
+    method to->String
+      local builder = String()
+      builder.print '['
+      forEach (script at i in cloned)
+        if (i > 0) builder.print ','
+        builder.print script->String
+      endForEach
+      builder.print ']'
+      return builder
+
+endClass

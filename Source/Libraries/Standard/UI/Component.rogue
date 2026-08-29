@@ -53,7 +53,7 @@ class Component : Entity
 
     method on_begin_layout [critical]
       # Called at the beginning of layout
-      noAction
+      (forEach in active_scripts<<ComponentScript>>).on_begin_layout
 
     method on_capture_keyboard_focus
       noAction
@@ -62,7 +62,7 @@ class Component : Entity
       noAction
 
     method on_end_layout [critical]
-      noAction
+      (forEach in active_scripts<<ComponentScript>>).on_end_layout
 
     method on_layout_size_resolved
       # Called when this component's size has been set but before
