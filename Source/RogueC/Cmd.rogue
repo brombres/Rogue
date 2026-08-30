@@ -35,7 +35,7 @@ class Cmd( t:Token )
     method control_type->ControlType
       return ControlType.UNDEFINED
 
-    method count->Int32
+    method count->Int
       return 0
 
     method description->String
@@ -140,7 +140,7 @@ class CmdList : Cmd
     method clear
       @list.clear
 
-    method count->Int32
+    method count->Int
       return @list.count
 
     method description->String
@@ -200,6 +200,9 @@ class TokenList : Cmd
 
     method clear
       tokens.clear
+
+    method count->Int
+      return tokens.count
 
     method description->String
       return "TokenList($)"(tokens)
@@ -2165,12 +2168,39 @@ class AttributeAspect : Cmd
 endClass
 
 class Parameters : CmdList
+  PROPERTIES
+    signature : String
+
   METHODS
     method description->String
       return "Parameters" + list_description
 
     method get( index:Int32 )->Local
       return list[index]->(as Local)
+
+    method is_compatible_with( other:Parameters )->Logical
+      if (signature.contains('*')) return FilePattern( @signature ).matches( other.signature )
+      else                         return FilePattern( other.signature ).matches( @signature )
+
+    method signature->String
+      # Returns a crude signature using token string representations of types and asterisks for undefined types.
+      # Allows parameter list compatibility checking among unresolved methods.
+      if (@signature) return @signature
+
+      @signature = String()
+      @signature.print '('
+      forEach (param at i in this)
+        if (i > 0) @signature.print ','
+        if (param.type)
+          @signature.print( (forEach in param.type.name_tokens)->String )
+        else
+          @signature.print '*'
+        endIf
+      endForEach
+      @signature.print ')'
+
+      return @signature
+
 endClass
 
 class CallStaticMethod : CallProcedure

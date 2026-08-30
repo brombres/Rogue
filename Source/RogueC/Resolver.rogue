@@ -797,6 +797,31 @@ class Resolver : Recyclable, Visitor
           if (candidate_m.name == m.name) ++matching_name_count; base_m = candidate_m
         endForEach
 
+        if (matching_name_count > 1)
+          matching_name_count = 0
+          base_m = null
+          forEach (candidate_m in base_type.methods.values)
+            if (candidate_m.name == m.name)
+              if (candidate_m.parameters.count or m.parameters.count)
+                if (m.parameters.count)
+                  if (m.parameters.is_compatible_with(candidate_m.parameters))
+                    ++matching_name_count
+                    base_m = candidate_m
+                  endIf
+                else
+                  ++matching_name_count
+                  base_m = candidate_m
+                endIf
+
+              else
+                matching_name_count = 1
+                base_m = candidate_m
+                escapeForEach
+              endIf
+            endIf
+          endForEach
+        endIf
+
         if (matching_name_count == 0)
           throw m.t.error( "Type '$' does not contain a method named '$' to override."(base_type,m.name) )
         elseIf (matching_name_count == 1)
@@ -804,6 +829,22 @@ class Resolver : Recyclable, Visitor
           tokens.add( m.name_tokens )
           if (m.parameter_tokens.count)
             tokens.add( m.parameter_tokens )
+          elseIf (base_m.parameters.count)
+            tokens.add( t.cloned(TokenType.SYMBOL_OPEN_PAREN) )
+            forEach (param at i in base_m.parameters)
+              if (i > 0) tokens.add( t.cloned(TokenType.SYMBOL_COMMA) )
+              local is_auto_store = (param.name != param.original_name)
+              tokens.add( t.cloned(TokenType.IDENTIFIER,param.original_name) )
+              if (param.initial_value)
+                tokens.add( t.cloned(TokenType.SYMBOL_EQUALS) )
+                tokens.add( param.initial_value_tokens )
+              endIf
+              if (not is_auto_store)
+                tokens.add( t.cloned(TokenType.SYMBOL_COLON) )
+                tokens.add( param.type.name_tokens )
+              endIf
+            endForEach
+            tokens.add( t.cloned(TokenType.SYMBOL_CLOSE_PAREN) )
           endIf
           if (base_m.return_type)
             tokens.add( t.cloned(TokenType.SYMBOL_ARROW) )
@@ -813,9 +854,7 @@ class Resolver : Recyclable, Visitor
           tokens.add( m.statement_tokens )
           tokens.add( t.cloned(TokenType.EOL) )
         else
-          throw m.t.error( "Ambiguous override; type '$' has multiple methods named '$'."(base_type,m.name) )
-          # TODO: use the optional parsed parameter types in the Generic Subclass method definitions to disambiguate
-          # throw m.t.error( "Type '$' has multiple methods named '$'. Qualify the override with parameter types to disambiguate."(base_type,m.name) )
+          throw m.t.error( "Type '$' has multiple methods named '$'. Add a parameter list to the override to disambiguate."(base_type,m.name) )
         endIf
       endForEach
 
@@ -3048,7 +3087,7 @@ class Resolver : Recyclable, Visitor
       # aren't being used.
       # E.g. if to->String() is ambiguous with to->String(&binary,&hex,&octal), we want the former.
       block
-        local min : Int32?
+        local min : Int?
         forEach (m in Candidates)
           if (not min or m.parameters.count < min.value) min = m.parameters.count
         endForEach

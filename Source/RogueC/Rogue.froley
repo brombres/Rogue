@@ -888,9 +888,9 @@ parser
 
 - procedure_parameters
   beginList
-    if (not consume('(')) produceList
+    if (not consume('(')) produceList Parameters
     consume_eols
-    if (consume(')')) produceList
+    if (consume(')')) produceList Parameters
     consume_eols
     procedure_parameter
     consume_eols
