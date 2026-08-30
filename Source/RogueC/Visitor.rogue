@@ -784,6 +784,7 @@ class Visitor
       cmd.name_tokens = visit(cmd.name_tokens)->(as TokenList)
       cmd.parameters = visit(cmd.parameters)->(as Parameters)
       cmd.parameter_tokens = visit(cmd.parameter_tokens)->(as TokenList)
+      cmd.return_type = visit(cmd.return_type)->(as Type)
       cmd.statement_tokens = visit(cmd.statement_tokens)->(as TokenList)
 
 endClass

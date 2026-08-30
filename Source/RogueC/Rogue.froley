@@ -783,13 +783,15 @@ parser
   procedure_parameters
   createTokenListPreservingStack
 
+  procedure_return_type
+
   mustConsume '=>'
   consume_eols
   savePosition
   single_line_statements
   createTokenList
 
-  produce GenericSubclassMethod(name:String,name_tokens:TokenList,parameters:Parameters,parameter_tokens:TokenList,statement_tokens:TokenList)
+  produce GenericSubclassMethod(name:String,name_tokens:TokenList,parameters:Parameters,parameter_tokens:TokenList,return_type:Type,statement_tokens:TokenList)
 
 - store_routine
   call on_parsed_routine  # Pass 1: stores routine as class template tokens. Pass 2: does nothing.

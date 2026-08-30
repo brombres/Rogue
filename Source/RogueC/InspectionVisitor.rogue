@@ -1216,6 +1216,8 @@ class InspectionVisitor<<$ReturnType>>
       if (result?) return result
       result = visit(cmd.parameter_tokens)
       if (result?) return result
+      result = visit(cmd.return_type)
+      if (result?) return result
       result = visit(cmd.statement_tokens)
       return result
 

@@ -823,7 +823,16 @@ class Resolver : Recyclable, Visitor
         endIf
 
         if (matching_name_count == 0)
-          throw m.t.error( "Type '$' does not contain a method named '$' to override."(base_type,m.name) )
+          tokens.add( t.cloned(TokenType.KEYWORD_METHOD) )
+          tokens.add( m.name_tokens )
+          tokens.add( m.parameter_tokens )
+          if (m.return_type)
+            tokens.add( t.cloned(TokenType.SYMBOL_ARROW) )
+            tokens.add( m.return_type.name_tokens )
+          endIf
+          tokens.add( t.cloned(TokenType.EOL) )
+          tokens.add( m.statement_tokens )
+          tokens.add( t.cloned(TokenType.EOL) )
         elseIf (matching_name_count == 1)
           tokens.add( t.cloned(TokenType.KEYWORD_METHOD) )
           tokens.add( m.name_tokens )
@@ -846,9 +855,10 @@ class Resolver : Recyclable, Visitor
             endForEach
             tokens.add( t.cloned(TokenType.SYMBOL_CLOSE_PAREN) )
           endIf
-          if (base_m.return_type)
+          if (base_m.return_type or m.return_type)
             tokens.add( t.cloned(TokenType.SYMBOL_ARROW) )
-            tokens.add( base_m.return_type.name_tokens )
+            if (m.return_type) tokens.add( m.return_type.name_tokens )
+            else               tokens.add( base_m.return_type.name_tokens )
           endIf
           tokens.add( t.cloned(TokenType.EOL) )
           tokens.add( m.statement_tokens )

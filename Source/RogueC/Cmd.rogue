@@ -5615,10 +5615,11 @@ class GenericSubclassMethod : Cmd
     name_tokens      : TokenList
     parameters       : Parameters
     parameter_tokens : TokenList
+    return_type      : Type
     statement_tokens : TokenList
 
   METHODS
-    method init( t, name, name_tokens, parameters, parameter_tokens, statement_tokens )
+    method init( t, name, name_tokens, parameters, parameter_tokens, return_type, statement_tokens )
 
     method init( existing:GenericSubclassMethod )
       prior.init( existing )
@@ -5626,9 +5627,10 @@ class GenericSubclassMethod : Cmd
       if (existing.name_tokens) name_tokens = existing.name_tokens.cloned
       if (existing.parameters) parameters = existing.parameters.cloned
       if (existing.parameter_tokens) parameter_tokens = existing.parameter_tokens.cloned
+      if (existing.return_type) return_type = existing.return_type.cloned
       if (existing.statement_tokens) statement_tokens = existing.statement_tokens.cloned
 
     method description->String
-      return "GenericSubclassMethod($,$,$,$,$)" (%name,%name_tokens,%parameters,%parameter_tokens,%statement_tokens)
+      return "GenericSubclassMethod($,$,$,$,$,$)" (%name,%name_tokens,%parameters,%parameter_tokens,%return_type,%statement_tokens)
 
 endClass
