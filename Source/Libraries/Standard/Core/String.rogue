@@ -551,6 +551,29 @@ class String : Recyclable PrintWriter
       endWhile
       return results
 
+    method filter_id( extra_characters="_":String )->String
+      use builder = StringPool
+        builder.reserve( this.count )
+        local skipped_any = false
+        local first = true
+        forEach (ch in this)
+          if ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z'))
+            builder.print( ch )
+          elseIf (ch >= '0' and ch <= '9')
+            if (first) skipped_any = true
+            else       builder.print( ch )
+          elseIf (extra_characters?.contains(ch))
+            builder.print( ch )
+          else
+            skipped_any = true
+          endIf
+          first = false
+        endForEach
+
+        if (skipped_any) return builder.cloned
+        else             return this
+      endUse
+
     method first->Character
       return this[0]
 

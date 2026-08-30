@@ -1201,4 +1201,22 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.assignments)
       return result
 
+    method on_visit_children( cmd:GenericSubclass )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.access)
+      if (result?) return result
+      result = visit(cmd.methods)
+      return result
+
+    method on_visit_children( cmd:GenericSubclassMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.name_tokens)
+      if (result?) return result
+      result = visit(cmd.parameters)
+      if (result?) return result
+      result = visit(cmd.parameter_tokens)
+      if (result?) return result
+      result = visit(cmd.statement_tokens)
+      return result
+
 endClass

@@ -776,5 +776,15 @@ class Visitor
     method on_visit_children( cmd:ImplicitlyScopedTemporarily )
       cmd.assignments = visit(cmd.assignments)->(as TemporaryAssignments)
 
+    method on_visit_children( cmd:GenericSubclass )
+      cmd.access = visit(cmd.access)->(as BaseAccess)
+      cmd.methods = visit(cmd.methods)->(as GenericSubclassMethods)
+
+    method on_visit_children( cmd:GenericSubclassMethod )
+      cmd.name_tokens = visit(cmd.name_tokens)->(as TokenList)
+      cmd.parameters = visit(cmd.parameters)->(as Parameters)
+      cmd.parameter_tokens = visit(cmd.parameter_tokens)->(as TokenList)
+      cmd.statement_tokens = visit(cmd.statement_tokens)->(as TokenList)
+
 endClass
 

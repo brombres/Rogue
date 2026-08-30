@@ -747,10 +747,14 @@ class LocalDeclarations : Cmd
 
 endClass
 
-class Access : Cmd
+class BaseAccess : Cmd
+  PROPERTIES
+    args : Cmd
+endClass
+
+class Access : BaseAccess
   PROPERTIES
     name : String
-    args : Cmd
 
   METHODS
     method init( t, name, args=null )
@@ -2480,10 +2484,9 @@ class GlobalPropertyDeclarations : Cmd
 
 endClass
 
-class TypeAccess : Cmd
+class TypeAccess : BaseAccess
   PROPERTIES
     of_type : Type
-    args    : Cmd
 
   METHODS
     method init( t, of_type, args=null )
@@ -3785,13 +3788,12 @@ class MethodTemplate : Cmd
 
 endClass
 
-class TemplatedAccess : Cmd
+class TemplatedAccess : BaseAccess
   PROPERTIES
     library_context : Library
     type_context    : Type
     name            : String
     type_args       : TemplateArgs
-    args            : Cmd
 
   METHODS
     method init( t, name, type_args, args )
@@ -5547,4 +5549,56 @@ class AttributeNovel : Cmd
   METHODS
     method description->String
       return "AttributeNovel"
+endClass
+
+class GenericSubclassMethods : CmdList
+  METHODS
+    method description->String
+      return "GenericSubclassMethods" + list_description
+
+    method get( index:Int32 )->GenericSubclassMethod
+      return list[index]->(as GenericSubclassMethod)
+endClass
+
+class GenericSubclass : Cmd
+  PROPERTIES
+    access  : BaseAccess
+    methods : GenericSubclassMethods
+
+  METHODS
+    method init( t, access, methods )
+
+    method init( existing:GenericSubclass )
+      prior.init( existing )
+      if (existing.access) access = existing.access.cloned
+      if (existing.methods) methods = existing.methods.cloned
+
+    method description->String
+      return "GenericSubclass($,$)" (%access,%methods)
+
+endClass
+
+
+class GenericSubclassMethod : Cmd
+  PROPERTIES
+    name             : String
+    name_tokens      : TokenList
+    parameters       : Parameters
+    parameter_tokens : TokenList
+    statement_tokens : TokenList
+
+  METHODS
+    method init( t, name, name_tokens, parameters, parameter_tokens, statement_tokens )
+
+    method init( existing:GenericSubclassMethod )
+      prior.init( existing )
+      name = existing.name
+      if (existing.name_tokens) name_tokens = existing.name_tokens.cloned
+      if (existing.parameters) parameters = existing.parameters.cloned
+      if (existing.parameter_tokens) parameter_tokens = existing.parameter_tokens.cloned
+      if (existing.statement_tokens) statement_tokens = existing.statement_tokens.cloned
+
+    method description->String
+      return "GenericSubclassMethod($,$,$,$,$)" (%name,%name_tokens,%parameters,%parameter_tokens,%statement_tokens)
+
 endClass

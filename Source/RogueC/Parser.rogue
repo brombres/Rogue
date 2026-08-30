@@ -905,9 +905,9 @@ class Parser : ParserCore, Recyclable
             template.name = access.name + template.name
             name = template.name
             lib.templates["$<<0>>"(name)] = template
-            tokens.insert( class_t.cloned(TokenType.IDENTIFIER,access.name) )
-            tokens.insert( class_t.cloned(TokenType.SYMBOL_COLON) )
-            access.name = name
+            tokens.insert( class_t.cloned(TokenType.IDENTIFIER,access.name) )    # BaseType
+            tokens.insert( class_t.cloned(TokenType.SYMBOL_COLON) )              # :        (reverse order)
+            access.name = name                                                   # AnonymousSubclassX
             _cmd_stack.remove_last
             _cmd_stack.add( TypeAccess(access.t, Type(access.t,name), access.args) )
           endBlock
@@ -1129,8 +1129,9 @@ class Parser : ParserCore, Recyclable
     method print_trace
       @trace _next_t
 
-    method print_stack_trace
+    method print_stack_trace->Int
       println StackTrace()
+      return 0
 
     method _read->Token
       if (inserted_tokens.count) return inserted_tokens.remove_last

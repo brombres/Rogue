@@ -747,6 +747,7 @@ parser
 
 - subclass
   if (nextIs("subclass"))
+    # Anonymous subclass
     savePosition     # Pass 1: position to scan template tokens from (node output already disabled)
     ++disable_output # Pass 2: also disable output; just parse to get past
 
@@ -757,7 +758,38 @@ parser
     call on_parsed_subclass  # Pass 1: stores class template tokens & replaces access with generated type name.
                              # Pass 2: does nothing.
     discardPosition
+
+  else
+    # Generic subclass
+    on '{'
+      beginList
+        while (hasAnother and not nextIs('}'))
+          generic_subclass_method
+          consume ','
+        endWhile
+      createList GenericSubclassMethods
+      mustConsume '}'
+      produce GenericSubclass( access:BaseAccess, methods:GenericSubclassMethods )
+    endOn
   endIf
+
+- generic_subclass_method
+
+  savePosition
+  id_or_internal_id
+  createTokenListPreservingStack
+
+  savePosition
+  procedure_parameters
+  createTokenListPreservingStack
+
+  mustConsume '=>'
+  consume_eols
+  savePosition
+  single_line_statements
+  createTokenList
+
+  produce GenericSubclassMethod(name:String,name_tokens:TokenList,parameters:Parameters,parameter_tokens:TokenList,statement_tokens:TokenList)
 
 - store_routine
   call on_parsed_routine  # Pass 1: stores routine as class template tokens. Pass 2: does nothing.
@@ -2135,10 +2167,7 @@ parser
     endWhile
     mustConsume ')'
   else
-    while (hasAnother and not nextHasAttribute(structural) and not nextIs(EOL))
-      arg
-      if (consume ',') consume_eols
-    endWhile
+    if (hasAnother and not nextHasAttribute(structural) and not nextIs(EOL)) arg
   endIf
   produceList Args
 

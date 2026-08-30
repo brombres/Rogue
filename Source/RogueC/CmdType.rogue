@@ -750,6 +750,9 @@ augment
     method GenericFunctionDefinition.type->Type
       return Program.type_GenericFn
 
+    method GenericSubclass.type->Type
+      return access.type
+
     method GetGlobalProperty.type->Type
       return info.@type
 

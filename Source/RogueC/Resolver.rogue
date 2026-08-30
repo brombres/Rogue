@@ -774,6 +774,62 @@ class Resolver : Recyclable, Visitor
     method on_visit( cmd:GenericFunctionDefinition )->Cmd
       return cmd
 
+    method on_visit( cmd:GenericSubclass )->Cmd
+      local base_type = visit( cmd.access ).require_type
+      base_type.resolve
+
+      local name = "Generic$Subclass$" (base_type.name.filter_id,Program.generic_subclass_names.count)
+      Program.generic_subclass_names.add( name )
+
+      local t = cmd.t
+      local tokens = Token[]
+
+      tokens.add( t.cloned(TokenType.SYMBOL_COLON) )                # :  (extends)
+      tokens.add( t.cloned(TokenType.IDENTIFIER, base_type.name) )  # <BaseTypeName>
+      tokens.add( t.cloned(TokenType.EOL) )
+      tokens.add( t.cloned(TokenType.KEYWORD_METHODS) )
+      tokens.add( t.cloned(TokenType.EOL) )
+
+      forEach (m in cmd.methods)
+        local matching_name_count = 0
+        local base_m : Method
+        forEach (candidate_m in base_type.methods.values)
+          if (candidate_m.name == m.name) ++matching_name_count; base_m = candidate_m
+        endForEach
+
+        if (matching_name_count == 0)
+          throw m.t.error( "Type '$' does not contain a method named '$' to override."(base_type,m.name) )
+        elseIf (matching_name_count == 1)
+          tokens.add( t.cloned(TokenType.KEYWORD_METHOD) )
+          tokens.add( m.name_tokens )
+          if (m.parameter_tokens.count)
+            tokens.add( m.parameter_tokens )
+          endIf
+          if (base_m.return_type)
+            tokens.add( t.cloned(TokenType.SYMBOL_ARROW) )
+            tokens.add( base_m.return_type.name_tokens )
+          endIf
+          tokens.add( t.cloned(TokenType.EOL) )
+          tokens.add( m.statement_tokens )
+          tokens.add( t.cloned(TokenType.EOL) )
+        else
+          throw m.t.error( "Ambiguous override; type '$' has multiple methods named '$'."(base_type,m.name) )
+          # TODO: use the optional parsed parameter types in the Generic Subclass method definitions to disambiguate
+          # throw m.t.error( "Type '$' has multiple methods named '$'. Qualify the override with parameter types to disambiguate."(base_type,m.name) )
+        endIf
+      endForEach
+
+      tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )
+      tokens.add( t.cloned(TokenType.EOL) )
+
+      local lib = base_type.library_context
+
+      local attributes = Attribute.OMIT_DOC | Attribute.GENERIC_SUBCLASS
+      local template = Template( t, lib, name, Token[], tokens, attributes )
+      lib.templates["$<<0>>"(name)] = template
+
+      return visit( Access(t, name, cmd.access.args) )
+
     method on_visit( cmd:GetTypeInfo )->Cmd
       cmd.of_type.organize
       return visit(

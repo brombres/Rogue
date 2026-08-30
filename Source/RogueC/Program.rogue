@@ -84,7 +84,8 @@ class Program [singleton]
 
     base_type_lookup  = Int[]
 
-    anonymous_class_names = [String:String]
+    anonymous_class_names  = [String:String]
+    generic_subclass_names = String[]
 
     using_method_introspection : Logical
     m_call_global                 : Procedure

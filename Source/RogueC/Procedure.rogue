@@ -4,7 +4,7 @@ uses Utility/WorkList
 
 class Procedure : Cmd
   PROPERTIES
-    library_context    : Library
+    library_context   : Library
     type_context      : Type
     name              : String
     base_name         : String   # without any <<template-args>>
@@ -392,6 +392,16 @@ class Procedure : Cmd
 
       use resolver = RecyclePool<<Resolver>>
         resolver.visit( library_context, this )
+
+        if (type_context.attributes.is_generic_subclass and return_type and not BranchAnalyzer.all_paths_return(statements))
+          if (statements.count and statements.last.type)
+            local cmd = statements.remove_last
+            statements.add( Return(t,cmd) )
+            resolver.visit( library_context, this )
+          else
+            statements.add( Return(t, return_type.cmd_default_value(t)) )
+          endIf
+        endIf
       endUse
 
 endClass
