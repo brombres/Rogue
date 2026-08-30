@@ -63,11 +63,10 @@ class Scanner : ScannerCore, Recyclable
       @value        = 0
       @digits       = 0
 
-    method mark_beginning_of_line->Int
+    method mark_beginning_of_line
       beginning_of_line = _scanner.location
-      return 0
 
-    method process_comment->Int
+    method process_comment
       local matching_keyword : String
 
       contingent
@@ -95,49 +94,40 @@ class Scanner : ScannerCore, Recyclable
         endForEach
       endContingent
 
-      return 0
 
-    method use_DateTime->Int
+    method use_DateTime
       uses_DateTime = true
       uses_autoinclude = true
-      return 0
 
-    method use_File->Int
+    method use_File
       uses_File = true
       uses_autoinclude = true
-      return 0
 
-    method use_Introspection->Int
+    method use_Introspection
       uses_Introspection = true
       uses_autoinclude = true
-      return 0
 
-    method use_Process->Int
+    method use_Process
       uses_Process = true
       uses_autoinclude = true
-      return 0
 
-    method use_Promise->Int
+    method use_Promise
       uses_Promise = true
       uses_autoinclude = true
-      return 0
 
-    method use_Set->Int
+    method use_Set
       uses_Set = true
       uses_autoinclude = true
-      return 0
 
-    method use_Scanner->Int
+    method use_Scanner
       uses_Scanner = true
       uses_autoinclude = true
-      return 0
 
-    method use_Table->Int
+    method use_Table
       uses_Table = true
       uses_autoinclude = true
-      return 0
 
-    method use_Value->Int
+    method use_Value
       use_Variant
       if (not _filepath.contains("StandardMacros.rogue"))
         Program.print_warning(
@@ -145,11 +135,9 @@ class Scanner : ScannerCore, Recyclable
           "Type name 'Value' is deprecated and will be removed in the future. Use 'Variant' instead."
         )
       endIf
-      return 0
 
-    method use_Variant->Int
+    method use_Variant
       uses_Variant = true
       uses_autoinclude = true
-      return 0
 
 endClass

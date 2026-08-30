@@ -76,17 +76,17 @@ class Parser : ParserCore, Recyclable
     method on_recycle
       reset
 
-    method convert_identifier_dot_to_underscore->Int
-      if (disable_output or _cmd_stack.is_empty) return 0
+    method convert_identifier_dot_to_underscore
+      if (disable_output or _cmd_stack.is_empty) return
 
       if local id = _cmd_stack.last->(as Identifier)
         id.name = id.name.replacing( '.', '_' )
       endIf
 
-      return 0
+      return
 
-    method create_localize->Int
-      if (disable_output or _cmd_stack.is_empty) return 0
+    method create_localize
+      if (disable_output or _cmd_stack.is_empty) return
       local expr = _cmd_stack.remove_last
       local t = expr.t
 
@@ -107,26 +107,26 @@ class Parser : ParserCore, Recyclable
           if local literal_string = indexed_access.index->(as LiteralString)
             _cmd_stack.add( Identifier(t, literal_string.value) )
             _cmd_stack.add( indexed_access )
-            return 0
+            return
           endIf
         endIf
 
         throw t.error( "Expected 'identifier' or 'context.identifier'." )
       endIf
 
-      return 0
+      return
 
-    method create_rogue_version_string->Int
+    method create_rogue_version_string
       processed_tokens.add( _cur_t.cloned(TokenType.STRING,VERSION.after_any('v')) )
-      return 0
+      return
 
-    method create_source_filepath->Int
+    method create_source_filepath
       processed_tokens.add( _cur_t.cloned(TokenType.STRING,_cur_t.filepath) )
-      return 0
+      return
 
-    method create_source_line->Int
+    method create_source_line
       processed_tokens.add( _cur_t.cloned(TokenType.INTEGER,_cur_t.line) )
-      return 0
+      return
 
     method preprocess
       temporarily Program.current_library = Program.default_library
@@ -136,8 +136,8 @@ class Parser : ParserCore, Recyclable
         _tokens.add( processed_tokens )
       endTemporarily
 
-    method set_augment_context_name->Int
-      if (not collecting_templates) return 0
+    method set_augment_context_name
+      if (not collecting_templates) return
 
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
@@ -168,10 +168,10 @@ class Parser : ParserCore, Recyclable
       endForEach
       if (depth > 0) throw _tokens[i1].error( "Unterminated '<<'." )
       @augment_context_name = builder
-      return 0
+      return
 
-    method batch_augment_create_method->Int
-      if (not collecting_templates) return 0
+    method batch_augment_create_method
+      if (not collecting_templates) return
 
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
@@ -204,15 +204,15 @@ class Parser : ParserCore, Recyclable
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
       local template = Template( augment_t, lib, aspect_name, Token[], tokens, attributes )
       lib.templates[aspect_name] = template
-      return 0
+      return
 
-    method begin_join_ids->Int
+    method begin_join_ids
       id_start_stack.add( processed_tokens.count )
-      return 0
+      return
 
-    method end_join_ids->Int
+    method end_join_ids
       local i1 = id_start_stack.remove_last
-      if (i1 >= processed_tokens.count) return 0
+      if (i1 >= processed_tokens.count) return
 
       local t = processed_tokens[i1]
       if (t.type != TokenType.IDENTIFIER) t .= cloned( TokenType.IDENTIFIER, t->String )
@@ -221,15 +221,15 @@ class Parser : ParserCore, Recyclable
       endForEach
       processed_tokens.discard_from( i1 )
       processed_tokens.add( t )
-      return 0
+      return
 
-    method begin_join_lowercase->Int
+    method begin_join_lowercase
       string_start_stack.add( processed_tokens.count )
-      return 0
+      return
 
-    method end_join_lowercase->Int
+    method end_join_lowercase
       local i1 = string_start_stack.remove_last
-      if (i1 >= processed_tokens.count) return 0
+      if (i1 >= processed_tokens.count) return
 
       local t = processed_tokens[i1]
       if (t.type != TokenType.STRING) t .= cloned( TokenType.STRING, t->String )
@@ -240,15 +240,15 @@ class Parser : ParserCore, Recyclable
 
       processed_tokens.discard_from( i1 )
       processed_tokens.add( t )
-      return 0
+      return
 
-    method begin_join_strings->Int
+    method begin_join_strings
       string_start_stack.add( processed_tokens.count )
-      return 0
+      return
 
-    method end_join_strings->Int
+    method end_join_strings
       local i1 = string_start_stack.remove_last
-      if (i1 >= processed_tokens.count) return 0
+      if (i1 >= processed_tokens.count) return
 
       local t = processed_tokens[i1]
       if (t.type != TokenType.STRING) t .= cloned( TokenType.STRING, t->String )
@@ -257,15 +257,15 @@ class Parser : ParserCore, Recyclable
       endForEach
       processed_tokens.discard_from( i1 )
       processed_tokens.add( t )
-      return 0
+      return
 
-    method begin_join_uppercase->Int
+    method begin_join_uppercase
       string_start_stack.add( processed_tokens.count )
-      return 0
+      return
 
-    method end_join_uppercase->Int
+    method end_join_uppercase
       local i1 = string_start_stack.remove_last
-      if (i1 >= processed_tokens.count) return 0
+      if (i1 >= processed_tokens.count) return
 
       local t = processed_tokens[i1]
       if (t.type != TokenType.STRING) t .= cloned( TokenType.STRING, t->String )
@@ -276,35 +276,35 @@ class Parser : ParserCore, Recyclable
 
       processed_tokens.discard_from( i1 )
       processed_tokens.add( t )
-      return 0
+      return
 
-    method begin_rot13->Int
+    method begin_rot13
       begin_join_strings
-      return 0
+      return
 
-    method end_rot13->Int
+    method end_rot13
       end_join_strings
       if (processed_tokens.count)
         local t = processed_tokens.remove_last
         t.content .= rot13
         processed_tokens.add( t )
       endIf
-      return 0
+      return
 
-    method begin_rot47->Int
+    method begin_rot47
       begin_join_strings
-      return 0
+      return
 
-    method end_rot47->Int
+    method end_rot47
       end_join_strings
       if (processed_tokens.count)
         local t = processed_tokens.remove_last
         t.content .= rot47
         processed_tokens.add( t )
       endIf
-      return 0
+      return
 
-    method define_macro->Int
+    method define_macro
       assert _cmd_stack.count >= 3
       local tokens = _cmd_stack.remove_last->(as TokenList).tokens
       local placeholders = _cmd_stack.remove_last->(as Placeholders)
@@ -334,9 +334,9 @@ class Parser : ParserCore, Recyclable
       endIf
 
       macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
-      return 0
+      return
 
-    method define_local_macro->Int
+    method define_local_macro
       assert _cmd_stack.count >= 3
       local tokens = _cmd_stack.remove_last->(as TokenList).tokens
       local placeholders = _cmd_stack.remove_last->(as Placeholders)
@@ -365,9 +365,9 @@ class Parser : ParserCore, Recyclable
       endForEach
 
       macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
-      return 0
+      return
 
-    method define_native_type->Int
+    method define_native_type
       # EXAMPLE: nativeType<<"char*">> RogueCString
       #
       # cur_t is 'nativeType'
@@ -377,7 +377,7 @@ class Parser : ParserCore, Recyclable
         _read # "char*"
         _read # >>
         _read # RogueCString
-        return 0
+        return
       endIf
 
       local t = _cur_t
@@ -423,16 +423,16 @@ class Parser : ParserCore, Recyclable
 
       local template = Template( t, lib, type_name, Token[], tokens, Attribute.COMPOUND|Attribute.NATIVE_TYPE )
       lib.templates[extended_name] = template
-      return 0
+      return
 
-    method clone->Int
-      if (disable_output or _cmd_stack.is_empty) return 0
+    method clone
+      if (disable_output or _cmd_stack.is_empty) return
       local cmd = _cmd_stack.last
       if (cmd) _cmd_stack.add( cmd.cloned )
       else     _cmd_stack.add( cmd )
-      return 0
+      return
 
-    method check_target->Int
+    method check_target
       local t = _read
       if (t.type != TokenType.STRING) throw t.error( "Literal string expected." )
       if (Program.targets.contains(t.content))
@@ -440,32 +440,32 @@ class Parser : ParserCore, Recyclable
       else
         processed_tokens.add( t.cloned(TokenType.KEYWORD_FALSE,null) )
       endIf
-      return 0
+      return
 
-    method class_attribute_essential->Int
+    method class_attribute_essential
       _attribute_essential = true
-      return 0
+      return
 
-    method class_attribute_undocumented->Int
+    method class_attribute_undocumented
       _attribute_undocumented = true
-      return 0
+      return
 
-    method create_definition->Int
+    method create_definition
       local def_name = buffer.cloned
       Program.definitions[ def_name ] = token_buffer
       use history = WorkList<<String>>
         detect_definition_cycle( history, def_name, token_buffer )
       endUse
       token_buffer = Token[]
-      return 0
+      return
 
-    method create_unconfirmed_global_id->Int
+    method create_unconfirmed_global_id
       local label = _cur_t->String
       if (label.begins_with('<')) label = label.after_first('<').before_last('>')
       CmdGlobalID( _cur_t, label, &unconfirmed )
-      return 0
+      return
 
-    method create_local_definition->Int
+    method create_local_definition
       ensure<<local_definitions>>
       local def_name = buffer.cloned
       local_definitions[ def_name ] = token_buffer
@@ -473,15 +473,15 @@ class Parser : ParserCore, Recyclable
         detect_definition_cycle( history, def_name, token_buffer )
       endUse
       token_buffer = Token[]
-      return 0
+      return
 
-    method collect_next_token->Int
+    method collect_next_token
       token_buffer.add( _read )
-      return 0
+      return
 
-    method collect_token_string->Int
+    method collect_token_string
       buffer.print _cur_t->String
-      return 0
+      return
 
     method detect_definition_cycle( history:String[], name:String, tokens:Token[] )
       if (history.contains(name))
@@ -506,11 +506,11 @@ class Parser : ParserCore, Recyclable
       endForEach
       history.remove_last
 
-    method discard_last->Int
+    method discard_last
       if (_cmd_stack.count) _cmd_stack.remove_last
-      return 0
+      return
 
-    method insert_definition->Int
+    method insert_definition
       if (local_definitions)
         local def = local_definitions[ _cur_t.content ]
         if (def)
@@ -519,7 +519,7 @@ class Parser : ParserCore, Recyclable
             _limit += def.count
             if (_position < _limit) _next_t = _tokens[_position]
           endIf
-          return 0
+          return
         endIf
       endIf
 
@@ -530,14 +530,14 @@ class Parser : ParserCore, Recyclable
           _limit += def.count
           if (_position < _limit) _next_t = _tokens[_position]
         endIf
-        return 0
+        return
       endIf
 
-      if (expand_macro(Program.macros[_cur_t.content])) return 0
-      if (local_macros and expand_macro(local_macros[_cur_t->String])) return 0
+      if (expand_macro(Program.macros[_cur_t.content])) return
+      if (local_macros and expand_macro(local_macros[_cur_t->String])) return
 
       processed_tokens.add( _cur_t )
-      return 0
+      return
 
     method expand_macro( macros:Macro[] )->Logical
       if (not macros) return false
@@ -582,8 +582,8 @@ class Parser : ParserCore, Recyclable
       _restore_position
       return false
 
-    method filename_to_file_bytes->Int
-      if (disable_output or _cmd_stack.is_empty) return 0
+    method filename_to_file_bytes
+      if (disable_output or _cmd_stack.is_empty) return
       local string_node = _cmd_stack.remove_last
       local t = string_node.t
       local file = File(string_node->String)
@@ -591,10 +591,10 @@ class Parser : ParserCore, Recyclable
       if (not file.exists) throw t.error( "No such file: $"(file) )
       local bytes = Byte[](file)
       _cmd_stack.add( TypeAccess( t, Type(t,Program.type_Byte), Args(t,LiteralString(t,bytes->String(&hex))) ) )
-      return 0
+      return
 
-    method filename_to_file_string->Int
-      if (disable_output or _cmd_stack.is_empty) return 0
+    method filename_to_file_string
+      if (disable_output or _cmd_stack.is_empty) return
       local string_node = _cmd_stack.remove_last
       local t = string_node.t
       local file = File(string_node->String)
@@ -602,10 +602,10 @@ class Parser : ParserCore, Recyclable
       if (not file.exists) throw t.error( "No such file: $"(file) )
       local string = String(file)
       _cmd_stack.add( LiteralString(t,string) )
-      return 0
+      return
 
-    method load_filepath_as_string->Int
-      if (disable_output or _cmd_stack.is_empty) return 0
+    method load_filepath_as_string
+      if (disable_output or _cmd_stack.is_empty) return
       local cmd_string = _cmd_stack.last->(as LiteralString)
       assert cmd_string
       local file = File(cmd_string->String)
@@ -614,68 +614,68 @@ class Parser : ParserCore, Recyclable
       endIf
       if (not file.exists) throw cmd_string.t.error("No such file: "+file.filepath)
       cmd_string.value = String(file)
-      return 0
+      return
 
-    method mark_token->Int
+    method mark_token
       marked_token = _cur_t
       _attribute_no_include = false
-      return 0
+      return
 
     method has_another->Logical
       return _position < _limit or inserted_tokens.count
 
-    method include_filepath->Int
+    method include_filepath
       if (include_target_matched)
         Program.include( marked_token, buffer.cloned, &api=include_attribute_api,
                          &is_optional=include_attribute_optional, &include_folder=include_attribute_folder )
       endIf
-      return 0
+      return
 
-    method join_identifiers->Int
+    method join_identifiers
       if (not disable_output and _cmd_stack.count >= 2)
         local b = _cmd_stack.remove_last
         local a = _cmd_stack.remove_last
         _cmd_stack.add( Identifier(b.t, a->String + b->String) )
       endIf
-      return 0
+      return
 
-    method join_template_args->Int
+    method join_template_args
       if (not disable_output and _cmd_stack.count >= 2)
         local b = _cmd_stack.remove_last
         local a = _cmd_stack.remove_last
         _cmd_stack.add( Identifier(b.t, b->(as TemplateArgs)->String(a->String)) )
       endIf
-      return 0
+      return
 
-    method join_strings->Int
+    method join_strings
       if (not disable_output and _cmd_stack.count >= 2)
         local a = _cmd_stack[_cmd_stack.count-2]->(as LiteralString)
         local b = _cmd_stack.remove_last->(as LiteralString)  # we already know b is a literal string
         a.value += b.value
       endIf
-      return 0
+      return
 
-    method match_include_target->Int
+    method match_include_target
       if (not disable_output and _cmd_stack.count >= 1)
         local target = _cmd_stack.remove_last
         include_target_matched = (Program.targets.contains(target->String))
       endIf
-      return 0
+      return
 
-    method swap->Int
+    method swap
       if (not disable_output and _cmd_stack.count >= 2)
         local b = _cmd_stack.remove_last
         local a = _cmd_stack.remove_last
         _cmd_stack.add( b )
         _cmd_stack.add( a )
       endIf
-      return 0
+      return
 
-    method uses_attribute_no_include->Int
+    method uses_attribute_no_include
       _attribute_no_include = true
-      return 0
+      return
 
-    method uses_filepath->Int
+    method uses_filepath
       # The first pass $include's the given file
       local filepath = buffer.cloned
       if (filepath == "") throw marked_token.error( "Library path expected." )
@@ -692,14 +692,14 @@ class Parser : ParserCore, Recyclable
 
         Program.include( marked_token, filepath, &is_optional, &is_library )
       endIf
-      return 0
+      return
 
     method evaluate_meta_expression
-      #if (disable_output or _cmd_stack.is_empty) return 0
+      #if (disable_output or _cmd_stack.is_empty) return
       #local condition = _cmd_stack.remove_last
       #meta_condition = condition.evaluate
 
-    method on_is_defined->Int
+    method on_is_defined
       if (not disable_output)
         local t = _cur_t
         local name = t->String
@@ -709,13 +709,13 @@ class Parser : ParserCore, Recyclable
           processed_tokens.add( t.cloned(TokenType.KEYWORD_FALSE,null) )
         endIf
       endIf
-      return 0
+      return
 
-    method on_begin_arg->Int
+    method on_begin_arg
       ++generic_fn_args_depth
-      return 0
+      return
 
-    method on_generic_fn_arg->Int
+    method on_generic_fn_arg
       if (_cur_t.type == TokenType.SYMBOL_DOLLAR)
         generic_fn_args_used |= 1
       else
@@ -726,9 +726,9 @@ class Parser : ParserCore, Recyclable
       if ((generic_fn_args_used & !1) and (generic_fn_args_used & 1))
         throw _cur_t.error( "Cannot mix single arg ('$') and multiple arg ('$N') implicit function argument syntax." )
       endIf
-      return 0
+      return
 
-    method on_end_arg->Int
+    method on_end_arg
       --generic_fn_args_depth
       if (generic_fn_args_used and generic_fn_args_depth == 0)
         if (not disable_output)
@@ -751,10 +751,10 @@ class Parser : ParserCore, Recyclable
           generic_fn_args_used = 0
         endIf
       endIf
-      return 0
+      return
 
-    method on_parsed_augment->Int
-      if (not collecting_templates) return 0
+    method on_parsed_augment
+      if (not collecting_templates) return
 
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
@@ -782,9 +782,9 @@ class Parser : ParserCore, Recyclable
       local attributes = Attribute.ASPECT | Attribute.AUGMENT
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
       lib.templates[aspect_name] = Template( augment_t, lib, aspect_name, Token[], tokens, attributes )
-      return 0
+      return
 
-    method on_uses_library->Int
+    method on_uses_library
       assert _cmd_stack.count >= 2
       local attributes = _cmd_stack.remove_last->(as Attributes)
       local path = _cmd_stack.remove_last
@@ -792,19 +792,18 @@ class Parser : ParserCore, Recyclable
         local lib = Program.get_library( path.t, path->String.replacing("/","::") )
         Program.current_library.uses_library( lib, &is_exported=attributes.is_exported )
       endIf
-      return 0
+      return
 
-    method on_parsed_class->Int
+    method on_parsed_class
       create_type_template
-      return 0
 
-    method on_parsed_enum->Int
+    method on_parsed_enum
       local _template = create_type_template
       if (_template)
         _template.attributes.is_enum = true
         _template.attributes.is_compound = true
       endIf
-      return 0
+      return
 
     method create_type_template->Template
       local attributes : Int64
@@ -851,7 +850,7 @@ class Parser : ParserCore, Recyclable
       lib.templates[extended_name] = result
       return result
 
-    method collect_label->Int
+    method collect_label
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
       local label = String()
@@ -865,9 +864,9 @@ class Parser : ParserCore, Recyclable
       endForEach
       CmdGlobalID( _tokens[i1], label )
 
-    method on_parsed_subclass->Int
+    method on_parsed_subclass
       if (disable_output and not collecting_templates)
-        return 0
+        return
       endIf
 
       local i1 = _saved_positions.last.position
@@ -947,16 +946,16 @@ class Parser : ParserCore, Recyclable
         endIf
 
       endIf
-      return 0
+      return
 
-    method on_parsed_routine->Int
+    method on_parsed_routine
       local attributes : Int64
       if (_attribute_essential)
         attributes |= Attribute.ESSENTIAL
       endIf
       _attribute_essential = false
 
-      if (not collecting_templates) return 0
+      if (not collecting_templates) return
 
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
@@ -988,9 +987,9 @@ class Parser : ParserCore, Recyclable
       attributes |= Attribute.ASPECT | Attribute.AUGMENT
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
       lib.templates[aspect_name] = Template( augment_t, lib, aspect_name, Token[], tokens, attributes )
-      return 0
+      return
 
-    method store_api_pattern->Int
+    method store_api_pattern
       local pos = _saved_positions.remove_last
       _cmd_stack.discard_from( pos.cmd_stack_count )
       local i1 = pos.position
@@ -999,14 +998,14 @@ class Parser : ParserCore, Recyclable
       forEach (i in i1..<limit) pattern.print( _tokens[i]->String )
       Program.api_patterns.add( pattern )
 
-      return 0
+      return
 
-    method parse_doc_comment->Int
-      if (disable_output) return 0
+    method parse_doc_comment
+      if (disable_output) return
 
       if (not has_another)
         _push( null, 0 )
-        return 0
+        return
       endIf
 
       _save_position
@@ -1017,7 +1016,7 @@ class Parser : ParserCore, Recyclable
         if (not has_another or _peek.type != TokenType.EOL)
           _restore_position
           _push( null, 0 )
-          return 0
+          return
         endIf
       endBlock
 
@@ -1030,7 +1029,7 @@ class Parser : ParserCore, Recyclable
         if (t.type != TokenType.EOL or not String.exists(t.content))
           _restore_position
           _push( null, 0 )
-          return 0
+          return
         endIf
       endIf
 
@@ -1044,9 +1043,9 @@ class Parser : ParserCore, Recyclable
 
       _restore_position
       _push( LiteralString(doc_t,doc), 0 )
-      return 0
+      return
 
-    method parse_library_id->Int
+    method parse_library_id
       # Doing this natively because we need to also switch context to the parsed library
       # so that we can store class templates in the appropriate library.
       local t = _next_t
@@ -1056,7 +1055,7 @@ class Parser : ParserCore, Recyclable
       elseIf (t.type != TokenType.IDENTIFIER)
         if (not disable_output) _push( null, 0 )
         Program.current_library = Program.default_library
-        return 0
+        return
       endIf
 
       if (_next_t.type != TokenType.IDENTIFIER) _throw_syntax_error( "Identifier expected." )
@@ -1071,7 +1070,7 @@ class Parser : ParserCore, Recyclable
       local library_id = buffer.cloned
       if (not disable_output) _push( Identifier(t,library_id), 0 )
       Program.current_library = Program.get_library( t, library_id )
-      return 0
+      return
 
     method _peek->Token
       if (inserted_tokens.count) return inserted_tokens.last
@@ -1082,9 +1081,9 @@ class Parser : ParserCore, Recyclable
       loop (10) println _read
       _restore_position
 
-    method print_peek->Int
+    method print_peek
       println "PEEK [$:$.$] $"(_next_t.filepath,_next_t.line,_next_t.column,_next_t)
-      return 0
+      return
 
     method print_stack
       @trace _cmd_stack
@@ -1097,12 +1096,11 @@ class Parser : ParserCore, Recyclable
         endIf
       endIf
 
-    method print_deprecation_warning->Int
-      if (disable_output) return 0
+    method print_deprecation_warning
+      if (disable_output) return
       Program.print_warning( _cur_t, deprecation_warning )
-      return 1
 
-    method print_stack_top->Int
+    method print_stack_top
       if (_cmd_stack.count)
         if (_cmd_stack.last is null)
           println "STACK null"
@@ -1114,9 +1112,9 @@ class Parser : ParserCore, Recyclable
       else
         println "STACK []"
       endIf
-      return 0
+      return
 
-    method print_stack_top_2->Int
+    method print_stack_top_2
       if (_cmd_stack.count >= 2)
         local cmd = _cmd_stack[_cmd_stack.count-2]
         if (cmd) println "STACK [$] $, $"(cmd.t.source_position,cmd,_cmd_stack.last)
@@ -1124,20 +1122,20 @@ class Parser : ParserCore, Recyclable
       else
         print_stack_top
       endIf
-      return 0
+      return
 
     method print_trace
       @trace _next_t
 
-    method print_stack_trace->Int
+    method print_stack_trace
       println StackTrace()
-      return 0
+      return
 
     method _read->Token
       if (inserted_tokens.count) return inserted_tokens.remove_last
       return prior._read
 
-    method require_rogue_version->Int
+    method require_rogue_version
       local v_req = _cur_t.content.after_any('v').after_any('V')
       local v_cur = VERSION.after_any('v').after_any('V')
       if (VersionNumber(v_req) > v_cur)
@@ -1149,22 +1147,22 @@ class Parser : ParserCore, Recyclable
           "Rogue v$ is currently installed and cannot compile Rogue v1.x files.."(v_cur)
         )
       endIf
-      return 0
+      return
 
-    method rewrite_cur_token->Int
+    method rewrite_cur_token
       processed_tokens.add( _cur_t )
-      return 0
+      return
 
-    method rewrite_token->Int
+    method rewrite_token
       processed_tokens.add( _read )
-      return 0
+      return
 
-    method set_cur_token->Int
+    method set_cur_token
       _cur_t = _next_t
-      return 0
+      return
 
-    method store_statement_args->Int
-      if (disable_output) return 0
+    method store_statement_args
+      if (disable_output) return
 
       local args = _cmd_stack.remove_last->(as Args)
       assert args?
@@ -1172,7 +1170,7 @@ class Parser : ParserCore, Recyclable
         if (access)
           if (access.args) throw args.t.error( "Unexpected expression." )
           access.args = args
-          return 0
+          return
         endIf
       endBlock
 
@@ -1180,23 +1178,23 @@ class Parser : ParserCore, Recyclable
         if (access)
           if (not access.args) access.args = args
           else throw args.t.error( "Unexpected expression." )
-          return 0
+          return
         endIf
       endBlock
 
       throw args.t.error( "Unexpected expression." )
 
-    method use_Introspection->Int
+    method use_Introspection
       Scanner.uses_Introspection = true
       Scanner.uses_autoinclude = true
-      return 0
+      return
 
-    method use_Table->Int
+    method use_Table
       Scanner.uses_Table = true
       Scanner.uses_autoinclude = true
-      return 0
+      return
 
-    method use_Value->Int
+    method use_Value
       use_Variant
       if (not _filepath.contains("StandardMacros.rogue"))
         Program.print_warning(
@@ -1204,15 +1202,15 @@ class Parser : ParserCore, Recyclable
           "Type name 'Value' is deprecated and will be removed in the future. Use 'Variant' instead."
         )
       endIf
-      return 0
+      return
 
-    method use_Variant->Int
+    method use_Variant
       Scanner.uses_Variant = true
       Scanner.uses_autoinclude = true
-      return 0
+      return
 
-    method write_this_library_id->Int
+    method write_this_library_id
       processed_tokens.add( _cur_t.cloned(TokenType.IDENTIFIER, Program.current_library.name) )
-      return 0
+      return
 
 endClass
