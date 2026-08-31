@@ -25,7 +25,7 @@ class Table : Component
 
     method init_object
       is_pointer_passthrough = true
-      use_natural_size
+      fixed_size = NaturalSize
 
     method add( entity:Entity ) [override]
       # Adds the entity to the first empty cell. If there are
@@ -725,7 +725,7 @@ class TableCell( index:XY ) : Component
   METHODS
     method init_object
       is_pointer_passthrough = true
-      use_natural_size
+      fixed_size = NaturalSize
 
     method set_span( @span )
       if local table = parent->(as Table)

@@ -771,10 +771,14 @@ class Component : Entity
       layout_size = fixed_size.value
       size = fixed_size->XY
 
-    method set_fixed_size( natural_size:NaturalXY )
-      @natural_size = natural_size->XY
+    method set_fixed_size( natural_size:NaturalSize )
       sizing_mode = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
-      size = @natural_size
+      if local new_size = natural_size.value
+        @natural_size = new_size
+        size = new_size
+      else
+        size = @natural_size
+      endIf
 
     method set_dynamic_size( proportional_size:ProportionalXY, size_reference=null:Component )
       layout_size = proportional_size->XY
@@ -800,10 +804,14 @@ class Component : Entity
       sizing_mode.y = SizingMode.FIXED_POINTS
       size.y = h->Real
 
-    method set_fixed_height( h:Natural )
-      natural_size.y = h->Real
+    method set_fixed_height( h:NaturalHeight )
       sizing_mode.y = SizingMode.NATURAL
-      size.y = h->Real
+      if local new_height = h.value
+        natural_size.y = new_height
+        size.y = new_height
+      else
+        size.y = natural_size.y
+      endIf
 
     method set_dynamic_height( h:Proportional, size_reference=null:Component )
       layout_size.y = h->Real
@@ -829,10 +837,14 @@ class Component : Entity
       sizing_mode.x = SizingMode.FIXED_POINTS
       size.x = w->Real
 
-    method set_fixed_width( w:Natural )
-      natural_size.x = w->Real
+    method set_fixed_width( w:NaturalWidth )
       sizing_mode.x = SizingMode.NATURAL
-      size.x = w->Real
+      if local new_width = w
+        natural_size.x = new_width
+        size.x = new_width
+      else
+        size.x = natural_size.x
+      endIf
 
     method set_dynamic_width( w:Proportional, size_reference=null:Component )
       layout_size.x = w->Real
@@ -903,18 +915,6 @@ class Component : Entity
       resolve_content_layout_sizes( content_size )
       perform_content_layout
       end_layout( &only_content )
-
-    method use_natural_size
-      sizing_mode = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
-      size = natural_size
-
-    method use_natural_height
-      sizing_mode.y = SizingMode.NATURAL
-      size.y = natural_size.y
-
-    method use_natural_width
-      sizing_mode.x = SizingMode.NATURAL
-      size.x = natural_size.x
 
     method yield_pointer_focus_to( e:PointerEvent )->Logical
       return attributes.intangible or (e.is_press and not this.contains(e))

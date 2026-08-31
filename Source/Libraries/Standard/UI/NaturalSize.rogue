@@ -1,0 +1,16 @@
+library UI
+
+uses Geometry
+
+class NaturalSize( value=null:XY? ) [singleton compound]
+  GLOBAL METHODS
+    method create( x:Real, y:Real )->NaturalSize
+      return NaturalSize( XY(x,y) )
+endClass
+
+class NaturalWidth( value=null:Real? ) [singleton compound]
+endClass
+
+class NaturalHeight( value=null:Real? ) [singleton compound]
+endClass
+
