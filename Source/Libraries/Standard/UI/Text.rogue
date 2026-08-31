@@ -195,6 +195,15 @@ class Text : Component
     method shrink_text_to_fit_width
       scaling_mode.x = ScalingMode.SHRINK_TO_FIT
 
+    method shrink_to_fit
+      sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT_NATURAL_SIZE, SizingMode.ASPECT_FIT_NATURAL_SIZE )
+
+    method shrink_to_fit_height
+      sizing_mode.y = SizingMode.ASPECT_FIT_NATURAL_SIZE
+
+    method shrink_to_fit_width
+      sizing_mode.x = SizingMode.ASPECT_FIT_NATURAL_SIZE
+
     method split_h( split_position:Real, components:Component[], component_i:Int ) [override]
       local left, center, right : Text
 

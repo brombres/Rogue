@@ -9,3 +9,5 @@ class AspectRatio( value:XY ) [compound]
     method create( x:Real, y:Real )->AspectRatio
       return AspectRatio( XY(x,y) )
 endClass
+
+# Note: class NaturalAspectRatio is in NaturalSize.rogue

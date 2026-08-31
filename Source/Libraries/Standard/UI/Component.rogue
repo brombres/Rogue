@@ -162,15 +162,6 @@ class Component : Entity
     method anchor_bottom_right
       anchor = Anchor.BOTTOM_RIGHT
 
-    method aspect_fit
-      sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT_NATURAL_SIZE, SizingMode.ASPECT_FIT_NATURAL_SIZE )
-
-    method aspect_fit_height_to_natural_width
-      sizing_mode.y = SizingMode.ASPECT_FIT_NATURAL_SIZE
-
-    method aspect_fit_width_to_natural_height
-      sizing_mode.x = SizingMode.ASPECT_FIT_NATURAL_SIZE
-
     method can_split_from( next_component:Component )->Logical
       # Used by HFlow layout, overridden by Text
       return true
@@ -789,6 +780,9 @@ class Component : Entity
       @aspect_size = aspect_ratio.value
       sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT, SizingMode.ASPECT_FIT )
 
+    method set_dynamic_size( aspect_ratio:NaturalAspectRatio )
+      sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT_NATURAL_SIZE, SizingMode.ASPECT_FIT_NATURAL_SIZE )
+
     method set_dynamic_size( parameter_id:VariantEntryID )
       sizing_mode = SizingModeXY( SizingMode.PARAMETER_XY, SizingMode.PARAMETER_XY )
       layout_size = XY( parameter_id.value, parameter_id.value )
@@ -822,6 +816,9 @@ class Component : Entity
       @aspect_size = aspect_ratio.value
       sizing_mode.y = SizingMode.ASPECT_FIT
 
+    method set_dynamic_height( aspect_ratio:NaturalAspectRatio )
+      sizing_mode.y = SizingMode.ASPECT_FIT_NATURAL_SIZE
+
     method set_dynamic_height( parameter_id:VariantEntryID )
       sizing_mode.y = SizingMode.PARAMETER_REAL
       layout_size.y = parameter_id.value
@@ -854,6 +851,9 @@ class Component : Entity
     method set_dynamic_width( aspect_ratio:AspectRatio )
       @aspect_size = aspect_ratio.value
       sizing_mode.x = SizingMode.ASPECT_FIT
+
+    method set_dynamic_width( aspect_ratio:NaturalAspectRatio )
+      sizing_mode.x = SizingMode.ASPECT_FIT_NATURAL_SIZE
 
     method set_dynamic_width( parameter_id:VariantEntryID )
       sizing_mode.x = SizingMode.PARAMETER_REAL
