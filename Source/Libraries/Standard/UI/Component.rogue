@@ -19,8 +19,6 @@ class Component : Entity
     text_style        : TextStyle
     size_reference    : Component
 
-    debug:Logical #FIXME
-
   METHODS # Overrides
     method init
       noAction
