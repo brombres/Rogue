@@ -20,16 +20,20 @@ class Padding( value:Real, mode:SizingMode ) [compound]
 
   METHODS
     method resolved_value( available_size:Real )->Real
+      local result : Real
+
       which (mode)
         case PARAMETER_REAL
-          return value->Int->VariantEntryID->Real
+          result = value->Int->VariantEntryID->Real
         case PROPORTIONAL
-          return available_size * value
+          result = available_size * value
         case FIXED_POINTS
-          return value * UI.display_density
+          result = value * UI.display_density
         others
-          return value
+          result = value
       endWhich
+
+      if (UI.snap_to_pixel_coordinates) result .= floor
 endClass
 
 class Border : Component

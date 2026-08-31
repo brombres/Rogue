@@ -56,6 +56,7 @@ class Font
     method draw( text:String, bounds:Box, anchor=Anchor.CENTER:Anchor  )
       local text_size = measure( text )
       local position  = Box(text_size).positioned_within( bounds, anchor ).at( this.anchor.position )
+      if (UI.snap_to_pixel_coordinates) position .= floor
       draw( text, position )
 
     method draw( text:String, container:Component )

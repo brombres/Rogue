@@ -36,13 +36,15 @@ class HBox : Component
         endForEach
 
         local pos = XY.zero
-        pos.x = Box(XY(total_w,h)).positioned_within( content_bounds, anchor ).position.x
+        pos.x = snapped( Box(XY(total_w,h)).positioned_within( content_bounds, anchor ).position.x )
         forEach (component in components)
           component.perform_layout(
-            component.bounds.positioned_within(
-              Box(pos,component.size.x,size.y),
-              component.anchor
-            ).position
+            snapped(
+              component.bounds.positioned_within(
+                Box(pos,component.size.x,size.y),
+                component.anchor
+              ).position
+            )
           )
           pos.x += component.size.x + gap
         endForEach

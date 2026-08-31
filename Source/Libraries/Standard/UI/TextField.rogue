@@ -166,9 +166,9 @@ class TextField : Widget
       local text_bounds = Box( font.measure(value) )
       if (cursor and text_bounds.size.x > internal_bounds.size.x)
         local anchor = Anchor( XY(cursor.value->Real/value.count,0.5) )
-        text_bounds .= positioned_within( internal_bounds, anchor )
+        text_bounds .= snapped( positioned_within( internal_bounds, anchor ) )
       else
-        text_bounds .= positioned_within( internal_bounds, Anchor.LEFT )
+        text_bounds .= snapped( positioned_within( internal_bounds, Anchor.LEFT ) )
       endIf
       return text_bounds
 

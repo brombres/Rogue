@@ -19,6 +19,8 @@ class Component : Entity
     text_style        : TextStyle
     size_reference    : Component
 
+    debug:Logical #FIXME
+
   METHODS # Overrides
     method init
       noAction
@@ -525,9 +527,11 @@ class Component : Entity
       use components = WorkList<<Component>>
         collect_child_display_components( components )
         forEach (component in components)
-          local bounds = component.bounds.positioned_within(
-            content_bounds,
-            component.anchor
+          local bounds = snapped(
+            component.bounds.positioned_within(
+              content_bounds,
+              component.anchor,
+            )
           )
           component.perform_layout( bounds.position )
         endForEach
@@ -931,6 +935,19 @@ class Component : Entity
           endUse
         endTemporarily
       endIf
+
+  GLOBAL METHODS
+    method snapped( box:Box )->Box
+      if (UI.snap_to_pixel_coordinates) return box.floor
+      else                              return box
+
+    method snapped( value:Real )->Real
+      if (UI.snap_to_pixel_coordinates) return value.floor
+      else                              return value
+
+    method snapped( xy:XY )->XY
+      if (UI.snap_to_pixel_coordinates) return xy.floor
+      else                              return xy
 
 endClass
 

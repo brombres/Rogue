@@ -45,9 +45,11 @@ class TypedText : Text
 
       localize font
       local text_size = font.measure( value )
-      local revealed_bounds = Box(
-        Box(text_size).positioned_within( bounds, content_alignment ).position,
-        text_size
+      local revealed_bounds = snapped(
+        Box(
+          Box(text_size).positioned_within( bounds, content_alignment ).position,
+          text_size
+        )
       )
 
       use temp_value = StringPool

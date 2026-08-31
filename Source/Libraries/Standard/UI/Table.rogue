@@ -121,7 +121,7 @@ class Table : Component
           endIf
         endForEach
 
-        local pos = Box(XY(total_w,total_h)).positioned_within( content_bounds, anchor ).position
+        local pos = snapped( Box(XY(total_w,total_h)).positioned_within( content_bounds, anchor ).position )
         local start_x = pos.x
         local index = 0
         forEach (j in 0..<cells_high)

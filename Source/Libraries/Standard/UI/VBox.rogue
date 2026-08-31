@@ -39,13 +39,15 @@ class VBox : Component
         endForEach
 
         local pos = XY.zero
-        pos.y = Box(XY(w,total_h)).positioned_within( content_bounds, anchor ).position.y
+        pos.y = snapped( Box(XY(w,total_h)).positioned_within( content_bounds, anchor ).position.y )
         forEach (component in components)
           component.perform_layout(
-            component.bounds.positioned_within(
-              Box(pos,size.x,component.size.y),
-              component.anchor
-            ).position
+            snapped(
+              component.bounds.positioned_within(
+                Box(pos,size.x,component.size.y),
+                component.anchor
+              ).position
+            )
           )
           pos.y += component.size.y + gap
         endForEach
