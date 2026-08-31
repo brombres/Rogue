@@ -785,8 +785,8 @@ class Component : Entity
       sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL, SizingMode.PROPORTIONAL )
       if (size_reference) this.size_reference = size_reference
 
-    method set_dynamic_size( aspect_size:Aspect )
-      @aspect_size = aspect_size->XY
+    method set_dynamic_size( aspect_ratio:AspectRatio )
+      @aspect_size = aspect_ratio.value
       sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT, SizingMode.ASPECT_FIT )
 
     method set_dynamic_size( parameter_id:VariantEntryID )
@@ -818,8 +818,8 @@ class Component : Entity
       sizing_mode.y = SizingMode.PROPORTIONAL
       if (size_reference) this.size_reference = size_reference
 
-    method set_dynamic_height( aspect_size:Aspect )
-      @aspect_size = aspect_size->XY
+    method set_dynamic_height( aspect_ratio:AspectRatio )
+      @aspect_size = aspect_ratio.value
       sizing_mode.y = SizingMode.ASPECT_FIT
 
     method set_dynamic_height( parameter_id:VariantEntryID )
@@ -851,8 +851,8 @@ class Component : Entity
       sizing_mode.x = SizingMode.PROPORTIONAL
       if (size_reference) this.size_reference = size_reference
 
-    method set_dynamic_width( aspect_size:Aspect )
-      @aspect_size = aspect_size->XY
+    method set_dynamic_width( aspect_ratio:AspectRatio )
+      @aspect_size = aspect_ratio.value
       sizing_mode.x = SizingMode.ASPECT_FIT
 
     method set_dynamic_width( parameter_id:VariantEntryID )

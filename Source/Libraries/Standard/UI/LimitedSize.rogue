@@ -37,8 +37,8 @@ class LimitedSize : Component
       maximum_sizing_mode.y = SizingMode.PROPORTIONAL
       if (size_reference) @size_reference = size_reference
 
-    method set_maximum_height( aspect_size:Aspect )
-      @maximum_aspect_size = aspect_size->XY
+    method set_maximum_height( aspect_ratio:AspectRatio )
+      @maximum_aspect_size = aspect_ratio.value
       maximum_sizing_mode.y = SizingMode.ASPECT_FIT
 
     method set_maximum_size( size:XY )
@@ -54,8 +54,8 @@ class LimitedSize : Component
       maximum_sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL )
       if (size_reference) @size_reference = size_reference
 
-    method set_maximum_size( aspect_size:Aspect )
-      @maximum_aspect_size = aspect_size->XY
+    method set_maximum_size( aspect_ratio:AspectRatio )
+      @maximum_aspect_size = aspect_ratio.value
       maximum_sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT )
 
     method set_maximum_width( width:Real )
@@ -71,8 +71,8 @@ class LimitedSize : Component
       maximum_sizing_mode.x = SizingMode.PROPORTIONAL
       if (size_reference) @size_reference = size_reference
 
-    method set_maximum_width( aspect_size:Aspect )
-      @maximum_aspect_size = aspect_size->XY
+    method set_maximum_width( aspect_ratio:AspectRatio )
+      @maximum_aspect_size = aspect_ratio.value
       maximum_sizing_mode.x = SizingMode.ASPECT_FIT
 
     method set_minimum_height( height:Real )
@@ -88,8 +88,8 @@ class LimitedSize : Component
       minimum_sizing_mode.y = SizingMode.PROPORTIONAL
       if (size_reference) @size_reference = size_reference
 
-    method set_minimum_height( aspect_size:Aspect )
-      @minimum_aspect_size = aspect_size->XY
+    method set_minimum_height( aspect_ratio:AspectRatio )
+      @minimum_aspect_size = aspect_ratio.value
       minimum_sizing_mode.y = SizingMode.ASPECT_FIT
 
     method set_minimum_size( size:XY )
@@ -105,8 +105,8 @@ class LimitedSize : Component
       minimum_sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL )
       if (size_reference) @size_reference = size_reference
 
-    method set_minimum_size( aspect_size:Aspect )
-      @minimum_aspect_size = aspect_size->XY
+    method set_minimum_size( aspect_ratio:AspectRatio )
+      @minimum_aspect_size = aspect_ratio.value
       minimum_sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT )
 
     method set_minimum_width( width:Real )
@@ -122,8 +122,8 @@ class LimitedSize : Component
       minimum_sizing_mode.x = SizingMode.PROPORTIONAL
       if (size_reference) @size_reference = size_reference
 
-    method set_minimum_width( aspect_size:Aspect )
-      @minimum_aspect_size = aspect_size->XY
+    method set_minimum_width( aspect_ratio:AspectRatio )
+      @minimum_aspect_size = aspect_ratio.value
       minimum_sizing_mode.x = SizingMode.ASPECT_FIT
 
     method resolve_layout_size( available_size:XY, &limited )->XY [override]
@@ -168,7 +168,7 @@ class LimitedSize : Component
         case PROPORTIONAL: sz.y .= clamped_high( maximum_size.y * proportional_base.y )
       endWhich
 
-      # Aspect limits are applied after the other limits so they clamp
+      # Aspect ratio limits are applied after the other limits so they clamp
       # relative to the other axis's already-limited value.
       if (minimum_sizing_mode.x == SizingMode.ASPECT_FIT)
         sz.x .= clamped_low( (sz.y / (minimum_aspect_size.y || 1.0)) * minimum_aspect_size.x )
