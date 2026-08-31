@@ -44,15 +44,6 @@ class ComponentGroupProperties [aspect]
     method aspect_fit_width_to_natural_height
       (forEach in this).aspect_fit_width_to_natural_height
 
-    method expand_to_fill
-      (forEach in this).expand_to_fill
-
-    method expand_to_fill_height
-      (forEach in this).expand_to_fill_height
-
-    method expand_to_fill_width
-      (forEach in this).expand_to_fill_width
-
     method set_anchor( anchor:Anchor )
       (forEach in this).set_anchor( anchor )
 
@@ -74,6 +65,12 @@ class ComponentGroupProperties [aspect]
     method set_dynamic_size( aspect_ratio:AspectRatio )
       (forEach in this).set_dynamic_size( aspect_ratio )
 
+    method set_dynamic_size( size:ExpandToFill )
+      (forEach in this).set_dynamic_size( size )
+
+    method set_dynamic_size( size:ShrinkToFit )
+      (forEach in this).set_dynamic_size( size )
+
     method set_dynamic_size( parameter_id:VariantEntryID )
       (forEach in this).set_dynamic_size( parameter_id )
 
@@ -91,6 +88,12 @@ class ComponentGroupProperties [aspect]
 
     method set_dynamic_height( aspect_ratio:AspectRatio )
       (forEach in this).set_dynamic_height( aspect_ratio )
+
+    method set_dynamic_height( h:ExpandToFill )
+      (forEach in this).set_dynamic_height( h )
+
+    method set_dynamic_height( h:ShrinkToFit )
+      (forEach in this).set_dynamic_height( h )
 
     method set_dynamic_height( parameter_id:VariantEntryID )
       (forEach in this).set_dynamic_height( parameter_id )
@@ -110,6 +113,12 @@ class ComponentGroupProperties [aspect]
     method set_dynamic_width( aspect_ratio:AspectRatio )
       (forEach in this).set_dynamic_width( aspect_ratio )
 
+    method set_dynamic_width( w:ExpandToFill )
+      (forEach in this).set_dynamic_width( w )
+
+    method set_dynamic_width( w:ShrinkToFit )
+      (forEach in this).set_dynamic_width( w )
+
     method set_dynamic_width( parameter_id:VariantEntryID )
       (forEach in this).set_dynamic_width( parameter_id )
 
@@ -128,13 +137,13 @@ class ComponentGroupProperties [aspect]
     method set_weight( weight:Real )
       (forEach in this).set_weight( weight )
 
-    method shrink_to_fit
-      (forEach in this).shrink_to_fit
+    method set_dynamic_size( size:ShrinkToFit )
+      (forEach in this).dynamic_size = ShrinkToFit
 
-    method shrink_to_fit_height
-      (forEach in this).shrink_to_fit_height
+    method set_dynamic_height( h:ShrinkToFit )
+      (forEach in this).dynamic_height=ShrinkToFit
 
-    method shrink_to_fit_width
-      (forEach in this).shrink_to_fit_width
+    method set_dynamic_width( w:ShrinkToFit )
+      (forEach in this).dynamic_width=ShrinkToFit
 
 endClass

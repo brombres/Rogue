@@ -3,7 +3,7 @@ library UI
 class Label : Text
   METHODS
     method init_object
-      expand_to_fill
+      dynamic_size = ExpandToFill
       aspect_fit_text_to_height
       shrink_text_to_fit_width
 

@@ -6,7 +6,6 @@ uses Entity
 uses Geometry
 
 $include UI/AbsoluteLayout
-$include UI/AspectRatio
 $include UI/AspectRatioLayoutSwitcher
 $include UI/Border
 $include UI/Component
@@ -23,10 +22,7 @@ $include UI/HFlow
 $include UI/Label
 $include UI/LimitedSize
 $include UI/MetaComponent
-$include UI/NaturalSize
 $include UI/Overlay
-$include UI/PointSize
-$include UI/ProportionalSize
 $include UI/ScalingMode
 $include UI/SizingMode
 $include UI/Spacer

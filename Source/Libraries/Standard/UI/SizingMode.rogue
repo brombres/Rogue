@@ -18,3 +18,67 @@ class SizingModeXY( x:SizingMode, y:SizingMode ) [compound]
     method create( mode:SizingMode )->SizingModeXY
       return SizingModeXY( mode, mode )
 endClass
+
+class ExpandToFill  [singleton compound];
+class ShrinkToFit   [singleton compound];
+
+class AspectRatio( value:XY ) [compound]
+  # An aspect ratio for ASPECT_FIT sizing. The dimension it is assigned to
+  # is scaled to maintain this ratio relative to the other dimension.
+  GLOBAL METHODS
+    method create( x:Real, y:Real )->AspectRatio
+      return AspectRatio( XY(x,y) )
+endClass
+
+class NaturalAspectRatio [singleton compound];
+
+class NaturalSize( value=null:XY? ) [singleton compound]
+  GLOBAL METHODS
+    method create( x:Real, y:Real )->NaturalSize
+      return NaturalSize( XY(x,y) )
+endClass
+
+class NaturalWidth( value=null:Real? ) [singleton compound];
+class NaturalHeight( value=null:Real? ) [singleton compound];
+
+class Points( value:Real ) [compound]
+  # A size in logical (density-independent) coordinates. Automatically
+  # multiplied by UI.display_density when converted to pixels.
+endClass
+
+class PointSize( value:XY ) [compound]
+  # A size in logical (density-independent) coordinates. Automatically
+  # multiplied by UI.display_density when converted to pixels.
+  GLOBAL METHODS
+    method create( x:Real, y:Real )->PointSize
+      return PointSize( XY(x,y) )
+endClass
+
+class PointWidth( value:Real ) [compound]
+  # A width in logical (density-independent) coordinates. Automatically
+  # multiplied by UI.display_density when converted to pixels.
+endClass
+
+class PointHeight( value:Real ) [compound]
+  # A height in logical (density-independent) coordinates. Automatically
+  # multiplied by UI.display_density when converted to pixels.
+endClass
+
+class ProportionalSize( value:XY ) [compound]
+  # A size expressed as a fraction of the available size or of a
+  # reference component's size.
+  GLOBAL METHODS
+    method create( x:Real, y:Real )->ProportionalSize
+      return ProportionalSize( XY(x,y) )
+endClass
+
+class ProportionalWidth( value:Real ) [compound]
+  # A width expressed as a fraction of the available size or of a
+  # reference component's size.
+endClass
+
+class ProportionalHeight( value:Real ) [compound]
+  # A height expressed as a fraction of the available size or of a
+  # reference component's size.
+endClass
+

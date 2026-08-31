@@ -337,15 +337,6 @@ class Component : Entity
         (forEach in components).end_layout
       endUse
 
-    method expand_to_fill
-      sizing_mode = SizingModeXY( SizingMode.EXPAND_TO_FILL, SizingMode.EXPAND_TO_FILL )
-
-    method expand_to_fill_height
-      sizing_mode.y = SizingMode.EXPAND_TO_FILL
-
-    method expand_to_fill_width
-      sizing_mode.x = SizingMode.EXPAND_TO_FILL
-
     method find( e:PointerEvent )->Entity
       return find( e.position )
 
@@ -780,6 +771,12 @@ class Component : Entity
       @aspect_size = aspect_ratio.value
       sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT, SizingMode.ASPECT_FIT )
 
+    method set_dynamic_size( size:ExpandToFill )
+      sizing_mode = SizingModeXY( SizingMode.EXPAND_TO_FILL, SizingMode.EXPAND_TO_FILL )
+
+    method set_dynamic_size( size:ShrinkToFit )
+      sizing_mode = SizingModeXY( SizingMode.SHRINK_TO_FIT, SizingMode.SHRINK_TO_FIT )
+
     method set_dynamic_size( aspect_ratio:NaturalAspectRatio )
       sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT_NATURAL_SIZE, SizingMode.ASPECT_FIT_NATURAL_SIZE )
 
@@ -816,6 +813,12 @@ class Component : Entity
       @aspect_size = aspect_ratio.value
       sizing_mode.y = SizingMode.ASPECT_FIT
 
+    method set_dynamic_height( h:ExpandToFill )
+      sizing_mode.y = SizingMode.EXPAND_TO_FILL
+
+    method set_dynamic_height( h:ShrinkToFit )
+      sizing_mode.y = SizingMode.SHRINK_TO_FIT
+
     method set_dynamic_height( aspect_ratio:NaturalAspectRatio )
       sizing_mode.y = SizingMode.ASPECT_FIT_NATURAL_SIZE
 
@@ -851,6 +854,12 @@ class Component : Entity
     method set_dynamic_width( aspect_ratio:AspectRatio )
       @aspect_size = aspect_ratio.value
       sizing_mode.x = SizingMode.ASPECT_FIT
+
+    method set_dynamic_width( w:ExpandToFill )
+      sizing_mode.x = SizingMode.EXPAND_TO_FILL
+
+    method set_dynamic_width( w:ShrinkToFit )
+      sizing_mode.x = SizingMode.SHRINK_TO_FIT
 
     method set_dynamic_width( aspect_ratio:NaturalAspectRatio )
       sizing_mode.x = SizingMode.ASPECT_FIT_NATURAL_SIZE
@@ -892,15 +901,6 @@ class Component : Entity
 
     method set_size( @size )
       noAction
-
-    method shrink_to_fit
-      sizing_mode = SizingModeXY( SizingMode.SHRINK_TO_FIT, SizingMode.SHRINK_TO_FIT )
-
-    method shrink_to_fit_height
-      sizing_mode.y = SizingMode.SHRINK_TO_FIT
-
-    method shrink_to_fit_width
-      sizing_mode.x = SizingMode.SHRINK_TO_FIT
 
     method split_h( split_position:Real, components:Component[], component_i:Int )
       noAction

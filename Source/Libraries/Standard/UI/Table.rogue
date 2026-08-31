@@ -593,9 +593,6 @@ endClass
 
 class TableColumns : TableColumn[]
   METHODS
-    method expand_to_fill_width
-      (forEach in this).expand_to_fill_width
-
     method fixed_width( w:Real )
       (forEach in this).fixed_width( w )
 
@@ -605,8 +602,11 @@ class TableColumns : TableColumn[]
     method set_width( w:Real )
       (forEach in this).set_width( w )
 
-    method shrink_to_fit_width
-      (forEach in this).shrink_to_fit_width
+    method set_dynamic_height( h:ExpandToFill )
+      (forEach in this).dynamic_height = h
+
+    method set_dynamic_width( w:ShrinkToFit )
+      (forEach in this).dynamic_width = w
 
 endClass
 
@@ -627,9 +627,6 @@ class TableColumn( table:Table, i:Int )
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, i, 0, i, table.cells_high-1 )
 
-    method expand_to_fill_width
-      sizing_mode  = SizingMode.EXPAND_TO_FILL
-
     method fixed_width( w:Real )
       sizing_mode  = SizingMode.FIXED_PIXELS
       layout_width = w
@@ -648,8 +645,11 @@ class TableColumn( table:Table, i:Int )
         endIf
       endForEach
 
-    method shrink_to_fit_width
-      sizing_mode  = SizingMode.SHRINK_TO_FIT
+    method set_dynamic_width( w:ExpandToFill )
+      sizing_mode = SizingMode.EXPAND_TO_FILL
+
+    method set_dynamic_width( w:ShrinkToFit )
+      sizing_mode = SizingMode.SHRINK_TO_FIT
 
 endClass
 
@@ -658,8 +658,8 @@ class TableRows : TableRow[]
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, 0, j, table.cells_wide-1, j )
 
-    method expand_to_fill_height
-      (forEach in this).expand_to_fill_height
+    method set_dynamic_height( h:ExpandToFill )
+      (forEach in this).dynamic_height = h
 
     method fixed_height( h:Real )
       (forEach in this).fixed_height( h )
@@ -670,8 +670,12 @@ class TableRows : TableRow[]
     method set_height( height:Real )
       (forEach in this).set_height( height )
 
-    method shrink_to_fit_height
-      (forEach in this).shrink_to_fit_height
+    method set_dynamic_height( h:ExpandToFill )
+      (forEach in this).dynamic_height = h
+
+    method set_dynamic_height( h:ShrinkToFit )
+      (forEach in this).dynamic_height = h
+
 endClass
 
 class TableRow( table:Table, j:Int )
@@ -691,9 +695,6 @@ class TableRow( table:Table, j:Int )
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, 0, j, table.cells_wide-1, j )
 
-    method expand_to_fill_height
-      sizing_mode  = SizingMode.EXPAND_TO_FILL
-
     method fixed_height( h:Real )
       sizing_mode  = SizingMode.FIXED_PIXELS
       layout_height = h
@@ -712,7 +713,10 @@ class TableRow( table:Table, j:Int )
         endIf
       endForEach
 
-    method shrink_to_fit_height
+    method set_dynamic_height( h:ExpandToFill )
+      sizing_mode  = SizingMode.EXPAND_TO_FILL
+
+    method set_dynamic_height( h:ShrinkToFit )
       sizing_mode  = SizingMode.SHRINK_TO_FIT
 
 endClass
