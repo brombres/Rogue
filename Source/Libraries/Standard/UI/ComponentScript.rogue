@@ -2,6 +2,9 @@ library UI
 
 class ComponentScript : EntityScript
   METHODS
+    method component->Component
+      return entity->(as Component)
+
     method on_begin_layout
 
     method on_end_layout

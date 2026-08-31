@@ -36,12 +36,13 @@ class ScriptIterator<<$RequiredScriptType>>( cur:$RequiredScriptType, position:I
       ++position
       local result = cur
 
-      while (cur)
-        local next = cur.concurrent_state
+      local next = cur.concurrent_state
+      while (next)
         if local desired_type = next->(as $RequiredScriptType)
           cur = desired_type
           return result
         endIf
+        next = next.concurrent_state
       endWhile
 
       cur = null
