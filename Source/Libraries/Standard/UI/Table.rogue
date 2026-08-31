@@ -599,7 +599,7 @@ class TableColumns : TableColumn[]
     method fixed_width( w:Real )
       (forEach in this).fixed_width( w )
 
-    method fixed_width( w:Points )
+    method fixed_width( w:PointWidth )
       (forEach in this).fixed_width( w )
 
     method set_width( w:Real )
@@ -635,7 +635,7 @@ class TableColumn( table:Table, i:Int )
       layout_width = w
       width        = w
 
-    method fixed_width( w:Points )
+    method fixed_width( w:PointWidth )
       sizing_mode  = SizingMode.FIXED_POINTS
       layout_width = w.value
       width        = w->Real
@@ -664,7 +664,7 @@ class TableRows : TableRow[]
     method fixed_height( h:Real )
       (forEach in this).fixed_height( h )
 
-    method fixed_height( h:Points )
+    method fixed_height( h:PointHeight )
       (forEach in this).fixed_height( h )
 
     method set_height( height:Real )
@@ -699,7 +699,7 @@ class TableRow( table:Table, j:Int )
       layout_height = h
       height        = h
 
-    method fixed_height( h:Points )
+    method fixed_height( h:PointHeight )
       sizing_mode  = SizingMode.FIXED_POINTS
       layout_height = h.value
       height        = h->Real

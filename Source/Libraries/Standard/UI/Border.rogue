@@ -9,8 +9,11 @@ class Padding( value:Real, mode:SizingMode ) [compound]
     method create( parameter_id:VariantEntryID )->Padding
       return Padding( parameter_id.value, SizingMode.PARAMETER_REAL )
 
-    method create( points:Points )->Padding
-      return Padding( points.value, SizingMode.FIXED_POINTS )
+    method create( width:PointWidth )->Padding
+      return Padding( width.value, SizingMode.FIXED_POINTS )
+
+    method create( height:PointHeight )->Padding
+      return Padding( height.value, SizingMode.FIXED_POINTS )
 
     method fixed( value:Real )->Padding
       return Padding( value, SizingMode.FIXED_PIXELS )

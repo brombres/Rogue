@@ -33,7 +33,7 @@ class Component : Entity
     method init( fixed_size:XY )
       this.fixed_size = fixed_size
 
-    method init( fixed_size:PointsXY )
+    method init( fixed_size:PointSize )
       this.fixed_size = fixed_size
 
     method init( size_parameter_id:VariantEntryID )
@@ -766,7 +766,7 @@ class Component : Entity
       sizing_mode = SizingModeXY( SizingMode.FIXED_PIXELS, SizingMode.FIXED_PIXELS )
       size = layout_size
 
-    method set_fixed_size( fixed_size:PointsXY )
+    method set_fixed_size( fixed_size:PointSize )
       sizing_mode = SizingModeXY( SizingMode.FIXED_POINTS, SizingMode.FIXED_POINTS )
       layout_size = fixed_size.value
       size = fixed_size->XY
@@ -799,7 +799,7 @@ class Component : Entity
       sizing_mode.y = SizingMode.FIXED_PIXELS
       size.y = h
 
-    method set_fixed_height( h:Points )
+    method set_fixed_height( h:PointHeight )
       layout_size.y = h.value
       sizing_mode.y = SizingMode.FIXED_POINTS
       size.y = h->Real
@@ -832,7 +832,7 @@ class Component : Entity
       sizing_mode.x = SizingMode.FIXED_PIXELS
       size.x = w
 
-    method set_fixed_width( w:Points )
+    method set_fixed_width( w:PointWidth )
       layout_size.x = w.value
       sizing_mode.x = SizingMode.FIXED_POINTS
       size.x = w->Real

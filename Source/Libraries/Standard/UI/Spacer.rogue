@@ -5,7 +5,7 @@ class Spacer : Component
     method create( fixed_size:XY )->Spacer
       return Spacer().[ fixed_size=fixed_size ]
 
-    method create( fixed_point_size:PointsXY )->Spacer
+    method create( fixed_point_size:PointSize )->Spacer
       return Spacer().[ fixed_size=fixed_point_size ]
 
     method create( size_parameter_id:VariantEntryID )->Spacer
@@ -17,7 +17,7 @@ class Spacer : Component
     method horizontal( width:Real )->Spacer
       return Spacer().[ fixed_width=width, fixed_height=0 ]
 
-    method horizontal( width:Points )->Spacer
+    method horizontal( width:PointWidth )->Spacer
       return Spacer().[ fixed_width=width, fixed_height=0 ]
 
     method horizontal( width_parameter_id:VariantEntryID )->Spacer
@@ -29,7 +29,7 @@ class Spacer : Component
     method vertical( height:Real )->Spacer
       return Spacer().[ fixed_width=0, fixed_height=height ]
 
-    method vertical( height:Points )->Spacer
+    method vertical( height:PointHeight )->Spacer
       return Spacer().[ fixed_width=0, fixed_height=height ]
 
     method vertical( height_parameter_id:VariantEntryID )->Spacer

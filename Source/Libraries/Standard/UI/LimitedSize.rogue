@@ -28,7 +28,7 @@ class LimitedSize : Component
       @maximum_size = XY( maximum_size.x, height )
       maximum_sizing_mode.y = SizingMode.FIXED_PIXELS
 
-    method set_maximum_height( height:Points )
+    method set_maximum_height( height:PointHeight )
       @maximum_size = XY( maximum_size.x, height.value )
       maximum_sizing_mode.y = SizingMode.FIXED_POINTS
 
@@ -45,7 +45,7 @@ class LimitedSize : Component
       @maximum_size = size
       maximum_sizing_mode = SizingModeXY( SizingMode.FIXED_PIXELS )
 
-    method set_maximum_size( size:PointsXY )
+    method set_maximum_size( size:PointSize )
       @maximum_size = size.value
       maximum_sizing_mode = SizingModeXY( SizingMode.FIXED_POINTS )
 
@@ -62,7 +62,7 @@ class LimitedSize : Component
       @maximum_size = XY( width, maximum_size.y )
       maximum_sizing_mode.x = SizingMode.FIXED_PIXELS
 
-    method set_maximum_width( width:Points )
+    method set_maximum_width( width:PointWidth )
       @maximum_size = XY( width.value, maximum_size.y )
       maximum_sizing_mode.x = SizingMode.FIXED_POINTS
 
@@ -79,7 +79,7 @@ class LimitedSize : Component
       @minimum_size = XY( minimum_size.x, height )
       minimum_sizing_mode.y = SizingMode.FIXED_PIXELS
 
-    method set_minimum_height( height:Points )
+    method set_minimum_height( height:PointHeight )
       @minimum_size = XY( minimum_size.x, height.value )
       minimum_sizing_mode.y = SizingMode.FIXED_POINTS
 
@@ -96,7 +96,7 @@ class LimitedSize : Component
       @minimum_size = size
       minimum_sizing_mode = SizingModeXY( SizingMode.FIXED_PIXELS )
 
-    method set_minimum_size( size:PointsXY )
+    method set_minimum_size( size:PointSize )
       @minimum_size = size.value
       minimum_sizing_mode = SizingModeXY( SizingMode.FIXED_POINTS )
 
@@ -113,7 +113,7 @@ class LimitedSize : Component
       @minimum_size = XY( width, minimum_size.y )
       minimum_sizing_mode.x = SizingMode.FIXED_PIXELS
 
-    method set_minimum_width( width:Points )
+    method set_minimum_width( width:PointWidth )
       @minimum_size = XY( width.value, minimum_size.y )
       minimum_sizing_mode.x = SizingMode.FIXED_POINTS
 

@@ -1,0 +1,31 @@
+library UI
+
+uses Geometry
+
+class PointSize( value:XY ) [compound]
+  # A size in logical (density-independent) coordinates. Automatically
+  # multiplied by UI.display_density when converted to pixels.
+  GLOBAL METHODS
+    method create( x:Real, y:Real )->PointSize
+      return PointSize( XY(x,y) )
+
+  METHODS
+    method to->XY
+      return value * UI.display_density
+endClass
+
+class PointWidth( value:Real ) [compound]
+  # A width in logical (density-independent) coordinates. Automatically
+  # multiplied by UI.display_density when converted to pixels.
+  METHODS
+    method to->Real
+      return value * UI.display_density
+endClass
+
+class PointHeight( value:Real ) [compound]
+  # A height in logical (density-independent) coordinates. Automatically
+  # multiplied by UI.display_density when converted to pixels.
+  METHODS
+    method to->Real
+      return value * UI.display_density
+endClass
