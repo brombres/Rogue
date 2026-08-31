@@ -32,7 +32,7 @@ class LimitedSize : Component
       @maximum_size = XY( maximum_size.x, height.value )
       maximum_sizing_mode.y = SizingMode.FIXED_POINTS
 
-    method set_maximum_height( height:Proportional, size_reference=null:Component )
+    method set_maximum_height( height:ProportionalHeight, size_reference=null:Component )
       @maximum_size = XY( maximum_size.x, height.value )
       maximum_sizing_mode.y = SizingMode.PROPORTIONAL
       if (size_reference) @size_reference = size_reference
@@ -49,7 +49,7 @@ class LimitedSize : Component
       @maximum_size = size.value
       maximum_sizing_mode = SizingModeXY( SizingMode.FIXED_POINTS )
 
-    method set_maximum_size( size:ProportionalXY, size_reference=null:Component )
+    method set_maximum_size( size:ProportionalSize, size_reference=null:Component )
       @maximum_size = size.value
       maximum_sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL )
       if (size_reference) @size_reference = size_reference
@@ -66,7 +66,7 @@ class LimitedSize : Component
       @maximum_size = XY( width.value, maximum_size.y )
       maximum_sizing_mode.x = SizingMode.FIXED_POINTS
 
-    method set_maximum_width( width:Proportional, size_reference=null:Component )
+    method set_maximum_width( width:ProportionalWidth, size_reference=null:Component )
       @maximum_size = XY( width.value, maximum_size.y )
       maximum_sizing_mode.x = SizingMode.PROPORTIONAL
       if (size_reference) @size_reference = size_reference
@@ -83,7 +83,7 @@ class LimitedSize : Component
       @minimum_size = XY( minimum_size.x, height.value )
       minimum_sizing_mode.y = SizingMode.FIXED_POINTS
 
-    method set_minimum_height( height:Proportional, size_reference=null:Component )
+    method set_minimum_height( height:ProportionalHeight, size_reference=null:Component )
       @minimum_size = XY( minimum_size.x, height.value )
       minimum_sizing_mode.y = SizingMode.PROPORTIONAL
       if (size_reference) @size_reference = size_reference
@@ -100,7 +100,7 @@ class LimitedSize : Component
       @minimum_size = size.value
       minimum_sizing_mode = SizingModeXY( SizingMode.FIXED_POINTS )
 
-    method set_minimum_size( size:ProportionalXY, size_reference=null:Component )
+    method set_minimum_size( size:ProportionalSize, size_reference=null:Component )
       @minimum_size = size.value
       minimum_sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL )
       if (size_reference) @size_reference = size_reference
@@ -117,7 +117,7 @@ class LimitedSize : Component
       @minimum_size = XY( width.value, minimum_size.y )
       minimum_sizing_mode.x = SizingMode.FIXED_POINTS
 
-    method set_minimum_width( width:Proportional, size_reference=null:Component )
+    method set_minimum_width( width:ProportionalWidth, size_reference=null:Component )
       @minimum_size = XY( width.value, minimum_size.y )
       minimum_sizing_mode.x = SizingMode.PROPORTIONAL
       if (size_reference) @size_reference = size_reference

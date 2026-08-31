@@ -15,7 +15,7 @@ class Overlay : Component
 
     method match_bounds( position_reference:Component )
       set_proportional_offset( position_reference, XY(0,0) )
-      set_dynamic_size( ProportionalXY(1,1), position_reference )
+      set_dynamic_size( ProportionalSize(1,1), position_reference )
 
     method perform_layout( inline_position:XY ) [override]
       if (position_reference)

@@ -68,7 +68,7 @@ class ComponentGroupProperties [aspect]
     method set_fixed_size( natural_size:NaturalSize )
       (forEach in this).set_fixed_size( natural_size )
 
-    method set_dynamic_size( proportional_size:ProportionalXY, size_reference=null:Component )
+    method set_dynamic_size( proportional_size:ProportionalSize, size_reference=null:Component )
       (forEach in this).set_dynamic_size( proportional_size, size_reference )
 
     method set_dynamic_size( aspect_size:Aspect )
@@ -86,7 +86,7 @@ class ComponentGroupProperties [aspect]
     method set_fixed_height( h:NaturalHeight )
       (forEach in this).set_fixed_height( h )
 
-    method set_dynamic_height( h:Proportional, size_reference=null:Component )
+    method set_dynamic_height( h:ProportionalHeight, size_reference=null:Component )
       (forEach in this).set_dynamic_height( h, size_reference )
 
     method set_dynamic_height( aspect_size:Aspect )
@@ -104,7 +104,7 @@ class ComponentGroupProperties [aspect]
     method set_fixed_width( w:NaturalWidth )
       (forEach in this).set_fixed_width( w )
 
-    method set_dynamic_width( w:Proportional, size_reference=null:Component )
+    method set_dynamic_width( w:ProportionalWidth, size_reference=null:Component )
       (forEach in this).set_dynamic_width( w, size_reference )
 
     method set_dynamic_width( aspect_size:Aspect )

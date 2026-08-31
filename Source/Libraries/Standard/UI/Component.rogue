@@ -780,8 +780,8 @@ class Component : Entity
         size = @natural_size
       endIf
 
-    method set_dynamic_size( proportional_size:ProportionalXY, size_reference=null:Component )
-      layout_size = proportional_size->XY
+    method set_dynamic_size( proportional_size:ProportionalSize, size_reference=null:Component )
+      layout_size = proportional_size.value
       sizing_mode = SizingModeXY( SizingMode.PROPORTIONAL, SizingMode.PROPORTIONAL )
       if (size_reference) this.size_reference = size_reference
 
@@ -813,8 +813,8 @@ class Component : Entity
         size.y = natural_size.y
       endIf
 
-    method set_dynamic_height( h:Proportional, size_reference=null:Component )
-      layout_size.y = h->Real
+    method set_dynamic_height( h:ProportionalHeight, size_reference=null:Component )
+      layout_size.y = h.value
       sizing_mode.y = SizingMode.PROPORTIONAL
       if (size_reference) this.size_reference = size_reference
 
@@ -846,8 +846,8 @@ class Component : Entity
         size.x = natural_size.x
       endIf
 
-    method set_dynamic_width( w:Proportional, size_reference=null:Component )
-      layout_size.x = w->Real
+    method set_dynamic_width( w:ProportionalWidth, size_reference=null:Component )
+      layout_size.x = w.value
       sizing_mode.x = SizingMode.PROPORTIONAL
       if (size_reference) this.size_reference = size_reference
 

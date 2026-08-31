@@ -26,7 +26,7 @@ $include UI/MetaComponent
 $include UI/NaturalSize
 $include UI/Overlay
 $include UI/PointSize
-$include UI/Proportional
+$include UI/ProportionalSize
 $include UI/ScalingMode
 $include UI/SizingMode
 $include UI/Spacer
