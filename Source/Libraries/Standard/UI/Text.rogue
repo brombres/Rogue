@@ -23,16 +23,6 @@ class Text : Component
         builder.clear
       endIf
 
-    method aspect_fit_text
-      aspect_fit_text_to_width
-      aspect_fit_text_to_height
-
-    method aspect_fit_text_to_height
-      scaling_mode.y = ScalingMode.ASPECT_FIT
-
-    method aspect_fit_text_to_width
-      scaling_mode.x = ScalingMode.ASPECT_FIT
-
     method can_split->Logical
       # If true, Text can be internally split for word-wrapping purposes.
       return true
@@ -185,16 +175,6 @@ class Text : Component
         set_value( buffer )
       endUse
 
-    method shrink_text_to_fit_size
-      shrink_text_to_fit_width
-      shrink_text_to_fit_height
-
-    method shrink_text_to_fit_height
-      scaling_mode.y = ScalingMode.SHRINK_TO_FIT
-
-    method shrink_text_to_fit_width
-      scaling_mode.x = ScalingMode.SHRINK_TO_FIT
-
     method set_dynamic_size( size:ShrinkToFit )
       sizing_mode = SizingModeXY( SizingMode.ASPECT_FIT_NATURAL_SIZE, SizingMode.ASPECT_FIT_NATURAL_SIZE )
 
@@ -203,6 +183,36 @@ class Text : Component
 
     method set_dynamic_width( w:ShrinkToFit )
       sizing_mode.x = SizingMode.ASPECT_FIT_NATURAL_SIZE
+
+    method set_text_size_scaling( setting:AspectFit )
+      scaling_mode.x = ScalingMode.ASPECT_FIT
+      scaling_mode.y = ScalingMode.ASPECT_FIT
+
+    method set_text_width_scaling( setting:AspectFit )
+      scaling_mode.x = ScalingMode.ASPECT_FIT
+
+    method set_text_height_scaling( setting:AspectFit )
+      scaling_mode.y = ScalingMode.ASPECT_FIT
+
+    method set_text_size_scaling( setting:ShrinkToFit )
+      scaling_mode.x = ScalingMode.SHRINK_TO_FIT
+      scaling_mode.y = ScalingMode.SHRINK_TO_FIT
+
+    method set_text_width_scaling( setting:ShrinkToFit )
+      scaling_mode.x = ScalingMode.SHRINK_TO_FIT
+
+    method set_text_height_scaling( setting:ShrinkToFit )
+      scaling_mode.y = ScalingMode.SHRINK_TO_FIT
+
+    method set_text_size_scaling( setting:Unscaled )
+      scaling_mode.x = ScalingMode.NONE
+      scaling_mode.y = ScalingMode.NONE
+
+    method set_text_width_scaling( setting:Unscaled )
+      scaling_mode.x = ScalingMode.NONE
+
+    method set_text_height_scaling( setting:Unscaled )
+      scaling_mode.y = ScalingMode.NONE
 
     method split_h( split_position:Real, components:Component[], component_i:Int ) [override]
       local left, center, right : Text
@@ -228,17 +238,6 @@ class Text : Component
 
     method to->String
       return description
-
-    method use_unscaled_text
-      use_unscaled_text_width
-      use_unscaled_text_height
-
-    method use_unscaled_text_height
-      scaling_mode.y = ScalingMode.NONE
-
-    method use_unscaled_text_width
-      scaling_mode.x = ScalingMode.NONE
-      sizing_mode.x = SizingMode.FIXED_PIXELS
 
     method .process_and_store( text:String, &fragment )
       block

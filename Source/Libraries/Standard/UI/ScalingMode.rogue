@@ -9,3 +9,6 @@ endEnum
 
 class ScalingModeXY( x:ScalingMode, y:ScalingMode ) [compound]
 endClass
+
+class Unscaled  [singleton compound];
+class AspectFit [singleton compound];

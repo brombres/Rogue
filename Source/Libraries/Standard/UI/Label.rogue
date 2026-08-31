@@ -4,8 +4,8 @@ class Label : Text
   METHODS
     method init_object
       dynamic_size = ExpandToFill
-      aspect_fit_text_to_height
-      shrink_text_to_fit_width
+      text_height_scaling = AspectFit
+      text_width_scaling = ShrinkToFit
 
     method can_split->Logical
       return false
