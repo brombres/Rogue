@@ -769,7 +769,7 @@ class Component : Entity
     method set_fixed_size( fixed_size:PointSize )
       sizing_mode = SizingModeXY( SizingMode.FIXED_POINTS, SizingMode.FIXED_POINTS )
       layout_size = fixed_size.value
-      size = fixed_size->XY
+      size = fixed_size.value
 
     method set_fixed_size( natural_size:NaturalSize )
       sizing_mode = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
@@ -802,7 +802,7 @@ class Component : Entity
     method set_fixed_height( h:PointHeight )
       layout_size.y = h.value
       sizing_mode.y = SizingMode.FIXED_POINTS
-      size.y = h->Real
+      size.y = h.value
 
     method set_fixed_height( h:NaturalHeight )
       sizing_mode.y = SizingMode.NATURAL
@@ -835,7 +835,7 @@ class Component : Entity
     method set_fixed_width( w:PointWidth )
       layout_size.x = w.value
       sizing_mode.x = SizingMode.FIXED_POINTS
-      size.x = w->Real
+      size.x = w.value
 
     method set_fixed_width( w:NaturalWidth )
       sizing_mode.x = SizingMode.NATURAL

@@ -638,7 +638,7 @@ class TableColumn( table:Table, i:Int )
     method fixed_width( w:PointWidth )
       sizing_mode  = SizingMode.FIXED_POINTS
       layout_width = w.value
-      width        = w->Real
+      width        = w.value
 
     method set_width( @width )
       localize i
@@ -702,7 +702,7 @@ class TableRow( table:Table, j:Int )
     method fixed_height( h:PointHeight )
       sizing_mode  = SizingMode.FIXED_POINTS
       layout_height = h.value
-      height        = h->Real
+      height        = h.value
 
     method set_height( @height )
       localize j
