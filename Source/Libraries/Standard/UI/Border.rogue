@@ -34,6 +34,7 @@ class Padding( value:Real, mode:SizingMode ) [compound]
       endWhich
 
       if (UI.snap_to_pixel_coordinates) result .= floor
+      return result
 endClass
 
 class Border : Component
