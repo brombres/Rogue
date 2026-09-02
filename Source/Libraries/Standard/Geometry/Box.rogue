@@ -141,19 +141,19 @@ class Box( position:XY, size:XY ) [essential compound]
       if (pos.y < position.y or pos.y >= position.y + size.y) return false
       return true
 
-    method cropped( delta:Real )->Box
+    method cropped( delta:Real )->Box [preferred]
       return Box( XY(x+delta,y+delta), XY(width-(delta+delta),height-(delta+delta)) )
 
-    method cropped( left:Real, top:Real, right:Real, bottom:Real )->Box
+    method cropped( left=0:Real, top=0:Real, right=0:Real, bottom=0:Real )->Box
       return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)).or_larger(XY.zero) )
 
     method cropped( size:XY )->Box
       return cropped( size.x, size.y, size.x, size.y )
 
-    method expanded( delta:Real )->Box
+    method expanded( delta:Real )->Box [preferred]
       return cropped( -delta )
 
-    method expanded( left:Real, top:Real, right:Real, bottom:Real )->Box
+    method expanded( left=0:Real, top=0:Real, right=0:Real, bottom=0:Real )->Box
       return cropped( -left, -top, -right, -bottom )
 
     method floor->Box
