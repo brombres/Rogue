@@ -12,3 +12,4 @@ endClass
 
 class Unscaled  [singleton compound];
 class AspectFit [singleton compound];
+

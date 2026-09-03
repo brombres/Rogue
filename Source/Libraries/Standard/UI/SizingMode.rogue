@@ -82,3 +82,110 @@ class ProportionalHeight( value:Real ) [compound]
   # reference component's size.
 endClass
 
+
+class HorizontalSizingMode( mode:SizingMode, real=null:Real?, xy=null:XY?, app_data_id=null:VariantEntryID? ) [compound]
+  GLOBAL METHODS
+    method create( pixels:Real )->HorizontalSizingMode
+      return HorizontalSizingMode( SizingMode.FIXED_PIXELS, &real=pixels )
+
+    method create( points:PointWidth )->HorizontalSizingMode
+      return HorizontalSizingMode( SizingMode.FIXED_POINTS, &real=points.value )
+
+    method create( expand:ExpandToFill )->HorizontalSizingMode
+      return HorizontalSizingMode( SizingMode.EXPAND_TO_FILL )
+
+    method create( ratio:AspectRatio )->HorizontalSizingMode
+      return HorizontalSizingMode( SizingMode.ASPECT_FIT, &xy=ratio.value )
+
+    method create( ratio:NaturalAspectRatio )->HorizontalSizingMode
+      return HorizontalSizingMode( SizingMode.ASPECT_FIT_NATURAL_SIZE )
+
+    method create( p:ProportionalWidth )->HorizontalSizingMode
+      return HorizontalSizingMode( SizingMode.PROPORTIONAL, &real=p.value )
+
+    method create( shrink:ShrinkToFit )->HorizontalSizingMode
+      return HorizontalSizingMode( SizingMode.SHRINK_TO_FIT )
+
+    method create( natural:NaturalWidth )->HorizontalSizingMode
+      return HorizontalSizingMode( SizingMode.NATURAL )
+
+    method create( parameter:VariantEntryID )->HorizontalSizingMode
+      return HorizontalSizingMode( SizingMode.PARAMETER_REAL, &app_data_id=parameter )
+
+  METHODS
+    method apply( component:Component )
+      which (mode)
+        case SizingMode.EXPAND_TO_FILL
+          component.dynamic_width = ExpandToFill
+        case SizingMode.ASPECT_FIT
+          component.dynamic_width = AspectRatio( xy.value )
+        case SizingMode.ASPECT_FIT_NATURAL_SIZE
+          component.dynamic_width = NaturalAspectRatio
+        case SizingMode.PROPORTIONAL
+          component.dynamic_width = ProportionalWidth( real.value )
+        case SizingMode.SHRINK_TO_FIT
+          component.dynamic_width = ShrinkToFit
+        case SizingMode.FIXED_PIXELS
+          component.fixed_width = real.value
+        case SizingMode.FIXED_POINTS
+          component.fixed_width = PointWidth( real.value )
+        case SizingMode.NATURAL
+          component.fixed_width = NaturalWidth( real )
+        case SizingMode.PARAMETER_REAL
+          component.dynamic_width = app_data_id.value
+      endWhich
+endClass
+
+class VerticalSizingMode( mode:SizingMode, real=null:Real?, xy=null:XY?, app_data_id=null:VariantEntryID? ) [compound]
+  GLOBAL METHODS
+    method create( pixels:Real )->VerticalSizingMode
+      return VerticalSizingMode( SizingMode.FIXED_PIXELS, &real=pixels )
+
+    method create( points:PointHeight )->VerticalSizingMode
+      return VerticalSizingMode( SizingMode.FIXED_POINTS, &real=points.value )
+
+    method create( expand:ExpandToFill )->VerticalSizingMode
+      return VerticalSizingMode( SizingMode.EXPAND_TO_FILL )
+
+    method create( ratio:AspectRatio )->VerticalSizingMode
+      return VerticalSizingMode( SizingMode.ASPECT_FIT, &xy=ratio.value )
+
+    method create( ratio:NaturalAspectRatio )->VerticalSizingMode
+      return VerticalSizingMode( SizingMode.ASPECT_FIT_NATURAL_SIZE )
+
+    method create( p:ProportionalHeight )->VerticalSizingMode
+      return VerticalSizingMode( SizingMode.PROPORTIONAL, &real=p.value )
+
+    method create( shrink:ShrinkToFit )->VerticalSizingMode
+      return VerticalSizingMode( SizingMode.SHRINK_TO_FIT )
+
+    method create( natural:NaturalHeight )->VerticalSizingMode
+      return VerticalSizingMode( SizingMode.NATURAL )
+
+    method create( parameter:VariantEntryID )->VerticalSizingMode
+      return VerticalSizingMode( SizingMode.PARAMETER_REAL, &app_data_id=parameter )
+
+  METHODS
+    method apply( component:Component )
+      which (mode)
+        case SizingMode.EXPAND_TO_FILL
+          component.dynamic_height = ExpandToFill
+        case SizingMode.ASPECT_FIT
+          component.dynamic_height = AspectRatio( xy.value )
+        case SizingMode.ASPECT_FIT_NATURAL_SIZE
+          component.dynamic_height = NaturalAspectRatio
+        case SizingMode.PROPORTIONAL
+          component.dynamic_height = ProportionalHeight( real.value )
+        case SizingMode.SHRINK_TO_FIT
+          component.dynamic_height = ShrinkToFit
+        case SizingMode.FIXED_PIXELS
+          component.fixed_height = real.value
+        case SizingMode.FIXED_POINTS
+          component.fixed_height = PointHeight( real.value )
+        case SizingMode.NATURAL
+          component.fixed_height = NaturalHeight( real )
+        case SizingMode.PARAMETER_REAL
+          component.dynamic_height = app_data_id.value
+      endWhich
+endClass
+

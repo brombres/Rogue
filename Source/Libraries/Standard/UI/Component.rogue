@@ -39,6 +39,16 @@ class Component : Entity
     method init( size_parameter_id:VariantEntryID )
       dynamic_size = size_parameter_id
 
+    method init( width:HorizontalSizingMode, height=ExpandToFill:VerticalSizingMode,
+        child=null:Component, size_reference=null:Component )
+      width.apply( this )
+      height.apply( this )
+      if (size_reference) @size_reference = size_reference
+      if (child)
+        clear
+        add( child )
+      endIf
+
     method on( e:KeyEvent )
       noAction
 
@@ -839,7 +849,7 @@ class Component : Entity
 
     method set_fixed_width( w:NaturalWidth )
       sizing_mode.x = SizingMode.NATURAL
-      if local new_width = w
+      if local new_width = w.value
         natural_size.x = new_width
         size.x = new_width
       else
