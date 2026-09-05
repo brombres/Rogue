@@ -137,13 +137,4 @@ class ComponentGroupProperties [aspect]
     method set_weight( weight:Real )
       (forEach in this).set_weight( weight )
 
-    method set_dynamic_size( size:ShrinkToFit )
-      (forEach in this).dynamic_size = ShrinkToFit
-
-    method set_dynamic_height( h:ShrinkToFit )
-      (forEach in this).dynamic_height=ShrinkToFit
-
-    method set_dynamic_width( w:ShrinkToFit )
-      (forEach in this).dynamic_width=ShrinkToFit
-
 endClass

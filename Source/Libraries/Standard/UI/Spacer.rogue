@@ -60,7 +60,4 @@ class Spacer : Component
       return Spacer().[ dynamic_height = height_parameter_id ]
 
   METHODS
-    method init
-      prior.init
-
 endClass

@@ -25,7 +25,6 @@ class Table : Component
 
     method init_object
       is_pointer_passthrough = true
-      fixed_size = NaturalSize
 
     method add( entity:Entity ) [override]
       # Adds the entity to the first empty cell. If there are
@@ -280,11 +279,28 @@ class Table : Component
       endUse
 
     method .resolve_column_widths( unresolved_columns:TableColumn[], available_size:XY )
+      local remaining_size = available_size
+
       # Resolve shrink-to-fit columns by assigning them their min size
+      local snap = UI.snap_to_pixel_coordinates
       forEach (column in writer=unresolved_columns.rewriter)
         if (column.sizing_mode == SizingMode.SHRINK_TO_FIT)
-          column.width = (column.min_width * column.weight).floor
-          available_size.x -= column.width
+          column.width = (column.min_width * column.weight)
+          if (snap) column.width .= floor
+          remaining_size.x -= column.width
+        else
+          writer.write( column )
+        endIf
+      endForEach
+
+      if (unresolved_columns.is_empty) return
+
+      # Resolve proportional column widths relative to the total available width
+      forEach (column in writer=unresolved_columns.rewriter)
+        if (column.sizing_mode == SizingMode.PROPORTIONAL)
+          column.width = (column.layout_width * available_size.x)
+          if (snap) column.width .= floor
+          remaining_size.x -= column.width
         else
           writer.write( column )
         endIf
@@ -304,10 +320,8 @@ class Table : Component
           necessary_width += (natural_width * column.weight).floor
         endForEach
 
-        available_size.x .= or_smaller( necessary_width )
+        remaining_size.x .= or_smaller( necessary_width )
       endIf
-
-      local snap = UI.snap_to_pixel_coordinates
 
       # Resolve column widths of columns with min-width too wide for proportional share.
       block
@@ -315,7 +329,7 @@ class Table : Component
         while (repeat)
           repeat = false
 
-          local total_width = available_size.x
+          local total_width = remaining_size.x
           local total_weight = 0.0
           total_weight += (forEach in unresolved_columns).weight
 
@@ -327,7 +341,7 @@ class Table : Component
               if (column.min_width > w)
                 # Component's min width exceeds its share. Assign it its min width
                 # and remove it from the list by not rewriting it.
-                available_size.x -= column.min_width
+                remaining_size.x -= column.min_width
                 column.width = column.min_width
                 repeat = true
               else
@@ -342,7 +356,7 @@ class Table : Component
 
       # Resolve column widths of remaining weighted columns.
       block
-        local total_width = available_size.x
+        local total_width = remaining_size.x
         local total_weight = 0.0
         total_weight += (forEach in unresolved_columns).weight
 
@@ -350,7 +364,7 @@ class Table : Component
           if (column.weight)
             local w = total_width * column.weight / total_weight
             if (snap) w .= floor
-            available_size.x -= w
+            remaining_size.x -= w
             column.width = w
           else
             writer.write( column )
@@ -363,23 +377,39 @@ class Table : Component
         local remaining_count = unresolved_columns.count
 
         forEach (column in unresolved_columns)
-          local w = available_size.x
+          local w = remaining_size.x
           if (remaining_count > 1)
             w /= remaining_count
             if (snap) w .= floor
           endIf
-          available_size.x -= w
+          remaining_size.x -= w
           column.width = w
           --remaining_count
         endForEach
       endBlock
 
     method .resolve_row_heights( unresolved_rows:TableRow[], available_size:XY )
+      local snap = UI.snap_to_pixel_coordinates
+      local remaining_size = available_size
+
       # Resolve shrink-to-fit rows by assigning them their min size
       forEach (row in writer=unresolved_rows.rewriter)
         if (row.sizing_mode == SizingMode.SHRINK_TO_FIT)
           row.height = (row.min_height * row.weight).floor
-          available_size.y -= row.height
+          remaining_size.y -= row.height
+        else
+          writer.write( row )
+        endIf
+      endForEach
+
+      if (unresolved_rows.is_empty) return
+
+      # Resolve proportional row heights relative to the total available height
+      forEach (row in writer=unresolved_rows.rewriter)
+        if (row.sizing_mode == SizingMode.PROPORTIONAL)
+          row.height = (row.layout_height * available_size.y)
+          if (snap) row.height .= floor
+          remaining_size.y -= row.height
         else
           writer.write( row )
         endIf
@@ -399,10 +429,8 @@ class Table : Component
           necessary_height += (natural_height * row.weight).floor
         endForEach
 
-        available_size.y .= or_smaller( necessary_height )
+        remaining_size.y .= or_smaller( necessary_height )
       endIf
-
-      local snap = UI.snap_to_pixel_coordinates
 
       # Resolve row heights of rows with min-height too tall for proportional share.
       block
@@ -410,7 +438,7 @@ class Table : Component
         while (repeat)
           repeat = false
 
-          local total_height = available_size.y
+          local total_height = remaining_size.y
           local total_weight = 0.0
           total_weight += (forEach in unresolved_rows).weight
 
@@ -422,7 +450,7 @@ class Table : Component
               if (row.min_height > h)
                 # Component's min height exceeds its share. Assign it its min height
                 # and remove it from the list by not rewriting it.
-                available_size.y -= row.min_height
+                remaining_size.y -= row.min_height
                 row.height = row.min_height
                 repeat = true
               else
@@ -437,7 +465,7 @@ class Table : Component
 
       # Resolve row heights of remaining weighted rows.
       block
-        local total_height = available_size.y
+        local total_height = remaining_size.y
         local total_weight = 0.0
         total_weight += (forEach in unresolved_rows).weight
 
@@ -445,7 +473,7 @@ class Table : Component
           if (row.weight)
             local h = total_height * row.weight / total_weight
             if (snap) h .= floor
-            available_size.y -= h
+            remaining_size.y -= h
             row.height = h
           else
             writer.write( row )
@@ -458,12 +486,12 @@ class Table : Component
         local remaining_count = unresolved_rows.count
 
         forEach (row in unresolved_rows)
-          local h = available_size.y
+          local h = remaining_size.y
           if (remaining_count > 1)
             h /= remaining_count
             if (snap) h .= floor
           endIf
-          available_size.y -= h
+          remaining_size.y -= h
           row.height = h
           --remaining_count
         endForEach
@@ -473,17 +501,23 @@ class Table : Component
       # All child cells have their own size set or assigned; have them recursively
       # determine their child sizes.
       forEach (cell in .cells)
-        cell.resolve_layout_size( .spanned_size(cell) )
+        local spanned_size = .spanned_size( cell )
+        cell.fixed_size = spanned_size
+        cell.resolve_layout_size( spanned_size )
         cell.resolve_content_layout_sizes
       endForEach
 
     method .spanned_size( cell:TableCell )->XY
-      if (cell.span == XY(1,1)) return cell.size
+      if (cell.span == XY(1,1))
+        return cell.size
+      endIf
+
       local sz = (cell.span-XY(1,1)) * gap
       forEach (j in 0..<cell.span.y)
         forEach (i in 0..<cell.span.x)
           if local part = this.cell( cell.index.x+i, cell.index.y+j )
-            sz += part.size
+            sz.x += part.size.x
+            if (i == 0) sz.y += part.size.y
           endIf
         endForEach
       endForEach
@@ -602,8 +636,8 @@ class TableColumns : TableColumn[]
     method set_width( w:Real )
       (forEach in this).set_width( w )
 
-    method set_dynamic_height( h:ExpandToFill )
-      (forEach in this).dynamic_height = h
+    method set_dynamic_width( w:ProportionalWidth )
+      (forEach in this).set_dynamic_width( w )
 
     method set_dynamic_width( w:ShrinkToFit )
       (forEach in this).dynamic_width = w
@@ -651,6 +685,10 @@ class TableColumn( table:Table, i:Int )
     method set_dynamic_width( w:ShrinkToFit )
       sizing_mode = SizingMode.SHRINK_TO_FIT
 
+    method set_dynamic_width( w:ProportionalWidth )
+      sizing_mode = SizingMode.PROPORTIONAL
+      layout_width = w.value
+
 endClass
 
 class TableRows : TableRow[]
@@ -658,23 +696,23 @@ class TableRows : TableRow[]
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, 0, j, table.cells_wide-1, j )
 
-    method set_dynamic_height( h:ExpandToFill )
-      (forEach in this).dynamic_height = h
-
     method fixed_height( h:Real )
       (forEach in this).fixed_height( h )
 
     method fixed_height( h:PointHeight )
       (forEach in this).fixed_height( h )
 
-    method set_height( height:Real )
-      (forEach in this).set_height( height )
-
     method set_dynamic_height( h:ExpandToFill )
       (forEach in this).dynamic_height = h
 
     method set_dynamic_height( h:ShrinkToFit )
       (forEach in this).dynamic_height = h
+
+    method set_dynamic_height( h:ProportionalHeight )
+      (forEach in this).dynamic_height = h
+
+    method set_height( height:Real )
+      (forEach in this).set_height( height )
 
 endClass
 
@@ -716,6 +754,10 @@ class TableRow( table:Table, j:Int )
     method set_dynamic_height( h:ExpandToFill )
       sizing_mode  = SizingMode.EXPAND_TO_FILL
 
+    method set_dynamic_height( h:ProportionalHeight )
+      sizing_mode   = SizingMode.PROPORTIONAL
+      layout_height = h.value
+
     method set_dynamic_height( h:ShrinkToFit )
       sizing_mode  = SizingMode.SHRINK_TO_FIT
 
@@ -729,7 +771,6 @@ class TableCell( index:XY ) : Component
   METHODS
     method init_object
       is_pointer_passthrough = true
-      fixed_size = NaturalSize
 
     method set_span( @span )
       if local table = parent->(as Table)
