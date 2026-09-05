@@ -43,6 +43,7 @@ class UI : Component [singleton]
     shared_focus       = Focus()
     display_density_fn = () => 1.0          : Function->Real
     display_size_fn    = () => Console.size : Function->XY
+    default_snap_to_pixel_coordinates = true
 
   PROPERTIES
     default_font   : Font
@@ -54,7 +55,7 @@ class UI : Component [singleton]
     needs_layout   = true
     needs_redraw   = true
 
-    snap_to_pixel_coordinates = true
+    snap_to_pixel_coordinates = default_snap_to_pixel_coordinates : Logical
 
     find_handler   : Function(GlobalID,Variant)->Variant
 
