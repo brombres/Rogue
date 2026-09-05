@@ -8,6 +8,7 @@ uses Geometry
 $include UI/AbsoluteLayout
 $include UI/AspectRatioLayoutSwitcher
 $include UI/Border
+$include UI/ColorBG
 $include UI/Component
 $include UI/ComponentScript
 $include UI/ComponentGroupProperties

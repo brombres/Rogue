@@ -1,0 +1,13 @@
+library UI
+
+class ColorBG : Component
+  # Useful primarily for visual debugging.
+  PROPERTIES
+    color : Color
+
+  METHODS
+    method init( color=Random.color )
+
+    method on_draw [override]
+      display_bounds.draw( color )
+endClass
