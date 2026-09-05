@@ -124,21 +124,20 @@ class Table : Component
         local start_x = pos.x
         local index = 0
         forEach (j in 0..<cells_high)
-          local row_h = 0.0
           forEach (i in 0..<cells_wide)
             local cell = .cells[index]
-            if (i == 0) row_h = cell.size.y
+
             if (cell.is_obscured)
               cell.hide
             else
               cell.show
               cell.perform_layout( pos )
-              pos.x += cell.size.x + gap.x
             endIf
+            pos.x += column(i).width + gap.x
             ++index
           endForEach
           pos.x = start_x
-          pos.y += row_h + gap.y
+          pos.y += row(j).height + gap.y
         endForEach
 
       endUse
@@ -513,14 +512,19 @@ class Table : Component
       endIf
 
       local sz = (cell.span-XY(1,1)) * gap
-      forEach (j in 0..<cell.span.y)
-        forEach (i in 0..<cell.span.x)
-          if local part = this.cell( cell.index.x+i, cell.index.y+j )
-            sz.x += part.size.x
-            if (i == 0) sz.y += part.size.y
-          endIf
-        endForEach
+
+      forEach (i in 0..<cell.span.x)
+        if local part = this.cell( cell.index.x+i, cell.index.y )
+          sz.x += part.size.x
+        endIf
       endForEach
+
+      forEach (j in 0..<cell.span.y)
+        if local part = this.cell( cell.index.x, cell.index.y+j )
+          sz.y += part.size.y
+        endIf
+      endForEach
+
       return sz
 
     method .determine_row_minmax_height( row:TableRow, available_size:XY )
