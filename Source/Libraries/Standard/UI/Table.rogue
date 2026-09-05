@@ -82,9 +82,11 @@ class Table : Component
       column.max_width = column_max_w
 
     method get( i:Int, j:Int )->Component
-      local cell = cell( i, j )
-      if (cell) return cell.first_content_component
-      else      return null
+      if local cell = cell( i, j )
+        return cell.first_content_component
+      else
+        return null
+      endIf
 
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
       local sz = gap * XY(cells_wide-1,cells_high-1)
@@ -563,8 +565,7 @@ class Table : Component
       return rows[j]
 
     method set( index:XY, component:Component )
-      local cell = cell( index.x, index.y )
-      if (cell)
+      if local cell = cell( index.x, index.y )
         cell.deactivate
         cell.clear
         cell.add( component )
