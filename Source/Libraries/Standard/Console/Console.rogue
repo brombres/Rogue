@@ -199,6 +199,8 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     method write( value:String )
       native @|#if defined(%NS%ROGUE_TARGET_ANDROID)
               |  __android_log_print( ANDROID_LOG_INFO, "%Ns%Rogue", "%s", $value->data->as_utf8 );
+              |#elif defined(%NS%ROGUE_TARGET_WEB)
+              |  %Ns%Rogue_web_write( (char*)$value->data->as_utf8, $value->data->count, STDOUT_FILENO );
               |#else
               |  #if defined(%NS%ROGUE_TARGET_IOS)
               |    os_log( OS_LOG_DEFAULT, "%s", $value->data->as_utf8 );
@@ -280,6 +282,11 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       |#endif
       |
       |void %Ns%Rogue_fwrite( const char* utf8, %Ns%RogueInt byte_count, int out );
+      |
+      |#if defined(%NS%ROGUE_TARGET_WEB)
+      |  #include <emscripten/console.h>
+      |  void %Ns%Rogue_web_write( const char* utf8, %Ns%RogueInt byte_count, int out );
+      |#endif
 
     nativeCode
       @|void %Ns%Rogue_fwrite( const char* utf8, %Ns%RogueInt byte_count, int out )
@@ -296,6 +303,42 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
        |  }
        |  #endif
        |}
+       |
+       |#if defined(%NS%ROGUE_TARGET_WEB)
+       |// The browser console is line-oriented, so output is buffered per stream
+       |// until a newline arrives and each completed line is then handed to
+       |// emscripten's JS out()/err() (Module.print/printErr). That is the same
+       |// hook emrun (linked with --emrun) intercepts to echo output to the
+       |// terminal, whereas raw write() syscalls are not reliably forwarded.
+       |void %Ns%Rogue_web_write( const char* utf8, %Ns%RogueInt byte_count, int out )
+       |{
+       |  static char*        buffers[2]    = { 0, 0 };
+       |  static %Ns%RogueInt counts[2]     = { 0, 0 };
+       |  static %Ns%RogueInt capacities[2] = { 0, 0 };
+       |
+       |  int stream = (out == STDERR_FILENO) ? 1 : 0;
+       |  while (byte_count--)
+       |  {
+       |    char ch = *(utf8++);
+       |    if (ch == '\n')
+       |    {
+       |      const char* line = buffers[stream] ? buffers[stream] : "";
+       |      if (stream) emscripten_errn( line, (size_t)counts[stream] );
+       |      else        emscripten_outn( line, (size_t)counts[stream] );
+       |      counts[stream] = 0;
+       |    }
+       |    else
+       |    {
+       |      if (counts[stream] == capacities[stream])
+       |      {
+       |        capacities[stream] = capacities[stream] ? capacities[stream]*2 : 1024;
+       |        buffers[stream] = (char*) realloc( buffers[stream], (size_t)capacities[stream] );
+       |      }
+       |      buffers[stream][ counts[stream]++ ] = ch;
+       |    }
+       |  }
+       |}
+       |#endif
 
 endClass
 
