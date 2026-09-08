@@ -1318,6 +1318,10 @@ class Bitmap
        |    int r = (((argb>>16) & 255) * 255 + (a>>1)) / a;
        |    int g = (((argb>>8) & 255) * 255 + (a>>1)) / a;
        |    int b = ((argb & 255) * 255 + (a>>1)) / a;
+       |    // Clamp in case a component exceeds its alpha (e.g. from filtering).
+       |    if (r > 255) r = 255;
+       |    if (g > 255) g = 255;
+       |    if (b > 255) b = 255;
        |    *data = (a<<24) | (r<<16) | (g<<8) | b;
        |  }
        |}
