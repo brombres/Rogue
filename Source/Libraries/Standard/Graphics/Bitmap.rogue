@@ -179,6 +179,7 @@ class Bitmap
 
     method cloned->Bitmap
       local result = Bitmap( size, pixels.cloned )
+      result.is_premultiplied_alpha = is_premultiplied_alpha
       return result
 
     method add_rows( rows:Int, color=0:Color )
