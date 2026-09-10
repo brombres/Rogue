@@ -29,10 +29,13 @@ class ConsoleUIFont : Font [singleton]
       }#
 
     method draw( text:Text )
-      local color = text.color
-      local bg_color = text.bg_color
-      if (color)    ConsoleUICanvas.style.fg( color.value )
-      if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
+      local color, bg_color : Color?
+      if local text_style = text.text_style
+        color = text_style.color
+        bg_color = text_style.color
+        if (color)    ConsoleUICanvas.style.fg( color.value )
+        if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
+      endIf
 
       draw( text.value, text.display_position )
 
@@ -56,7 +59,7 @@ class ConsoleUIFont : Font [singleton]
     method height->Real
       return 1
 
-    method measure( ch:Character )->XY
+    method measure( ch:Character )->XY [override]
       which (ch)
         case '\n': return XY(0,1)
         case '\t': return XY(2,1)
