@@ -632,10 +632,10 @@ endClass
 
 class TableColumns : TableColumn[]
   METHODS
-    method fixed_width( w:Real )
+    method set_fixed_width( w:Real )
       (forEach in this).fixed_width( w )
 
-    method fixed_width( w:PointWidth )
+    method set_fixed_width( w:PointWidth )
       (forEach in this).fixed_width( w )
 
     method set_width( w:Real )
@@ -666,12 +666,12 @@ class TableColumn( table:Table, i:Int )
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, i, 0, i, table.cells_high-1 )
 
-    method fixed_width( w:Real )
+    method set_fixed_width( w:Real )
       sizing_mode  = SizingMode.FIXED_PIXELS
       layout_width = w
       width        = w
 
-    method fixed_width( w:PointWidth )
+    method set_fixed_width( w:PointWidth )
       sizing_mode  = SizingMode.FIXED_POINTS
       layout_width = w.value
       width        = w.value
@@ -701,10 +701,10 @@ class TableRows : TableRow[]
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, 0, j, table.cells_wide-1, j )
 
-    method fixed_height( h:Real )
+    method set_fixed_height( h:Real )
       (forEach in this).fixed_height( h )
 
-    method fixed_height( h:PointHeight )
+    method set_fixed_height( h:PointHeight )
       (forEach in this).fixed_height( h )
 
     method set_dynamic_height( h:ExpandToFill )
@@ -738,12 +738,12 @@ class TableRow( table:Table, j:Int )
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, 0, j, table.cells_wide-1, j )
 
-    method fixed_height( h:Real )
+    method set_fixed_height( h:Real )
       sizing_mode  = SizingMode.FIXED_PIXELS
       layout_height = h
       height        = h
 
-    method fixed_height( h:PointHeight )
+    method set_fixed_height( h:PointHeight )
       sizing_mode  = SizingMode.FIXED_POINTS
       layout_height = h.value
       height        = h.value
