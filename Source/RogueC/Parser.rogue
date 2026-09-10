@@ -37,7 +37,7 @@ class Parser : ParserCore, Recyclable
     method init( filepath:String, content:String )
       prior.init( filepath, content )
 
-    method init( scanner:Scanner )
+    method init( scanner:Tokenizer )
       prior.init( scanner )
 
     method init( _tokens:Token[] )
@@ -1185,13 +1185,13 @@ class Parser : ParserCore, Recyclable
       throw args.t.error( "Unexpected expression." )
 
     method use_Introspection
-      Scanner.uses_Introspection = true
-      Scanner.uses_autoinclude = true
+      Tokenizer.uses_Introspection = true
+      Tokenizer.uses_autoinclude = true
       return
 
     method use_Table
-      Scanner.uses_Table = true
-      Scanner.uses_autoinclude = true
+      Tokenizer.uses_Table = true
+      Tokenizer.uses_autoinclude = true
       return
 
     method use_Value
@@ -1205,8 +1205,8 @@ class Parser : ParserCore, Recyclable
       return
 
     method use_Variant
-      Scanner.uses_Variant = true
-      Scanner.uses_autoinclude = true
+      Tokenizer.uses_Variant = true
+      Tokenizer.uses_autoinclude = true
       return
 
     method write_this_library_id

@@ -821,7 +821,7 @@ class Type : Cmd
 
       localize scoped_name
 
-      use scanner = RecyclePool<<Scanner>>
+      use scanner = RecyclePool<<Tokenizer>>
         scanner.init( scoped_name, scoped_name )
         @name_tokens = scanner.tokenize
         @name_tokens.remove_last  # EOL

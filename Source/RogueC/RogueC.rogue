@@ -47,7 +47,7 @@ $include Program
 $include PropertyOrganizer
 $include Resolver
 $include ResolveUsedElements
-$include Scanner
+$include Tokenizer
 $include ScopeVisitor
 $include Template
 $include TransformInlineForEach
@@ -145,8 +145,8 @@ class RogueC
 
       local api_includes = command//options//api.contains(true)
       if (api_includes)
-        Scanner.uses_Introspection = true
-        Scanner.uses_autoinclude = true
+        Tokenizer.uses_Introspection = true
+        Tokenizer.uses_autoinclude = true
       endIf
 
       local libraries_folder = File( File( System.executable_filepath ).folder )
@@ -229,18 +229,18 @@ class RogueC
       #if ($defined(DEBUG)) Analytics.display
 
     method check_autoincludes
-      while (Scanner.uses_autoinclude)
+      while (Tokenizer.uses_autoinclude)
         local t = Program.t
-        Scanner.uses_autoinclude = false
-        if (Scanner.uses_DateTime) Program.include( t, "Standard/DateTime" ); Scanner.uses_DateTime = false
-        if (Scanner.uses_File)     Program.include( t, "Standard/FileIO" ); Scanner.uses_File = false
-        if (Scanner.uses_Introspection) Program.include( t, "Standard/Introspection" ); Scanner.uses_Introspection = false
-        if (Scanner.uses_Process)  Program.include( t, "Standard/Core/Process" ); Scanner.uses_Process = false
-        if (Scanner.uses_Promise)  Program.include( t, "Standard/Core/Promise" ); Scanner.uses_Promise = false
-        if (Scanner.uses_Scanner)  Program.include( t, "Standard/IO/Scanner" ); Scanner.uses_Scanner = false
-        if (Scanner.uses_Set)      Program.include( t, "Standard/Collection/Set" ); Scanner.uses_Set = false
-        if (Scanner.uses_Table)    Program.include( t, "Standard/Collection/Table" ); Scanner.uses_Table = false
-        if (Scanner.uses_Variant)    Program.include( t, "Standard/Core/Variant" ); Scanner.uses_Variant = false
+        Tokenizer.uses_autoinclude = false
+        if (Tokenizer.uses_DateTime) Program.include( t, "Standard/DateTime" ); Tokenizer.uses_DateTime = false
+        if (Tokenizer.uses_File)     Program.include( t, "Standard/FileIO" ); Tokenizer.uses_File = false
+        if (Tokenizer.uses_Introspection) Program.include( t, "Standard/Introspection" ); Tokenizer.uses_Introspection = false
+        if (Tokenizer.uses_Process)  Program.include( t, "Standard/Core/Process" ); Tokenizer.uses_Process = false
+        if (Tokenizer.uses_Promise)  Program.include( t, "Standard/Core/Promise" ); Tokenizer.uses_Promise = false
+        if (Tokenizer.uses_Tokenizer)  Program.include( t, "Standard/IO/Scanner" ); Tokenizer.uses_Tokenizer = false
+        if (Tokenizer.uses_Set)      Program.include( t, "Standard/Collection/Set" ); Tokenizer.uses_Set = false
+        if (Tokenizer.uses_Table)    Program.include( t, "Standard/Collection/Table" ); Tokenizer.uses_Table = false
+        if (Tokenizer.uses_Variant)    Program.include( t, "Standard/Core/Variant" ); Tokenizer.uses_Variant = false
       endWhile
 
     method parse_args( args:String[] )->Variant
@@ -282,7 +282,7 @@ class RogueC
             local key   = def.before_first(':')
             local value = def.after_first(':')
             if (value == "") value = "true"
-            local tokens = Scanner( "Command Line Option", value ).tokenize
+            local tokens = Tokenizer( "Command Line Option", value ).tokenize
             tokens.remove_last  # EOL
             Program.definitions[key] = tokens
           endBlock

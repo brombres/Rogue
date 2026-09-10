@@ -318,7 +318,7 @@ class Program [singleton]
 
       temporarily current_library = Program.default_library
         Analytics.tokenization.start
-        local tokens = Scanner( File(filepath) ).tokenize
+        local tokens = Tokenizer( File(filepath) ).tokenize
         Analytics.tokenization.stop
 
         Analytics.preprocessing.start

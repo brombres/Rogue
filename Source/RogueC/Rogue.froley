@@ -242,7 +242,7 @@ SYMBOL_SHIFT_RIGHT_X_EQUALS  :>>>:=
 SYMBOL_ACCESS_EQUALS         .=
 
 ----------------------------------------------------------------------
-scanner
+tokenizer
 ----------------------------------------------------------------------
 - tokenize_another
   ch = peek
