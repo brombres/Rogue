@@ -46,6 +46,9 @@ class Font
     method draw( text:Text )
       draw( text.value, text.display_bounds, text.anchor )
 
+    method draw( text:String, position:XY )
+      noAction
+
     method draw( text:String, position:XY, anchor:Anchor )
       if (anchor != Anchor.TOP_LEFT)
         position = Box(position,measure(text)).relative_to( anchor ).position
@@ -60,8 +63,6 @@ class Font
 
     method draw( text:String, container:Component )
       draw( text, container.display_bounds, container.anchor )
-
-    #method height->Real                 [abstract]
 
     method measure( ch:Character )->XY
       return XY(0,0)

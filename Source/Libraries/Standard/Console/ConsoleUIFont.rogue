@@ -4,6 +4,13 @@ uses Graphics
 uses Console/ANSIColor
 uses Console/ANSIRGB
 
+class ConsoleUITextStyle : TextStyle [singleton]
+  METHODS
+    method draw( font:Font, text:Text, bounds:Box ) [override]
+      Epilog.println "font:$ text:$ bounds:$"(font,text,bounds)
+      #font.draw( text.value+"!!", bounds )
+endClass
+
 class ConsoleUIFont : Font [singleton]
   PROPERTIES
     #is_bold      : Logical
@@ -29,6 +36,14 @@ class ConsoleUIFont : Font [singleton]
       }#
 
     method draw( text:Text )
+      Epilog.println text.text_style
+      if local text_style = text.text_style
+        text_style.draw( text.font, text, text.display_bounds )
+      else
+        draw( text.value+"?", text.display_position )
+      endIf
+
+      #{
       local color, bg_color : Color?
       if local text_style = text.text_style
         color = text_style.color
@@ -41,6 +56,7 @@ class ConsoleUIFont : Font [singleton]
 
       if (color)    ConsoleUICanvas.style.fg_default
       if (bg_color) ConsoleUICanvas.style.bg_default
+      }#
 
     method draw( text:String, position:XY )
       ConsoleUICanvas.set_cursor( position )

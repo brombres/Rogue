@@ -917,7 +917,8 @@ class Component : Entity
 
     method text_style->TextStyle
       if (@text_style) return @text_style
-      return parent->(as Component)?.text_style
+      if (parent) return parent->(as Component)?.text_style
+      return UI.text_style
 
     method update_content_layout
       begin_layout( &only_content )

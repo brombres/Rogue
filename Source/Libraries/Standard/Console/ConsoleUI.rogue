@@ -45,6 +45,8 @@ class ConsoleUI : UI
     #underline_font : ConsoleUIFont
 
   PROPERTIES
+    default_text_style   = ConsoleUITextStyle
+
     mouse_position       : XY?
     button_pressed       = Dim<<Logical>>(2)
     is_running           : Logical

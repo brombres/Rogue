@@ -46,7 +46,9 @@ class UI : Component [singleton]
     default_snap_to_pixel_coordinates = true
 
   PROPERTIES
-    default_font   : Font
+    default_font        : Font
+    default_text_style  : TextStyle
+
     clip           : Box?
     focus          = shared_focus : Focus
 
@@ -226,6 +228,10 @@ class UI : Component [singleton]
       UI.display_size_fn = display_size_fn
 
     method set_needs_layout( @needs_layout )
+
+    method text_style->TextStyle
+      if (@text_style) return @text_style
+      return default_text_style
 
     method update( bounds:Box )
       UI = this
