@@ -107,6 +107,11 @@ class Box( position:XY, size:XY ) [essential compound]
     method center->XY
       return this.at(0.5,0.5)
 
+    method centermost( width=null:Real?, height=null:Real? )->Box
+      local h = (size.x - which{width||size.x}).clamped_low( 0 ) / 2
+      local v = (size.y - which{height||size.y}).clamped_low( 0 ) / 2
+      return cropped( &left=h, &right=h, &top=v, &bottom=v )
+
     method clamped( enclosing:Box, &shrink_to_fit )->Box
       # Clamps this box to the enclosing box
       local inner = this
