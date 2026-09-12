@@ -8,6 +8,53 @@ enum ScalingMode
 endEnum
 
 class ScalingModeXY( x:ScalingMode, y:ScalingMode ) [compound]
+  METHODS
+    method scale_text( font:Font, text:String, bounds:Box )->(XY,XY)
+      local font_scale = font.scale
+      if (bounds.size.product != 0 and font_scale.product != 0)
+        local text_size = font.measure( text )
+
+        if (this.x != ScalingMode.NONE or this.y != ScalingMode.NONE)
+          if (this.x == ScalingMode.ASPECT_FIT)
+            if (this.y == ScalingMode.ASPECT_FIT)
+              local aspect_fit_size = text_size.scaled_to_fit( bounds.size )
+              local k = aspect_fit_size / text_size
+              text_size /= font_scale
+              font_scale *= k
+              text_size *= font_scale
+            else
+              local aspect_fit_size = text_size.scaled_to_width( bounds.size.x )
+              local k = aspect_fit_size.x / text_size.x
+              text_size /= font_scale
+              font_scale *= k
+              text_size *= font_scale
+            endIf
+          elseIf (this.y == ScalingMode.ASPECT_FIT)
+            local aspect_fit_size = text_size.scaled_to_height( bounds.size.y )
+            local k = aspect_fit_size.y / text_size.y
+            text_size /= font_scale
+            font_scale *= k
+            text_size *= font_scale
+          endIf
+
+          if (this.x == ScalingMode.SHRINK_TO_FIT and text_size.x > bounds.size.x)
+            local k = bounds.size.x / text_size.x
+            text_size /= font_scale
+            font_scale.x *= k
+            text_size *= font_scale
+          endIf
+          if (this.y == ScalingMode.SHRINK_TO_FIT  and text_size.y > bounds.size.y)
+            text_size /= font_scale
+            local k = bounds.size.y / text_size.y
+            font_scale.y *= k
+            text_size *= font_scale
+          endIf
+        endIf
+        return (font_scale,text_size)
+      else
+        return (font_scale,XY.zero)
+      endIf
+
 endClass
 
 class Unscaled  [singleton compound];

@@ -18,7 +18,10 @@ class TextStyle
     method cloned->TextStyle [propagated]
       return $thisType( this )
 
-    method draw( font:Font, text:Text, bounds:Box )
-      font.draw( text.value, bounds )
+    method draw( text:Text, bounds:Box )
+      draw( text.font, text.value, bounds )
+
+    method draw( font:Font, text:String, bounds:Box )
+      font.draw( text, bounds.position )
 
 endClass

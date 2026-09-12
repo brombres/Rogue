@@ -225,10 +225,12 @@ class ConsoleUI : UI
           System.sleep( 1.0/60.0 )
         endWhile
 
+        Console.set_cursor( bounds.x2, bounds.y2 )
         Console.immediate_mode = false
         Console.cursor.show
 
       catch (error:Error)
+        Console.set_cursor( bounds.x2, bounds.y2 )
         Console.immediate_mode = false
         Console.cursor.show
         Console.clear

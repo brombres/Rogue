@@ -6,9 +6,15 @@ uses Console/ANSIRGB
 
 class ConsoleUITextStyle : TextStyle [singleton]
   METHODS
-    method draw( font:Font, text:Text, bounds:Box ) [override]
-      Epilog.println "font:$ text:$ bounds:$"(font,text,bounds)
-      #font.draw( text.value+"!!", bounds )
+    method draw( text:Text, bounds:Box ) [override]
+      if (color)    ConsoleUICanvas.style.fg( color.value )
+      if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
+
+      localize text.font
+      font.draw( text.value, bounds.position )
+
+      if (color)    ConsoleUICanvas.style.fg_default
+      if (bg_color) ConsoleUICanvas.style.bg_default
 endClass
 
 class ConsoleUIFont : Font [singleton]
@@ -36,11 +42,13 @@ class ConsoleUIFont : Font [singleton]
       }#
 
     method draw( text:Text )
-      Epilog.println text.text_style
+      local text_size = measure( text.value )
+      local position = Box( text_size ).positioned_within( text.display_bounds, text.content_alignment ).position
+      local text_bounds = Box( position, text_size )
       if local text_style = text.text_style
-        text_style.draw( text.font, text, text.display_bounds )
+        text_style.draw( text, text_bounds )
       else
-        draw( text.value+"?", text.display_position )
+        draw( text.value, text.display_position )
       endIf
 
       #{
