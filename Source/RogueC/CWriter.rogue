@@ -267,7 +267,7 @@ class CWriter : BufferedPrintWriter
            |  %Ns%RogueInt*      base_type_indices;
            |  %Ns%RogueInt       base_type_count;
            |  %Ns%RogueObject*   type_info;
-           |  void*              singleton;
+           |  void*              singleton_ptr;
            |  %Ns%RogueFn_Object fn_init_object;
            |  %Ns%RogueFn_Object fn_init;
            |  %Ns%RogueFn_Object fn_gc_trace;

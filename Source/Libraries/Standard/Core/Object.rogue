@@ -16,6 +16,35 @@ class Object
     method hash_code->Int32  # deprecated in favor of .hashcode()
       return hashcode
 
+    method is_singleton_instance->Logical
+      # Returns true if this object is the singleton instance of its type. Note that extended
+      # classes can be assigned to base class singletons. This method does not check if this
+      # this object is the singleton instance for a base type; only for its true type.
+      #
+      # This method always returns false for objects of non-singleton types.
+      #
+      # Examples:
+      #   class TextStyle;
+      #   class ItalicsTextStyle : TextStyle [singleton];
+      #   ...
+      #   local style = ItalicsTextStyle;
+      #   ...
+      #   @trace style.is_singleton_instance  # true
+      #
+      #
+      #   class Renderer [singleton];
+      #   class BGFX : Renderer;
+      #   ...
+      #   Renderer = BGFX()
+      #   @trace Renderer.is_singleton_instance # false
+      local result : Logical
+
+      native
+      @|%Ns%RogueObject** singleton_ptr = (%Ns%RogueObject**)(((%Ns%RogueObject*)$this)->__type->singleton_ptr);
+       |$result = (singleton_ptr && *singleton_ptr == $this);
+
+      return result
+
     method object_id->Int64
       local addr : Int64
       native "$addr = (%Ns%RogueInt64)(void*)$this;"

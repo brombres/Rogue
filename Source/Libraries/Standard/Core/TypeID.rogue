@@ -55,12 +55,12 @@ class TypeID( index:Int )
     method set_singleton( new_value:Variant )
       if (not (is_singleton and is_object)) return
       local object = new_value->Object
-      native @|*((RogueObject**)(%Ns%Rogue_types[$index]->singleton)) = $object;
+      native @|*((RogueObject**)(%Ns%Rogue_types[$index]->singleton_ptr)) = $object;
 
     method singleton->Variant
       if (not (is_singleton and is_object)) return undefined
       local object : Object
-      native @|$object = *((RogueObject**)(%Ns%Rogue_types[$index]->singleton));
+      native @|$object = *((RogueObject**)(%Ns%Rogue_types[$index]->singleton_ptr));
       return object
 
     method to->String
