@@ -10,18 +10,86 @@ class TextStyle
     method init
       noAction
 
-    method init( existing:TextStyle )
+    method init_clone( existing:TextStyle )
       font     = existing.font
       color    = existing.color
       bg_color = existing.bg_color
 
     method cloned->TextStyle [propagated]
-      return $thisType( this )
+      return new<<$thisType>>.init_clone( this )
 
     method draw( text:Text, bounds:Box )
-      draw( text.font, text.value, bounds )
+      text.font.draw( text.value, bounds )
 
     method draw( font:Font, text:String, bounds:Box )
       font.draw( text, bounds.position )
 
 endClass
+
+#{
+class TextStyleIterator( text:Text, cur:TextStyle ) [compound]
+  GLOBAL METHODS
+    method create( text:Text )->TextStyleIterator
+      return TextStyleIterator( text, text.text_style )
+
+  METHODS
+    method add( style:TextStyle )
+      if (text.text_style)
+        if (style.is_singleton_instance)
+          # There can be only one singleton instance and it must be at the end of the list.
+          local cursor = text.text_style
+          while (cursor.next_style) cursor .= next_style
+
+          if (cursor.is_singleton_instance)
+            # We already have a singleton instance at the end; clone the new style and insert
+            # it at the beginning.
+            style .= cloned
+            style.next_style = text.text_style
+            text.text_style = style
+          else
+            # No existing styles and 'cursor' is the last one in the list. Link it to
+            # the new singleton instance.
+            cursor.next_style = style
+          endIf
+
+        else
+          # New style is not a singleton instance. Insert it at the beginning.
+          style.next_style = text.text_style
+          text.text_style = style
+        endIf
+      else
+        # No styles defined yet. The new style is the first one.
+        text.text_style = style
+      endIf
+
+    method clear
+      text.text_style = null
+
+    method has_another->Logical
+      return cur?
+
+    method read->TextStyle [mutating]
+      local result = cur
+      cur .= next_style
+      return result
+
+    method read_another->TextStyle? [mutating]
+      if (not cur) return null
+      local result = cur
+      cur .= next_style
+      return result
+
+    method to->TextStyle[]
+      return to_list
+
+    method to_list->TextStyle[]
+      local result = TextStyle[]
+      block cur
+        while (cur)
+          result.add( cur )
+          cur .= next_style
+        endWhile
+      endBlock
+      return result
+endClass
+}#
