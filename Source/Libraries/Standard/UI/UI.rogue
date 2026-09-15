@@ -18,7 +18,7 @@ $include UI/Event
 $include UI/Focus
 $include UI/Filler
 $include UI/Font
-$include UI/HBox
+$include UI/Columns
 $include UI/HFlow
 $include UI/Label
 $include UI/LimitedSize
@@ -33,7 +33,7 @@ $include UI/TextBox
 $include UI/TextField
 $include UI/TextStyle
 $include UI/TypedText
-$include UI/VBox
+$include UI/Rows
 $include UI/VList
 $include UI/VScrollView
 $include UI/Widget

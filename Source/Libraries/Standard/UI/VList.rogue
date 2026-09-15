@@ -1,6 +1,6 @@
 library UI
 
-class VList : VBox
+class VList : Rows
   METHODS
     method init_object
       content_alignment = Anchor.TOP_LEFT

@@ -494,10 +494,10 @@ class Component : Entity
       endIf
 
     method operator+( rhs:Component )->Component
-      return UIGeneratedHBox( this ).[ add(rhs) ]
+      return UIGeneratedColumns( this ).[ add(rhs) ]
 
     method operator/( rhs:Component )->Component
-      return UIGeneratedVBox( this ).[ add(rhs) ]
+      return UIGeneratedRows( this ).[ add(rhs) ]
 
     method operator|( rhs:Component )->Component
       return UIGeneratedStack( this ).[ add(rhs) ]

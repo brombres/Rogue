@@ -1,6 +1,6 @@
 library UI
 
-class HBox : Component
+class Rows : Component
   PROPERTIES
     gap              : Real  # In pixels
     gap_parameter_id : VariantEntryID
@@ -12,61 +12,65 @@ class HBox : Component
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
       local w = 0.0
       local h = 0.0
-      use components = display_components
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
+
         forEach (component at i in components)
-          local sz = component.resolve_layout_size( available_size.yv, &=limited )
-          if (i) w += gap
-          w += sz.x
-          h .= or_larger( sz.y )
+          local sz = component.resolve_layout_size( available_size.xv, &=limited )
+          w .= or_larger( sz.x )
+          if (i) h += gap
+          h += sz.y
         endForEach
       endUse
       return XY(w,h)
 
     method perform_content_layout [override]
       localize anchor
-      local total_w = 0.0
-      local h = 0.0
-      use components = display_components
+      local total_h = 0.0
+      local w = 0.0
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
 
         forEach (component at i in components)
           local sz = component.size
-          if (i) total_w += gap
-          total_w += sz.x
-          h .= or_larger( sz.y )
+          if (i) total_h += gap
+          total_h += sz.y
+          w .= or_larger( sz.x )
         endForEach
 
         local pos = XY.zero
-        pos.x = snapped( Box(XY(total_w,h)).positioned_within( content_bounds, anchor ).position.x )
+        pos.y = snapped( Box(XY(w,total_h)).positioned_within( content_bounds, anchor ).position.y )
         forEach (component in components)
           component.perform_layout(
             snapped(
               component.bounds.positioned_within(
-                Box(pos,component.size.x,size.y),
+                Box(pos,size.x,component.size.y),
                 component.anchor
               ).position
             )
           )
-          pos.x += component.size.x + gap
+          pos.y += component.size.y + gap
         endForEach
       endUse
 
     method resolve_content_layout_sizes( available_size:XY ) [override]
-      use components = display_components
+      use components = WorkList<<Component>>
+        collect_child_display_components( components )
         if (components.count > 1)
-          available_size.x = (available_size.x - (components.count - 1) * gap).clamped_low( 0 )
+          available_size.y = (available_size.y - (components.count - 1) * gap).clamped_low( 0 )
         endIf
 
         use info_list = WorkList<<ComponentSizeInfo>>
 
-          # Determine the min & max widths of all child components.
+          # Determine the min & max heights of all child components.
           local total_weight : Real
           forEach (component in components)
             local (min_size,max_size) =
-              component.resolve_minmax_layout_size( available_size.yv, available_size, &limited )
-            if (min_size.x == max_size.x)
-              available_size.x -= min_size.x
+              component.resolve_minmax_layout_size( available_size.xv, available_size, &limited )
+            if (min_size.y == max_size.y)
+              available_size.y -= min_size.y
             else
-              total_weight += component.weight.x
+              total_weight += component.weight.y
               info_list.add( ComponentSizeInfo(component, &=min_size, &=max_size) )
             endIf
           endForEach
@@ -79,28 +83,28 @@ class HBox : Component
             local repeat = true
             while (repeat)
               repeat = false
-              local total_width = available_size.x
+              local total_height = available_size.y
               forEach (info in rewriter=info_list.rewriter)
-                local w = total_width * info.component.weight.x / total_weight
-                if (snap) w .= floor
-                if (info.max_size.x < w)
+                local h = total_height * info.component.weight.y / total_weight
+                if (snap) h .= floor
+                if (info.max_size.y < h)
                   # Component's max size falls short of its share. Let it keep its max size and
                   # remove it from the list by not rewriting it.
-                  info.component.size.x = info.max_size.x
-                  info.component.attributes.constant_width = true
-                  available_size.x -= info.max_size.x
-                  total_weight -= info.component.weight.x
+                  info.component.size.y = info.max_size.y
+                  info.component.attributes.constant_height = true
+                  available_size.y -= info.max_size.y
+                  total_weight -= info.component.weight.y
                   if (total_weight == 0) total_weight = 1.0
                   repeat = true
-                elseIf (info.min_size.x > w)
+                elseIf (info.min_size.y > h)
                   # Component's min size exceeds its share. Assign it its min size,
                   # re-resolve its size to allow width to adjust accordingly, and
                   # remove it from the list by not rewriting it.
-                  info.component.size.x = info.min_size.x
-                  info.component.attributes.constant_width = true
-                  info.component.resolve_layout_size( XY(info.min_size.x,available_size.y), &limited )
-                  available_size.x -= info.min_size.x
-                  total_weight -= info.component.weight.x
+                  info.component.size.y = info.min_size.y
+                  info.component.attributes.constant_height = true
+                  info.component.resolve_layout_size( XY(available_size.x,info.min_size.y), &limited )
+                  available_size.y -= info.min_size.y
+                  total_weight -= info.component.weight.y
                   if (total_weight == 0) total_weight = 1.0
                   repeat = true
                 else
@@ -111,41 +115,41 @@ class HBox : Component
             endWhile
           endBlock
 
-          # Assign remaining weighted components their proportional share of available width.
+          # Assign remaining weighted components their proportional share of available height.
           block
-            local remaining_width = available_size.x
+            local remaining_height = available_size.y
             forEach (info in info_list)
-              if (info.component.weight.x)
-                local w = available_size.x * info.component.weight.x / total_weight
-                if (snap) w .= floor
-                info.component.size.x = w
-                remaining_width -= w
+              if (info.component.weight.y)
+                local h = available_size.y * info.component.weight.y / total_weight
+                if (snap) h .= floor
+                info.component.size.y = h
+                remaining_height -= h
               else
-                # Set zero-weight component width to 0 for now.
-                info.component.size.x = 0
+                # Set zero-weight component height to 0 for now.
+                info.component.size.y = 0
               endIf
-              info.component.attributes.constant_width = true
-              info.component.resolve_layout_size( XY(info.component.size.x,available_size.y), &limited )
+              info.component.attributes.constant_height = true
+              info.component.resolve_layout_size( XY(available_size.x,info.component.size.y), &limited )
             endForEach
 
-            if (remaining_width)
+            if (remaining_height)
               # Treat remaining unweighted components as being equally weighted and
-              # assign them a proportional share of remaining width.
+              # assign them a proportional share of remaining height.
               total_weight = 0
-              if ((forEach in info_list).component.weight.x == 0) ++total_weight
+              if ((forEach in info_list).component.weight.y == 0) ++total_weight
 
-              local remaining_count = info_list.count( $.component.weight.x == 0 )
+              local remaining_count = info_list.count( $.component.weight.y == 0 )
               forEach (info in info_list)
-                if (info.component.weight.x == 0)
-                  local w = remaining_width
+                if (info.component.weight.y == 0)
+                  local h = remaining_height
                   if (remaining_count > 1)
-                    w = w / total_weight
+                    h = h / total_weight
                     --total_weight
-                    if (snap) w .= floor
+                    if (snap) h .= floor
                   endIf
-                  info.component.size.x = w
-                  info.component.resolve_layout_size( XY(w,available_size.y), &limited )
-                  remaining_width -= w
+                  info.component.size.y = h
+                  info.component.resolve_layout_size( XY(available_size.x,h), &limited )
+                  remaining_height -= h
                   --remaining_count
                 endIf
               endForEach
@@ -160,7 +164,7 @@ class HBox : Component
         # has only been called in a &limited fashion; call it once more, non-&limited,
         # to ensure that on_layout_size_resolved() fires.
         forEach (component in components)
-          component.resolve_layout_size( XY(component.size.x,available_size.y) )
+          component.resolve_layout_size( XY(available_size.x,component.size.y) )
           component.resolve_content_layout_sizes
         endForEach
       endUse
@@ -177,18 +181,18 @@ class HBox : Component
     method set_gap( gap_parameter_id )
       @gap = gap_parameter_id->Real
 
-    method set_h_gap( gap:Real )
+    method set_v_gap( gap:Real )
       set_gap( gap )
 
-    method set_h_gap( parameter_id:VariantEntryID )
+    method set_v_gap( parameter_id:VariantEntryID )
       set_gap( parameter_id )
+
 endClass
 
-class UIGeneratedHBox : HBox
+class UIGeneratedRows : Rows
   # Special subclass for operator overrides
   METHODS
-    method operator+( rhs:Component )->Component [override]
+    method operator/( rhs:Component )->Component [override]
       add( rhs )
       return this
-
 endClass
