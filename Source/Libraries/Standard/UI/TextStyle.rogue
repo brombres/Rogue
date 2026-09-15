@@ -2,9 +2,12 @@ library UI
 
 class TextStyle
   PROPERTIES
-    font     : Font?
-    color    : Graphics::Color?
-    bg_color : Graphics::Color?
+    font      : Font?
+    color     : Graphics::Color?
+    bg_color  : Graphics::Color?
+    is_bold   : Logical
+    is_italic : Logical
+    is_dim    : Logical
 
   METHODS
     method init

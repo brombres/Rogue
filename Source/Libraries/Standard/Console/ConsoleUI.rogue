@@ -45,6 +45,7 @@ class ConsoleUI : UI
     #underline_font : ConsoleUIFont
 
   PROPERTIES
+    snap_to_pixel_coordinates = true
     default_text_style   = ConsoleUITextStyle
 
     mouse_position       : XY?
