@@ -1265,6 +1265,12 @@ class Variant [compound]
           return undefined
       endWhich
 
+    method remove_random( generator=Random:Random )->Variant
+      # Removes and returns an element at random
+      # If list is empty, returns 'undefined'.
+      if (not count) return undefined
+      return remove_at( generator.int(this.count) )
+
     method remove_first->Variant
       return remove_at( 0 )
 
@@ -1367,6 +1373,15 @@ class Variant [compound]
             table[key] = value
             info//table[info//key] = table
           endIf
+      endWhich
+
+    method shuffle( generator=Random:Random )
+      which (type)
+        case TYPE_LIST, TYPE_TABLE
+          local n = count
+          forEach (i of this)
+            swap_at( i, generator.int(n) )
+          endForEach
       endWhich
 
     method sort( compare_fn:(Function(Variant,Variant)->Logical) )

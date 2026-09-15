@@ -535,7 +535,7 @@ class List<<$DataType>> : Recyclable ListType
         local default_value : $DataType
         return default_value
       endIf
-      return this[ generator.int32(this.count) ]
+      return this[ generator.int(this.count) ]
 
     method reader->ListReader<<$DataType>>
       return ListReader<<$DataType>>( this )
@@ -618,7 +618,7 @@ class List<<$DataType>> : Recyclable ListType
         local default_value : $DataType
         return default_value
       endIf
-      return remove_at( generator.int32(this.count) )
+      return remove_at( generator.int(this.count) )
 
     method reserve( additional_capacity:Int )
       local required_capacity = count + additional_capacity
@@ -744,7 +744,7 @@ class List<<$DataType>> : Recyclable ListType
 
     method shuffle( generator=Random:Random )
       local n = count
-      forEach (i of this) swap( i, generator.int32(n) )
+      forEach (i of this) swap( i, generator.int(n) )
 
     method shuffled( generator=Random:Random )->$DataType[]
       return cloned.[ shuffle(generator) ]
