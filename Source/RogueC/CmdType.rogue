@@ -660,6 +660,8 @@ augment
       return access.type
 
     method ConditionalContext.type->Type
+      # Once resolved, 'context' may be the unwrapped '.value' of an optional 'original'.
+      if (context) return context.type
       return original.type
 
     method ContextBlock.type->Type

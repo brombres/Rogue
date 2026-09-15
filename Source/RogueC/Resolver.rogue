@@ -5148,6 +5148,12 @@ augment
         endIf
 
         this.context = GetLocal( v_context )
+
+        if (v_context.type.attributes.is_optional)
+          # 'x?.y' on an optional 'x' implicitly becomes 'x?.value?.y' - the
+          # ConditionalAccess checks 'x.exists' and the access operates on 'x.value'.
+          this.context = resolver.visit( ContextAccess(t,this.context,"value") )
+        endIf
       endIf
 
       return (context:this.context,v_context:v_context,statements:statements)
