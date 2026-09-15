@@ -348,6 +348,64 @@ class Table<<$KeyType,$ValueType>> : TableType
         ->[$KeyType:$ValueType]
       return cloned.[ sort(compare_fn) ]
 
+    method swap( key1:$KeyType, key2:$KeyType )
+      # Locates the entries with the given keys and exchanges their positions
+      # in the entry order. No effect if either key is not present.
+      local entry1 = find( key1 )
+      local entry2 = find( key2 )
+      if (not entry1 or not entry2 or entry1 is entry2) return
+
+      local i1 = -1
+      local i2 = -1
+      local cur = first_entry
+      local index = 0
+      while (cur and (i1 == -1 or i2 == -1))
+        if (cur is entry1) i1 = index
+        if (cur is entry2) i2 = index
+        cur = cur.next_entry
+        ++index
+      endWhile
+
+      swap_at( i1, i2 )
+
+    method swap_at( i1:Int, i2:Int )
+      # Exchanges the entries at indices 'i1' and 'i2' in the entry order
+      # (index 0 is the first entry). No effect if either index is out of bounds.
+      if (i1 == i2) return
+      if (i1 > i2) swapValues( i1, i2 )
+      if (i1 < 0 or i2 >= count) return
+
+      # Both entries exist and 'entry1' precedes 'entry2'.
+      local entry1 = entry_at( i1 )
+      local entry2 = entry_at( i2 )
+      cur_entry = null
+
+      local before = entry1.previous_entry
+      local after  = entry2.next_entry
+
+      if (entry1.next_entry is entry2)
+        # Adjacent entries
+        entry2.previous_entry = before
+        entry2.next_entry = entry1
+        entry1.previous_entry = entry2
+        entry1.next_entry = after
+      else
+        local entry1_next = entry1.next_entry
+        local entry2_prev = entry2.previous_entry
+        entry2.previous_entry = before
+        entry2.next_entry = entry1_next
+        entry1_next.previous_entry = entry2
+        entry1.previous_entry = entry2_prev
+        entry2_prev.next_entry = entry1
+        entry1.next_entry = after
+      endIf
+
+      if (before) before.next_entry = entry2
+      else        first_entry = entry2
+
+      if (after) after.previous_entry = entry1
+      else       last_entry = entry1
+
     method to->String
       local result = String()
       print_to( result )
