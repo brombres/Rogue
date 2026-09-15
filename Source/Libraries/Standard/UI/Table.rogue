@@ -632,6 +632,9 @@ endClass
 
 class TableColumns : TableColumn[]
   METHODS
+    method set_cell_span( cell_span:XY )
+      (forEach in this).cell_span = cell_span
+
     method set_fixed_width( w:Real )
       (forEach in this).fixed_width( w )
 
@@ -666,6 +669,14 @@ class TableColumn( table:Table, i:Int )
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, i, 0, i, table.cells_high-1 )
 
+    method set_cell_span( cell_span:XY )
+      localize i
+      forEach (j in 0..<table.cells_high)
+        if local cell = table.cell( i, j )
+          cell.span = cell_span
+        endIf
+      endForEach
+
     method set_fixed_width( w:Real )
       sizing_mode  = SizingMode.FIXED_PIXELS
       layout_width = w
@@ -676,14 +687,6 @@ class TableColumn( table:Table, i:Int )
       layout_width = w.value
       width        = w.value
 
-    method set_width( @width )
-      localize i
-      forEach (j in 0..<table.cells_high)
-        if local cell = table.cell( i, j )
-          cell.fixed_width = width
-        endIf
-      endForEach
-
     method set_dynamic_width( w:ExpandToFill )
       sizing_mode = SizingMode.EXPAND_TO_FILL
 
@@ -693,6 +696,14 @@ class TableColumn( table:Table, i:Int )
     method set_dynamic_width( w:ProportionalWidth )
       sizing_mode = SizingMode.PROPORTIONAL
       layout_width = w.value
+
+    method set_width( @width )
+      localize i
+      forEach (j in 0..<table.cells_high)
+        if local cell = table.cell( i, j )
+          cell.fixed_width = width
+        endIf
+      endForEach
 
 endClass
 
@@ -719,6 +730,8 @@ class TableRows : TableRow[]
     method set_height( height:Real )
       (forEach in this).set_height( height )
 
+    method set_cell_span( cell_span:XY )
+      (forEach in this).cell_span = cell_span
 endClass
 
 class TableRow( table:Table, j:Int )
@@ -765,6 +778,14 @@ class TableRow( table:Table, j:Int )
 
     method set_dynamic_height( h:ShrinkToFit )
       sizing_mode  = SizingMode.SHRINK_TO_FIT
+
+    method set_cell_span( cell_span:XY )
+      localize j
+      forEach (i in 0..<table.cells_wide)
+        if local cell = table.cell( i, j )
+          cell.span = cell_span
+        endIf
+      endForEach
 
 endClass
 
