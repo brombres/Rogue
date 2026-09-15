@@ -88,25 +88,32 @@ class Parser : ParserCore, Recyclable
     method create_localize
       if (disable_output or _cmd_stack.is_empty) return
       local expr = _cmd_stack.remove_last
+      local id_expr = expr
       local t = expr.t
 
-      if local access = expr->(as Access)
+      loop
+        if local convert_to_type = id_expr->(as ConvertToType)
+          id_expr = convert_to_type.operand
+        elseIf local convert_to_type = id_expr->(as ConvertToTypeWithArgs)
+          id_expr = convert_to_type.operand
+        else
+          escapeLoop
+        endIf
+      endLoop
+
+      if local access = id_expr->(as Access)
         _cmd_stack.add( Identifier(t, access.name) )
-        _cmd_stack.add( access )
-      elseIf local context_access = expr->(as ContextAccess)
+      elseIf local context_access = id_expr->(as ContextAccess)
         _cmd_stack.add( Identifier(t, context_access.name) )
-        _cmd_stack.add( context_access )
-      elseIf local direct_access = expr->(as DirectAccess)
+      elseIf local direct_access = id_expr->(as DirectAccess)
         _cmd_stack.add( Identifier(t, direct_access.name) )
-        _cmd_stack.add( direct_access )
-      elseIf local context_direct_access = expr->(as ContextAccess)
+      elseIf local context_direct_access = id_expr->(as ContextAccess)
         _cmd_stack.add( Identifier(t, context_direct_access.name) )
-        _cmd_stack.add( context_direct_access )
       else
-        if local indexed_access = expr->(as IndexedAccess)
+        if local indexed_access = id_expr->(as IndexedAccess)
           if local literal_string = indexed_access.index->(as LiteralString)
             _cmd_stack.add( Identifier(t, literal_string.value) )
-            _cmd_stack.add( indexed_access )
+            _cmd_stack.add( expr )
             return
           endIf
         endIf
@@ -114,6 +121,7 @@ class Parser : ParserCore, Recyclable
         throw t.error( "Expected 'identifier' or 'context.identifier'." )
       endIf
 
+      _cmd_stack.add( expr )
       return
 
     method create_rogue_version_string
