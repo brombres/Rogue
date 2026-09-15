@@ -390,6 +390,17 @@ class System [essential]
     method sync_storage
       noAction
 
+    method temp_folder->File
+      # Returns the system's temporary folder: %TEMP% or %TMP% on Windows,
+      # $TMPDIR or "/tmp" elsewhere. Falls back to "." if no such folder exists.
+      local folder : String
+      if (System.is_windows) folder = System.env//TEMP || System.env//TMP
+      else                   folder = System.env//TMPDIR || "/tmp"
+
+      if (not folder or not File(folder).is_folder) folder = "."
+      if (folder.count > 1) folder .= without_suffix( '/' )
+      return File( folder )
+
     method ticks->Int32
       # Execution time in 1/60th second ticks, +1 to avoid potential logic bugs with 0.
       return ((execution_time_ms * 6) / 100) + 1
