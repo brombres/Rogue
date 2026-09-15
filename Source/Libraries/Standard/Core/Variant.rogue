@@ -1380,6 +1380,29 @@ class Variant [compound]
           table.sort( (a,b) => compare_fn(a.key,b.key) )
       endWhich
 
+    method swap( a:Variant, b:Variant )
+      which (type)
+        case TYPE_LIST
+          local i1 = a->Int
+          local i2 = b->Int
+          if (i1.or_smaller(i2) < 0 or i1.or_larger(i2) >= count) return
+          object->(as Variant[]).swap( i1, i2 )
+        case TYPE_TABLE
+          local table = object->(as [Variant:Variant])
+          table.swap( a, b )
+      endWhich
+
+    method swap_at( i1:Int, i2:Int )
+      if (i1.or_smaller(i2) < 0 or i1.or_larger(i2) >= count) return
+
+      which (type)
+        case TYPE_LIST
+          object->(as Variant[]).swap( i1, i2 )
+        case TYPE_TABLE
+          local table = object->(as [Variant:Variant])
+          table.swap_at( i1, i2 )
+      endWhich
+
     method to->Anchor
       which (type)
         case TYPE_ANCHOR, TYPE_XY: return Anchor( xy )
