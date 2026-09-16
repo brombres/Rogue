@@ -3,7 +3,8 @@ uses Graphics
 
 class BMP [singleton]
   DEFINITIONS
-    BI_BITFIELDS = 30
+    BI_RGB       = 0
+    BI_BITFIELDS = 3
 endClass
 
 enum BMPVersion
@@ -112,8 +113,7 @@ class BMPDecoder
       reader.skip( 2 )
       local bpp = reader.read_uint16_lh
       local compression_method = reader.read_int32_lh
-      if (compression_method & !BMP.BI_BITFIELDS)
-        # If anything besides BI_BITFIELDS is set then throw an error
+      if (compression_method != BMP.BI_RGB and compression_method != BMP.BI_BITFIELDS)
         throw Error( "Cannot read compressed BMP (compression method $)." (compression_method) )
       endIf
       reader.skip( 12 )
@@ -123,7 +123,7 @@ class BMPDecoder
       reader.skip( 4 )  # ignore important colors
 
       local bitfields = BMPBitField[]
-      if (compression_method & BMP.BI_BITFIELDS)
+      if (compression_method == BMP.BI_BITFIELDS)
         bitfields.add( BMPBitField(reader.read_int32_lh,16) )  # R
         bitfields.add( BMPBitField(reader.read_int32_lh,8) )   # G
         bitfields.add( BMPBitField(reader.read_int32_lh,0) )   # B
@@ -217,3 +217,89 @@ class BMPDecoder
       return bitmap
 endClass
 
+class BMPEncoder
+  # Encodes a Bitmap as uncompressed BMP bytes.
+  #
+  # Opaque bitmaps are written as 24-bit BGR with a BITMAPINFOHEADER.
+  # Bitmaps with transparency are written as 32-bit BGRA with a BITMAPV5HEADER
+  # and BI_BITFIELDS compression so that the alpha channel is preserved by
+  # readers that support it.
+  METHODS
+    method encode( bitmap:Bitmap, encoded_bytes=null:Byte[] )->Byte[]
+      local width  = bitmap.width
+      local height = bitmap.height
+      local is_opaque = bitmap.is_opaque
+
+      local bpp             = which{ is_opaque:24 || 32 }
+      local bytes_per_row   = (((width * bpp) + 31) / 32) * 4   # rows are padded to 4-byte boundaries
+      local pixel_data_size = bytes_per_row * height
+      local header_size     = which{ is_opaque:BMPVersion.BITMAPINFOHEADER || BMPVersion.BITMAPV5HEADER }->Int
+      local pixel_data_pos  = 14 + header_size
+      local file_size       = pixel_data_pos + pixel_data_size
+
+      ensure<<encoded_bytes>>( file_size )
+      local writer = DataWriter( encoded_bytes )
+
+      # BITMAPFILEHEADER (14 bytes)
+      writer.write( 'B' )
+      writer.write( 'M' )
+      writer.write_int32_low_high( file_size )
+      writer.write_int16_low_high( 0 )   # reserved
+      writer.write_int16_low_high( 0 )   # reserved
+      writer.write_int32_low_high( pixel_data_pos )
+
+      # DIB header
+      writer.write_int32_low_high( header_size )
+      writer.write_int32_low_high( width )
+      writer.write_int32_low_high( height )   # positive height = bottom-up pixel data
+      writer.write_int16_low_high( 1 )        # color planes
+      writer.write_int16_low_high( bpp )
+      writer.write_int32_low_high( which{ is_opaque:BMP.BI_RGB || BMP.BI_BITFIELDS } )
+      writer.write_int32_low_high( pixel_data_size )
+      writer.write_int32_low_high( 2835 )     # horizontal resolution (pixels/meter, 72 DPI)
+      writer.write_int32_low_high( 2835 )     # vertical resolution
+      writer.write_int32_low_high( 0 )        # palette colors
+      writer.write_int32_low_high( 0 )        # important colors
+
+      if (not is_opaque)
+        # Remainder of BITMAPV5HEADER
+        writer.write_int32_low_high( 0x00FF0000 )  # R mask
+        writer.write_int32_low_high( 0x0000FF00 )  # G mask
+        writer.write_int32_low_high( 0x000000FF )  # B mask
+        writer.write_int32_low_high( 0xFF000000 )  # A mask
+        writer.write_int32_low_high( 0x73524742 )  # color space: LCS_sRGB ('sRGB')
+        loop (9) writer.write_int32_low_high( 0 )  # CIEXYZTRIPLE endpoints (unused for sRGB)
+        loop (3) writer.write_int32_low_high( 0 )  # gamma R, G, B (unused for sRGB)
+        writer.write_int32_low_high( 4 )           # rendering intent: LCS_GM_IMAGES
+        writer.write_int32_low_high( 0 )           # profile data offset
+        writer.write_int32_low_high( 0 )           # profile size
+        writer.write_int32_low_high( 0 )           # reserved
+      endIf
+
+      # Pixel data, bottom-up
+      local pixels = bitmap.pixels
+      local padding = bytes_per_row - (width * (bpp/8))
+      local line_start = (height-1) * width
+      if (is_opaque)
+        loop (height)
+          forEach (i in line_start..<line_start+width)
+            local argb = pixels[i].argb
+            writer.write( argb )
+            writer.write( argb:>>>:8 )
+            writer.write( argb:>>>:16 )
+          endForEach
+          loop (padding) writer.write( 0 )
+          line_start -= width
+        endLoop
+      else
+        loop (height)
+          forEach (i in line_start..<line_start+width)
+            writer.write_int32_low_high( pixels[i].argb )
+          endForEach
+          line_start -= width
+        endLoop
+      endIf
+
+      writer.flush
+      return encoded_bytes
+endClass
