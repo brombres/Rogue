@@ -18,7 +18,7 @@ augment Graphics::Bitmap
 
   METHODS
     method to_bmp_bytes->Byte[]
-      #if ($target("macOS")) return MacOS.to_bmp_bytes( this )
+      if ($target("macOS")) return MacOS.to_bmp_bytes( this )
       return BMPEncoder().encode( this )
 
     method to_jpeg_bytes( quality=75:Int )->Byte[]
