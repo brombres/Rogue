@@ -85,7 +85,7 @@ class Box( position:XY, size:XY ) [essential compound]
       return (position + size)
 
     method bottommost( height:Real )->Box
-      if (height < 0) height = size.y + height
+      if (height < 0) return removing_topmost( -height )
       local h = height.or_smaller(size.y)
       return Box( position+XY(0,size.y-h), size.x, h )
 
@@ -213,7 +213,7 @@ class Box( position:XY, size:XY ) [essential compound]
       return at( 0.0, 0.5 )
 
     method leftmost( width:Real )->Box
-      if (width < 0) width = size.x + width
+      if (width < 0) return removing_rightmost( -width )
       return Box( position, width.or_smaller(size.x), size.y )
 
     method operator==( other:Box )->Logical
@@ -285,19 +285,23 @@ class Box( position:XY, size:XY ) [essential compound]
       return Box( position - anchor * size, size )
 
     method removing_bottommost( height:Real )->Box
+      height .= clamped_low( 0 )
       local h = (size.y - height).clamped_low( 0 )
       return Box( position, size.x, h )
 
     method removing_leftmost( width:Real )->Box
+      width .= clamped_low( 0 )
       local x = (position.x + width).clamped_high( size.x )
       local w = size.x - (x - position.x)
       return Box( x, position.y, w, size.y )
 
     method removing_rightmost( width:Real )->Box
+      width .= clamped_low( 0 )
       local w = (size.x - width).clamped_low( 0 )
       return Box( position, w, size.y )
 
     method removing_topmost( height:Real )->Box
+      height .= clamped_low( 0 )
       local y = (position.y + height).clamped_high( size.y )
       local h = size.y - (y - position.y)
       return Box( position.x, y, size.x, h )
@@ -306,7 +310,7 @@ class Box( position:XY, size:XY ) [essential compound]
       return at( 1.0, 0.5 )
 
     method rightmost( width:Real )->Box
-      if (width < 0) width = size.x + width
+      if (width < 0) return removing_leftmost( -width )
       local w = width.or_smaller(size.x)
       return Box( position+XY(size.x-w,0), w, size.y )
 
@@ -371,7 +375,7 @@ class Box( position:XY, size:XY ) [essential compound]
       return (position + XY(size.x,0))
 
     method topmost( height:Real )->Box
-      if (height < 0) height = size.y + height
+      if (height < 0) return removing_bottommost( -height )
       return Box( position, size.x, height.or_smaller(size.y) )
 
     method with_height( new_height:Real )->Box
