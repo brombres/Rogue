@@ -1,6 +1,9 @@
 uses Geometry [export]
 uses Utility/Epilog
 
+uses Console/ANSIColor
+uses Console/ANSIRGB
+
 class TextCanvas  : BufferedPrintWriter<<builder>>
   # A 2D canvas of styled console text.
   PROPERTIES
@@ -577,16 +580,13 @@ endClass
 
 class StyledCharacter( value=' ':Character, style=CharacterStyle.NONE:CharacterStyle ) [compound]
   GLOBAL METHODS
-    method create( value:Character, color:Color, &fg, &bg )->StyledCharacter
-      if (bg)
-        return StyledCharacter( value, CharacterStyle(CharacterStyle.TRUECOLOR_BG,&bg=color) )
-      endIf
-      if (fg or not bg)
-        return StyledCharacter( value, CharacterStyle(CharacterStyle.TRUECOLOR_FG,&fg=color) )
-      endIf
-
-    method create( value:Character, fg:Color, bg:Color )->StyledCharacter
-      return StyledCharacter( value, CharacterStyle(CharacterStyle.TRUECOLOR_FG|CharacterStyle.TRUECOLOR_BG,fg,bg) )
+    method create( value:Character, fg=null:Color?, bg=null:Color? )->StyledCharacter
+      local flags = 0
+      if (fg) flags |= CharacterStyle.TRUECOLOR_FG
+      else    fg = Color(0)
+      if (bg) flags |= CharacterStyle.TRUECOLOR_BG
+      else    bg = Color(0)
+      return StyledCharacter( value, CharacterStyle(flags,fg.value,bg.value) )
 
   METHODS
     method operator==( other:StyledCharacter )->Logical
@@ -765,7 +765,7 @@ class CurrentCharacterStyle
 
 endClass
 
-class CharacterStyle( flags:Int, fg=Color(0):Color, bg=Color(0):Color ) [compound]
+class CharacterStyle( flags:Int, fg:Color, bg:Color ) [compound]
   GLOBAL PROPERTIES
     is_truecolor_supported = ((System.is_windows and Windows.is_windows_10_or_greater) or
                                System.env//COLORTERM == "truecolor") : Logical
@@ -830,46 +830,53 @@ class CharacterStyle( flags:Int, fg=Color(0):Color, bg=Color(0):Color ) [compoun
 
   GLOBAL PROPERTIES
     fg_colors =
-    Int[][
-      ConsoleStyle.FG_DEFAULT,
-      ConsoleStyle.FG_BLACK,
-      ConsoleStyle.FG_RED,
-      ConsoleStyle.FG_GREEN,
-      ConsoleStyle.FG_YELLOW,
-      ConsoleStyle.FG_BLUE,
-      ConsoleStyle.FG_MAGENTA
-      ConsoleStyle.FG_CYAN,
-      ConsoleStyle.FG_LIGHT_GRAY,
-      ConsoleStyle.FG_DARK_GRAY,
-      ConsoleStyle.FG_LIGHT_RED,
-      ConsoleStyle.FG_LIGHT_GREEN,
-      ConsoleStyle.FG_LIGHT_YELLOW,
-      ConsoleStyle.FG_LIGHT_BLUE,
-      ConsoleStyle.FG_LIGHT_MAGENTA,
-      ConsoleStyle.FG_LIGHT_CYAN,
-      ConsoleStyle.FG_WHITE
-    ]
+      Int[][
+        ConsoleStyle.FG_DEFAULT,
+        ConsoleStyle.FG_BLACK,
+        ConsoleStyle.FG_RED,
+        ConsoleStyle.FG_GREEN,
+        ConsoleStyle.FG_YELLOW,
+        ConsoleStyle.FG_BLUE,
+        ConsoleStyle.FG_MAGENTA
+        ConsoleStyle.FG_CYAN,
+        ConsoleStyle.FG_LIGHT_GRAY,
+        ConsoleStyle.FG_DARK_GRAY,
+        ConsoleStyle.FG_LIGHT_RED,
+        ConsoleStyle.FG_LIGHT_GREEN,
+        ConsoleStyle.FG_LIGHT_YELLOW,
+        ConsoleStyle.FG_LIGHT_BLUE,
+        ConsoleStyle.FG_LIGHT_MAGENTA,
+        ConsoleStyle.FG_LIGHT_CYAN,
+        ConsoleStyle.FG_WHITE
+      ]
 
     bg_colors =
-    Int[][
-      ConsoleStyle.BG_DEFAULT,
-      ConsoleStyle.BG_BLACK,
-      ConsoleStyle.BG_RED,
-      ConsoleStyle.BG_GREEN,
-      ConsoleStyle.BG_YELLOW,
-      ConsoleStyle.BG_BLUE,
-      ConsoleStyle.BG_MAGENTA
-      ConsoleStyle.BG_CYAN,
-      ConsoleStyle.BG_LIGHT_GRAY,
-      ConsoleStyle.BG_DARK_GRAY,
-      ConsoleStyle.BG_LIGHT_RED,
-      ConsoleStyle.BG_LIGHT_GREEN,
-      ConsoleStyle.BG_LIGHT_YELLOW,
-      ConsoleStyle.BG_LIGHT_BLUE,
-      ConsoleStyle.BG_LIGHT_MAGENTA,
-      ConsoleStyle.BG_LIGHT_CYAN,
-      ConsoleStyle.BG_WHITE
-    ]
+      Int[][
+        ConsoleStyle.BG_DEFAULT,
+        ConsoleStyle.BG_BLACK,
+        ConsoleStyle.BG_RED,
+        ConsoleStyle.BG_GREEN,
+        ConsoleStyle.BG_YELLOW,
+        ConsoleStyle.BG_BLUE,
+        ConsoleStyle.BG_MAGENTA
+        ConsoleStyle.BG_CYAN,
+        ConsoleStyle.BG_LIGHT_GRAY,
+        ConsoleStyle.BG_DARK_GRAY,
+        ConsoleStyle.BG_LIGHT_RED,
+        ConsoleStyle.BG_LIGHT_GREEN,
+        ConsoleStyle.BG_LIGHT_YELLOW,
+        ConsoleStyle.BG_LIGHT_BLUE,
+        ConsoleStyle.BG_LIGHT_MAGENTA,
+        ConsoleStyle.BG_LIGHT_CYAN,
+        ConsoleStyle.BG_WHITE
+      ]
+
+  GLOBAL METHODS
+    method create( flags:Int )->CharacterStyle
+      return CharacterStyle( flags, Color(0), Color(0) )
+
+    method create( fg=Color(0):Color, bg=Color(0):Color )->CharacterStyle
+      return CharacterStyle( TRUECOLOR, &=fg, &=bg )
 
   METHODS
     method apply( new_style:CharacterStyle, output=Global:PrintWriter )->CharacterStyle
