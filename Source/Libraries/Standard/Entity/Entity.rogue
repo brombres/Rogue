@@ -7,7 +7,7 @@ uses Math/Quaternion
 
 $include Entity/Entity2D
 $include Entity/Entity3D
-$include Entity/Attributes
+$include Entity/EntityAttributes
 $include Entity/EntityScript
 $include Entity/ScriptIterator
 
@@ -18,7 +18,7 @@ class Entity : Node<<Entity>>
   PROPERTIES
     entity_id   : GlobalID
     internal_id : Int
-    attributes  : Attributes
+    attributes  : EntityAttributes
     script      : EntityScript
     actions     : Action
 

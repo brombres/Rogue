@@ -215,7 +215,7 @@ class Component : Entity
 
     method begin_layout( &only_content )
       if (not only_content)
-        attributes &= !Attributes.CONSTANT_SIZE
+        attributes &= !EntityAttributes.CONSTANT_SIZE
         if (not attributes.active)
           attributes.active = true
           on_activate
