@@ -1,0 +1,30 @@
+library Entity
+
+enum EntityAttributes [bitflags]
+  CATEGORIES
+    ACTIVE
+    INVISIBLE
+    INTANGIBLE
+    POINTER_PASSTHROUGH
+    MODIFIED
+    FOREGROUND
+    STARTED
+    H_FLIP
+    V_FLIP
+    MANUALLY_UPDATE_CONTENT_LAYOUT
+    CLIP
+    CONSTANT_WIDTH
+    CONSTANT_HEIGHT
+
+  DEFINITIONS
+    CONSTANT_SIZE = EntityAttributes[CONSTANT_WIDTH,CONSTANT_HEIGHT]
+
+  METHODS
+    method constant_size->Logical
+      return not(value ~ CONSTANT_SIZE.value)
+
+    method set_constant_size( setting:Logical ) [mutating]
+      if (setting) value |=   CONSTANT_SIZE.value
+      else         value &= !(CONSTANT_SIZE.value)
+endEnum
+
