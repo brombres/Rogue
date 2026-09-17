@@ -147,6 +147,9 @@ class Table : Component
     method resize( w:Int, h:Int )
       if (count)
         use new_cells = WorkList<<TableCell>>
+          loop (cells_wide - w) columns.remove_last
+          loop (cells_high - h) rows.remove_last
+
           forEach (j in 0..<cells_high.or_smaller(h))
             forEach (i in 0..<cells_wide.or_smaller(w))
               new_cells.add( .cells[j*cells_wide+i] )
@@ -178,7 +181,6 @@ class Table : Component
           .cells.clear
           .cells.add( forEach in new_cells )
 
-          deactivate
           prior.clear
           prior.add( forEach in .cells )
         endUse
@@ -560,15 +562,69 @@ class Table : Component
       if (h_gap_parameter_id) @gap.x = h_gap_parameter_id->Real
       if (v_gap_parameter_id) @gap.y = v_gap_parameter_id->Real
 
+    method remove_column( column_i:Int )
+      if (column_i < 0 or column_i >= cells_high) return
+
+      use remaining = WorkList<<Component>>
+        remaining.reserve( (cells_wide - 1) * cells_high )
+
+        local index = 0
+        forEach (j in 0..<cells_high)
+          forEach (i in 0..<cells_wide)
+            local content = .cells[index].remove_children->(as Component)
+            if (i != column_i) remaining.add( content )
+            ++index
+          endForEach
+        endForEach
+
+        resize( cells_wide-1, cells_high )
+        set( Box(0,0,cells_wide,cells_high), remaining )
+      endUse
+
+    method remove_row( row_j:Int )
+      if (row_j < 0 or row_j >= cells_high) return
+
+      use remaining = WorkList<<Component>>
+        remaining.reserve( cells_wide * (cells_high - 1) )
+
+        local index = 0
+        forEach (j in 0..<cells_high)
+          forEach (i in 0..<cells_wide)
+            local content = .cells[index].remove_children->(as Component)
+            if (j != row_j) remaining.add( content )
+            ++index
+          endForEach
+        endForEach
+
+        resize( cells_wide, cells_high - 1 )
+        set( Box(0,0,cells_wide,cells_high), remaining )
+      endUse
+
     method row( j:Int )->TableRow
       if (j < 0 or j >= cells_high) return null
       return rows[j]
 
     method set( index:XY, component:Component )
       if local cell = cell( index.x, index.y )
-        cell.deactivate
         cell.clear
-        cell.add( component )
+        if (component) cell.add( component )
+      endIf
+
+    method set( region:Box, cells:Component[] )
+      local top_left = region.position
+      local limit    = region.bottom_right
+      if (top_left.x < 0 or top_left.y < 0 or limit.x > cells_wide or limit.y > cells_high)
+        throw Error( "Table.set(Box,Component[]): Specified region is out of bounds." )
+      elseIf (region.size.x * region.size.y != cells.count)
+        throw Error( "Table.set(Box,Component[]): Cell component count does not match specified region." )
+      else
+        local index = 0
+        forEach (j in top_left.y..<limit.y)
+          forEach (i in top_left.x..<limit.x)
+            this[XY(i,j)] = cells[index]
+            ++index
+          endForEach
+        endForEach
       endIf
 
     method set_cell( index:XY, cell:TableCell )
@@ -577,7 +633,7 @@ class Table : Component
       if (i < 0 or i >= cells_wide)  return
       if (j < 0 or j >= cells_high) return
       local index = j*cells_wide + i
-      .cells[index]?.deactivate
+      .cells[index].deactivate
       .cells[index] = cell
 
     method set_gap( @gap )
@@ -750,6 +806,9 @@ class TableRow( table:Table, j:Int )
   METHODS
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, 0, j, table.cells_wide-1, j )
+
+    method remove
+      table.remove( Box(0,j,table.cells_wide,1) )
 
     method set_fixed_height( h:Real )
       sizing_mode  = SizingMode.FIXED_PIXELS
