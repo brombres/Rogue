@@ -9,12 +9,14 @@ class ConsoleUITextStyle : TextStyle [singleton]
     method draw( text:Text, bounds:Box ) [override]
       if (color)    ConsoleUICanvas.style.fg( color.value )
       if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
+      if (inverse)  ConsoleUICanvas.style.inverse
 
       localize text.font
       font.draw( text.value, bounds.position )
 
       if (color)    ConsoleUICanvas.style.fg_default
       if (bg_color) ConsoleUICanvas.style.bg_default
+      if (inverse)  ConsoleUICanvas.style.inverse_off
 endClass
 
 class ConsoleUIFont : Font [singleton]

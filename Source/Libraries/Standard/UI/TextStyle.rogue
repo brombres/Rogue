@@ -5,9 +5,10 @@ class TextStyle
     font      : Font?
     color     : Graphics::Color?
     bg_color  : Graphics::Color?
-    is_bold   : Logical
-    is_italic : Logical
-    is_dim    : Logical
+    bold      : Logical
+    italic    : Logical
+    dim       : Logical
+    inverse   : Logical
 
   METHODS
     method init
