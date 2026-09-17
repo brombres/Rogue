@@ -261,7 +261,7 @@ class Node<<$ExtendedNodeType>> : IteratorPreferred
       return null
 
     method remove( child:$ExtendedNodeType )->$ExtendedNodeType
-      child?.detach
+      if (child and child.parent is this) child.detach
       return child
 
     method remove_at( index:Int )->$ExtendedNodeType
