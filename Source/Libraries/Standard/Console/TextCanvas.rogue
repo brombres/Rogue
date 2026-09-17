@@ -17,6 +17,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     style        = CurrentCharacterStyle()
 
     clip         : Box?
+    lock_style   : Logical # Standard printing preserves existing style
 
     _is_flushing : Logical
 
@@ -497,10 +498,13 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
     method set( i:Int, j:Int, ch:Character )
       local clip = which{ this.clip || Box(0,0,width,height) }
-      if (i < clip.x or j < clip.y or i >= clip.x2 or j >= clip.y2)
-        return
+      if (i < clip.x or j < clip.y or i >= clip.x2 or j >= clip.y2) return
+      local index = j*width + i
+      if (lock_style)
+        buffer[index] = StyledCharacter( ch, buffer[index].style )
+      else
+        buffer[index] = StyledCharacter(ch,style.current)
       endIf
-      buffer[ j*width + i ] = StyledCharacter(ch,style.current)
 
     method set( i:Int, j:Int, ch:StyledCharacter )
       local clip = which{ this.clip || Box(0,0,width,height) }
