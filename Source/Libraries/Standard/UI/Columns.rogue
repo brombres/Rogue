@@ -161,7 +161,6 @@ class Columns : Component
         # to ensure that on_layout_size_resolved() fires.
         forEach (component in components)
           component.resolve_layout_size( XY(component.size.x,available_size.y) )
-          component.resolve_content_layout_sizes
         endForEach
       endUse
 

@@ -24,6 +24,7 @@ $include UI/Label
 $include UI/LimitedSize
 $include UI/MetaComponent
 $include UI/Overlay
+$include UI/Panel
 $include UI/ScalingMode
 $include UI/SizingMode
 $include UI/Spacer

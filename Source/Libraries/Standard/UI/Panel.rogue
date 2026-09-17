@@ -1,0 +1,33 @@
+library UI
+
+class Panel : Component
+  # A Panel is a component subtree that doesn't perform any layout of its children
+  # until its own layout is determined. For example, without a Panel, every component
+  # in a UI will have its 'begin_layout()' called before any component is actually
+  # sized or placed, but a Panel's children will only receive 'begin_layout()', after
+  # the Panel itself has been sized and placed.
+  PROPERTIES
+    .is_laying_out_content : Logical
+
+  METHODS
+    method collect_child_display_components( list:Component[], &only_visible ) [override]
+      # Collect child components that need to be laid out, skipping any meta-components.
+      if (not .is_laying_out_content) return
+      (forEach as Component in children).collect_display_components( list, &=only_visible )
+
+    method .dispatch_draw [override]
+      temporarily .is_laying_out_content = true
+        prior._dispatch_draw
+      endTemporarily
+
+    method on_begin_content_layout [novel]
+
+    method perform_content_layout [override]
+      on_begin_content_layout
+      temporarily .is_laying_out_content = true
+        begin_content_layout
+        resolve_content_layout_sizes
+        prior.perform_content_layout
+        end_content_layout
+      endTemporarily
+endClass

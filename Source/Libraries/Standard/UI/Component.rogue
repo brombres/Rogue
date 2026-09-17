@@ -213,17 +213,14 @@ class Component : Entity
         (forEach in components).begin_layout
       endUse
 
-    method begin_layout( &only_content )
-      if (not only_content)
-        attributes &= !EntityAttributes.CONSTANT_SIZE
-        if (not attributes.active)
-          attributes.active = true
-          on_activate
-        endIf
-
-        on_begin_layout
+    method begin_layout
+      attributes &= !EntityAttributes.CONSTANT_SIZE
+      if (not attributes.active)
+        attributes.active = true
+        on_activate
       endIf
 
+      on_begin_layout
       begin_content_layout
 
     method bounds->Box
@@ -337,15 +334,15 @@ class Component : Entity
         return position
       endIf
 
-    method end_layout( &only_content )
-      if (not only_content)
-        on_end_layout
-      endIf
-
+    method end_content_layout
       use components = WorkList<<Component>>
         collect_child_display_components( components )
         (forEach in components).end_layout
       endUse
+
+    method end_layout
+      on_end_layout
+      end_content_layout
 
     method find( e:PointerEvent )->Entity
       return find( e.position )
@@ -460,9 +457,6 @@ class Component : Entity
     method line_height->Real
       return size.y
 
-    method manually_update_content_layout( setting=true:Logical )
-      attributes.manually_update_content_layout = setting
-
     method minimum_layout_size( available_size:XY, &limited )->XY
       local sz : XY
       use components = WorkList<<Component>>
@@ -510,9 +504,7 @@ class Component : Entity
       return parent->(as Component)
 
     method perform_layout( position )
-      if (not attributes.manually_update_content_layout)
-        perform_content_layout
-      endIf
+      perform_content_layout
 
     method perform_content_layout
       localize anchor
@@ -615,16 +607,10 @@ class Component : Entity
       if (UI.snap_to_pixel_coordinates) sz .= floor
       size = sz
 
-      if (attributes.manually_update_content_layout)
-        if (not limited)
-          on_layout_size_resolved
-          return size
-        endIf
-      else
-        sz = .resolve_shrink_to_fit_layout_size( &=limited )
-        if (not limited)
-          resolve_content_layout_sizes
-        endIf
+      sz = .resolve_shrink_to_fit_layout_size( &=limited )
+      if (not limited)
+        on_layout_size_resolved
+        resolve_content_layout_sizes
       endIf
 
       return sz
@@ -734,7 +720,6 @@ class Component : Entity
       return sz
 
     method resolve_content_layout_sizes
-      on_layout_size_resolved
       resolve_content_layout_sizes( content_size )
 
     method resolve_content_layout_sizes( available_size:XY )
@@ -919,13 +904,6 @@ class Component : Entity
       if (@text_style) return @text_style
       if (parent) return parent->(as Component)?.text_style
       return UI.text_style
-
-    method update_content_layout
-      begin_layout( &only_content )
-      .resolve_shrink_to_fit_layout_size
-      resolve_content_layout_sizes( content_size )
-      perform_content_layout
-      end_layout( &only_content )
 
     method yield_pointer_focus_to( e:PointerEvent )->Logical
       return attributes.intangible or (e.is_press and not this.contains(e))

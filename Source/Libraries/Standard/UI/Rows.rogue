@@ -163,9 +163,9 @@ class Rows : Component
         # determine their child sizes. Before now each component's resolve_layout_size()
         # has only been called in a &limited fashion; call it once more, non-&limited,
         # to ensure that on_layout_size_resolved() fires.
+        on_layout_size_resolved
         forEach (component in components)
           component.resolve_layout_size( XY(available_size.x,component.size.y) )
-          component.resolve_content_layout_sizes
         endForEach
       endUse
 
