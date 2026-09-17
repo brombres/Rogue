@@ -81,6 +81,14 @@ class Entity : Node<<Entity>>
       endIf
       (forEach in children).deactivate
 
+    method detach( &preserve_next )->Entity
+      deactivate
+      return prior.detach
+
+    method remove_children->Entity
+      (forEach in children).deactivate
+      return prior.remove_children
+
     method description->String
       local result = String()
       if (entity_id) result.print( entity_id )
