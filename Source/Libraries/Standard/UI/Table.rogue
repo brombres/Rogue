@@ -190,7 +190,11 @@ class Table : Component
         use new_cells = WorkList<<TableCell>>
           loop (cells_wide - w) columns.remove_last
           loop (cells_high - h) rows.remove_last
+          forEach (i in cells_wide..<w) columns.add( TableColumn(this,i) )
+          forEach (j in cells_high..<h) rows.add( TableRow(this,j) )
 
+          # Copy the surviving cells row by row, extending each row with new cells
+          # that inherit the settings of the last existing cell in that row.
           forEach (j in 0..<cells_high.or_smaller(h))
             forEach (i in 0..<cells_wide.or_smaller(w))
               new_cells.add( .cells[j*cells_wide+i] )
@@ -199,7 +203,6 @@ class Table : Component
             if (w > cells_wide)
               local last_i = cells_wide - 1
               forEach (i in cells_wide..<w)
-                columns.add( TableColumn(this,i) )
                 local new_cell = TableCell( XY(i,j) )
                 new_cell.copy_settings_from( cell(last_i,j) )
                 new_cells.add( new_cell )
@@ -207,13 +210,14 @@ class Table : Component
             endIf
           endForEach
 
+          # Add any new rows. Every row in new_cells is now 'w' wide, so new cells
+          # inherit the settings of the cell above them in the last existing row.
           if (h > cells_high)
             local last_j = cells_high - 1
             forEach (j in cells_high..<h)
-              rows.add( TableRow(this,j) )
               forEach (i in 0..<w)
                 local new_cell = TableCell( XY(i,j) )
-                new_cell.copy_settings_from( cell(i,last_j) )
+                new_cell.copy_settings_from( new_cells[last_j*w+i] )
                 new_cells.add( new_cell )
               endForEach
             endForEach
