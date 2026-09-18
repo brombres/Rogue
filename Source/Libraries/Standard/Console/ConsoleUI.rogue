@@ -78,7 +78,7 @@ class ConsoleUI : UI
     method default_scroll_rate->Real
       return 3.0
 
-    method draw
+    method draw [override]
       prior.draw
       ConsoleUICanvas.display(0,0)
       Console.set_cursor( 0, bounds.y2 )
@@ -206,6 +206,12 @@ class ConsoleUI : UI
 
         endWhich
       endLoop
+
+    method render->String
+      # Unlike draw(), which automatically displays the result to the console using absolute positioning,
+      # render() returns the drawn UI as a String. Useful for testing and debugging.
+      prior.draw
+      return ConsoleUICanvas->String
 
     method run
       System.sleep(0.2)  # helps prevent initial screen corruption

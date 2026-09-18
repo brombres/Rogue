@@ -16,7 +16,7 @@ class Table : Component
     # A list of the direct children; cells_wide*cells_high TableCell components which
     # contain the actual content.
 
-    size_resolved_for : XY?
+    size_resolved_for  : XY?
 
   METHODS
     method init( cells_wide:Int, cells_high:Int )
@@ -88,6 +88,43 @@ class Table : Component
         return null
       endIf
 
+    method get( xy:XY )->Component
+      if local cell = cell( xy.x, xy.y )
+        return cell.first_content_component
+      else
+        return null
+      endIf
+
+    method get_content( region:Box, cells=null:Component[] )->Component[]
+      local top_left = region.position
+      local limit    = region.bottom_right
+      if (top_left.x < 0 or top_left.y < 0 or limit.x > cells_wide or limit.y > cells_high)
+        throw Error( "Table.get_content(Box,Component[]): Specified region is out of bounds." )
+      else
+        local n = region.size.product->Int
+        ensure<<cells>>.reserve( n )
+
+        forEach (j in top_left.y..<limit.y)
+          forEach (i in top_left.x..<limit.x)
+            cells.add( this[XY(i,j)] )
+          endForEach
+        endForEach
+      endIf
+
+    method insert_column( new_content:Component[], before_i=0:Int )
+      resize( cells_wide+1, cells_high.or_larger(new_content.count) )
+
+      if (cells_wide > 1)
+        use existing_content = WorkList<<Component>>
+          local region = Box( before_i, 0, cells_wide-1, cells_high )
+          trace region
+          #get_content( region, existing_content )
+          #set_content( region+XY(1,0), existing_content )
+        endUse
+      endIf
+
+      set_content( Box(before_i,0,1,new_content.count), new_content )
+
     method minimum_layout_size( available_size:XY, &limited )->XY [override]
       local sz = gap * XY(cells_wide-1,cells_high-1)
       temporarily sizing_mode = SizingModeXY( SizingMode.SHRINK_TO_FIT )
@@ -95,7 +132,7 @@ class Table : Component
       endTemporarily
       size_resolved_for = null
 
-      forEach (i in 0..<cells_wide)  sz.x += .cells[i].size.x
+      forEach (i in 0..<cells_wide) sz.x += .cells[i].size.x
       forEach (j in 0..<cells_high) sz.y += .cells[j*cells_wide].size.y
       return sz
 
@@ -145,6 +182,10 @@ class Table : Component
       endUse
 
     method resize( w:Int, h:Int )
+      if (w == cells_wide and h == cells_high) return
+      request_layout
+      size_resolved_for = null
+
       if (count)
         use new_cells = WorkList<<TableCell>>
           loop (cells_wide - w) columns.remove_last
@@ -184,6 +225,10 @@ class Table : Component
           prior.clear
           prior.add( forEach in .cells )
         endUse
+
+        (forEach in columns).is_resolved = false
+        (forEach in rows).is_resolved = false
+
       else
         forEach (i in 0..<w) columns.add( TableColumn(this,i) )
         forEach (j in 0..<h) rows.add( TableRow(this,j) )
@@ -562,7 +607,7 @@ class Table : Component
       if (h_gap_parameter_id) @gap.x = h_gap_parameter_id->Real
       if (v_gap_parameter_id) @gap.y = v_gap_parameter_id->Real
 
-    method remove_column( column_i:Int )
+    method discard_column( column_i:Int )
       if (column_i < 0 or column_i >= cells_high) return
 
       use remaining = WorkList<<Component>>
@@ -578,10 +623,10 @@ class Table : Component
         endForEach
 
         resize( cells_wide-1, cells_high )
-        set( Box(0,0,cells_wide,cells_high), remaining )
+        set_content( Box(0,0,cells_wide,cells_high), remaining )
       endUse
 
-    method remove_row( row_j:Int )
+    method discard_row( row_j:Int )
       if (row_j < 0 or row_j >= cells_high) return
 
       use remaining = WorkList<<Component>>
@@ -597,7 +642,7 @@ class Table : Component
         endForEach
 
         resize( cells_wide, cells_high - 1 )
-        set( Box(0,0,cells_wide,cells_high), remaining )
+        set_content( Box(0,0,cells_wide,cells_high), remaining )
       endUse
 
     method row( j:Int )->TableRow
@@ -610,13 +655,13 @@ class Table : Component
         if (component) cell.add( component )
       endIf
 
-    method set( region:Box, cells:Component[] )
+    method set_content( region:Box, cells:Component[] )
       local top_left = region.position
       local limit    = region.bottom_right
       if (top_left.x < 0 or top_left.y < 0 or limit.x > cells_wide or limit.y > cells_high)
-        throw Error( "Table.set(Box,Component[]): Specified region is out of bounds." )
+        throw Error( "Table.set_content(Box,Component[]): Specified region is out of bounds." )
       elseIf (region.size.x * region.size.y != cells.count)
-        throw Error( "Table.set(Box,Component[]): Cell component count does not match specified region." )
+        throw Error( "Table.set_content(Box,Component[]): Cell component count does not match specified region." )
       else
         local index = 0
         forEach (j in top_left.y..<limit.y)
@@ -688,8 +733,24 @@ endClass
 
 class TableColumns : TableColumn[]
   METHODS
+    method cells->TableSubsetProperties
+      return TableSubsetProperties( table, i, 0, i, table.cells_high-1 )
+
+    method get_content( cells=null:Component[] )->Component[]
+      ensure<<cells>>
+      (forEach in this).get_content( cells )
+      return cells
+
+    method discard
+      (forEach in this step -1).discard
+
     method set_cell_span( cell_span:XY )
       (forEach in this).cell_span = cell_span
+
+    method set_content( cells:Component[] )
+      if (this.is_empty) throw Error( "TableColumns.set_content(): empty table." )
+      localize this.first.table
+      table.set_content( Box(first.i,0,(last.i-first.i)+1,table.cells_high), cells )
 
     method set_fixed_width( w:Real )
       (forEach in this).fixed_width( w )
@@ -725,6 +786,12 @@ class TableColumn( table:Table, i:Int )
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, i, 0, i, table.cells_high-1 )
 
+    method get_content( cells=null:Component[] )->Component[]
+      return table.get_content( Box(i,0,1,table.cells_high), cells )
+
+    method discard
+      table.discard_column( i )
+
     method set_cell_span( cell_span:XY )
       localize i
       forEach (j in 0..<table.cells_high)
@@ -732,6 +799,9 @@ class TableColumn( table:Table, i:Int )
           cell.span = cell_span
         endIf
       endForEach
+
+    method set_content( cells:Component[] )
+      table.set_content( Box(i,0,1,table.cells_high), cells )
 
     method set_fixed_width( w:Real )
       sizing_mode  = SizingMode.FIXED_PIXELS
@@ -767,6 +837,14 @@ class TableRows : TableRow[]
   METHODS
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, 0, j, table.cells_wide-1, j )
+
+    method get_content( cells=null:Component[] )->Component[]
+      ensure<<cells>>
+      (forEach in this).get_content( cells )
+      return cells
+
+    method discard
+      (forEach in this step -1).discard
 
     method set_fixed_height( h:Real )
       (forEach in this).fixed_height( h )
@@ -807,8 +885,11 @@ class TableRow( table:Table, j:Int )
     method cells->TableSubsetProperties
       return TableSubsetProperties( table, 0, j, table.cells_wide-1, j )
 
-    method remove
-      table.remove( Box(0,j,table.cells_wide,1) )
+    method get_content( cells=null:Component[] )->Component[]
+      return table.get_content( Box(0,j,table.cells_wide,1), cells )
+
+    method discard
+      table.discard_row( j )
 
     method set_fixed_height( h:Real )
       sizing_mode  = SizingMode.FIXED_PIXELS
