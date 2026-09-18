@@ -111,15 +111,33 @@ class Table : Component
         endForEach
       endIf
 
+    method add_row( new_content:Component[] )
+      insert_row( new_content, cells_high )
+
+    method insert_row( new_content:Component[], before_j=0:Int )
+      resize( cells_wide.or_larger(new_content.count), cells_high+1 )
+
+      if (cells_high > 1 and before_j < cells_high-1)
+        use existing_content = WorkList<<Component>>
+          local region = Box( 0, before_j, cells_wide, (cells_high-before_j)-1 )
+          get_content( region, existing_content )
+          set_content( region+XY(0,1), existing_content )
+        endUse
+      endIf
+
+      set_content( Box(0,before_j,new_content.count,1), new_content )
+
+    method add_column( new_content:Component[] )
+      insert_column( new_content, cells_wide )
+
     method insert_column( new_content:Component[], before_i=0:Int )
       resize( cells_wide+1, cells_high.or_larger(new_content.count) )
 
       if (cells_wide > 1)
         use existing_content = WorkList<<Component>>
-          local region = Box( before_i, 0, cells_wide-1, cells_high )
-          trace region
-          #get_content( region, existing_content )
-          #set_content( region+XY(1,0), existing_content )
+          local region = Box( before_i, 0, (cells_wide-before_i)-1, cells_high )
+          get_content( region, existing_content )
+          set_content( region+XY(1,0), existing_content )
         endUse
       endIf
 
@@ -229,9 +247,6 @@ class Table : Component
           prior.clear
           prior.add( forEach in .cells )
         endUse
-
-        (forEach in columns).is_resolved = false
-        (forEach in rows).is_resolved = false
 
       else
         forEach (i in 0..<w) columns.add( TableColumn(this,i) )
