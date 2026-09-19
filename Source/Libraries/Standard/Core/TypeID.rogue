@@ -1,7 +1,27 @@
 class TypeID( index:Int )
+  GLOBAL METHODS
+    method count->Int
+      return native("%Ns%Rogue_type_count")->Int
+
+    method get( name:String )->TypeID?
+      forEach (i in 0..<count)
+        if (native("0 == strcmp($name->data->as_utf8, %Ns%Rogue_types[$i]->name)")->Logical)
+          return TypeID( i )
+        endIf
+      endForEach
+      return null
+
   METHODS
     method attributes->Int
       return native( "%Ns%Rogue_types[$index]->attributes" )->Int
+
+    method create_object->Object
+      local result : Object
+      native @|$result = (%Ns%RogueObject*) %Ns%Rogue_create_object( %Ns%Rogue_types[$index], 1 );
+      return result
+
+    method create_object<<$AsType>>->$AsType
+      return create_object->(as $AsType)
 
     method instance_of( ancestor:TypeID )->Logical
       local ancestor_id = ancestor.index

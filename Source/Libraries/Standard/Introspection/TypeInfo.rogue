@@ -31,8 +31,8 @@ class TypeInfo
        |}
 
   GLOBAL METHODS
-    method count->Int32
-      return native("%Ns%Rogue_type_count")->Int32
+    method count->Int
+      return native("%Ns%Rogue_type_count")->Int
 
     method get( index:Int32 )->TypeInfo
       if (index < 0 or index >= native("%Ns%Rogue_type_count")->Int32)
