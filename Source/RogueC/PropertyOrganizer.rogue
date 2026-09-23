@@ -31,11 +31,20 @@ class PropertyOrganizer : Visitor
           endForEach
 
         elseIf (this_type.is_compound)
-          # Turn parameters into properties.
+          # Turn parameters into properties. Unlike objects, the compound's create()
+          # passes its parameters positionally into the struct, so parameters keep their types.
           forEach (v in cmd.constructor_properties)
-            if (not v.type) throw v.t.error( "Missing ':Type'." )
-            local p = Property( v.t, v.name, v.initial_value, v.type )
-            collect( v.t, p )
+            if (v.type)
+              local p = Property( v.t, v.name, v.initial_value, v.type )
+              collect( v.t, p )
+            elseIf (v.attributes.is_default_parameter)  # AKA flag parameter
+              if (not v.initial_value) v.initial_value = LiteralLogical( v.t, false )
+              v.type = Program.type_Logical
+              local p = Property( v.t, v.name, v.initial_value, Program.type_Logical )
+              collect( v.t, p )
+            else
+              throw v.t.error( "Missing ':Type'." )
+            endIf
           endForEach
 
         elseIf (this_type.is_aspect)
