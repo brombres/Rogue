@@ -704,8 +704,12 @@ class Local : Cmd
         which (attribute)
           case "default"
             attributes.is_default_parameter = true
+            if (type and not initial_value) initial_value = DefaultValue( t, type )
           case "direct-auto-store"
             attributes.is_direct_auto_store = true
+          case "default&direct-auto-store"
+            attributes.is_direct_auto_store = true
+            if (type and not initial_value) initial_value = DefaultValue( t, type )
         endWhich
       endIf
       attributes.is_anchored = true  # always true

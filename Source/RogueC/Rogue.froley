@@ -902,7 +902,20 @@ parser
 
 - procedure_parameter
   consume_eols
-  on '&' identifier optional_parameter_initial_value optional_type -> Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type,attribute="default":String)
+  on '&'
+    is_direct_auto_store = false
+    on '@'
+      is_direct_auto_store = true
+    endOn
+    id_or_internal_id
+    optional_parameter_initial_value
+    optional_type
+    if (is_direct_auto_store)
+      produce Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type,attribute="default&direct-auto-store":String)
+    else
+      produce Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type,attribute="default":String)
+    endIf
+  endOn
   on '@'
     id_or_internal_id
     optional_parameter_initial_value
