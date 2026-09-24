@@ -2111,8 +2111,9 @@ parser
   produceList Attributes
 
 - property_attribute
-  on @"faux" -> AttributeFaux
-  syntaxError "Illegal property attribute. Expected [faux]."
+  on @"faux"     -> AttributeFaux
+  on @"override" -> AttributeOverride
+  syntaxError "Illegal property attribute. Expected one or more of [faux override]."
 
 - multi_line_statements
   consume_eols_and_semicolons
@@ -2782,7 +2783,7 @@ parser
     call uses_attribute_no_include
     return
   endIf
-  syntaxError "Illegal 'uses' attribute. Expected any of [export noInclude]."
+  syntaxError "Illegal 'uses' attribute. Expected one or more of [export noInclude]."
 
 #- import_library_by_path_or_filepath
 #  on STRING
