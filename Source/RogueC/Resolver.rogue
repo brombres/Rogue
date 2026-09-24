@@ -842,7 +842,7 @@ class Resolver : Recyclable, Visitor
             tokens.add( t.cloned(TokenType.SYMBOL_OPEN_PAREN) )
             forEach (param at i in base_m.parameters)
               if (i > 0) tokens.add( t.cloned(TokenType.SYMBOL_COMMA) )
-              local is_auto_store = (param.name != param.original_name)
+              local is_auto_store = param.attributes.is_auto_store
               tokens.add( t.cloned(TokenType.IDENTIFIER,param.original_name) )
               if (param.initial_value)
                 tokens.add( t.cloned(TokenType.SYMBOL_EQUALS) )

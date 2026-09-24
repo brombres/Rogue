@@ -321,7 +321,8 @@ class Procedure : Cmd
               elseIf (this.is_method)
                 local prop = type_context.properties[p.name]
                 if (prop)
-                  p.name = "_auto_store_" + p.name
+                  p.name = "_" + p.name
+                  p.attributes.is_auto_store = true
                   p.type = prop.type
                   if (p.attributes.is_direct_auto_store)
                     statements.insert( SetThisProperty(p.t,prop,Access(p.t,p.name)) )

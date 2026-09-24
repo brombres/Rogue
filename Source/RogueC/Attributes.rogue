@@ -57,6 +57,7 @@ class Attribute
     CALLS_PRIOR             = (Int64(1):<<:52)
     NOVEL                   = (Int64(1):<<:53)
     GENERIC_SUBCLASS        = (Int64(1):<<:54)
+    AUTO_STORE              = (Int64(1):<<:55)
 endClass
 
 class Attributes : CmdList
@@ -115,6 +116,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE<< calls_prior,             Attribute.CALLS_PRIOR >>
   ROGUE_ATTRIBUTE<< is_novel,                Attribute.NOVEL >>
   ROGUE_ATTRIBUTE<< is_generic_subclass,     Attribute.GENERIC_SUBCLASS >>
+  ROGUE_ATTRIBUTE<< is_auto_store,           Attribute.AUTO_STORE >>
 
   PROPERTIES
     flags : Int64
