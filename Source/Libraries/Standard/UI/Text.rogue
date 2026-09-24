@@ -4,7 +4,7 @@ class Text : Component
   PROPERTIES
     value         : String
     scaling_mode  = ScalingModeXY( ScalingMode.NONE, ScalingMode.NONE )
-    sizing_mode   = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL )
+    sizing_mode   = SizingModeXY( SizingMode.NATURAL, SizingMode.NATURAL ) ![override]
 
   METHODS
     method init( text=String():String, &fragment )

@@ -4,7 +4,7 @@ class Entity2D : Entity
   PROPERTIES
     natural_size = XY(1,1)
     scale        = XY(1,1)
-    position     : XY
+    position     : XY ![override]
     z            : Real
     scale_z      = 1.0
     rotation     = Quaternion()

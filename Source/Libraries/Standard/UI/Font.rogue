@@ -5,7 +5,7 @@ class Font
     name         : String
     line_spacing = 1.0
     anchor       = Anchor.CENTER : Anchor
-    scale        = XY(1,1)
+    scale        = XY(1,1) ![override]
 
   METHODS
     method init_clone( existing:Font )
