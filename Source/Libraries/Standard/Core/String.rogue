@@ -2784,7 +2784,7 @@ endClass
 
 class StringReader : Reader<<Character>>
   PROPERTIES
-    position   : Int
+    position   : Int ![override]
     count      : Int
     string     : String
 

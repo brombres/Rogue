@@ -8,7 +8,7 @@ class FDReader : Reader<<Byte>>
 
   PROPERTIES
     fd              : Int
-    position        : Int
+    position        : Int ![override]
     buffer_position : Int
     auto_close      : Logical
     buffer          = Byte[](1024)

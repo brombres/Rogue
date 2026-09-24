@@ -352,13 +352,20 @@ class Type : Cmd
       global_properties[p.name] = p
       p.attributes.augmented = true
 
-    method add_extended_property( p:Property )
-      if local existing_p = properties[p.name]
+    method add_extended_property( p:Property, &check_override )
+      local existing_p = properties[p.name]
+      if (existing_p)
         p.type.organize
         if (not p.type.instance_of(existing_p.type))
           throw p.t.error( "Redeclared property '$' type $ is not instance of inherited type $."...
             (p.name,p.type,existing_p.type) )
         endIf
+        if (check_override and not p.attributes.is_override and not p.is_constructor_property)
+          Program.print_warning( p.t,
+            "Property '$' overrides an inherited property. Add the ![override] attribute to make this explicit."(p.name) )
+        endIf
+      elseIf (check_override and p.attributes.is_override)
+        throw p.t.error( "Property '$' is declared ![override] but does not override any inherited property. Remove the ![override] attribute or check the property name."(p.name) )
       endIf
       properties[p.name] = p
 
@@ -966,10 +973,16 @@ class Type : Cmd
           endIf
 
           forEach (p in my_properties)
-            add_extended_property( p )
+            add_extended_property( p, &check_override )
           endForEach
 
         endUse
+      else
+        forEach (p in properties.values)
+          if (p.attributes.is_override)
+            throw p.t.error( "Property '$' is declared ![override] but does not override any inherited property. Remove the ![override] attribute or check the property name."(p.name) )
+          endIf
+        endForEach
       endIf
 
       if (states.count)

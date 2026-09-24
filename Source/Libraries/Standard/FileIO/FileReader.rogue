@@ -6,7 +6,7 @@ class FileReader : Reader<<Byte>>
   PROPERTIES
     filepath        : String
     count           : Int
-    position        : Int
+    position        : Int ![override]
     buffer_position : Int
     buffer          = Byte[](1024)
     error           : Logical

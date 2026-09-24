@@ -2,7 +2,7 @@ library RogueC
 
 class AspectMethodPatcher : InspectionVisitor [singleton]
   PROPERTIES
-    this_type : Type
+    this_type : Type ![override]
 
   METHODS
     method patch( this_type, cmd:Cmd )

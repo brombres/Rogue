@@ -4,7 +4,7 @@ class Scanner : Reader<<Character>>
   PROPERTIES
     data           : Character[]
     source         : String
-    position       : Int
+    position       : Int ![override]
     count          : Int
     line           : Int
     column         : Int

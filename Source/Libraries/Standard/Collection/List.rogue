@@ -850,7 +850,7 @@ endClass
 class ListReader<<$DataType>> : Reader<<$DataType>>
   PROPERTIES
     list       : $DataType[]
-    position   : Int
+    position   : Int ![override]
     limit      : Int
     is_limited : Logical
 
@@ -890,7 +890,7 @@ endClass
 class ListWriter<<$DataType>> : Writer<<$DataType>>
   PROPERTIES
     list     : $DataType[]
-    position : Int
+    position : Int ![override]
 
   METHODS
     method init( list )

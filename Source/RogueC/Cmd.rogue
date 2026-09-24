@@ -921,6 +921,7 @@ class Property : Cmd
     native_expression : String
     id = -1           : Int
     doc               : String
+    is_constructor_property : Logical
 
   METHODS
     method init( t, name, initial_value, type, &is_direct )
@@ -948,6 +949,7 @@ class Property : Cmd
       if (existing.attributes) attributes = existing.attributes.cloned
       native_expression = existing.native_expression
       doc = existing.doc
+      is_constructor_property = existing.is_constructor_property
 
     method description->String
       if (native_expression) return "Property($,$)" (%name,%native_expression)
@@ -2684,7 +2686,7 @@ endClass
 class Use : ControlStructure
   PROPERTIES
     resources  : UsedResources
-    statements : Cmd
+    statements : Cmd ![override]
 
   METHODS
     method init( t, resources, statements )
