@@ -167,6 +167,7 @@ SYMBOL_ASTERISK              *
 SYMBOL_AT                    @
 SYMBOL_BACKSLASH             \
 SYMBOL_BANG                  !
+SYMBOL_BANG_OPEN_SQUARE      ![
 SYMBOL_CARET                 ^
 SYMBOL_CLOSE_CURLY           }   [structural]
 SYMBOL_CLOSE_SQUARE          ]   [structural]
@@ -805,13 +806,13 @@ parser
       procedure_returns_this = false
     endIf
 
-    on '['
+    if (consume('[') or consume('!['))
       while (hasAnother and not nextIs(']'))
         procedure_attribute
         consume ','
       endWhile
       mustConsume(']')
-    endOn
+    endIf
   produceList Attributes
 
 - procedure_attribute
@@ -1260,13 +1261,13 @@ parser
 
 - library_attributes
   beginList
-    on '['
+    if (consume('[') or consume('!['))
       while (hasAnother and not nextIs(']'))
         library_attribute
         consume ','
       endWhile
       mustConsume(']')
-    endOn
+    endIf
   produceList Attributes
 
 - library_attribute
@@ -1276,13 +1277,13 @@ parser
 
 - class_attributes
   beginList
-    on '['
+    if (consume('[') or consume('!['))
       while (hasAnother and not nextIs(']'))
         class_attribute
         consume ','
       endWhile
       mustConsume(']')
-    endOn
+    endIf
   produceList Attributes
 
 - class_attribute
@@ -1319,13 +1320,13 @@ parser
 
 - enum_attributes
   beginList
-    on '['
+    if (consume('[') or consume('!['))
       while (hasAnother and not nextIs(']'))
         enum_attribute
         consume ','
       endWhile
       mustConsume(']')
-    endOn
+    endIf
   produceList Attributes
 
 - enum_attribute
@@ -2086,13 +2087,13 @@ parser
 
 - global_property_attributes
   beginList
-    on '['
+    if (consume('[') or consume('!['))
       while (hasAnother and not nextIs(']'))
         global_property_attribute
         consume ','
       endWhile
       mustConsume(']')
-    endOn
+    endIf
   produceList Attributes
 
 - global_property_attribute
@@ -2100,13 +2101,13 @@ parser
 
 - property_attributes
   beginList
-    on '['
+    if (consume('[') or consume('!['))
       while (hasAnother and not nextIs(']'))
         property_attribute
         consume ','
       endWhile
       mustConsume(']')
-    endOn
+    endIf
   produceList Attributes
 
 - property_attribute
@@ -2766,13 +2767,13 @@ parser
 
 - uses_attributes
   beginList
-    on '['
+    if (consume('[') or consume('!['))
       while (hasAnother and not nextIs(']'))
         uses_attribute
         consume ','
       endWhile
       mustConsume(']')
-    endOn
+    endIf
   produceList Attributes
 
 - uses_attribute
@@ -4083,13 +4084,13 @@ parser
   call rewrite_token
 
 - include_attributes
-  on '['
+  if (consume('[') or consume('!['))
     while (hasAnother and not nextIs(']'))
       include_attribute
       consume ','
     endWhile
     mustConsume(']')
-  endOn
+  endIf
 
 - include_attribute
   on @"api"

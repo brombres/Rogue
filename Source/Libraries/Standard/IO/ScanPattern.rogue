@@ -12,6 +12,7 @@ class ScanPattern
   #   *     - zero or more of the preceding
   #   +     - one or more of the preceding
   #   ?     - preceding is optional (zero or one occurrence)
+  #   $     - Matches end of input
   #
   # Example scan patterns:
   # - Match a typical identifier or variable name:
@@ -24,7 +25,7 @@ class ScanPattern
   #   # scan-pattern  = sequence [allowed-count] | set [allowed-count] | "{" scan-pattern "}"
   #   # sequence      = [literal-character | "\" literal_character | "."] [allowed-count]
   #   # allowed-count = ["*" | "+" | "?"]
-  #   # set           = "[" [single-character | L-H]+ "]"
+  #   # set           = "[" ["^"] [single-character | L-H]+ "]"
   #
   GLOBAL METHODS
     method create( pattern:String )->ScanPattern
@@ -240,6 +241,17 @@ class AnyCharacterScanPattern : ScanPattern
       return "."
 endClass
 
+class EndOfInputScanPattern : ScanPattern
+  METHODS
+    method init
+
+    method scan( scanner:Scanner, builder=null:String )->Logical
+      return (not scanner.has_another)
+
+    method to->String
+      return "$"
+endClass
+
 class ScanPatternParser [singleton]
   DEFINITIONS
     PARSE_SEQ = 0
@@ -311,6 +323,9 @@ class ScanPatternParser [singleton]
               case '.'
                 _flush
                 stack.add( AnyCharacterScanPattern() )
+              case '$'
+                _flush
+                stack.add( EndOfInputScanPattern() )
               case '\\'
                 ch = scanner.read
                 builder.print ch

@@ -1,0 +1,25 @@
+library RogueC
+
+routine ImplicitPropertyError( t:Token, message:String )->CompileError
+  local error = t.error( message )
+  local line = error.source_line
+  line = line.trimmed.before_first( '#' )
+  if local open_i = line.locate_last( '[' )
+    if (open_i > 0 and line[open_i-1] == ' ')
+      # We've got a ' [' - might be attributes
+      line .= replacing( " ", "" )
+      local attributes = line.after_last( '[' )
+      if (attributes.ends_with(']') and attributes.count(']') == 1 and attributes.count('[') == 0)
+        # Looking good so far.
+        if local open_i2 = line.locate_last( '[' )
+          # Now that the spaces have been removed, make sure there's not a '=' assignment before the open '['
+          # (which would mean it's a table).
+          if (open_i2 > 0 and line[open_i2-1] != '=')
+            return t.error( "Property '[attributes]' declaration is ambiguous in this context - use '![attributes]' instead." )
+          endIf
+        endIf
+      endIf
+    endIf
+  endIf
+  return error
+endRoutine

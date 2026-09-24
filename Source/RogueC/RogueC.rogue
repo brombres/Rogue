@@ -34,6 +34,7 @@ $include ExceptionTypes
 $include Finalizer
 $include ImplicitContext
 $include ImplicitFunctionGenerator
+$include ImplicitPropertyError
 $include ImplicitWithVarCollector
 $include InspectionVisitor
 $include Macro
