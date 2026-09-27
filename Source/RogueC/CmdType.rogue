@@ -516,6 +516,12 @@ augment
 
     method Unary.is_operator->Logical
       return true
+
+    method NativeExpression.is_operator->Logical
+      # Native code is inserted verbatim and may contain operators, so it must
+      # be parenthesized when used as an operand - e.g. `!!(a & b)` rather than
+      # `!!a & b`.
+      return true
 endAugment
 
 # is_type_context
