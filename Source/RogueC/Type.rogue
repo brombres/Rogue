@@ -360,7 +360,10 @@ class Type : Cmd
           throw p.t.error( "Redeclared property '$' type $ is not instance of inherited type $."...
             (p.name,p.type,existing_p.type) )
         endIf
-        if (check_override and not p.attributes.is_override and not p.is_constructor_property)
+        # A property redeclared by (or over) an aspect/augment is not a subclass
+        # override; the type check above still applies but no ![override] is needed.
+        local involves_aspect = (existing_p.attributes.is_aspect or p.attributes.is_aspect)
+        if (check_override and not involves_aspect and not p.attributes.is_override and not p.is_constructor_property)
           Program.print_warning( p.t,
             "Property '$' overrides an inherited property. Add the ![override] attribute to make this explicit."(p.name) )
         endIf
@@ -966,8 +969,9 @@ class Type : Cmd
 
               forEach (p in incorporated_aspect.properties)
                 p = p.cloned.[type_context=this]
+                p.attributes.is_aspect = true  # marks this property as coming from an aspect or augment
                 if (is_augment) p.attributes.is_augment = true
-                add_extended_property( p.cloned.[type_context=this] )
+                add_extended_property( p )
               endForEach
             endForEach
           endIf
