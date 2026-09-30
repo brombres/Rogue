@@ -1330,13 +1330,14 @@ parser
   produceList Attributes
 
 - enum_attribute
-  on @"bitflags"   -> AttributeBitflags
+  on @"api"       -> AttributeAPI
+  on @"bitflags"  -> AttributeBitflags
   if (consume @"essential")
     call class_attribute_essential
     produce AttributeEssential
   endIf
-  on @"singleton"   -> AttributeSingleton
-  syntaxError "Illegal enum attribute. Expected any of [bitflags essential singleton]."
+  on @"singleton" -> AttributeSingleton
+  syntaxError "Illegal enum attribute. Expected any of [api bitflags essential singleton]."
 
 - enum
   constructor_properties
