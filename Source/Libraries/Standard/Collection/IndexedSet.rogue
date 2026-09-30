@@ -40,7 +40,7 @@ class IndexedSet<<$DataType>> : IteratorPreferred
       return data.count
 
     method difference( other:IndexedSet<<$DataType>> )
-      remove( forEach in other.values )
+      remove( forEach in other )
 
     method get( key:$DataType, &locate )->Int?
       local entry = data.find( key )
@@ -89,7 +89,7 @@ class IndexedSet<<$DataType>> : IteratorPreferred
       return result
 
     method union( other:IndexedSet<<$DataType>> )
-      add( forEach in other.values )
+      add( forEach in other )
 
 endClass
 

@@ -1,43 +1,50 @@
 class Android [singleton]
   NATIVE
-    nativeHeader @|#include <jni.h>
+    nativeHeader
+    @|#if defined(%NS%ROGUE_TARGET_ANDROID)
+     |  #include <jni.h>
+     |#endif
 
   METHODS
     method dpi->Real
       local result : Real
 
-      native
-      @|JNIEnv* env = (JNIEnv*)SDL_GetAndroidJNIEnv();
-       |jobject activity = (jobject)SDL_GetAndroidActivity();
-       |
-       |jclass activity_class = env->GetObjectClass( activity );
-       |jmethodID getWindowManager = env->GetMethodID( activity_class,
-       |    "getWindowManager", "()Landroid/view/WindowManager;");
-       |jobject windowManager = env->CallObjectMethod( activity, getWindowManager );
-       |
-       |jclass windowManagerClass = env->GetObjectClass( windowManager );
-       |jmethodID getDefaultDisplay = env->GetMethodID( windowManagerClass,
-       |    "getDefaultDisplay", "()Landroid/view/Display;");
-       |jobject display = env->CallObjectMethod( windowManager, getDefaultDisplay);
-       |
-       |jclass displayMetricsClass = env->FindClass( "android/util/DisplayMetrics");
-       |jmethodID displayMetricsConstructor = env->GetMethodID( displayMetricsClass, "<init>", "()V");
-       |jobject metrics = env->NewObject( displayMetricsClass, displayMetricsConstructor );
-       |
-       |jclass displayClass = env->GetObjectClass( display );
-       |jmethodID getMetrics = env->GetMethodID( displayClass,
-       |    "getMetrics", "(Landroid/util/DisplayMetrics;)V");
-       |env->CallVoidMethod( display, getMetrics, metrics );
-       |
-       |jfieldID xdpiField = env->GetFieldID( displayMetricsClass, "xdpi", "F" );
-       |
-       |$result = env->GetFloatField( metrics, xdpiField );
+      if ($target("Android"))
+        native
+        @|JNIEnv* env = (JNIEnv*)SDL_GetAndroidJNIEnv();
+         |jobject activity = (jobject)SDL_GetAndroidActivity();
+         |
+         |jclass activity_class = env->GetObjectClass( activity );
+         |jmethodID getWindowManager = env->GetMethodID( activity_class,
+         |    "getWindowManager", "()Landroid/view/WindowManager;");
+         |jobject windowManager = env->CallObjectMethod( activity, getWindowManager );
+         |
+         |jclass windowManagerClass = env->GetObjectClass( windowManager );
+         |jmethodID getDefaultDisplay = env->GetMethodID( windowManagerClass,
+         |    "getDefaultDisplay", "()Landroid/view/Display;");
+         |jobject display = env->CallObjectMethod( windowManager, getDefaultDisplay);
+         |
+         |jclass displayMetricsClass = env->FindClass( "android/util/DisplayMetrics");
+         |jmethodID displayMetricsConstructor = env->GetMethodID( displayMetricsClass, "<init>", "()V");
+         |jobject metrics = env->NewObject( displayMetricsClass, displayMetricsConstructor );
+         |
+         |jclass displayClass = env->GetObjectClass( display );
+         |jmethodID getMetrics = env->GetMethodID( displayClass,
+         |    "getMetrics", "(Landroid/util/DisplayMetrics;)V");
+         |env->CallVoidMethod( display, getMetrics, metrics );
+         |
+         |jfieldID xdpiField = env->GetFieldID( displayMetricsClass, "xdpi", "F" );
+         |
+         |$result = env->GetFloatField( metrics, xdpiField );
+      endIf
 
       return result
 
     method is_tablet->Logical
       local result : Logical
-      native @|$result = (RogueLogical) SDL_IsTablet();
+      if ($target("Android") and $target("SDL"))
+        native @|$result = (RogueLogical) SDL_IsTablet();
+      endIf
       return result
 
 
