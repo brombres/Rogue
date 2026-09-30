@@ -1637,7 +1637,7 @@ endClass
 
 class ColorGradientMultiplyBitmapFillFn : ColorGradientBitmapFillFn [singleton]
   PROPERTIES
-    gradient : ColorGradient
+    gradient : ColorGradient ![override]
 
   METHODS
     method call( bitmap:Bitmap, bounds:Box, channel_mask=0xFFFFFFFF:Int32 )
