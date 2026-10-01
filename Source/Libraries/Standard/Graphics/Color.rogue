@@ -41,6 +41,14 @@ class Color( argb:Int32 ) [compound]
     method alpha->Real
       return ((argb :>>: 24) & 255) / 255.0
 
+    method alpha_blend( other:Color )->Color
+      local a = alpha
+      local inverse_a = 1.0 - a
+      local r = red * inverse_a   + other.red * a
+      local g = green * inverse_a + other.green * a
+      local b = blue * inverse_a  + other.blue * a
+      return Color( r, g, b, alpha*inverse_a+a )
+
     method alpha_byte->Int
       return (argb :>>: 24) & 255
 
@@ -72,12 +80,11 @@ class Color( argb:Int32 ) [compound]
       return ((argb & 0xFF000000) == 0xFF000000)
 
     method operator*( other:Color )->Color
-      local a = other.alpha
-      local inverse_a = 1.0 - a
-      local r = red * inverse_a   + other.red * a
-      local g = green * inverse_a + other.green * a
-      local b = blue * inverse_a  + other.blue * a
-      return Color( r, g, b, alpha*inverse_a+a )
+      local a = (((argb:>>>:24) & 255) * ((other.argb:>>>:24) & 255)) / 255
+      local r = (((argb:>>>:16) & 255) * ((other.argb:>>>:16) & 255)) / 255
+      local g = (((argb:>>>: 8) & 255) * ((other.argb:>>>: 8) & 255)) / 255
+      local b = (((argb)        & 255) * ((other.argb)        & 255)) / 255
+      return Color( a:<<:24 | r:<<:16 | g:<<:8 | b )
 
     method operator*( value:Real )->Color
       return Color( red*value, green*value, blue*value, alpha )
