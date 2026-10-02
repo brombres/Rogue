@@ -90,7 +90,11 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
           local ch = buffer[ index ]
           ++index
           cur_style = cur_style.apply( ch.style, output )
-          output.print( ch.value )
+          if (cur_style.flags & CharacterStyle.OMIT)
+            Console.cursor += XY( 1, 0 )
+          else
+            output.print( ch.value )
+          endIf
         endLoop
 
         # On Windows must turn off style before println or else it extends across
@@ -114,7 +118,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
         forEach (i in 0..<width)
           local index = line_start + i
           local ch = buffer[index]
-          if (ch == displayed[index])
+          if (ch == displayed[index] or (ch.style.flags & CharacterStyle.OMIT))
             is_drawing = false
           else
             if (not is_drawing)
@@ -187,6 +191,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       draw( bounds, StyledCharacter(ch,style.current) )
 
     method draw( bounds:Box, ch:StyledCharacter )
+      bounds .= floor
       local w = bounds.width
       local h = bounds.height
       local x1 = bounds.x    : Int
@@ -208,6 +213,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       #   D    F
       #   D    F
       #   GHHHHI
+      bounds .= floor
       local w = bounds.width
       local h = bounds.height
       local x1 = bounds.x    : Int
@@ -277,16 +283,18 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       fill( Box(width,height), StyledCharacter(ch,style.current) )
 
     method fill( bounds:Box, ch:StyledCharacter )
+      bounds .= floor
+
       local intersection = bounds & Box(width,height)
       if (not intersection) return
       if (clip) intersection = intersection.value & clip.value
       if (not intersection) return
       bounds = intersection.value
 
-      local index = bounds.y * width + bounds.x
-      local w = bounds.width
+      local index = bounds.position.y * width + bounds.position.x
+      local w = bounds.size.x
       local row_skip = width - w
-      loop (bounds.height)
+      loop (bounds.size.y)
         loop (w)
           buffer[index] = ch
           ++index
@@ -389,6 +397,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       displayed[ forEach of displayed ] = zero
 
     method invalidate( bounds:Box )
+      bounds .= floor
       local intersection = bounds & Box(width,height)
       if (not intersection) return
       bounds = intersection.value
@@ -403,6 +412,11 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
         endLoop
         index += row_skip
       endLoop
+
+    method omit( bounds:Box )
+      # Fills the bounds with blanks spaces using the character style OMIT.
+      # Those character cells are not drawn in the display() method.
+      fill( bounds, StyledCharacter(' ', CharacterStyle.OMIT) )
 
     method pixellated( style=CharacterStyle.NONE:CharacterStyle )->TextCanvas
       # "Pixellates" non-space characters in this TextCanvas into quarter block characters.
@@ -463,6 +477,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       invalidate
 
     method request_redraw( bounds:Box )
+      bounds .= floor
       invalidate( bounds )
 
     method resize( new_size:XY )
@@ -635,6 +650,12 @@ class CurrentCharacterStyle
     method inverse
       current += CharacterStyle.INVERSE
 
+    method omit
+      current += CharacterStyle.OMIT
+
+    method omit_off
+      current -= CharacterStyle.OMIT
+
     method hidden
       current += CharacterStyle.HIDDEN
 
@@ -777,10 +798,10 @@ class CharacterStyle( flags:Int, fg:Color, bg:Color ) [compound]
   DEFINITIONS
     NONE                 = CharacterStyle(0)
 
-    FG_MASK              = 0b000000000_111111111_00000000
-    BG_MASK              = 0b111111111_000000000_00000000
-    FG_SHIFT             = 8
-    BG_SHIFT             = 17
+    FG_MASK              = 0b000000000_111111111_000000000
+    BG_MASK              = 0b111111111_000000000_000000000
+    FG_SHIFT             = 9
+    BG_SHIFT             = 18
 
     BOLD                 = (1 :<<: 0)
     DIM                  = (1 :<<: 1)
@@ -788,8 +809,9 @@ class CharacterStyle( flags:Int, fg:Color, bg:Color ) [compound]
     BLINK                = (1 :<<: 3)
     INVERSE              = (1 :<<: 4)
     HIDDEN               = (1 :<<: 5)
-    TRUECOLOR_FG         = (1 :<<: 6)
-    TRUECOLOR_BG         = (1 :<<: 7)
+    OMIT                 = (1 :<<: 6)   # don't draw this cell
+    TRUECOLOR_FG         = (1 :<<: 7)
+    TRUECOLOR_BG         = (1 :<<: 8)
     TRUECOLOR            = (CharacterStyle.TRUECOLOR_FG | CharacterStyle.TRUECOLOR_BG)
 
     FG_DEFAULT           = (0  :<<: 8)
