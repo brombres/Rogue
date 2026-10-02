@@ -44,10 +44,10 @@ class Color( argb:Int32 ) [compound]
     method alpha_blend( other:Color )->Color
       local a = alpha
       local inverse_a = 1.0 - a
-      local r = red * inverse_a   + other.red * a
-      local g = green * inverse_a + other.green * a
-      local b = blue * inverse_a  + other.blue * a
-      return Color( r, g, b, alpha*inverse_a+a )
+      local r = red * a   + other.red * inverse_a
+      local g = green * a + other.green * inverse_a
+      local b = blue * a  + other.blue * inverse_a
+      return Color( r, g, b, alpha*a+other.alpha*inverse_a )
 
     method alpha_byte->Int
       return (argb :>>: 24) & 255
