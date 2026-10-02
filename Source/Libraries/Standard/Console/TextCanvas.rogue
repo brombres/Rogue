@@ -1033,8 +1033,8 @@ augment Graphics::Bitmap
         forEach (i in 0..<width)
           local fg = pixels[src_index]
           if (fg.alpha_byte < 255)
-            if (i & 2) fg = evens * fg
-            else       fg = odds  * fg
+            if (i & 2) fg .= alpha_blend( evens )
+            else       fg .= alpha_blend( odds )
           endIf
           canvas_data[ dest_index ] = StyledCharacter( '\[2584]', fg, bg24 )
           ++src_index
@@ -1048,11 +1048,11 @@ augment Graphics::Bitmap
           local fg = pixels[src_index+width]
           if (bg.alpha_byte < 255 or fg.alpha_byte < 255)
             if ((i & 2) xor (j & 1))
-              bg = evens * bg
-              fg = odds  * fg
+              bg .= alpha_blend( evens )
+              fg .= alpha_blend( odds )
             else
-              bg = odds  * bg
-              fg = evens * fg
+              bg .= alpha_blend( odds )
+              fg .= alpha_blend( evens )
             endIf
           endIf
           canvas_data[ dest_index ] = StyledCharacter( '\[2584]', fg, bg )
