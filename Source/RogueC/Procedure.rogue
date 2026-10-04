@@ -365,13 +365,16 @@ class Procedure : Cmd
         else           type_context.method_template_instances.add( name )
       endIf
 
+      organize_statements
+
+      add_to_call_signature_group
+
+    method organize_statements
       use organizer = RecyclePool<<MethodOrganizer>>
         temporarily organizer.this_library=library_context, organizer.this_type=type_context, organizer.this_procedure=this
           organizer.visit_children( this )
         endTemporarily
       endUse
-
-      add_to_call_signature_group
 
     method add_to_call_signature_group
       block

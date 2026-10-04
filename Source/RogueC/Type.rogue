@@ -1355,6 +1355,9 @@ class Type : Cmd
               endIf
               existing_m.body.statements = Statements(t,cmd_which)
               existing_m.statements = existing_m.body.statements
+
+              if (existing_m.is_organized) existing_m.organize_statements
+              else                         existing_m.organize
             endUse
 
           endWhile
