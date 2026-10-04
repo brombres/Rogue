@@ -4210,6 +4210,25 @@ class StateDef : Cmd
 
 endClass
 
+class ChangeState : Cmd
+  # [> STATE_NAME] or context[> STATE_NAME]
+  PROPERTIES
+    context   : Cmd
+    new_state : Cmd
+
+  METHODS
+    method init( t, context, new_state )
+
+    method init( existing:ChangeState )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.new_state) new_state = existing.new_state.cloned
+
+    method description->String
+      return "ChangeState($,$)" (%context,%new_state)
+
+endClass
+
 class SetSingleton : Cmd
   PROPERTIES
     of_type   : Type

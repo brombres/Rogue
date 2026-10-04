@@ -3107,12 +3107,10 @@ parser
     produce CallbackFunction(context,name:String,param_types:TypeList,weak="true":Logical)
   elseOn "[>"
     consume_eols
-    beginList
-      expression
-    createList Args
+    expression
     consume_eols
     mustConsume ']'
-    produce ContextAccess(context,name="set_state":String,args)
+    produce ChangeState(context,new_state)
   endOn
 
 - context_block
@@ -3453,11 +3451,10 @@ parser
   endOn
 
   on "[>"
-    beginList
-      expression
-    createList Args
+    createNull  # context
+    expression
     mustConsume ']'
-    produce Access(name="set_state":String,args)
+    produce ChangeState(context,new_state)
   endOn
 
   on "native"

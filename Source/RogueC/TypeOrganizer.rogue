@@ -83,10 +83,12 @@ class TypeOrganizer : Visitor
       return null
 
     method on_visit( cmd:StateDef )->Cmd
-      if (this_type.definitions.contains(cmd.name))
-        throw cmd.t.error( "Multiple definitions of '$' in type $."(cmd.name,this_type) )
-      endIf
-      this_type.definitions[cmd.name] = LiteralInt32( cmd.t, this_type.states.count )
+      forEach (existing in this_type.states)
+        if (existing.name == cmd.name)
+          throw cmd.t.error( "Multiple definitions of state '$' in type $."(cmd.name,this_type) )
+        endIf
+      endForEach
+      CmdGlobalID( cmd.t, cmd.name )  # Each state is tracked as GlobalID <NAME>
       this_type.states.add( cmd )
       return null
 

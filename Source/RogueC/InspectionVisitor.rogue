@@ -821,6 +821,13 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.methods)
       return result
 
+    method on_visit_children( cmd:ChangeState )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.new_state)
+      return result
+
     method on_visit_children( cmd:SetSingleton )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.of_type)

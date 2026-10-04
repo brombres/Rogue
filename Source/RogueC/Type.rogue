@@ -582,6 +582,14 @@ class Type : Cmd
       endForEach
       return null
 
+    method find_state( name:String )->StateDef
+      # Finds a STATES definition in this type or any base class.
+      forEach (state in states)
+        if (state.name == name) return state
+      endForEach
+      if (base_class) return base_class.find_state( name )
+      return null
+
     method has_global_method_named( name:String )->Logical
       forEach (m in global_methods.values)
         if (m.name == name) return true
@@ -994,8 +1002,10 @@ class Type : Cmd
           local p = properties//state
           throw p.t.error( "Because this class contains STATES it cannot have a property named 'state'." )
         else
+          # 'state = <FIRST_STATE>' in init_object() routes through set_state() to enter the initial state.
           local t = states.first.t
-          properties//state = Property( t, "state", LiteralInt(t,-1), Program.type_Int ).[ type_context=this ]
+          local initial_state = CmdGlobalID( t, states.first.name )
+          properties//state = Property( t, "state", initial_state, Program.type_GlobalID ).[ type_context=this ]
         endIf
       endIf
 
@@ -1253,23 +1263,15 @@ class Type : Cmd
             endBlock
           endIf
 
-          block m = methods["set_state(Rogue::Int)"]
+          block m = methods["set_state(Rogue::GlobalID)"]
             if (not m)
               m = Method( t, this, "set_state" )
-              m.parameters.add( Local(t,"new_state",null,Program.type_Int) )
+              m.parameters.add( Local(t,"new_state",null,Program.type_GlobalID) )
 
-              local cmd_else : If
               if (has_leave)
-                cmd_else = If( t, null, Statements(t,Access(t,"LEAVE")), null )
+                # 'state' is the null GlobalID before the initial state is entered - no LEAVE in that case.
+                m.statements.add( If(t, Access(t,"state"), Statements(t,Access(t,"LEAVE"))) )
               endIf
-
-              m.statements.add(
-                If( t,
-                CompareEQ(t,Access(t,"new_state"),LiteralInt(t,-1)),
-                  Statements(t,Assign(t,Access(t,"new_state"),LiteralInt(t,0))),
-                  Statements(t,cmd_else)
-                )
-              )
 
               m.statements.add( Assign(t,DirectAccess(t,"state"),Access(t,"new_state")) )
               if (has_enter) m.statements.add( Access(t,"ENTER") )
@@ -1343,7 +1345,7 @@ class Type : Cmd
               forEach (sm in variations)
                 local m = sm.m
                 local args = Args(m.t)
-                args.add( Access(m.t,sm.state_def.name) )
+                args.add( CmdGlobalID(m.t,sm.state_def.name) )
                 cmd_cases.add( WhichCase(m.t,args,m.statements) )
               endForEach
 

@@ -439,6 +439,36 @@ class Resolver : Recyclable, Visitor
       endIf
       visit_children( cmd )
 
+    method on_visit( cmd:ChangeState )->Cmd
+      # [> NAME] -> set_state(<NAME>)
+      local context = cmd.context
+      local type = this_type
+      if (context)
+        context = visit( context )
+        type = context.require_type
+      endIf
+
+      # A bare identifier or GlobalID literal must name a defined state.
+      local new_state = cmd.new_state
+      local state_name : String
+      local access = new_state->(as Access)
+      if (access)
+        if (not access.args) state_name = access.name
+      elseIf (new_state instanceOf CmdGlobalID)
+        state_name = new_state->(as CmdGlobalID).name.after_first('<').before_last('>')
+      endIf
+
+      if (state_name)
+        if (not type or not type.find_state(state_name))
+          throw new_state.t.error( "No such state '$' in type $."(state_name,type) )
+        endIf
+        new_state = CmdGlobalID( new_state.t, state_name )
+      endIf
+
+      local args = Args( cmd.t, new_state )
+      if (context) return visit( ContextAccess(cmd.t,context,"set_state",args) )
+      else         return visit( Access(cmd.t,"set_state",args) )
+
     method on_visit( cmd:CmdGlobalID )->Cmd
       return visit( ContextAccess( cmd.t, Access(cmd.t,"Rogue::GlobalID"), cmd.name ) )
 
