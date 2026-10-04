@@ -467,11 +467,17 @@ class Parser : ParserCore, Recyclable
       token_buffer = Token[]
       return
 
-    method create_unconfirmed_global_id
-      local label = _cur_t->String
-      if (label.begins_with('<')) label = label.after_first('<').before_last('>')
-      CmdGlobalID( _cur_t, label, &unconfirmed )
-      return
+    method create_unconfirmed_global_id_from_token
+      .create_unconfirmed_global_id( _cur_t->String )
+
+    method create_unconfirmed_global_id_from_next_token
+      .create_unconfirmed_global_id( _next_t->String )
+
+    method .create_unconfirmed_global_id( name:String )
+      if (name)
+        if (name.begins_with('<')) name = name.after_first('<').before_last('>')
+        CmdGlobalID( _cur_t, name, &unconfirmed )
+      endIf
 
     method create_local_definition
       ensure<<local_definitions>>
