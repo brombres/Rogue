@@ -56,74 +56,58 @@ class ProgressState<<$ExtendedType>> : ActiveState<<$ExtendedType>>
     method started->$ExtendedType
       # Starts the state if not already started, which can call on_execute(),
       # but does not call update().
-      if (is_exited)
-        # Already exited outside of updated()
-        if (concurrent_state)
-          concurrent_state = concurrent_state.started
+      if (not prev_time)
+        handle_activate
+        prev_time = System.execution_time
+        if (duration)
+          start
+        else
+          execute
+          # Default will change duration to INDEFINITE and call on_start() (via start())
+          # Override on_execute() to keep INSTANT.
         endIf
-        return this->(as $ExtendedType)
-
-      else
-        if (not prev_time)
-          handle_activate
-          prev_time = System.execution_time
-          if (duration)
-            start
-          else
-            execute
-            # Default will change duration to INDEFINITE and call on_start() (via start())
-            # Override on_execute() to keep INSTANT.
-          endIf
-        endIf
-
-        if (concurrent_state)
-          concurrent_state = concurrent_state.started
-        endIf
-        if (not is_finished) return this->(as $ExtendedType)
-        handle_finish
-        return .start_next
       endIf
+
+      if (concurrent_state)
+        concurrent_state = concurrent_state.started
+      endIf
+      if (not is_finished) return this->(as $ExtendedType)
+      handle_finished
+      return .start_next
 
     method timescale->Real
       return 1.0
 
     method updated->$ExtendedType [override]
-      if (is_exited)
-        # Already exited outside of updated()
-        if (concurrent_state)
-          concurrent_state = concurrent_state.updated
+      local cur_time = System.execution_time
+      if (not prev_time)
+        dt = 1.0/60.0
+        handle_activate
+        if (duration)
+          start
+        else
+          execute
+          # Default will change duration to INDEFINITE and call on_start (via start())
+          # Override on_execute() to keep INSTANT.
         endIf
       else
-        local cur_time = System.execution_time
-        if (not prev_time)
-          dt = 1.0/60.0
-          handle_activate
-          if (duration)
-            start
-          else
-            execute
-            # Default will change duration to INDEFINITE and call on_start (via start())
-            # Override on_execute() to keep INSTANT.
-          endIf
-        else
-          dt = (cur_time - prev_time)
-          if (dt > 1.0/10.0) dt = 1.0/60.0
-          t += dt * timescale
-          if (duration >= 0 and t > duration) t = duration
-        endIf
-
-        prev_time = cur_time
-
-        update
-
-        if (concurrent_state)
-          concurrent_state = concurrent_state.updated
-        endIf
-
-        if (not is_finished) return this->(as $ExtendedType)
+        dt = (cur_time - prev_time)
+        if (dt > 1.0/10.0) dt = 1.0/60.0
+        t += dt * timescale
+        if (duration >= 0 and t > duration) t = duration
       endIf
 
-      handle_finish
+      prev_time = cur_time
+
+      update
+
+      if (concurrent_state)
+        concurrent_state = concurrent_state.updated
+      endIf
+
+      if (not is_finished) return this->(as $ExtendedType)
+
+      handle_finished
 
       return .update_next
 

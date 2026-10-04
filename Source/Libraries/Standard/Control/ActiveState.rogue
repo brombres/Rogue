@@ -95,7 +95,6 @@ class ActiveState<<$ExtendedType>>
       return result
 
     method exit
-      is_exited = true
       finish
 
     method find_active<<$FindType>>()->$ExtendedType
@@ -117,7 +116,7 @@ class ActiveState<<$ExtendedType>>
     method handle_deactivate
       on_deactivate
 
-    method handle_finish
+    method handle_finished
       on_finish
       handle_deactivate
 
@@ -173,6 +172,8 @@ class ActiveState<<$ExtendedType>>
           concurrent_state = concurrent_state.started
         endIf
 
+        # never started, so we don't call handle_finished
+
         return this->(as $ExtendedType)
       else
         if (not is_started)
@@ -182,7 +183,7 @@ class ActiveState<<$ExtendedType>>
 
         if (concurrent_state) concurrent_state = concurrent_state.started
         if (not is_finished) return this->(as $ExtendedType)
-        handle_finish
+        handle_finished
 
         return .start_next
       endIf
@@ -214,7 +215,7 @@ class ActiveState<<$ExtendedType>>
         if (not is_finished) return this->(as $ExtendedType)
       endIf
 
-      handle_finish
+      handle_finished
 
       return .update_next
 
