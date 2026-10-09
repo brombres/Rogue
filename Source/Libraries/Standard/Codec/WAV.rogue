@@ -238,18 +238,18 @@ class WAVChannel
           which (wav.bit_depth)
             case 8
               local sample = reader.read : Int
-              samples.add( (sample - 128) / 255.0 )
+              samples.add( (sample - 128) / 128.0 )
             case 16
               local sample = reader.read_int16_low_high
               if (sample & 0x8000) sample -= 65536
-              samples.add( ((sample+32768)/65535.0) * 2 - 1 )
+              samples.add( sample / 32768.0 )
             case 24
               local sample = reader.read_int16_low_high
               sample = (reader.read->Int :<<: 16) | sample
               if (sample & 0x80_0000) sample -= 0x100_0000
-              samples.add( ((sample+8388608)/16777215.0) * 2 - 1 )
+              samples.add( sample / 8388608.0 )
             others
-              samples.add( ((reader.read_int32_low_high+2147483648.0)/4294967295.0) * 2 - 1 )
+              samples.add( reader.read_int32_low_high / 2147483648.0 )
           endWhich
         case IEEE_FLOAT
           local sample = reader.read_int32_low_high.real_bits
@@ -261,19 +261,15 @@ class WAVChannel
         case PCM
           which (wav.bit_depth)
             case 8
-              writer.write( (samples[index].clamped(-0.5,0.5)*255 + 128)->Int->Byte )
+              writer.write( (samples[index]*128.0).round.clamped(-128.0,127.0)->Int + 128 )
             case 16
-              local sample = (samples[index] + 1.0) / 2.0   # -1..1 -> 0..1
-              writer.write_int16_low_high( (sample*65535 - 32768).round )
+              writer.write_int16_low_high( (samples[index]*32768.0).round.clamped(-32768.0,32767.0)->Int )
             case 24
-              local sample = (samples[index] + 1.0) / 2.0   # -1..1 -> 0..1
-              block sample = ((sample * 16777215) - 8388608).round->Int
-                writer.write_int16_low_high( sample )
-                writer.write( sample:>>>:16 )
-              endBlock
+              local sample = (samples[index]*8388608.0).round.clamped(-8388608.0,8388607.0)->Int
+              writer.write_int16_low_high( sample )
+              writer.write( sample:>>>:16 )
             others
-              local sample = (samples[index] + 1.0) / 2.0   # -1..1 -> 0..1
-              writer.write_int32_low_high( (sample * 4294967295.0 - 2147483648.0).round )
+              writer.write_int32_low_high( (samples[index]*2147483648.0).round.clamped(-2147483648.0,2147483647.0)->Int )
           endWhich
         case IEEE_FLOAT
           writer.write_int32_low_high( samples[index]->Real32.integer_bits )
