@@ -227,16 +227,16 @@ class WAVChannel
               writer.write( (samples[index].clamped(-0.5,0.5)*255 + 128)->Int->Byte )
             case 16
               local sample = (samples[index] + 1.0) / 2.0   # -1..1 -> 0..1
-              writer.write_int16_low_high( sample*65535 - 32768 )
+              writer.write_int16_low_high( (sample*65535 - 32768).round )
             case 24
               local sample = (samples[index] + 1.0) / 2.0   # -1..1 -> 0..1
-              block sample = ((sample * 16777215) - 8388608)->Int
+              block sample = ((sample * 16777215) - 8388608).round->Int
                 writer.write_int16_low_high( sample )
                 writer.write( sample:>>>:16 )
               endBlock
             others
               local sample = (samples[index] + 1.0) / 2.0   # -1..1 -> 0..1
-              writer.write_int32_low_high( sample * 4294967295.0 - 2147483648.0 )
+              writer.write_int32_low_high( (sample * 4294967295.0 - 2147483648.0).round )
           endWhich
         case IEEE_FLOAT
           writer.write_int32_low_high( samples[index]->Real32.integer_bits )
