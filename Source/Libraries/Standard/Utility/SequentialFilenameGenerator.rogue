@@ -1,0 +1,47 @@
+class SequentialFilenameGenerator
+  # USAGE
+  #   uses Utility/SequentialFilenameGenerator
+  #
+  #   local gen = SequentialFilenameGenerator( "Frame-#00.png" )
+  #   local gen = SequentialFilenameGenerator( "Frame-#01.png" )
+  #   local gen = SequentialFilenameGenerator( "Frame-#01.png", 150 )
+  #   local gen = SequentialFilenameGenerator( "Frame.png", 150 )
+  #   local gen = SequentialFilenameGenerator( "Frame.png", 150, &start=1 )
+  #   local gen = SequentialFilenameGenerator( "Frame.png" )
+  #   loop (10) println gen.read_another
+  PROPERTIES
+    name_template : String
+    seq_format    : String
+    next_number   : Int
+
+  METHODS
+    method init( filename_pattern:String, total_count=null:Int?, start=0:Int )
+      if local format = filename_pattern.extract_string( "*#$(I)*" )
+        name_template = filename_pattern.replacing( "#" + format, "$" )
+        next_number = format->Int
+        seq_format = "0$"(format.count)
+      else
+        local (filepath,ext) = File(filename_pattern).split_filepath_and_extension
+        name_template = "$-$.$"(filepath,'$',ext)
+        next_number = start
+        if (total_count)
+          local n = total_count.value.abs
+          if (start == 0) --n
+          n /= 10
+          local digits = 1
+          while (n > 0)
+            n /= 10
+            ++digits
+          endWhile
+          seq_format = "0$"(digits)
+        else
+          seq_format = "1"
+        endIf
+      endIf
+
+    method read_another->String
+      local n = next_number
+      ++next_number
+      return name_template.replacing( "$", n.format(seq_format) )
+
+endClass
