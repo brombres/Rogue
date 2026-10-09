@@ -12,9 +12,19 @@
 $include IO/DataIO
 
 class WAV
+  GLOBAL METHODS
+    method silence( duration:Real, format:WAVFormat )->WAV
+      local result = WAV( format )
+      local sample_count = (format.sample_rate * duration).round->Int
+      loop (format.channel_count)
+        local samples = Dim<<Real32>>( sample_count )
+        result.channels.add( WAVChannel(result,samples) )
+      endLoop
+      return result
+
   PROPERTIES
     channels    = WAVChannel[](2)
-    format      : WAVFormat
+    encoding    : WAVEncoding
     bit_depth   : Int
     sample_rate : Int
     page_align  : Logical
@@ -26,11 +36,12 @@ class WAV
         error = "Error decoding WAV file: $"(file.filepath)
       endIf
 
-    method init( format, bit_depth, sample_rate )
+    method init( format:WAVFormat )
+      this.encoding = format.encoding
+      this.bit_depth = format.bit_depth
+      this.sample_rate = format.sample_rate
+      this.page_align = format.page_align
       validate
-
-    method cloned->WAV
-      return WAV( format, bit_depth, sample_rate )
 
     method count->Int
       # Returns sample count.
@@ -41,6 +52,9 @@ class WAV
       local channel = WAVChannel( this )
       channels.add( channel )
       return channel
+
+    method format->WAVFormat
+      return WAVFormat( channels.count, encoding, bit_depth, sample_rate, page_align )
 
     method locate_silence( i1=0:Int, &threshold=0.01:Real, &min_duration=0.1:Real )->Int?
       # Returns the index of the next sample at or after 'i1' where every channel is silent,
@@ -85,6 +99,29 @@ class WAV
       endForEach
       return result
 
+    method operator+( other:WAV )->WAV
+      local a_channels = channels.cloned
+      local b_channels = other.channels.cloned
+      while (a_channels.count != b_channels.count)
+        if (a_channels.count < b_channels.count) a_channels.add( a_channels.last )
+        else                   b_channels.add( b_channels.last )
+      endWhile
+
+      localize format
+      format.channel_count = a_channels.count
+      local result = WAV( format )
+
+      forEach (index of a_channels)
+        local left  = a_channels[index]
+        local right = b_channels[index]
+        local spliced_samples = Real32[]( left.count + right.count )
+        spliced_samples.add( left.samples )
+        spliced_samples.add( right.samples )
+        result.channels.add( WAVChannel(result,spliced_samples) )
+      endForEach
+
+      return result
+
     method save( file:File )->Logical
       if (not validate) return false
       return file.save( WAVEncoder.encode(this) )
@@ -93,7 +130,7 @@ class WAV
       return subset( i1, count - i1 )
 
     method subset( i1:Int, n:Int )->WAV
-      local result = this.cloned
+      local result = WAV( this.format )
       forEach (channel in channels)
         result.channels.add( WAVChannel(result,channel.samples.subset(i1,n)) )
       endForEach
@@ -103,10 +140,10 @@ class WAV
       return subset( span.index, span.count )
 
     method to->String
-      return "$ channel $-bit $ $ Hz" (channels.count,bit_depth,format,sample_rate)
+      return "$ channel $-bit $ $ Hz" (channels.count,bit_depth,encoding,sample_rate)
 
     method validate->Logical
-      which (format)
+      which (encoding)
         case PCM
           which (bit_depth)
             case 8, 16, 24, 32
@@ -119,7 +156,7 @@ class WAV
             error = "WAV does not support $-bit floating point."(bit_depth)
           endIf
         others
-          error = "WAV cannot handle format $."(format)
+          error = "WAV cannot handle encoding $."(encoding)
       endWhich
       return not error
 endClass
@@ -196,7 +233,7 @@ class WAVChannel
       return samples[index]
 
     method read( reader:DataReader )
-      which (wav.format)
+      which (wav.encoding)
         case PCM
           which (wav.bit_depth)
             case 8
@@ -220,7 +257,7 @@ class WAVChannel
       endWhich
 
     method write( index:Int, writer:DataWriter )
-      which (wav.format)
+      which (wav.encoding)
         case PCM
           which (wav.bit_depth)
             case 8
@@ -243,6 +280,8 @@ class WAVChannel
       endWhich
 endClass
 
+class WAVFormat( channel_count:Int, encoding:WAVEncoding, bit_depth:Int, sample_rate:Int, page_align:Logical ) [compound]
+endClass
 
 class WAVDecoder [singleton]
   # http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
@@ -259,8 +298,8 @@ class WAVDecoder [singleton]
       if (reader.read_int32 != 0x666D7420) return false  # "fmt "
       if (reader.read_int32_low_high != 16) return false     # subchunk 1 size
 
-      wav.format = WAVFormat( reader.read_int16_low_high )
-      if (not wav.format.exists) return false
+      wav.encoding = WAVEncoding( reader.read_int16_low_high )
+      if (not wav.encoding.exists) return false
 
       local channel_count = reader.read_int16_low_high
 
@@ -322,7 +361,7 @@ class WAVEncoder [singleton]
       writer.write_int32( 0x666D7420 )  # "fmt "
 
       writer.write_int32_low_high( 16 )                 # subchunk 1 size
-      writer.write_int16_low_high( wav.format->Int )  # format
+      writer.write_int16_low_high( wav.encoding->Int )  # encoding
 
       writer.write_int16_low_high( wav.channels.count ) # channel count
       writer.write_int32_low_high( wav.sample_rate )    # sample rate
@@ -358,7 +397,7 @@ class WAVEncoder [singleton]
       return size
 endClass
 
-enum WAVFormat
+enum WAVEncoding
   PCM        = 0x0001
   IEEE_FLOAT = 0x0003
   ALAW       = 0x0006   # 8-bit ITU-T G.711 A-law
