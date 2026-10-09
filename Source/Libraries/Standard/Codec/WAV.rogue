@@ -15,8 +15,8 @@ class WAV
   PROPERTIES
     channels    = WAVChannel[](2)
     format      : WAVFormat
-    bit_depth   : Int32
-    sample_rate : Int32
+    bit_depth   : Int
+    sample_rate : Int
     page_align  : Logical
     error       : String
 
@@ -29,14 +29,78 @@ class WAV
     method init( format, bit_depth, sample_rate )
       validate
 
+    method cloned->WAV
+      return WAV( format, bit_depth, sample_rate )
+
+    method count->Int
+      # Returns sample count.
+      if (channels.is_empty) return 0
+      return channels.first.count
+
     method create_channel->WAVChannel
       local channel = WAVChannel( this )
       channels.add( channel )
       return channel
 
+    method locate_silence( i1=0:Int, &threshold=0.01:Real, &min_duration=0.1:Real )->Int?
+      # Returns the index of the next sample at or after 'i1' where every channel is silent,
+      # or null if there is no such sample.
+      #
+      # threshold    - Absolute amplitude (0.0-1.0) below which a sample is considered quiet.
+      # min_duration - Minimum length in seconds of a quiet stretch for it to count as silence.
+      if (channels.is_empty) return null
+
+      local i = i1
+      loop
+        # Find the latest point at which any channel's next silence begins...
+        local result : Int?
+        forEach (channel in channels)
+          local index = channel.locate_silence( i, &=threshold, &=min_duration )
+          if (not index) return null
+          if (not result or index.value > result.value) result = index
+        endForEach
+
+        # ...then make sure every channel is actually silent at that point.
+        local all_silent = true
+        forEach (channel in channels)
+          if (channel.locate_silence(result.value,&=threshold,&=min_duration) != result)
+            all_silent = false
+            escapeForEach
+          endIf
+        endForEach
+        if (all_silent) return result
+
+        i = result.value
+      endLoop
+
+    method locate_sound( i1=0:Int, &threshold=0.01:Real, &min_duration=0.1:Real )->Int?
+      # Returns the index of the next sample at or after 'i1' where any channel is
+      # non-silent, or null if there is no such sample. See locate_silence() for
+      # the meaning of 'threshold' and 'min_duration'.
+      local result : Int?
+      forEach (channel in channels)
+        if local index = channel.locate_sound( i1, &=threshold, &=min_duration )
+          if (not result or index < result.value) result = index
+        endIf
+      endForEach
+      return result
+
     method save( file:File )->Logical
       if (not validate) return false
       return file.save( WAVEncoder.encode(this) )
+
+    method subset( i1:Int )->WAV
+      return subset( i1, count - i1 )
+
+    method subset( i1:Int, n:Int )->WAV
+      local result = this.cloned
+      forEach (channel in channels)
+        result.channels.add( WAVChannel(result,channel.samples.subset(i1,n)) )
+      endForEach
+      return result
+
+    method subset( span:Span )->WAV
+      return subset( span.index, span.count )
 
     method to->String
       return "$ channel $-bit $ $ Hz" (channels.count,bit_depth,format,sample_rate)
@@ -63,18 +127,72 @@ endClass
 class WAVChannel
   PROPERTIES
     wav       : WAV
-    samples   = Real32[]
+    samples   : Real32[]
 
   METHODS
-    method init( wav )
+    method init( wav, samples=Real32[] )
 
     method add( sample:Real )
       samples.add( sample )
 
-    method count->Int32
+    method count->Int
       return samples.count
 
-    method get( index:Int32 )->Real
+    method locate_silence( i1=0:Int, &threshold=0.01:Real, &min_duration=0.1:Real )->Int?
+      # Returns the index of the next sample at or after 'i1' that is part of a
+      # silent region, or null if there is no such sample.
+      #
+      # A sample is silent if it belongs to a run of at least 'min_duration'
+      # seconds of consecutive samples whose absolute amplitude is below
+      # 'threshold'. Audible sound crosses zero constantly, so brief
+      # near-zero dips within a sound are not considered silence.
+      local n = samples.count
+      if (i1 >= n) return null
+      local min_samples = min_duration_to_samples( min_duration )
+
+      # If 'i1' is already inside a quiet run, the run may have started before it.
+      local run_start = i1
+      while (run_start > 0 and samples[run_start-1].abs < threshold) --run_start
+
+      local i = i1
+      while (i < n)
+        if (samples[i].abs < threshold)
+          if ((i - run_start) + 1 >= min_samples) return run_start.or_larger( i1 )
+        else
+          run_start = i + 1
+        endIf
+        ++i
+      endWhile
+
+      return null
+
+    method locate_sound( i1=0:Int, &threshold=0.01:Real, &min_duration=0.1:Real )->Int?
+      # Returns the index of the next sample at or after 'i1' that is part of a
+      # non-silent region, or null if there is no such sample. See
+      # locate_silence() for the meaning of 'threshold' and 'min_duration'.
+      local n = samples.count
+      if (i1 >= n) return null
+      local min_samples = min_duration_to_samples( min_duration )
+
+      # Find the next sample at or above the threshold.
+      local i = i1
+      while (i < n and samples[i].abs < threshold) ++i
+      if (i == i1) return i1
+
+      # Samples [i1,i) are quiet. They are still "sound" if the quiet run
+      # they belong to is too short to count as silence.
+      local run_start = i1
+      while (run_start > 0 and samples[run_start-1].abs < threshold) --run_start
+      if (i - run_start < min_samples) return i1
+
+      if (i >= n) return null
+      return i
+
+    method min_duration_to_samples( min_duration:Real )->Int
+      local result = (min_duration * wav.sample_rate)->Int
+      return result.or_larger( 1 )
+
+    method get( index:Int )->Real
       return samples[index]
 
     method read( reader:DataReader )
@@ -82,7 +200,7 @@ class WAVChannel
         case PCM
           which (wav.bit_depth)
             case 8
-              local sample = reader.read : Int32
+              local sample = reader.read : Int
               samples.add( (sample - 128) / 255.0 )
             case 16
               local sample = reader.read_int16_low_high
@@ -90,7 +208,7 @@ class WAVChannel
               samples.add( ((sample+32768)/65535.0) * 2 - 1 )
             case 24
               local sample = reader.read_int16_low_high
-              sample = (reader.read->Int32 :<<: 16) | sample
+              sample = (reader.read->Int :<<: 16) | sample
               if (sample & 0x80_0000) sample -= 0x100_0000
               samples.add( ((sample+8388608)/16777215.0) * 2 - 1 )
             others
@@ -101,18 +219,18 @@ class WAVChannel
           samples.add( sample.clamped(-1.0,1.0) )
       endWhich
 
-    method write( index:Int32, writer:DataWriter )
+    method write( index:Int, writer:DataWriter )
       which (wav.format)
         case PCM
           which (wav.bit_depth)
             case 8
-              writer.write( (samples[index].clamped(-0.5,0.5)*255 + 128)->Int32->Byte )
+              writer.write( (samples[index].clamped(-0.5,0.5)*255 + 128)->Int->Byte )
             case 16
               local sample = (samples[index] + 1.0) / 2.0   # -1..1 -> 0..1
               writer.write_int16_low_high( sample*65535 - 32768 )
             case 24
               local sample = (samples[index] + 1.0) / 2.0   # -1..1 -> 0..1
-              block sample = ((sample * 16777215) - 8388608)->Int32
+              block sample = ((sample * 16777215) - 8388608)->Int
                 writer.write_int16_low_high( sample )
                 writer.write( sample:>>>:16 )
               endBlock
@@ -185,7 +303,7 @@ class WAVDecoder [singleton]
           reader.skip( size )
       endWhich
 
-    method id_to_string( id:Int32 )->String
+    method id_to_string( id:Int )->String
       local a = (id:>>>:24)->Byte->Character
       local b = (id:>>>:16)->Byte->Character
       local c = (id:>>>:8)->Byte->Character
@@ -204,7 +322,7 @@ class WAVEncoder [singleton]
       writer.write_int32( 0x666D7420 )  # "fmt "
 
       writer.write_int32_low_high( 16 )                 # subchunk 1 size
-      writer.write_int16_low_high( wav.format->Int32 )  # format
+      writer.write_int16_low_high( wav.format->Int )  # format
 
       writer.write_int16_low_high( wav.channels.count ) # channel count
       writer.write_int32_low_high( wav.sample_rate )    # sample rate
@@ -230,7 +348,7 @@ class WAVEncoder [singleton]
       return writer.output_bytes
 
 
-    method encoded_size( wav:WAV )->Int32
+    method encoded_size( wav:WAV )->Int
       local size = 36  # header
       size += 8        # "data" chunk header
       if (wav.page_align) size += 4052 # FLLR chunk to make data start on a 4K boundary
