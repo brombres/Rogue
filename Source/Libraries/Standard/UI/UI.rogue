@@ -121,7 +121,7 @@ class UI : Component [singleton]
     method handle( e:KeyEvent )
       UI = this
 
-      if (focus.keyboard)
+      if (focus.keyboard and focus.keyboard is not this)
         if (not focus.keyboard.attributes.intangible)
           focus.keyboard.handle( e )
         else
@@ -145,7 +145,7 @@ class UI : Component [singleton]
       on( e )
       if (e.is_consumed) return
 
-      if (focus.pointer)
+      if (focus.pointer and focus.pointer is not this)
         if (focus.pointer.yield_pointer_focus_to(e))
           focus.pointer.release_pointer_focus
           first_content_component?.dispatch( e )
@@ -165,7 +165,7 @@ class UI : Component [singleton]
       on( e )
       if (e.is_consumed) return
 
-      if (focus.pointer)
+      if (focus.pointer and focus.pointer is not this)
         focus.pointer.handle( e )
       else
         first_content_component?.dispatch( e )
@@ -180,7 +180,7 @@ class UI : Component [singleton]
       on( e )
       if (e.is_consumed) return
 
-      if (focus.keyboard)
+      if (focus.keyboard and focus.keyboard is not this)
         focus.keyboard.handle( e )
       else
         first_content_component?.dispatch( e )

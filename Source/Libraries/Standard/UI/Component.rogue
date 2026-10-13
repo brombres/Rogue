@@ -244,7 +244,13 @@ class Component : Entity
       return true
 
     method capture_pointer_focus->Logical
-      if (UI.focus.pointer and UI.focus.pointer is not this) return false
+      if (UI.focus.pointer is this) return true
+
+      if (UI.focus.pointer)
+        UI.focus.pointer.release_pointer_focus
+        if (UI.focus.pointer) return false  # refused
+      endIf
+
       UI.focus.pointer = this
       on_capture_pointer_focus
       return true

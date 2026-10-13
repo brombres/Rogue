@@ -34,6 +34,9 @@ class Event
         RecyclePool<<$thisType>>.recycle( this )
       endIf
 
+    method reset
+      is_consumed = false
+
     method retain
       ++refcount
 endClass
@@ -232,6 +235,9 @@ class PointerEvent : Event
       is_touch        = existing.is_touch
       is_multitouch   = existing.is_multitouch
       ignore_sequence = existing.ignore_sequence
+
+    method reset( type )
+      reset
 
     method is_enter->Logical
       return (this.type == <ENTER>)
