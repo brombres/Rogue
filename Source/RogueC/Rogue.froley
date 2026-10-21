@@ -2927,7 +2927,7 @@ parser
   on "/" -> Divide
   on "%" -> Mod
 
-- power [binary]
+- power [rightBinary]
   on "^" -> Power
 
 - pre_unary [preUnary]
